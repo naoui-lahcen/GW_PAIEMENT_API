@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="ISO-8859-1">
+<title>Chalenge ACS</title>
+<link rel="stylesheet"
+    href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+    integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+    crossorigin="anonymous">
+    
+</head>
+
+
+<body>
+<!--	<div class="container my-2" align="center">-->
+	 
+
+<!--		<p class="alert alert-success text-center">Chalenge ACS </p>	-->
+
+		<div th:utext="${demandeDto.getHtmlCreq()}"></div>
+	
+<!-- 	<form action='https://acs.naps.ma:443/lacs2' method='post' enctype='application/x-www-form-urlencoded'> -->
+<!-- 	<input type='hidden' name='creq' value='ewogICJtZXNzYWdlVmVyc2lvbiI6ICIyLjEuMCIsCiAgInRocmVlRFNTZXJ2ZXJUcmFuc0lEIjogIjQxZDQ0ZTViLTBjOTYtNGVhNC05NjkxLTM1OWVmOGQ5NTdjMyIsCiAgImFjc1RyYW5zSUQiOiAiOTI3NTQyOGEtYzkzYi00ZWUzLTk3NDEtNDA4NzAzNDlmYzM2IiwKICAiY2hhbGxlbmdlV2luZG93U2l6ZSI6ICIwNSIsCiAgIm1lc3NhZ2VUeXBlIjogIkNSZXEiCn0=' /> -->
+<!-- 	</form> -->
+		
+<!--	</div>-->
+             
+        
+
+<script type="text/javascript">
+	window.onload = formSubmit;
+	
+	function formSubmit() {
+	
+	      document.forms[0].submit();
+	      console.log('------------ auto sumbit -------------');
+	}
+</script>
+</body>
+</html>
