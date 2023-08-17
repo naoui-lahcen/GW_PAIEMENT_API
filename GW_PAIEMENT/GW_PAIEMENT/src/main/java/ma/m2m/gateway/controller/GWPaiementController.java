@@ -81,7 +81,7 @@ public class GWPaiementController {
 
 	public GWPaiementController() {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		file = "T_" + randomWithSplittableRandom;
+		file = "GW_" + randomWithSplittableRandom;
 		// date of folder logs
 		date = LocalDateTime.now(ZoneId.systemDefault());
 		folder = date.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
