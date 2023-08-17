@@ -78,6 +78,7 @@ public class AutorisationServiceImpl implements AutorisationService {
 	private CommercantDao commercantDao;
 	
 	public AutorisationServiceImpl() {
+		this.gson = new GsonBuilder().serializeNulls().create();
 	}
 	
 	
@@ -136,8 +137,8 @@ public class AutorisationServiceImpl implements AutorisationService {
 	@Override
 	public ThreeDSecureResponse callThree3DSS(DemandePaiementDto demandeDto,String folder,String file) {
 		//traces.creatFileTransaction(file);
-		traces.writeInFileTransaction(folder, file, "Start payer Service ()");
-		System.out.println("Start payer Service ()");
+		traces.writeInFileTransaction(folder, file, "Start callThree3DSS()");
+		System.out.println("Start callThree3DSS()");
 		
 		traces.writeInFileTransaction(folder, file, "demandeDto dem_pan : " + demandeDto.getDem_pan());
 		traces.writeInFileTransaction(folder, file, "demandeDto dem_cvv : " + demandeDto.getDem_cvv());
@@ -233,9 +234,9 @@ public class AutorisationServiceImpl implements AutorisationService {
 		ThreeDSecureResponse threeDsecureResponse = new ThreeDSecureResponse();
 		
 		// soit visa soit mastercard il a aucun impact apres auth
-		traces.writeInFileTransaction(folder, file, "ACSController RETOUR ACS =====> urlThreeDSS : " + urlThreeDSS_V);
+		traces.writeInFileTransaction(folder, file, "ACSController RETOUR ACS =====> urlThreeDSS : " + urlThreeDSS_M);
 		
-		System.out.println("ACSController RETOUR ACS =====> urlThreeDSS : " + urlThreeDSS_V);
+		System.out.println("ACSController RETOUR ACS =====> urlThreeDSS : " + urlThreeDSS_M);
 		HttpClient httpClient = HttpClientBuilder.create().build();
 		try {
 			httpClient = getAllSSLClient();
@@ -243,7 +244,7 @@ public class AutorisationServiceImpl implements AutorisationService {
 			traces.writeInFileTransaction(folder, file, "[GW-EXCEPTION-KeyManagementException] ACSController " + e1);
 		}
 
-		HttpPost httpPost = new HttpPost(urlThreeDSS_V);
+		HttpPost httpPost = new HttpPost(urlThreeDSS_M);
 
 		final StringEntity entity = new StringEntity(decodedCres, StandardCharsets.UTF_8);
 
@@ -257,11 +258,10 @@ public class AutorisationServiceImpl implements AutorisationService {
 			StatusLine responseStatusLine = responseTheeDs.getStatusLine();
 			traces.writeInFileTransaction(folder, file, "ACSController RETOUR ACS =====> RETOUR 3DSS response StatusCode : "
 					+ responseTheeDs.getStatusLine().getStatusCode());
-			traces.writeInFileTransaction(folder, file,
-					"ACSController RETOUR ACS =====> RETOUR 3DSS responseStatusLine : " + responseStatusLine);
 			String respStr = EntityUtils.toString(responseTheeDs.getEntity());
 
 			traces.writeInFileTransaction(folder, file, "ACSController RETOUR ACS =====> RETOUR 3DSS respStr : " + respStr);
+			System.out.println("ACSController RETOUR ACS =====> RETOUR 3DSS respStr : " + respStr);
 
 			threeDsecureResponse = gson.fromJson(respStr, ThreeDSecureResponse.class);
 
@@ -269,14 +269,11 @@ public class AutorisationServiceImpl implements AutorisationService {
 					"ACSController RETOUR ACS =====> RETOUR 3DSS threeDsecureResponse toString : "
 							+ threeDsecureResponse);
 
-			traces.writeInFileTransaction(folder, file,
-					"ACSController DEBUT appel handleDemandeThreeDSResponse apres authenrification");
-
 		} catch (Exception e) {
 			traces.writeInFileTransaction(folder, file, "[GW-EXCEPTION-ClientProtocolException] ACSController " + e);
 		}
 
-		traces.writeInFileTransaction(folder, file, "RETOUR ACS =====> FIN appel ThreeDSServer apres authenrification");
+		traces.writeInFileTransaction(folder, file, "RETOUR ACS =====> FIN callThree3DSSAfterACS apres authenrification");
 		return threeDsecureResponse;
 	}
 	

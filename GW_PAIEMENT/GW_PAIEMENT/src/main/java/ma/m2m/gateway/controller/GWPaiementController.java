@@ -170,7 +170,7 @@ public class GWPaiementController {
 		return "OK";
 	}
 	
-	@RequestMapping("/napspayment")
+	@RequestMapping("/napspayment/index")
 	public String index() {
 		// create file log
 		traces.creatFileTransaction(file);
@@ -188,11 +188,14 @@ public class GWPaiementController {
 		traces.writeInFileTransaction(folder, file, "*********** Start showPagePayment ************** ");
 		System.out.println("*********** Start showPagePayment ************** ");
 		
+		traces.writeInFileTransaction(folder, file, "findByTokencommande token : " + token);
+		System.out.println("findByTokencommande token : " + token);		
+		
 		DemandePaiementDto demandeDto = demandePaiementService.findByTokencommande(token);
 				
 		if(demandeDto == null) {
-			traces.writeInFileTransaction(folder, file, "demandeDto null " );
-			System.out.println("demandeDto null ");		
+			traces.writeInFileTransaction(folder, file, "demandeDto null token : " + token);
+			System.out.println("demandeDto null token : " + token);		
 		}
 		
 		CommercantDto merchant = null;
@@ -233,6 +236,7 @@ public class GWPaiementController {
 		
 		model.addAttribute("demandeDto", demandeDto);
 		System.out.println("findByTokencommande Iddemande recupérée : " + demandeDto.getIddemande());
+		traces.writeInFileTransaction(folder, file, "findByTokencommande Iddemande recupérée : " + demandeDto.getIddemande());
 		
 		traces.writeInFileTransaction(folder, file, "*********** Fin showPagePayment ************** ");
 		System.out.println("*********** Fin showPagePayment ************** ");

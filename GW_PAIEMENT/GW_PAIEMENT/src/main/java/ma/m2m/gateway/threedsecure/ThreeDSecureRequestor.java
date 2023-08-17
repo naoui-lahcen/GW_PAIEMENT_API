@@ -196,7 +196,6 @@ public class ThreeDSecureRequestor {
 			StatusLine responseStatusLine = response.getStatusLine();
 			traces.writeInFileTransaction(logFolder, logFile,
 					"response StatusCode : " + response.getStatusLine().getStatusCode());
-			traces.writeInFileTransaction(logFolder, logFile, "responseStatusLine : " + responseStatusLine);
 			traces.writeInFileTransaction(logFolder, logFile, "response : " + response);
 			String respStr = EntityUtils.toString(response.getEntity());
 			traces.writeInFileTransaction(logFolder, logFile, "respStr : " + respStr);

@@ -440,10 +440,10 @@ public class APIController {
 
 		} catch (Exception err1) {
 			traces.writeInFileTransaction(folder, file,
-					"authorization 500" + "Error  during DEMANDE_PAIEMENT insertion for given orderid" + "orderid:["
+					"authorization 500 Error during DEMANDE_PAIEMENT insertion for given " + "orderid:["
 							+ orderid + "]" + err1);
 
-			return "authorization 500" + "Error  during DEMANDE_PAIEMENT insertion for given orderid" + "orderid:["
+			return "authorization 500 Error during DEMANDE_PAIEMENT insertion for given " + "orderid:["
 					+ orderid + "]";
 
 		}
@@ -602,9 +602,8 @@ public class APIController {
 							+ idDemande);
 			return "AUTO INVALIDE DEMANDE";
 		}
-		reponseMPI = "D";
-		//threeDsecureResponse.setHtmlCreq("<form  action='https://acs2.bankofafrica.ma:443/lacs2' method='post'enctype='application/x-www-form-urlencoded'><input type='hidden'name='creq'value='ewogICJtZXNzYWdlVmVyc2lvbiI6ICIyLjEuMCIsCiAgInRocmVlRFNTZXJ2ZXJUcmFuc0lEIjogIjllZjUwNjk3LWRiMTctNGZmMy04MDYzLTc0ZTAwMTk0N2I4YiIsCiAgImFjc1RyYW5zSUQiOiAiZjM2ZDA3ZWQtZGJhOS00ZTkzLWE2OGMtMzNmYjAyMDgxZDVmIiwKICAiY2hhbGxlbmdlV2luZG93U2l6ZSI6ICIwNSIsCiAgIm1lc3NhZ2VUeXBlIjogIkNSZXEiCn0=' /></form>");
-		if (reponseMPI.equals("")) {
+		
+		if (reponseMPI.equals("") || reponseMPI == null) {
 			dmd.setEtat_demande("MPI_KO");
 			demandePaiementService.save(dmd);
 			Util.writeInFileTransaction(folder, file,
@@ -614,8 +613,7 @@ public class APIController {
 		}
 
 		if (reponseMPI.equals("Y")) {
-			// ********************* Frictionless responseMPI equal Y
-			// *********************
+			// ********************* Frictionless responseMPI equal Y  *********************
 			traces.writeInFileTransaction(folder, file,
 					"********************* Cas frictionless responseMPI equal Y *********************");
 
@@ -777,7 +775,7 @@ public class APIController {
 				traces.writeInFileTransaction(folder, file,
 						"authorization 500 Error Switch communication SocketTimeoutException" + "switch ip:[" + sw_s
 								+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-
+				return "Switch  malfunction  SocketTimeoutException !!!";
 			}
 
 			catch (IOException e) {
@@ -786,7 +784,7 @@ public class APIController {
 				e.printStackTrace();
 				traces.writeInFileTransaction(folder, file, "authorization 500 Error Switch communication IOException"
 						+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-
+				return "Switch  malfunction  IOException !!!";
 			}
 
 			catch (Exception e) {
@@ -805,19 +803,16 @@ public class APIController {
 				switch_ko = 1;
 				traces.writeInFileTransaction(folder, file, "authorization 500 Error Switch null response"
 						+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-
+				return "Switch  malfunction resp null!!!";
 			}
 
-			if (switch_ko == 0 && resp.length() < 3)
-
-			{
+			if (switch_ko == 0 && resp.length() < 3) {
 				switch_ko = 1;
 
 				traces.writeInFileTransaction(folder, file, "Switch  malfunction resp < 3 !!!");
 				traces.writeInFileTransaction(folder, file,
 						"authorization 500 Error Switch short response length() < 3 " + "switch ip:[" + sw_s
 								+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-
 			}
 
 			traces.writeInFileTransaction(folder, file, "Switch TLV Respnose :[" + resp + "]");
@@ -990,7 +985,7 @@ public class APIController {
 				traces.writeInFileTransaction(folder, file, "get max id ...");
 
 				// Ihist_id = hist.getMAX_ID("HISTOAUTO_GATE", "HAT_ID");
-				Ihist_id = histoAutoGateService.getMAX_ID();
+				//Ihist_id = histoAutoGateService.getMAX_ID();
 				// long currentid = Ihist_id.longValue() + 1;
 				// hist.setId(currentid);
 
@@ -1081,16 +1076,18 @@ public class APIController {
 				traces.writeInFileTransaction(folder, file, "SWITCH RESONSE CODE :[00]");
 
 				try {
-					traces.writeInFileTransaction(folder, file, "udapate etat demande : PAYE ...");
+					traces.writeInFileTransaction(folder, file, "udapate etat demande : SW_PAYE ...");
 
-					dmd.setEtat_demande("PAYE");
+					dmd.setEtat_demande("SW_PAYE");
 					demandePaiementService.save(dmd);
 
 				} catch (Exception e) {
-					e.printStackTrace();
+					traces.writeInFileTransaction(folder, file,
+							"authorization 500 Error during DEMANDE_PAIEMENT update etat demande for given " + "orderid:["
+									+ orderid + "]" + e);
 				}
 
-				traces.writeInFileTransaction(folder, file, "udapate etat demande : PAYE OK");
+				traces.writeInFileTransaction(folder, file, "udapate etat demande : SW_PAYE OK");
 
 				String capture_status = "N";
 				int exp_flag = 0;
