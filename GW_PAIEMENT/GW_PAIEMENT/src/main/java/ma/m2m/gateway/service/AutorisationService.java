@@ -5,9 +5,9 @@ import ma.m2m.gateway.threedsecure.ThreeDSecureResponse;
 
 public interface AutorisationService {
 	
-	ThreeDSecureResponse payer(DemandePaiementDto demandeDto,String folder,String file);
+	ThreeDSecureResponse callThree3DSS(DemandePaiementDto demandeDto,String folder,String file);
 	
-	ThreeDSecureResponse callThree3DSS(String decodedCres, String folder, String file);
+	ThreeDSecureResponse callThree3DSSAfterACS(String decodedCres, String folder, String file);
 	
 	 String controllerDataRequest(DemandePaiementDto demandeDto);
 

@@ -11,7 +11,7 @@ import javax.persistence.Table;
 import org.springframework.stereotype.Component;
 
 @Entity
-@Table(name = "HISTOAUTO", schema = "MXSWITCH")
+@Table(name = "HISTOAUTO", schema = "MXSWITCH", catalog="MXSWITCH")
 //@Component
 public class SWHistoAuto implements Serializable {
 

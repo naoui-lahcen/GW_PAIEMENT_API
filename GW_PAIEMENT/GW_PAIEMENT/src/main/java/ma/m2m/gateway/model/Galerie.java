@@ -45,13 +45,15 @@ public class Galerie implements java.io.Serializable {
 	private String etat;
 
 	
-
-	public Galerie() {
-	}
-
 	public Galerie(long idGal) {
 		this.idGal = idGal;
 	}
+
+	public Galerie() {
+		super();
+	}
+
+
 
 	public Galerie(long idGal, String codeGal, String nomGal, String urlGal,
 			String codeCmr, Date dateActivation, String categorieGal,

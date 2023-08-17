@@ -26,12 +26,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.ui.Model;
-
-import ma.m2m.gateway.Utils.Objects;
 import ma.m2m.gateway.Utils.Traces;
 import ma.m2m.gateway.Utils.Util;
 import ma.m2m.gateway.config.JwtTokenUtil;
@@ -40,15 +35,11 @@ import ma.m2m.gateway.dto.DemandePaiementDto;
 import ma.m2m.gateway.dto.GalerieDto;
 import ma.m2m.gateway.dto.UserDto;
 import ma.m2m.gateway.dto.responseDto;
-import ma.m2m.gateway.model.DemandePaiement;
-import ma.m2m.gateway.model.Person;
-import ma.m2m.gateway.model.User;
 import ma.m2m.gateway.reporting.GenerateExcel;
 import ma.m2m.gateway.service.AutorisationService;
 import ma.m2m.gateway.service.CommercantService;
 import ma.m2m.gateway.service.DemandePaiementService;
 import ma.m2m.gateway.service.GalerieService;
-import ma.m2m.gateway.service.UserService;
 import ma.m2m.gateway.threedsecure.ThreeDSecureResponse;
 
 @Controller
@@ -60,9 +51,6 @@ public class GWPaiementController {
 	
 	@Autowired
 	AutorisationService autorisationService;
-
-	@Autowired
-	private UserService userService;
 	
 	@Value("${key.LINK_SUCCESS}")
 	private String link_success;
@@ -230,7 +218,7 @@ public class GWPaiementController {
 			merchantid =demandeDto.getComid();
 			orderid = demandeDto.getCommande();
 			galerie = galerieService.findByCodeCmr(merchantid);
-			if(merchant !=null) {
+			if(galerie !=null) {
 				demandeDto.setGalerieDto(galerie);
 			}
 		} catch (Exception e) {
@@ -315,17 +303,7 @@ public class GWPaiementController {
 		  return ResponseEntity.ok().body(response);
 	}
 	
-	@PostMapping("/napspayment/linkpayment-xml")
-	@ResponseBody
-    public ResponseEntity<String> processXmlRequest(@RequestBody Person person) {
-        // Process the XML request data
-        System.out.println("Name: " + person.getName());
-        System.out.println("Age: " + person.getAge());
-        String res = "OK";
-        
-        return ResponseEntity.ok().body(res);
-    }
-	
+
 	@PostMapping("/payer")
 	public String payer(Model model, @ModelAttribute("demandeDto") DemandePaiementDto demandeDto) {
 		// create file log
@@ -340,8 +318,8 @@ public class GWPaiementController {
 		String htmlCreq = "<form action='https://acs.naps.ma:443/lacs2' method='post' enctype='application/x-www-form-urlencoded'>"
 				+ "<input type='hidden' name='creq' value='ewogICJtZXNzYWdlVmVyc2lvbiI6ICIyLjEuMCIsCiAgInRocmVlRFNTZXJ2ZXJUcmFuc0lEIjogIjQxZDQ0ZTViLTBjOTYtNGVhNC05NjkxLTM1OWVmOGQ5NTdjMyIsCiAgImFjc1RyYW5zSUQiOiAiOTI3NTQyOGEtYzkzYi00ZWUzLTk3NDEtNDA4NzAzNDlmYzM2IiwKICAiY2hhbGxlbmdlV2luZG93U2l6ZSI6ICIwNSIsCiAgIm1lc3NhZ2VUeXBlIjogIkNSZXEiCn0=' />"
 				+ "</form>";
-		demandeDto.setHtmlCreq(htmlCreq);
-		System.out.println("demandeDto htmlCreq : " + demandeDto.getHtmlCreq());
+		demandeDto.setCreq(htmlCreq);
+		System.out.println("demandeDto htmlCreq : " + demandeDto.getCreq());
 
 		
 		return "chalenge";
@@ -355,8 +333,8 @@ public class GWPaiementController {
 		String htmlCreq = "<form action='https://acs.naps.ma:443/lacs2' method='post' enctype='application/x-www-form-urlencoded'>"
 				+ "<input type='hidden' name='creq' value='ewogICJtZXNzYWdlVmVyc2lvbiI6ICIyLjEuMCIsCiAgInRocmVlRFNTZXJ2ZXJUcmFuc0lEIjogIjQxZDQ0ZTViLTBjOTYtNGVhNC05NjkxLTM1OWVmOGQ5NTdjMyIsCiAgImFjc1RyYW5zSUQiOiAiOTI3NTQyOGEtYzkzYi00ZWUzLTk3NDEtNDA4NzAzNDlmYzM2IiwKICAiY2hhbGxlbmdlV2luZG93U2l6ZSI6ICIwNSIsCiAgIm1lc3NhZ2VUeXBlIjogIkNSZXEiCn0=' />"
 				+ "</form>";
-		dem.setHtmlCreq(htmlCreq);
-		System.out.println("dem htmlCreq : " + dem.getHtmlCreq());
+		dem.setCreq(htmlCreq);
+		System.out.println("dem htmlCreq : " + dem.getCreq());
 				
 		System.out.println("dem commande : " + dem.getCommande());
 		System.out.println("dem montant : " + dem.getMontant());
@@ -433,37 +411,27 @@ public class GWPaiementController {
 		traces.writeInFileTransaction(folder, file, "Start payer ()");
 		System.out.println("Start payer ()");
 		
-		ThreeDSecureResponse result = autorisationService.payer(demandeDto, folder, file);
+		ThreeDSecureResponse result = autorisationService.callThree3DSS(demandeDto, folder, file);
 		
 		return "info-demande";
 	}
 	
 	@RequestMapping(value = "/napspayment/index2", method = RequestMethod.GET)
 	public String index2() {
+		traces.creatFileTransaction(file);
+		traces.writeInFileTransaction(folder, file, "*********** returns to index2.html ************** ");
 		System.out.println("*********** returns to index2.html ************** ");
 
 		return "index2";
 	}
 	
-	@PostMapping("/napspayment/user")
-	public String process(@RequestBody UserDto userDto) {
-		// create file log
+	@RequestMapping(value = "/napspayment/result", method = RequestMethod.GET)
+	public String result() {
 		traces.creatFileTransaction(file);
-		traces.writeInFileTransaction(folder, file, "Start process ()");
-		traces.writeInFileTransaction(folder, file, " userDto name : " + userDto.getName());
-		traces.writeInFileTransaction(folder, file, " userDto email : " + userDto.getEmail());
+		System.out.println("*********** returns to result.html ************** ");
+		System.out.println("*********** returns to resut.html ************** ");
 
-		System.out.println("*********** process ************** ");
-		System.out.println("userDto name : " + userDto.getName());
-		System.out.println("userDto email : " + userDto.getEmail());
-
-		User user = userService.testMapper(userDto);
-
-		System.out.println("*********** userService.testMapper ************** ");
-		System.out.println("user name : " + user.getName());
-		System.out.println("user email : " + user.getEmail());
-
-		return "index";
+		return "result";
 	}
 
 	@RequestMapping(path = "/napspayment/api", produces = "application/json; charset=UTF-8")

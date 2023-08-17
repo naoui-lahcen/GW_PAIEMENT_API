@@ -22,19 +22,19 @@ public class Transaction implements Serializable {
 	private static final long serialVersionUID = 5885509636447853241L;
 	
 	@Column(name = "TRS_NUMTRAIT")
-	private double trs_numtrait;
+	private Double trs_numtrait;
 	@Column(name = "TRS_NUMCMR")
 	private String trsnumcmr;
 	@Column(name = "TRS_NUMTLCOLCTE")
-	private double trs_numtlcolcte;
+	private Double trs_numtlcolcte;
 	@Column(name = "TRS_CODTPE")
-	private double  trs_codtpe;
+	private Double  trs_codtpe;
 	@Column(name = "TRS_NUMFACT")
-	private double  trs_numfact;
+	private Double  trs_numfact;
 	@Column(name = "TRS_NUMBLOC")
-	private double  trs_numbloc;
+	private Double  trs_numbloc;
 	@Column(name = "TRS_NUMSEQ")
-	private double  trs_numseq;
+	private Double  trs_numseq;
 	@Column(name = "TRS_CODPORTEUR")
     private String 	trs_codporteur;
 	@Column(name = "TRS_NOCOMPTE")
@@ -44,9 +44,9 @@ public class Transaction implements Serializable {
 	@Column(name = "TRS_PROCOD")
 	private String trs_procod;
 	@Column(name = "TRS_MONTANT")
-	private double  trs_montant;
+	private Double  trs_montant;
 	@Column(name = "TRS_ECART")	
-	private double  trs_ecart;
+	private Double  trs_ecart;
 	@Column(name = "TRS_TYPCARTE")	
 	private String  trs_typcarte;
 	@Column(name = "TRS_SYSPAY")	
@@ -66,11 +66,11 @@ public class Transaction implements Serializable {
 	@Column(name = "TRS_NUMAUT")	
 	private String  trsnumaut;
 	@Column(name = "TRS_NUMRELEVEPORT")	
-	private double   trs_numreleveport;
+	private Double   trs_numreleveport;
 	@Column(name = "TRS_NUMRELEVECMR")	
-	private double trs_numrelevecmr;
+	private Double trs_numrelevecmr;
 	@Column(name = "TRS_NUMEDITION")	
-	private double   trs_numedition;
+	private Double   trs_numedition;
 	@Column(name = "TRS_ANNULE")	
 	private String  trs_annule;
 	@Column(name = "TRS_ETAT")	
@@ -98,7 +98,7 @@ public class Transaction implements Serializable {
 	@Column(name = "TRS_HEURETRS")	
 	private String  trs_heuretrs;
 	@Column(name = "TRS_MNTSRC")	
-	private double   trs_mntsrc;
+	private Double   trs_mntsrc;
 	@Column(name = "TRS_DEVSRC")	
 	private String  trs_devsrc;
 	@Column(name = "TRS_CPTCMR")	
@@ -145,14 +145,14 @@ public class Transaction implements Serializable {
 		super();
 		// TODO Auto-generated constructor stub
 	}
-	public Transaction(double trs_numtrait, String trs_numcmr, double trs_numtlcolcte, double trs_codtpe,
-			double trs_numfact, double trs_numbloc, double trs_numseq, String trs_codporteur, String trs_nocompte,
-			String trs_typtop, String trs_procod, double trs_montant, double trs_ecart, String trs_typcarte,
+	public Transaction(Double trs_numtrait, String trs_numcmr, Double trs_numtlcolcte, Double trs_codtpe,
+			Double trs_numfact, Double trs_numbloc, Double trs_numseq, String trs_codporteur, String trs_nocompte,
+			String trs_typtop, String trs_procod, Double trs_montant, Double trs_ecart, String trs_typcarte,
 			String trs_syspay, String trs_modval, String trs_mapreleas, String trs_originpor, String trs_codbqe,
-			String trs_groupe, Date trs_dattrans, String trsnumaut, double trs_numreleveport, double trs_numrelevecmr,
-			double trs_numedition, String trs_annule, String trs_etat, String trs_arn, String trs_devise,
+			String trs_groupe, Date trs_dattrans, String trsnumaut, Double trs_numreleveport, Double trs_numrelevecmr,
+			Double trs_numedition, String trs_annule, String trs_etat, String trs_arn, String trs_devise,
 			String trs_ica, String trs_bqcmr, String trs_origine, String trs_chgreas, String trs_poscapbi,
-			String trs_cdhlidmt, String trs_posentry, String trs_mailin, String trs_heuretrs, double trs_mntsrc,
+			String trs_cdhlidmt, String trs_posentry, String trs_mailin, String trs_heuretrs, Double trs_mntsrc,
 			String trs_devsrc, String trs_cptcmr, Date trs_impdate, Date trs_trtdate, Date trs_expdate,
 			String trs_trstype, String trs_codopr, String trs_certif, String trs_pursefile, String trs_debtransc,
 			String trs_credtransc, String trs_pursecod, String trs_numremise, Date trs_datfin, String trs_ordrecarte,
@@ -215,10 +215,10 @@ public class Transaction implements Serializable {
 		this.trs_id = trs_id;
 		this.trs_commande = trs_commande;
 	}
-	public double getTrs_numtrait() {
+	public Double getTrs_numtrait() {
 		return trs_numtrait;
 	}
-	public void setTrs_numtrait(double trs_numtrait) {
+	public void setTrs_numtrait(Double trs_numtrait) {
 		this.trs_numtrait = trs_numtrait;
 	}
 	public String getTrsnumcmr() {
@@ -227,34 +227,34 @@ public class Transaction implements Serializable {
 	public void setTrsnumcmr(String trs_numcmr) {
 		this.trsnumcmr = trsnumcmr;
 	}
-	public double getTrs_numtlcolcte() {
+	public Double getTrs_numtlcolcte() {
 		return trs_numtlcolcte;
 	}
-	public void setTrs_numtlcolcte(double trs_numtlcolcte) {
+	public void setTrs_numtlcolcte(Double trs_numtlcolcte) {
 		this.trs_numtlcolcte = trs_numtlcolcte;
 	}
-	public double getTrs_codtpe() {
+	public Double getTrs_codtpe() {
 		return trs_codtpe;
 	}
-	public void setTrs_codtpe(double trs_codtpe) {
+	public void setTrs_codtpe(Double trs_codtpe) {
 		this.trs_codtpe = trs_codtpe;
 	}
-	public double getTrs_numfact() {
+	public Double getTrs_numfact() {
 		return trs_numfact;
 	}
-	public void setTrs_numfact(double trs_numfact) {
+	public void setTrs_numfact(Double trs_numfact) {
 		this.trs_numfact = trs_numfact;
 	}
-	public double getTrs_numbloc() {
+	public Double getTrs_numbloc() {
 		return trs_numbloc;
 	}
-	public void setTrs_numbloc(double trs_numbloc) {
+	public void setTrs_numbloc(Double trs_numbloc) {
 		this.trs_numbloc = trs_numbloc;
 	}
-	public double getTrs_numseq() {
+	public Double getTrs_numseq() {
 		return trs_numseq;
 	}
-	public void setTrs_numseq(double trs_numseq) {
+	public void setTrs_numseq(Double trs_numseq) {
 		this.trs_numseq = trs_numseq;
 	}
 	public String getTrs_codporteur() {
@@ -281,16 +281,16 @@ public class Transaction implements Serializable {
 	public void setTrs_procod(String trs_procod) {
 		this.trs_procod = trs_procod;
 	}
-	public double getTrs_montant() {
+	public Double getTrs_montant() {
 		return trs_montant;
 	}
-	public void setTrs_montant(double trs_montant) {
+	public void setTrs_montant(Double trs_montant) {
 		this.trs_montant = trs_montant;
 	}
-	public double getTrs_ecart() {
+	public Double getTrs_ecart() {
 		return trs_ecart;
 	}
-	public void setTrs_ecart(double trs_ecart) {
+	public void setTrs_ecart(Double trs_ecart) {
 		this.trs_ecart = trs_ecart;
 	}
 	public String getTrs_typcarte() {
@@ -347,22 +347,22 @@ public class Transaction implements Serializable {
 	public void setTrsnumaut(String trsnumaut) {
 		this.trsnumaut = trsnumaut;
 	}
-	public double getTrs_numreleveport() {
+	public Double getTrs_numreleveport() {
 		return trs_numreleveport;
 	}
-	public void setTrs_numreleveport(double trs_numreleveport) {
+	public void setTrs_numreleveport(Double trs_numreleveport) {
 		this.trs_numreleveport = trs_numreleveport;
 	}
-	public double getTrs_numrelevecmr() {
+	public Double getTrs_numrelevecmr() {
 		return trs_numrelevecmr;
 	}
-	public void setTrs_numrelevecmr(double trs_numrelevecmr) {
+	public void setTrs_numrelevecmr(Double trs_numrelevecmr) {
 		this.trs_numrelevecmr = trs_numrelevecmr;
 	}
-	public double getTrs_numedition() {
+	public Double getTrs_numedition() {
 		return trs_numedition;
 	}
-	public void setTrs_numedition(double trs_numedition) {
+	public void setTrs_numedition(Double trs_numedition) {
 		this.trs_numedition = trs_numedition;
 	}
 	public String getTrs_annule() {
@@ -443,10 +443,10 @@ public class Transaction implements Serializable {
 	public void setTrs_heuretrs(String trs_heuretrs) {
 		this.trs_heuretrs = trs_heuretrs;
 	}
-	public double getTrs_mntsrc() {
+	public Double getTrs_mntsrc() {
 		return trs_mntsrc;
 	}
-	public void setTrs_mntsrc(double trs_mntsrc) {
+	public void setTrs_mntsrc(Double trs_mntsrc) {
 		this.trs_mntsrc = trs_mntsrc;
 	}
 	public String getTrs_devsrc() {
@@ -551,6 +551,7 @@ public class Transaction implements Serializable {
 	public void setTrs_commande(String trs_commande) {
 		this.trs_commande = trs_commande;
 	}
+	
 	@Override
 	public String toString() {
 		return "Transaction [trs_numtrait=" + trs_numtrait + ", trsnumcmr=" + trsnumcmr + ", trs_numtlcolcte="

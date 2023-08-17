@@ -6,5 +6,8 @@ public interface SWHistoAutoService {
 	
 	SWHistoAutoDto getSWHistoAuto(String cardnumber, String rrn, String amount, String date_auto,
 			String merchantid);
+	
+	
+	SWHistoAutoDto getNumCMR(String merchantid);
 
 }

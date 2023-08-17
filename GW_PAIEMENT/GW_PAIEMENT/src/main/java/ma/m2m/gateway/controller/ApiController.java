@@ -46,7 +46,7 @@ import ma.m2m.gateway.dto.SWHistoAutoDto;
 import ma.m2m.gateway.dto.TelecollecteDto;
 import ma.m2m.gateway.dto.TransactionDto;
 import ma.m2m.gateway.dto.responseDto;
-
+import ma.m2m.gateway.model.SWHistoAuto;
 import ma.m2m.gateway.service.AutorisationService;
 import ma.m2m.gateway.service.CardtokenService;
 import ma.m2m.gateway.service.CommercantService;
@@ -68,9 +68,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 @Controller
-public class ApiController {
+public class APIController {
 
-	private static Logger logger = LogManager.getLogger(ApiController.class);
+	private static Logger logger = LogManager.getLogger(APIController.class);
 
 	private Traces traces = new Traces();
 	private LocalDateTime dateF;
@@ -131,7 +131,7 @@ public class ApiController {
 
 	DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-	public ApiController() {
+	public APIController() {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		file = "API_" + randomWithSplittableRandom;
 		// date of folder logs
@@ -324,14 +324,11 @@ public class ApiController {
 
 		merc_codeactivite = current_merchant.getCmrCodactivite();
 		acqcode = current_merchant.getCmrCodbqe();
-		/* merchant_name = "NETFLIX            "; */ // "NETFLIX "; /* FIXPACK12082022*/
-		traces.writeInFileTransaction(folder, file, "FIXPACK29082022 before merchant_name pad");
 		merchant_name = Util.pad_merchant(merchantname, 19, ' ');
-		traces.writeInFileTransaction(folder, file, "FIXPACK12082022 merchant_name : [" + merchant_name + "]");
+		traces.writeInFileTransaction(folder, file, "merchant_name : [" + merchant_name + "]");
 
-		/* merchant_city = "Los Gatos      "; */ // "NETFLIX "; /* FIXPACK12082022*/
 		merchant_city = "MOROCCO        ";
-		traces.writeInFileTransaction(folder, file, "FIXPACK12082022 merchant_city : [" + merchant_city + "]");
+		traces.writeInFileTransaction(folder, file, "merchant_city : [" + merchant_city + "]");
 		acq_type = "0000";
 		processing_code = "0";
 		reason_code = "H";
@@ -346,19 +343,19 @@ public class ApiController {
 
 		} catch (Exception err1) {
 			traces.writeInFileTransaction(folder, file,
-					"authorization 500" + "Error during PaiementRequest findByCommandeAndComid orderid:[" + orderid
+					"authorization 500 Error during PaiementRequest findByCommandeAndComid orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]" + err1);
 
-			return "authorization 500" + "Error during PaiementRequest findByNumCommandeAndNumCommercant" + " orderid:["
+			return "authorization 500 Error during PaiementRequest findByNumCommandeAndNumCommercant" + " orderid:["
 					+ orderid + "] and merchantid:[" + merchantid + "]";
 		}
 		if (check_dmd != null) {
 			traces.writeInFileTransaction(folder, file,
-					"authorization 500" + "Error Already exist in PaiementRequest findByCommandeAndComid orderid:["
+					"authorization 500 Error Already exist in PaiementRequest findByCommandeAndComid orderid:["
 							+ orderid + "] and merchantid:[" + merchantid + "]");
 
-			return "authorization 500" + "Error Already exist in PaiementRequest findByCommandeAndComid orderid:["
-					+ orderid + "] and merchantid:[" + merchantid + "]";
+			return "authorization 500 Error Already exist in PaiementRequest findByCommandeAndComid orderid:[" + orderid
+					+ "] and merchantid:[" + merchantid + "]";
 
 		}
 
@@ -400,6 +397,7 @@ public class ApiController {
 			dmd.setComid(merchantid);
 			dmd.setCommande(orderid);
 			dmd.setDem_pan(cardnumber);
+			dmd.setDem_cvv(cvv);
 			dmd.setGalid(websiteid);
 			dmd.setSuccessURL(successURL);
 			dmd.setFailURL(failURL);
@@ -414,6 +412,7 @@ public class ApiController {
 			dmd.setCountry(country);
 			dmd.setState(state);
 			dmd.setPostcode(zipcode);
+			dmd.setDateexpnaps(expirydate);
 			dmd.setLangue("E");
 			dmd.setEtat_demande("INIT");
 
@@ -452,7 +451,7 @@ public class ApiController {
 		try {
 
 			formatheure = new SimpleDateFormat("HHmmss");
-			formatdate = new SimpleDateFormat("yyyy-MM-dd");
+			formatdate = new SimpleDateFormat("ddMMyy");
 			date = formatdate.format(new Date());
 			heure = formatheure.format(new Date());
 
@@ -476,7 +475,7 @@ public class ApiController {
 			montanttrame = "";
 
 			mm = amount.split("\\.");
-			if (mm[1].length() == 1) {
+			if (mm[0].length() == 1) {
 				montanttrame = amount + "0";
 			} else {
 				montanttrame = amount + "";
@@ -486,7 +485,7 @@ public class ApiController {
 			// num_trs = Util.formatageCHamps((dmdservice.getMAX_ID("HISTOAUTO_GATE",
 			// "HAT_ID") + 1) + "", 6);
 			m = montanttrame.split("\\.");
-			if (m[1].equals("0")) {
+			if (m[0].equals("0")) {
 				montanttrame = montanttrame.replace(".", "0");
 			} else
 				montanttrame = montanttrame.replace(".", "");
@@ -501,13 +500,13 @@ public class ApiController {
 					+ "] and merchantid:[" + merchantid + "]";
 
 		}
-		
+
 		JSONObject jso = new JSONObject();
 
-		// appel 3DSSecure 2023-07-24
-		// ********************************************************************************************
+		// appel 3DSSecure ***********************************************************
 
-		ThreeDSecureResponse threeDsecureResponse = autorisationService.payer(dmdSaved, folder, file);
+		ThreeDSecureResponse threeDsecureResponse = autorisationService.callThree3DSS(dmdSaved, folder, file);
+		// fin 3DSSecure ***********************************************************
 
 		/*
 		 * ------------ DEBUT MPI RESPONSE PARAMS ------------
@@ -585,39 +584,43 @@ public class ApiController {
 		} else {
 			expiry = "";
 		}
-		
-		if (idDemande == null) {
+
+		if (idDemande == null || idDemande.equals("")) {
 			traces.writeInFileTransaction(folder, file, "received idDemande from MPI is Null or Empty");
 			dmd.setEtat_demande("MPI_KO");
 			demandePaiementService.save(dmd);
 			traces.writeInFileTransaction(folder, file,
-					"demandePaiement apres update MPI_KO idDemande null : " + dmd.toString());
+					"demandePaiement after update MPI_KO idDemande null : " + dmd.toString());
 			return "AUTO INVALIDE DEMANDE";
 		}
-		
+
 		dmd = demandePaiementService.findByIdDemande(Integer.parseInt(idDemande));
-		
+
 		if (dmd == null) {
 			Util.writeInFileTransaction(folder, file,
 					"demandePaiement not found !!!! demandePaiement = null  / received idDemande from MPI => "
 							+ idDemande);
 			return "AUTO INVALIDE DEMANDE";
 		}
-		
+		reponseMPI = "D";
+		//threeDsecureResponse.setHtmlCreq("<form  action='https://acs2.bankofafrica.ma:443/lacs2' method='post'enctype='application/x-www-form-urlencoded'><input type='hidden'name='creq'value='ewogICJtZXNzYWdlVmVyc2lvbiI6ICIyLjEuMCIsCiAgInRocmVlRFNTZXJ2ZXJUcmFuc0lEIjogIjllZjUwNjk3LWRiMTctNGZmMy04MDYzLTc0ZTAwMTk0N2I4YiIsCiAgImFjc1RyYW5zSUQiOiAiZjM2ZDA3ZWQtZGJhOS00ZTkzLWE2OGMtMzNmYjAyMDgxZDVmIiwKICAiY2hhbGxlbmdlV2luZG93U2l6ZSI6ICIwNSIsCiAgIm1lc3NhZ2VUeXBlIjogIkNSZXEiCn0=' /></form>");
 		if (reponseMPI.equals("")) {
 			dmd.setEtat_demande("MPI_KO");
 			demandePaiementService.save(dmd);
 			Util.writeInFileTransaction(folder, file,
-					"demandePaiement apres update MPI_KO reponseMPI null : " + dmd.toString());
-			Util.writeInFileTransaction(folder, file, "Response 3DS est null");
-			return "Response 3DS est null";
-		} 			
+					"demandePaiement after update MPI_KO reponseMPI null : " + dmd.toString());
+			Util.writeInFileTransaction(folder, file, "Response 3DS is null");
+			return "Response 3DS is null";
+		}
 
-		if (threeDsecureResponse.getReponseMPI().equals("Y")) {
-			// ********************* Cas chalenge responseMPI equal C ou D
+		if (reponseMPI.equals("Y")) {
+			// ********************* Frictionless responseMPI equal Y
 			// *********************
 			traces.writeInFileTransaction(folder, file,
 					"********************* Cas frictionless responseMPI equal Y *********************");
+
+			dmd.setDem_xid(threeDSServerTransID);
+			demandePaiementService.save(dmd);
 
 			boolean cvv_present = check_cvv_presence(cvv);
 			boolean is_reccuring = is_reccuring_check(recurring);
@@ -633,17 +636,16 @@ public class ApiController {
 			traces.writeInFileTransaction(folder, file, "Preparing Switch TLV Request start ...");
 
 			if (!cvv_present && !is_reccuring) {
-				traces.writeInFileTransaction(folder, file, "authorization 500"
-						+ "cvv not set , reccuring flag set to N, cvv must be present in normal transaction");
+				traces.writeInFileTransaction(folder, file,
+						"authorization 500 cvv not set , reccuring flag set to N, cvv must be present in normal transaction");
 
-				return "authorization 500"
-						+ "cvv not set , reccuring flag set to N, cvv must be present in normal transaction";
+				return "authorization 500 cvv not set , reccuring flag set to N, cvv must be present in normal transaction";
 
 			}
 
 			// not reccuring , normal
 			if (cvv_present && !is_reccuring) {
-				traces.writeInFileTransaction(folder, file, "cvv_present && !is_reccuring");
+				traces.writeInFileTransaction(folder, file, "not reccuring , normal cvv_present && !is_reccuring");
 				try {
 
 					tlv = new TLVEncoder().withField(Tags.tag0, mesg_type).withField(Tags.tag1, cardnumber)
@@ -713,265 +715,8 @@ public class ApiController {
 			}
 
 			// reccuring
-			if (is_reccuring)
-
-			{
-				// is_first_trs = is_first_transaction(merchantid, cardnumber);
-
-				// card uknown in system ==> first transaction
-				is_first_trs = true;
-				if (is_first_trs) {
-
-					if (!cvv_present) { // is the cvv present ?
-						traces.writeInFileTransaction(folder, file, "!cvv_present ");
-
-						// cvv not obligatory in first transaction, international
-
-						try {
-
-							tlv = new TLVEncoder().withField(Tags.tag0, mesg_type).withField(Tags.tag1, cardnumber)
-									.withField(Tags.tag3, processing_code).withField(Tags.tag22, transaction_condition)
-									.withField(Tags.tag49, acq_type).withField(Tags.tag14, montanttrame)
-									.withField(Tags.tag15, currency).withField(Tags.tag23, reason_code)
-									.withField(Tags.tag18, "761454").withField(Tags.tag42, expirydate)
-									.withField(Tags.tag16, date).withField(Tags.tag17, heure)
-									.withField(Tags.tag10, merc_codeactivite).withField(Tags.tag8, "0" + merchantid)
-									.withField(Tags.tag9, merchantid).withField(Tags.tag66, rrn)
-									.withField(Tags.tag11, merchant_name).withField(Tags.tag12, merchant_city)
-									.withField(Tags.tag90, acqcode).withField(Tags.tag601, "R111111111").encode();
-
-							traces.writeInFileTransaction(folder, file, "tag0_request : [" + mesg_type + "]");
-							traces.writeInFileTransaction(folder, file, "tag1_request : [" + cardnumber + "]");
-							traces.writeInFileTransaction(folder, file, "tag3_request : [" + processing_code + "]");
-							traces.writeInFileTransaction(folder, file,
-									"tag22_request : [" + transaction_condition + "]");
-							traces.writeInFileTransaction(folder, file, "tag49_request : [" + acq_type + "]");
-							traces.writeInFileTransaction(folder, file, "tag14_request : [" + montanttrame + "]");
-							traces.writeInFileTransaction(folder, file, "tag15_request : [" + currency + "]");
-							traces.writeInFileTransaction(folder, file, "tag23_request : [" + reason_code + "]");
-							traces.writeInFileTransaction(folder, file, "tag18_request : [761454]");
-							traces.writeInFileTransaction(folder, file, "tag42_request : [" + expirydate + "]");
-							traces.writeInFileTransaction(folder, file, "tag16_request : [" + date + "]");
-							traces.writeInFileTransaction(folder, file, "tag17_request : [" + heure + "]");
-							traces.writeInFileTransaction(folder, file, "tag10_request : [" + merc_codeactivite + "]");
-							traces.writeInFileTransaction(folder, file, "tag8_request : [0" + merchantid + "]");
-							traces.writeInFileTransaction(folder, file, "tag9_request : [" + merchantid + "]");
-							traces.writeInFileTransaction(folder, file, "tag66_request : [" + rrn + "]");
-							traces.writeInFileTransaction(folder, file, "tag67_request : [" + cvv + "]");
-							traces.writeInFileTransaction(folder, file, "tag11_request : [" + merchant_name + "]");
-							traces.writeInFileTransaction(folder, file, "tag12_request : [" + merchant_city + "]");
-							traces.writeInFileTransaction(folder, file, "tag90_request : [" + acqcode + "]");
-							traces.writeInFileTransaction(folder, file, "tag601_request : [R111111111]");
-
-						} catch (Exception err4) {
-							traces.writeInFileTransaction(folder, file,
-									"authorization 500" + "Error during switch tlv buildup for given orderid"
-											+ "orderid:[" + orderid + "] and merchantid:[" + merchantid + "]" + err4);
-
-							return "authorization 500" + "Error during switch tlv buildup for given orderid"
-									+ "orderid:[" + orderid + "] and merchantid:[" + merchantid + "]";
-
-						}
-
-						traces.writeInFileTransaction(folder, file, "Switch TLV Request :[" + tlv + "]");
-
-						try {
-
-							String tlv2 = new TLVEncoder().withField(Tags.tag0, mesg_type)
-									.withField(Tags.tag1, cardnumber).withField(Tags.tag3, processing_code)
-									.withField(Tags.tag22, transaction_condition).withField(Tags.tag49, acq_type)
-									.withField(Tags.tag14, montanttrame).withField(Tags.tag15, currency)
-									.withField(Tags.tag23, reason_code).withField(Tags.tag18, "761454")
-									.withField(Tags.tag42, expirydate).withField(Tags.tag16, "****")
-									.withField(Tags.tag17, heure).withField(Tags.tag10, merc_codeactivite)
-									.withField(Tags.tag8, "0" + merchantid).withField(Tags.tag9, merchantid)
-									.withField(Tags.tag66, rrn).withField(Tags.tag11, merchant_name)
-									.withField(Tags.tag12, merchant_city).withField(Tags.tag90, acqcode)
-									.withField(Tags.tag601, "R111111111").encode();
-
-							traces.writeInFileTransaction(folder, file, "tlv2 : " + tlv2);
-
-						} catch (Exception e) {
-							traces.writeInFileTransaction(folder, file, "Switch TLV Request ecncoding error");
-							e.printStackTrace();
-						}
-
-					} else { // first transaction with cvv present, a normal transaction
-
-						try {
-
-							tlv = new TLVEncoder().withField(Tags.tag0, mesg_type).withField(Tags.tag1, cardnumber)
-									.withField(Tags.tag3, processing_code).withField(Tags.tag22, transaction_condition)
-									.withField(Tags.tag49, acq_type).withField(Tags.tag14, montanttrame)
-									.withField(Tags.tag15, currency).withField(Tags.tag23, reason_code)
-									.withField(Tags.tag18, "761454").withField(Tags.tag42, expirydate)
-									.withField(Tags.tag16, date).withField(Tags.tag17, heure)
-									.withField(Tags.tag10, merc_codeactivite).withField(Tags.tag8, "0" + merchantid)
-									.withField(Tags.tag9, merchantid).withField(Tags.tag66, rrn)
-									.withField(Tags.tag67, cvv).withField(Tags.tag11, merchant_name)
-									.withField(Tags.tag12, merchant_city).withField(Tags.tag90, acqcode)
-									/* .withField(Tags.tag601, "R111111111") */.encode();
-
-							traces.writeInFileTransaction(folder, file, "tag0_request : [" + mesg_type + "]");
-							traces.writeInFileTransaction(folder, file, "tag1_request : [" + cardnumber + "]");
-							traces.writeInFileTransaction(folder, file, "tag3_request : [" + processing_code + "]");
-							traces.writeInFileTransaction(folder, file,
-									"tag22_request : [" + transaction_condition + "]");
-							traces.writeInFileTransaction(folder, file, "tag49_request : [" + acq_type + "]");
-							traces.writeInFileTransaction(folder, file, "tag14_request : [" + montanttrame + "]");
-							traces.writeInFileTransaction(folder, file, "tag15_request : [" + currency + "]");
-							traces.writeInFileTransaction(folder, file, "tag23_request : [" + reason_code + "]");
-							traces.writeInFileTransaction(folder, file, "tag18_request : [761454]");
-							traces.writeInFileTransaction(folder, file, "tag42_request : [" + expirydate + "]");
-							traces.writeInFileTransaction(folder, file, "tag16_request : [" + date + "]");
-							traces.writeInFileTransaction(folder, file, "tag17_request : [" + heure + "]");
-							traces.writeInFileTransaction(folder, file, "tag10_request : [" + merc_codeactivite + "]");
-							traces.writeInFileTransaction(folder, file, "tag8_request : [0" + merchantid + "]");
-							traces.writeInFileTransaction(folder, file, "tag9_request : [" + merchantid + "]");
-							traces.writeInFileTransaction(folder, file, "tag66_request : [" + rrn + "]");
-							traces.writeInFileTransaction(folder, file, "tag67_request : [" + cvv + "]");
-							traces.writeInFileTransaction(folder, file, "tag11_request : [" + merchant_name + "]");
-							traces.writeInFileTransaction(folder, file, "tag12_request : [" + merchant_city + "]");
-							traces.writeInFileTransaction(folder, file, "tag90_request : [" + acqcode + "]");
-							// traces.writeInFileTransaction(folder, file, "tag601_request : [R111111111]");
-
-						} catch (Exception err4) {
-							traces.writeInFileTransaction(folder, file,
-									"first transaction with cvv present, a normal transaction");
-							traces.writeInFileTransaction(folder, file,
-									"authorization 500" + "Error during switch tlv buildup for given orderid"
-											+ "orderid:[" + orderid + "] and merchantid:[" + merchantid + "]" + err4);
-
-							return "authorization 500" + "Error during switch tlv buildup for given orderid"
-									+ "orderid:[" + orderid + "] and merchantid:[" + merchantid + "]";
-
-						}
-
-						traces.writeInFileTransaction(folder, file, "Switch TLV Request :[" + tlv + "]");
-
-						try {
-
-							String tlv2 = new TLVEncoder().withField(Tags.tag0, mesg_type)
-									.withField(Tags.tag1, cardnumber).withField(Tags.tag3, processing_code)
-									.withField(Tags.tag22, transaction_condition).withField(Tags.tag49, acq_type)
-									.withField(Tags.tag14, montanttrame).withField(Tags.tag15, currency)
-									.withField(Tags.tag23, reason_code).withField(Tags.tag18, "761454")
-									.withField(Tags.tag42, expirydate).withField(Tags.tag16, "****")
-									.withField(Tags.tag17, heure).withField(Tags.tag10, merc_codeactivite)
-									.withField(Tags.tag8, "0" + merchantid).withField(Tags.tag9, merchantid)
-									.withField(Tags.tag66, rrn).withField(Tags.tag67, "***")
-									.withField(Tags.tag11, merchant_name).withField(Tags.tag12, merchant_city)
-									.withField(Tags.tag90, acqcode)/* .withField(Tags.tag601, "R000000000") */.encode();
-
-							traces.writeInFileTransaction(folder, file, "tlv2 : " + tlv2);
-
-						} catch (Exception e) {
-							traces.writeInFileTransaction(folder, file, "Switch TLV Request ecncoding error");
-							e.printStackTrace();
-						}
-
-					}
-
-				}
-
-				else { // reccuring
-
-					try {
-						// first_auth = get_first_transaction_auth(merchantid, cardnumber);
-						// lrec_serie = get_transaction_serie(merchantid, cardnumber);
-
-					} catch (Exception e) {
-						traces.writeInFileTransaction(folder, file,
-								"authorization 500 DB Error duing reccurent transations serie check" + "orderid:["
-										+ orderid + "] and merchantid:[" + merchantid + "]");
-
-						return "authorization 500 DB Error duing reccurent transations serie check" + "orderid:["
-								+ orderid + "] and merchantid:[" + merchantid + "]";
-
-					}
-
-					// if(lrec_serie==0) {
-					// return api_error(logger, "authorization", "500", "Unable to determine
-					// transaction serie from a reccurent set of transaction", auths, null);
-
-					// }
-
-					lrec_serie = lrec_serie + 1;
-					String rec_serie = String.format("%03d", lrec_serie);
-					// tlv rec
-
-					try {
-
-						tlv = new TLVEncoder().withField(Tags.tag0, mesg_type).withField(Tags.tag1, cardnumber)
-								.withField(Tags.tag3, processing_code).withField(Tags.tag22, transaction_condition)
-								.withField(Tags.tag49, acq_type).withField(Tags.tag14, montanttrame)
-								.withField(Tags.tag15, currency).withField(Tags.tag23, reason_code)
-								.withField(Tags.tag18, "761454").withField(Tags.tag42, expirydate)
-								.withField(Tags.tag16, date).withField(Tags.tag17, heure)
-								.withField(Tags.tag10, merc_codeactivite).withField(Tags.tag8, "0" + merchantid)
-								.withField(Tags.tag9, merchantid).withField(Tags.tag66, rrn).withField(Tags.tag67, cvv)
-								.withField(Tags.tag11, merchant_name).withField(Tags.tag12, merchant_city)
-								.withField(Tags.tag90, acqcode).withField(Tags.tag601, "R" + rec_serie + first_auth)
-								.encode();
-
-						traces.writeInFileTransaction(folder, file, "tag0_request : [" + mesg_type + "]");
-						traces.writeInFileTransaction(folder, file, "tag1_request : [" + cardnumber + "]");
-						traces.writeInFileTransaction(folder, file, "tag3_request : [" + processing_code + "]");
-						traces.writeInFileTransaction(folder, file, "tag22_request : [" + transaction_condition + "]");
-						traces.writeInFileTransaction(folder, file, "tag49_request : [" + acq_type + "]");
-						traces.writeInFileTransaction(folder, file, "tag14_request : [" + montanttrame + "]");
-						traces.writeInFileTransaction(folder, file, "tag15_request : [" + currency + "]");
-						traces.writeInFileTransaction(folder, file, "tag23_request : [" + reason_code + "]");
-						traces.writeInFileTransaction(folder, file, "tag18_request : [761454]");
-						traces.writeInFileTransaction(folder, file, "tag42_request : [" + expirydate + "]");
-						traces.writeInFileTransaction(folder, file, "tag16_request : [" + date + "]");
-						traces.writeInFileTransaction(folder, file, "tag17_request : [" + heure + "]");
-						traces.writeInFileTransaction(folder, file, "tag10_request : [" + merc_codeactivite + "]");
-						traces.writeInFileTransaction(folder, file, "tag8_request : [0" + merchantid + "]");
-						traces.writeInFileTransaction(folder, file, "tag9_request : [" + merchantid + "]");
-						traces.writeInFileTransaction(folder, file, "tag66_request : [" + rrn + "]");
-						traces.writeInFileTransaction(folder, file, "tag67_request : [" + cvv + "]");
-						traces.writeInFileTransaction(folder, file, "tag11_request : [" + merchant_name + "]");
-						traces.writeInFileTransaction(folder, file, "tag12_request : [" + merchant_city + "]");
-						traces.writeInFileTransaction(folder, file, "tag90_request : [" + acqcode + "]");
-						traces.writeInFileTransaction(folder, file,
-								"tag601_request : [" + "R" + rec_serie + first_auth + "]");
-
-					} catch (Exception err4) {
-						traces.writeInFileTransaction(folder, file,
-								"authorization 500" + "Error during switch tlv buildup for given orderid" + "orderid:["
-										+ orderid + "] and merchantid:[" + merchantid + "]" + err4);
-
-						return "authorization 500" + "Error during switch tlv buildup for given orderid" + "orderid:["
-								+ orderid + "] and merchantid:[" + merchantid + "]";
-
-					}
-
-					traces.writeInFileTransaction(folder, file, "Switch TLV Request :[" + tlv + "]");
-
-					try {
-
-						String tlv2 = new TLVEncoder().withField(Tags.tag0, mesg_type).withField(Tags.tag1, cardnumber)
-								.withField(Tags.tag3, processing_code).withField(Tags.tag22, transaction_condition)
-								.withField(Tags.tag49, acq_type).withField(Tags.tag14, montanttrame)
-								.withField(Tags.tag15, currency).withField(Tags.tag23, reason_code)
-								.withField(Tags.tag18, "761454").withField(Tags.tag42, expirydate)
-								.withField(Tags.tag16, "****").withField(Tags.tag17, heure)
-								.withField(Tags.tag10, merc_codeactivite).withField(Tags.tag8, "0" + merchantid)
-								.withField(Tags.tag9, merchantid).withField(Tags.tag66, rrn)
-								.withField(Tags.tag67, "***").withField(Tags.tag11, merchant_name)
-								.withField(Tags.tag12, merchant_city).withField(Tags.tag90, acqcode)
-								.withField(Tags.tag601, "R" + rec_serie + first_auth).encode();
-
-						traces.writeInFileTransaction(folder, file, "tlv2 : " + tlv2);
-
-					} catch (Exception e) {
-
-						traces.writeInFileTransaction(folder, file, "Switch TLV Request ecncoding error");
-						e.printStackTrace();
-					}
-
-				}
+			if (is_reccuring) {
+				traces.writeInFileTransaction(folder, file, "reccuring");
 			}
 
 			traces.writeInFileTransaction(folder, file, "Preparing Switch TLV Request end.");
@@ -1079,13 +824,7 @@ public class ApiController {
 
 			traces.writeInFileTransaction(folder, file, "Processing Switch TLV Respnose ...");
 
-			// resp debug =
-			// "000001300101652345658188287990030010008008011800920090071180092014012000000051557015003504016006200721017006152650066012120114619926018006143901019006797535023001H020002000210026108000621072009800299";
-
 			TLVParser tlvp = null;
-
-			// resp debug =
-			// "000001300101652345658188287990030010008008011800920090071180092014012000000051557015003504016006200721017006152650066012120114619926018006143901019006797535023001H020002000210026108000621072009800299";
 
 			String tag0_resp = null, tag1_resp = null, tag3_resp = null, tag8_resp = null, tag9_resp = null,
 					tag14_resp = null, tag15_resp = null, tag16_resp = null, tag17_resp = null, tag66_resp = null,
@@ -1184,41 +923,51 @@ public class ApiController {
 			tag66_resp_verified = tag66_resp;
 			String s_status, pan_auto = "";
 
-			/*
-			 * if(switch_ko==1) { pan_auto = Util.formatagePan(cardnumber);
-			 * dmdservice.getSWHistoAutoN(pan_auto, rrn, amount, date, merchantid); }
-			 */
 			SWHistoAutoDto swhist = null;
+
 			if (switch_ko == 1) {
 				pan_auto = Util.formatagePan(cardnumber);
 				traces.writeInFileTransaction(folder, file, "getSWHistoAuto pan_auto/rrn/amount/date/merchantid : "
 						+ pan_auto + "/" + rrn + "/" + amount + "/" + date + "/" + merchantid);
-				swhist = swHistoAutoService.getSWHistoAuto(pan_auto, rrn, amount, date, merchantid);
+				try {
 
-				if (swhist == null) {
+					swhist = swHistoAutoService.getSWHistoAuto(pan_auto, rrn, amount, date, merchantid);
+
+				} catch (Exception ex) {
 					traces.writeInFileTransaction(folder, file,
-							"authorization 500" + "Error during tlv Switch response cannot match switch history "
+							"authorization 500 Error during tlv Switch response cannot match switch history "
 									+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv
 									+ "]");
 
-					return "authorization 500" + "Error during tlv Switch response cannot match switch history "
+					return "authorization 500 Error during tlv Switch response cannot match switch history "
+							+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]";
+				}
+
+				/*if (swhist == null) {
+					traces.writeInFileTransaction(folder, file,
+							"authorization 500 Error during tlv Switch response cannot match switch history "
+									+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv
+									+ "]");
+
+					return "authorization 500 Error during tlv Switch response cannot match switch history "
 							+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]";
 
-				}
+				}*/
 				tag20_resp_verified = swhist.getHat_coderep();
 				tag19_res_verified = swhist.getHat_nautemt();
 				tag66_resp_verified = swhist.getHat_nrefce();
 				if (tag20_resp_verified == null) {
 					traces.writeInFileTransaction(folder, file,
-							"authorization 500" + "Error during tlv Switch response cannot match switch history "
+							"authorization 500 Error during tlv Switch response cannot match switch history "
 									+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv
 									+ "]");
 
-					return "authorization 500" + "Error during tlv Switch response cannot match switch history "
+					return "authorization 500 Error during tlv Switch response cannot match switch history "
 							+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]";
 				}
 
 			}
+
 			HistoAutoGateDto hist = null;
 			Integer Ihist_id = null;
 
@@ -1432,7 +1181,7 @@ public class ApiController {
 							// insert into transaction
 							TransactionDto trs = new TransactionDto();
 							trs.setTrs_numcmr(merchantid);
-							trs.setTrs_numtlcolcte(lidtelc);
+							trs.setTrs_numtlcolcte(Double.valueOf(lidtelc));
 
 							String frmt_cardnumber = Util.formatagePan(cardnumber);
 							trs.setTrs_codporteur(frmt_cardnumber);
@@ -1598,12 +1347,12 @@ public class ApiController {
 						+ authnumber + "]";
 
 			}
-
-			traces.writeInFileTransaction(folder, file, "autorization api response :  [" + jso.toString() + "]");
+			
+			System.out.println("autorization api response frictionless :  [" + jso.toString() + "]");	
+			traces.writeInFileTransaction(folder, file, "autorization api response frictionless :  [" + jso.toString() + "]");
 			// fin
 			// *******************************************************************************************************************
-		} else if (threeDsecureResponse.getReponseMPI().equals("C")
-				|| threeDsecureResponse.getReponseMPI().equals("D")) {
+		} else if (reponseMPI.equals("C") || reponseMPI.equals("D")) {
 			// ********************* Cas chalenge responseMPI equal C ou D
 			// *********************
 			traces.writeInFileTransaction(folder, file, "****** Cas chalenge responseMPI equal C ou D ******");
@@ -1635,18 +1384,24 @@ public class ApiController {
 				jso.put("email", email);
 
 				// Link ACS chalenge info
-				jso.put("linkacs", link_chalenge + dmdSaved.getTokencommande());
+				jso.put("linkacs", link_chalenge + dmd.getTokencommande());
 
 				// insertion htmlCreq dans la demandePaiement
-				dmdSaved.setHtmlCreq(threeDsecureResponse.getHtmlCreq());
-				demandePaiementService.save(dmdSaved);
+				dmd.setCreq(threeDsecureResponse.getHtmlCreq());
+				dmd.setDem_xid(threeDSServerTransID);
+				demandePaiementService.save(dmd);
+				
+				System.out.println("link_chalenge " + link_chalenge + dmd.getTokencommande());			
+				traces.writeInFileTransaction(folder, file,
+						"link_chalenge " + link_chalenge + dmd.getTokencommande());
 
+				System.out.println("autorization api response chalenge :  [" + jso.toString() + "]");	
 				traces.writeInFileTransaction(folder, file,
 						"autorization api response chalenge :  [" + jso.toString() + "]");
 
-			} catch (Exception jsouterr) {
+			} catch (Exception ex) {
 				traces.writeInFileTransaction(folder, file,
-						"authorization 500 Error during jso out processing " + jsouterr);
+						"authorization 500 Error during jso out processing " + ex);
 
 				return "authorization 500 Error during jso out processing ";
 
@@ -1655,6 +1410,7 @@ public class ApiController {
 			switch (errmpi) {
 			case "COMMERCANT NON PARAMETRE":
 				traces.writeInFileTransaction(folder, file, "COMMERCANT NON PARAMETRE : " + idDemande);
+				dmd.setDem_xid(threeDSServerTransID);
 				dmd.setEtat_demande("MPI_CMR_INEX");
 				demandePaiementService.save(dmd);
 				// externalContext.redirect("operationErreur.xhtml?Error=".concat("COMMERCANT
@@ -1663,21 +1419,25 @@ public class ApiController {
 			case "BIN NON PARAMETRE":
 				traces.writeInFileTransaction(folder, file, "BIN NON PARAMETRE : " + idDemande);
 				dmd.setEtat_demande("MPI_BIN_NON_PAR");
+				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				return " BIN NON PARAMETREE";
 			case "DIRECTORY SERVER":
 				traces.writeInFileTransaction(folder, file, "DIRECTORY SERVER : " + idDemande);
 				dmd.setEtat_demande("MPI_DS_ERR");
+				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				return "MPI_DS_ERR";
 			case "CARTE ERRONEE":
 				traces.writeInFileTransaction(folder, file, "CARTE ERRONEE : " + idDemande);
 				dmd.setEtat_demande("MPI_CART_ERROR");
+				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				return "CARTE ERRONEE";
 			case "CARTE NON ENROLEE":
 				traces.writeInFileTransaction(folder, file, "CARTE NON ENROLEE : " + idDemande);
 				dmd.setEtat_demande("MPI_CART_NON_ENR");
+				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				return "CARTE NON ENROLLE";
 			}
@@ -1737,32 +1497,50 @@ public class ApiController {
 		traces.writeInFileTransaction(folder, file, "*********** Start chalengeapi ************** ");
 		System.out.println("*********** Start chalengeapi ************** ");
 
-		DemandePaiementDto dem = demandePaiementService.findByTokencommande(token);
+		String page = "chalenge";
 
-		if (dem == null) {
-			traces.writeInFileTransaction(folder, file, "demandeDto null ");
-			System.out.println("demandeDto null ");
+		DemandePaiementDto current_dem = demandePaiementService.findByTokencommande(token);
+		String msgRefus = "Une erreur est survenue, merci de réessayer plus tard";
+
+		if (current_dem != null) {
+			traces.writeInFileTransaction(folder, file, "current_dem exist ");
+			System.out.println("current_dem exist ");
+			if (current_dem.getEtat_demande().equals("SW_PAYE") || current_dem.getEtat_demande().equals("PAYE")) {
+				msgRefus = "Votre commande est deja payé !!! ";
+				current_dem.setMsgRefus(msgRefus);
+				model.addAttribute("demandeDto", current_dem);
+				page = "error";
+			} else if (current_dem.getEtat_demande().equals("SW_REJET")) {
+				msgRefus = "Transaction refusée par votre banque";
+				current_dem.setMsgRefus(msgRefus);
+				model.addAttribute("demandeDto", current_dem);
+				page = "error";
+			} else {
+				page = "chalenge";
+
+				// String htmlCreq = "<form action='https://acs2.bankofafrica.ma:443/lacs2' method='post'enctype='application/x-www-form-urlencoded'><input type='hidden'name='creq'value='ewogICJtZXNzYWdlVmVyc2lvbiI6ICIyLjEuMCIsCiAgInRocmVlRFNTZXJ2ZXJUcmFuc0lEIjogIjllZjUwNjk3LWRiMTctNGZmMy04MDYzLTc0ZTAwMTk0N2I4YiIsCiAgImFjc1RyYW5zSUQiOiAiZjM2ZDA3ZWQtZGJhOS00ZTkzLWE2OGMtMzNmYjAyMDgxZDVmIiwKICAiY2hhbGxlbmdlV2luZG93U2l6ZSI6ICIwNSIsCiAgIm1lc3NhZ2VUeXBlIjogIkNSZXEiCn0='/></form>";
+				//current_dem.setCreq(htmlCreq);
+				System.out.println("dem htmlCreq : " + current_dem.getCreq());
+				traces.writeInFileTransaction(folder, file, "dem htmlCreq : " + current_dem.getCreq());
+
+				model.addAttribute("demandeDto", current_dem);
+			}
+
+			System.out.println("*********** returns to chalenge.html ************** ");
+
+		} else {
+			DemandePaiementDto demande = new DemandePaiementDto();
+			msgRefus = "Votre commande est introuvable ";
+			demande.setMsgRefus(msgRefus);
+			model.addAttribute("demandeDto", demande);
+			traces.writeInFileTransaction(folder, file, "current_dem not found ");
+			System.out.println("current_dem null ");
+			page = "error";
 		}
-
-		// String htmlCreq = "<form action='https://acs.naps.ma:443/lacs2' method='post'
-		// enctype='application/x-www-form-urlencoded'>"
-		// + "<input type='hidden' name='creq'
-		// value='ewogICJtZXNzYWdlVmVyc2lvbiI6ICIyLjEuMCIsCiAgInRocmVlRFNTZXJ2ZXJUcmFuc0lEIjogIjQxZDQ0ZTViLTBjOTYtNGVhNC05NjkxLTM1OWVmOGQ5NTdjMyIsCiAgImFjc1RyYW5zSUQiOiAiOTI3NTQyOGEtYzkzYi00ZWUzLTk3NDEtNDA4NzAzNDlmYzM2IiwKICAiY2hhbGxlbmdlV2luZG93U2l6ZSI6ICIwNSIsCiAgIm1lc3NhZ2VUeXBlIjogIkNSZXEiCn0='
-		// />"
-		// + "</form>";
-		// dem.setHtmlCreq(htmlCreq);
-		System.out.println("dem htmlCreq : " + dem.getHtmlCreq());
-
-		System.out.println("dem commande : " + dem.getCommande());
-		System.out.println("dem montant : " + dem.getMontant());
-
-		model.addAttribute("demandeDto", dem);
-		System.out.println("*********** returns to chalenge.html ************** ");
-
 		traces.writeInFileTransaction(folder, file, "*********** Fin chalengeapi ************** ");
 		System.out.println("*********** Fin chalengeapi ************** ");
 
-		return "chalenge";
+		return page;
 	}
 
 	@PostMapping(value = "/napspayment/status", consumes = "application/json", produces = "application/json")
@@ -1863,19 +1641,20 @@ public class ApiController {
 
 		try {
 			current_dmd = demandePaiementService.findByCommandeAndComid(orderid, merchantid);
+
 		} catch (Exception err1) {
 
 			traces.writeInFileTransaction(folder, file, "status 500 Error during PaiementRequest findByCommandeAndComid"
-					+ "findByCommandeAndComid orderid:[" + orderid + "] and merchantid:[" + merchantid + "]" + err1);
-			return "status 500 Error during PaiementRequest findByCommandeAndComid" + "findByCommandeAndComid orderid:["
-					+ orderid + "] and merchantid:[" + merchantid + "]" + err1;
+					+ "orderid:[" + orderid + "] and merchantid:[" + merchantid + "]" + err1);
+			return "status 500 Error during PaiementRequest findByCommandeAndComid" + "orderid:[" + orderid
+					+ "] and merchantid:[" + merchantid + "]" + err1;
 
 		}
 
 		if (current_dmd == null) {
-			traces.writeInFileTransaction(folder, file, "status 500 PaiementRequest not found for orderid" + "orderid:["
+			traces.writeInFileTransaction(folder, file, "status 500 PaiementRequest not found for " + "orderid:["
 					+ orderid + "] and merchantid:[" + merchantid + "]");
-			return "status 500 PaiementRequest not found for orderid" + "orderid:[" + orderid + "] and merchantid:["
+			return "status 500 PaiementRequest not found for " + "orderid:[" + orderid + "] and merchantid:["
 					+ merchantid + "]";
 
 		}
@@ -2376,8 +2155,8 @@ public class ApiController {
 
 		} catch (Exception err4) {
 			traces.writeInFileTransaction(folder, file,
-					"capture 500" + "Error during Transaction findByTrsnumautAndTrsnumcmr for given authnumber"
-							+ "authnumber:[" + authnumber + "] and merchantid:[" + merchantid + "]" + err4);
+					"capture 500" + "Error during Transaction findByTrsnumautAndTrsnumcmr for given " + "authnumber:["
+							+ authnumber + "] and merchantid:[" + merchantid + "]" + err4);
 
 			return "capture 500" + "Error during Transaction findByTrsnumautAndTrsnumcmr for given authnumber"
 					+ "authnumber:[" + authnumber + "] and merchantid:[" + merchantid + "]";
@@ -2385,11 +2164,11 @@ public class ApiController {
 		}
 
 		if (trs_check != null) {
-			traces.writeInFileTransaction(folder, file, "capture 500 Transaction already captured  for given authnumber"
+			traces.writeInFileTransaction(folder, file, "capture 500 Transaction already captured  for given "
 					+ "authnumber:[" + authnumber + "] and merchantid:[" + merchantid + "]");
 
-			return "500 Transaction already captured  for given authnumber" + "authnumber:[" + authnumber
-					+ "] and merchantid:[" + merchantid + "]";
+			return "500 Transaction already captured  for given " + "authnumber:[" + authnumber + "] and merchantid:["
+					+ merchantid + "]";
 
 		}
 
@@ -2406,6 +2185,7 @@ public class ApiController {
 			try {
 				// insert into telec
 				// idtelc = tlcservice.getMAX_ID("TELECOLLECTE", "TLC_NUMTLCOLCTE");
+				idtelc = telecollecteService.getMAX_ID();
 				lidtelc = idtelc.longValue() + 1;
 				tlc = new TelecollecteDto();
 				tlc.setTlc_numtlcolcte(lidtelc);
@@ -2431,11 +2211,11 @@ public class ApiController {
 
 			} catch (Exception err5) {
 				traces.writeInFileTransaction(folder, file,
-						"capture 500" + "Error during insert into telec for given authnumber for given authnumber"
+						"capture 500" + "Error during insert into telec for given authnumber for given "
 								+ "authnumber:[" + authnumber + "] and merchantid:[" + merchantid + "]" + err5);
 
-				return "capture 500" + "Error during insert into telec for given authnumber for given authnumber"
-						+ "authnumber:[" + authnumber + "] and merchantid:[" + merchantid + "]";
+				return "capture 500" + "Error during insert into telec for given authnumber for given " + "authnumber:["
+						+ authnumber + "] and merchantid:[" + merchantid + "]";
 
 			}
 		} else {
@@ -2452,11 +2232,11 @@ public class ApiController {
 				telecollecteService.save(n_tlc);
 			} catch (Exception err55) {
 				traces.writeInFileTransaction(folder, file,
-						"capture 500" + "Error during update telec for given authnumber for given authnumber"
-								+ "authnumber:[" + authnumber + "] and merchantid:[" + merchantid + "]" + err55);
+						"capture 500" + "Error during update telec for given authnumber for given " + "authnumber:["
+								+ authnumber + "] and merchantid:[" + merchantid + "]" + err55);
 
-				return "capture 500" + "Error during update telec for given authnumber for given authnumber"
-						+ "authnumber:[" + authnumber + "] and merchantid:[" + merchantid + "]";
+				return "capture 500" + "Error during update telec for given authnumber for given " + "authnumber:["
+						+ authnumber + "] and merchantid:[" + merchantid + "]";
 
 			}
 
@@ -2471,7 +2251,7 @@ public class ApiController {
 		try {
 			trs = new TransactionDto();
 			trs.setTrs_numcmr(merchantid);
-			trs.setTrs_numtlcolcte(lidtelc);
+			trs.setTrs_numtlcolcte(Double.valueOf(lidtelc));
 			frmt_cardnumber = Util.formatagePan(cardnumber);
 			trs.setTrs_codporteur(frmt_cardnumber);
 			dmnt = Double.parseDouble(amount);
@@ -2495,10 +2275,10 @@ public class ApiController {
 
 		} catch (Exception err6) {
 			traces.writeInFileTransaction(folder, file,
-					"capture 500" + "Error during insert into transaction for given authnumber" + "authnumber:["
-							+ authnumber + "] and merchantid:[" + merchantid + "]" + err6);
+					"capture 500" + "Error during insert into transaction for given " + "authnumber:[" + authnumber
+							+ "] and merchantid:[" + merchantid + "]" + err6);
 
-			return "capture 500 Error during insert into transaction for given authnumber" + "authnumber:[" + authnumber
+			return "capture 500 Error during insert into transaction for given " + "authnumber:[" + authnumber
 					+ "] and merchantid:[" + merchantid + "]";
 
 		}
@@ -2510,11 +2290,10 @@ public class ApiController {
 			histoAutoGateService.save(current_hist);
 
 		} catch (Exception err7) {
-			traces.writeInFileTransaction(folder, file,
-					"capture 500 Error during histoauto_gate update for given authnumber" + "authnumber:[" + authnumber
-							+ "] and merchantid:[" + merchantid + "]" + err7);
+			traces.writeInFileTransaction(folder, file, "capture 500 Error during histoauto_gate update for given "
+					+ "authnumber:[" + authnumber + "] and merchantid:[" + merchantid + "]" + err7);
 
-			return "capture 500 Error during histoauto_gate update for given authnumber" + "authnumber:[" + authnumber
+			return "capture 500 Error during histoauto_gate update for given " + "authnumber:[" + authnumber
 					+ "] and merchantid:[" + merchantid + "]";
 
 		}
@@ -2536,11 +2315,10 @@ public class ApiController {
 			stm = sftm.format(dt);
 
 		} catch (Exception err8) {
-			traces.writeInFileTransaction(folder, file,
-					"capture 500 Error during jso data preparationfor given authnumber" + "authnumber:[" + authnumber
-							+ "] and merchantid:[" + merchantid + "]" + err8);
+			traces.writeInFileTransaction(folder, file, "capture 500 Error during jso data preparationfor given "
+					+ "authnumber:[" + authnumber + "] and merchantid:[" + merchantid + "]" + err8);
 
-			return "capture 500 Error during jso data preparationfor given authnumber" + "authnumber:[" + authnumber
+			return "capture 500 Error during jso data preparationfor given " + "authnumber:[" + authnumber
 					+ "] and merchantid:[" + merchantid + "]";
 
 		}
@@ -2566,10 +2344,10 @@ public class ApiController {
 			jso.put("lname", lname);
 			jso.put("email", email);
 		} catch (Exception err9) {
-			traces.writeInFileTransaction(folder, file, "capture 500 Error during jso out processing given authnumber"
+			traces.writeInFileTransaction(folder, file, "capture 500 Error during jso out processing given "
 					+ "authnumber:[" + authnumber + "] and merchantid:[" + merchantid + "]" + err9);
 
-			return "capture 500 Error during jso out processing given authnumber" + "authnumber:[" + authnumber
+			return "capture 500 Error during jso out processing given " + "authnumber:[" + authnumber
 					+ "] and merchantid:[" + merchantid + "]";
 
 		}
@@ -2840,7 +2618,7 @@ public class ApiController {
 		try {
 			mm = new String[2];
 			mm = amount.split("\\.");
-			if (mm[1].length() == 1) {
+			if (mm[0].length() == 1) {
 				montanttrame = amount + "0";
 			} else {
 				montanttrame = amount + "";
@@ -2848,17 +2626,17 @@ public class ApiController {
 
 			String[] m = new String[2];
 			m = montanttrame.split("\\.");
-			if (m[1].equals("0")) {
+			if (m[0].equals("0")) {
 				montanttrame = montanttrame.replace(".", "0");
 			} else
 				montanttrame = montanttrame.replace(".", "");
 			montanttrame = Util.formatageCHamps(montanttrame, 12);
 		} catch (Exception err4) {
-			traces.writeInFileTransaction(folder, file, "refund 500 Error during amount formatting for given orderid"
+			traces.writeInFileTransaction(folder, file, "refund 500 Error during amount formatting for given "
 					+ "orderid:[" + orderid + "] and merchantid:[" + merchantid + "]" + err4);
 
-			return "refund 500 Error during amount formatting for given orderid" + "orderid:[" + orderid
-					+ "] and merchantid:[" + merchantid + "]";
+			return "refund 500 Error during amount formatting for given " + "orderid:[" + orderid + "] and merchantid:["
+					+ merchantid + "]";
 		}
 
 		traces.writeInFileTransaction(folder, file, "Switch processing start ...");
@@ -2929,11 +2707,9 @@ public class ApiController {
 				demandePaiementService.save(current_dmd);
 			} catch (Exception e) {
 				traces.writeInFileTransaction(folder, file,
-						"refund 500 Error during  demandepaiement update  A for given orderid" + "orderid:[" + orderid
-								+ "]");
+						"refund 500 Error during  demandepaiement update  A for given " + "orderid:[" + orderid + "]");
 
-				return "refund 500 Error during  demandepaiement update  A for given orderid" + "orderid:[" + orderid
-						+ "]";
+				return "refund 500 Error during  demandepaiement update  A for given " + "orderid:[" + orderid + "]";
 
 			}
 
@@ -2956,8 +2732,11 @@ public class ApiController {
 
 					// insert into telec
 					idtelc = telecollecteService.getMAX_ID();
-
-					lidtelc = idtelc.longValue() + 1;
+					if (idtelc != null) {
+						lidtelc = idtelc.longValue() + 1;
+					} else {
+						lidtelc = 1;
+					}
 					tlc = new TelecollecteDto();
 					tlc.setTlc_numtlcolcte(lidtelc);
 					tlc.setTlc_numtpe(current_hist.getHatCodtpe());
@@ -2999,7 +2778,7 @@ public class ApiController {
 				// insert into transaction
 				trs = new TransactionDto();
 				trs.setTrs_numcmr(merchantid);
-				trs.setTrs_numtlcolcte(lidtelc);
+				trs.setTrs_numtlcolcte(Double.valueOf(lidtelc));
 				frmt_cardnumber = Util.formatagePan(cardnumber);
 				trs.setTrs_codporteur(frmt_cardnumber);
 				dmnt = Double.parseDouble(amount);
@@ -3013,7 +2792,13 @@ public class ApiController {
 				trs.setTrs_devise(current_hist.getHatDevise());
 				trs.setTrs_certif("N");
 				idtrs = transactionService.getMAX_ID();
-				lidtrs = idtrs.longValue() + 1;
+
+				if (idtrs != null) {
+					lidtrs = idtrs.longValue() + 1;
+				} else {
+					lidtrs = 1;
+				}
+
 				trs.setTrs_id(lidtrs);
 				trs.setTrs_commande(orderid);
 
@@ -3022,12 +2807,10 @@ public class ApiController {
 				transactionService.save(trs);
 
 			} catch (Exception e) {
-
-				e.printStackTrace();
 				traces.writeInFileTransaction(folder, file,
 						"refund 500"
 								+ "Error during  HistoAutoGate insertion or Transaction insertion A for given orderid"
-								+ "orderid:[" + orderid + "]");
+								+ "orderid:[" + orderid + "]" + e);
 
 				return "refund 500"
 						+ "Error during  HistoAutoGate insertion or Transaction insertion A for given orderid"
@@ -3252,17 +3035,17 @@ public class ApiController {
 
 		try {
 			formatheure = new SimpleDateFormat("HHmmss");
-			formatdate = new SimpleDateFormat("yyyy-MM-dd");
+			formatdate = new SimpleDateFormat("ddMMyy");
 			date = formatdate.format(new Date());
 			heure = formatheure.format(new Date());
 			jul = Util.convertToJulian(new Date()) + "";
 
 		} catch (Exception err3) {
-			traces.writeInFileTransaction(folder, file, "reversal 500 Error during date formatting for given orderid"
+			traces.writeInFileTransaction(folder, file, "reversal 500 Error during date formatting for given "
 					+ "orderid:[" + orderid + "] and merchantid:[" + merchantid + "]" + err3);
 
-			return "reversal 500 Error during date formatting for given orderid" + "orderid:[" + orderid
-					+ "] and merchantid:[" + merchantid + "]";
+			return "reversal 500 Error during date formatting for given " + "orderid:[" + orderid + "] and merchantid:["
+					+ merchantid + "]";
 
 		}
 
@@ -3271,7 +3054,7 @@ public class ApiController {
 		try {
 			mm = new String[2];
 			mm = amount.split("\\.");
-			if (mm[1].length() == 1) {
+			if (mm[0].length() == 1) {
 				montanttrame = amount + "0";
 			} else {
 				montanttrame = amount + "";
@@ -3279,16 +3062,16 @@ public class ApiController {
 
 			String[] m = new String[2];
 			m = montanttrame.split("\\.");
-			if (m[1].equals("0")) {
+			if (m[0].equals("0")) {
 				montanttrame = montanttrame.replace(".", "0");
 			} else
 				montanttrame = montanttrame.replace(".", "");
 			montanttrame = Util.formatageCHamps(montanttrame, 12);
 		} catch (Exception err4) {
-			traces.writeInFileTransaction(folder, file, "reversal 500 Error during amount formatting for given orderid"
+			traces.writeInFileTransaction(folder, file, "reversal 500 Error during amount formatting for given "
 					+ "orderid:[" + orderid + "] and merchantid:[" + merchantid + "]" + err4);
 
-			return "reversal 500 Error during amount formatting for given orderid" + "orderid:[" + orderid
+			return "reversal 500 Error during amount formatting for given " + "orderid:[" + orderid
 					+ "] and merchantid:[" + merchantid + "]";
 		}
 
@@ -3301,10 +3084,7 @@ public class ApiController {
 
 		// controls
 		String mesg_type = "2";
-		// String merc_codeactivite = "5555";
-		// String acqcode = "11010";
-		String merchant_name = merchantname; // "NETFLIX ";
-		// String merchant_city = "California ";
+		String merchant_name = merchantname;
 		String acq_type = "0000";
 		String processing_code = "0";
 		String reason_code = "H";
@@ -3355,12 +3135,8 @@ public class ApiController {
 
 		String merc_codeactivite = current_merchant.getCmrCodactivite();
 		String acqcode = current_merchant.getCmrCodbqe();
-		/* merchant_name = "NETFLIX            "; */ // "NETFLIX "; //FIXPACK12082022
 		merchant_name = Util.pad_merchant(merchantname, 19, ' ');
-		traces.writeInFileTransaction(folder, file, "FIXPACK12082022 merchant_name : [" + merchant_name + "]");
-		/* String merchant_city = "Los Gatos      "; */ // FIXPACK12082022
 		String merchant_city = "MOROCCO        ";
-		traces.writeInFileTransaction(folder, file, "FIXPACK12082022 merchant_city : [" + merchant_city + "]");
 		acq_type = "0000";
 		processing_code = "0";
 		reason_code = "H";
@@ -3406,10 +3182,10 @@ public class ApiController {
 			traces.writeInFileTransaction(folder, file, "tag19_request : [" + authnumber + "]");
 
 		} catch (Exception err4) {
-			traces.writeInFileTransaction(folder, file, "reversal 500 Error during switch tlv buildu for given orderid"
+			traces.writeInFileTransaction(folder, file, "reversal 500 Error during switch tlv buildu for given "
 					+ "orderid:[" + orderid + "] and merchantid:[" + merchantid + "]" + err4);
 
-			return "reversa 500 Error during switch tlv buildu for given orderid" + "orderid:[" + orderid
+			return "reversa 500 Error during switch tlv buildu for given " + "orderid:[" + orderid
 					+ "] and merchantid:[" + merchantid + "]";
 
 		}
@@ -3450,7 +3226,7 @@ public class ApiController {
 
 				traces.writeInFileTransaction(folder, file, "Switch  malfunction !!!");
 
-				return "reversal 500 Error Switch communication s_conn false" + "switch ip:[" + sw_s
+				return "reversal 500 Error Switch communication s_conn false " + "switch ip:[" + sw_s
 						+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]";
 
 			}
@@ -3458,13 +3234,13 @@ public class ApiController {
 		} catch (SocketTimeoutException e) {
 			traces.writeInFileTransaction(folder, file, "Switch  malfunction !!!");
 
-			return "reversal 500 Error Switch communication SocketTimeoutException" + "switch ip:[" + sw_s
+			return "reversal 500 Error Switch communication SocketTimeoutException " + "switch ip:[" + sw_s
 					+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]";
 
 		} catch (UnknownHostException e) {
 			traces.writeInFileTransaction(folder, file, "Switch  malfunction !!!");
 
-			return "reversal 500 Error Switch communication UnknownHostException" + "switch ip:[" + sw_s
+			return "reversal 500 Error Switch communication UnknownHostException " + "switch ip:[" + sw_s
 					+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]";
 
 		}
@@ -3472,13 +3248,13 @@ public class ApiController {
 		catch (IOException e) {
 			traces.writeInFileTransaction(folder, file, "Switch  malfunction !!!");
 
-			return "reversal 500 Error Switch communication IOException" + "switch ip:[" + sw_s + "] and switch port:["
+			return "reversal 500 Error Switch communication IOException " + "switch ip:[" + sw_s + "] and switch port:["
 					+ port + "] resp_tlv : [" + resp_tlv + "]";
 
 		} catch (Exception e) {
 			traces.writeInFileTransaction(folder, file, "Switch  malfunction !!!");
 
-			return "reversal 500 Error Switch communication General Exception" + "switch ip:[" + sw_s
+			return "reversal 500 Error Switch communication General Exception " + "switch ip:[" + sw_s
 					+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]";
 
 		}

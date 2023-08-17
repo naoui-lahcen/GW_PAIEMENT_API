@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 
 @Entity
 @Table(name="DEMANDE_PAIEMENT")
-@Component
+//@Component
 public class DemandePaiement implements Serializable {
     
     /**
@@ -24,7 +24,7 @@ public class DemandePaiement implements Serializable {
 	@Id
 	@Column(name = "id_demande")
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int  iddemande;
+    private Integer  iddemande;
     
 	@Column(name="nom")
     private String nom;
@@ -146,10 +146,11 @@ public class DemandePaiement implements Serializable {
     @Column(name="tokencommande")
     private String tokencommande;
     
-    @Column(name="htmlCreq")
-    private String htmlCreq;
+    @Column(name="etat_annulation")
+    private boolean etat_annulation;
 	
-    
+    @Column(name="creq")
+    private String creq;
     
     public DemandePaiement() {
 		super();
@@ -157,13 +158,13 @@ public class DemandePaiement implements Serializable {
 	}
 
 
-	public long getIddemande() {
+	public Integer getIddemande() {
 		return iddemande;
 	}
 
 
 
-	public void setIddemande(int iddemande) {
+	public void setIddemande(Integer iddemande) {
 		this.iddemande = iddemande;
 	}
 
@@ -821,17 +822,27 @@ public class DemandePaiement implements Serializable {
 		this.tokencommande = tokencommande;
 	}
 
-	public String getHtmlCreq() {
-		return htmlCreq;
+	public String getCreq() {
+		return creq;
 	}
 
 
-	public void setHtmlCreq(String htmlCreq) {
-		this.htmlCreq = htmlCreq;
+	public void setCreq(String creq) {
+		this.creq = creq;
 	}
 
 
-	public DemandePaiement(int iddemande, String nom, String prenom, String commande, Double montant, String email,
+	public boolean isEtat_annulation() {
+		return etat_annulation;
+	}
+
+
+	public void setEtat_annulation(boolean etat_annulation) {
+		this.etat_annulation = etat_annulation;
+	}
+
+
+	public DemandePaiement(Integer iddemande, String nom, String prenom, String commande, Double montant, String email,
 			String langue, String successURL, String failURL, String timeoutURL, String tel, String address,
 			String city, String state, String country, String postcode, String comid, String galid, String etat_demande,
 			String dem_cvv, String demxid, String dem_pan, String refdemande, Double frais, String dem_date_time,
@@ -841,7 +852,7 @@ public class DemandePaiement implements Serializable {
 			String is_3ds, String is_national, String is_addcard, String is_withsave, String is_bpay,
 			String is_bpaytoken, String is_bpaysave, String dateSendMPI, String dateSendSWT, String dateRetourSWT,
 			String dateSendSWTAN, String dateRetourSWTAN, String dateSendRecall, String dateRetourRecall, int nbreTenta,
-			String tokencommande, String htmlCreq) {
+			String tokencommande, String creq, boolean etat_annulation) {
 		super();
 		this.iddemande = iddemande;
 		this.nom = nom;
@@ -899,7 +910,8 @@ public class DemandePaiement implements Serializable {
 		this.dateRetourRecall = dateRetourRecall;
 		this.nbreTenta = nbreTenta;
 		this.tokencommande = tokencommande;
-		this.htmlCreq = htmlCreq;
+		this.creq = creq;
+		this.etat_annulation = etat_annulation;
 	}
 
 
@@ -922,9 +934,10 @@ public class DemandePaiement implements Serializable {
 				+ ", dateSendSWT=" + dateSendSWT + ", dateRetourSWT=" + dateRetourSWT + ", dateSendSWTAN="
 				+ dateSendSWTAN + ", dateRetourSWTAN=" + dateRetourSWTAN + ", dateSendRecall=" + dateSendRecall
 				+ ", dateRetourRecall=" + dateRetourRecall + ", nbreTenta=" + nbreTenta + ", tokencommande="
-				+ tokencommande +"htmlCreq=" + htmlCreq +"]";
+				+ tokencommande + ", creq=" + creq + ", etat_annulation=" + etat_annulation + "]";
 	}
-    
-    
+
+
+	
 	
 }

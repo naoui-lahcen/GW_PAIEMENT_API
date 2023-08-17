@@ -18,8 +18,12 @@ public class SWHistoAutoServiceImpl implements SWHistoAutoService {
 	@Override
 	public SWHistoAutoDto getSWHistoAuto(String cardnumber, String rrn, String amount, String date_auto,
 			String merchantid) {
-		// TODO Auto-generated method stub
-		return null;
+		return swHistoAutoMapper.model2VO(swHistoAutoDao.getSWHistoAuto(cardnumber, rrn, amount, date_auto, merchantid));
+	}
+
+	@Override
+	public SWHistoAutoDto getNumCMR(String merchantid) {
+		return swHistoAutoMapper.model2VO(swHistoAutoDao.getNumCMR(merchantid));
 	}
 
 }

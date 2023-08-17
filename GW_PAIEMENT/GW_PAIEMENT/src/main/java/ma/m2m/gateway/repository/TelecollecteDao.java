@@ -14,7 +14,7 @@ public interface TelecollecteDao extends JpaRepository<Telecollecte, Long>{
 	
 	
 	//@Transactional
-	@Query(value="select tlc  FROM  Telecollecte tlc WHERE  tlc.tlc_numcmr = :merchantid "
+	@Query(value="select *  FROM  Telecollecte tlc WHERE  tlc.tlc_numcmr = :merchantid "
 			+ " AND tlc.tlc_gest = 'N' "
 			+ " AND tlc.tlc_numtlcolcte = (select max(tlc2.tlc_numtlcolcte) FROM  Telecollecte tlc2 WHERE"
 			+ "  tlc.tlc_numcmr = :merchantid "

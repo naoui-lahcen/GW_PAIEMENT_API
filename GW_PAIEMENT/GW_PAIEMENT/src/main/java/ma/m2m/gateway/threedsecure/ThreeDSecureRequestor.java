@@ -10,6 +10,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import lombok.extern.slf4j.Slf4j;
+import ma.m2m.gateway.Utils.Traces;
 import ma.m2m.gateway.Utils.Util;
 
 import javax.net.ssl.HostnameVerifier;
@@ -58,6 +59,8 @@ public class ThreeDSecureRequestor {
 	private String urlThreeDSS;
 	private AuthInitRequest authInitRequest;
 
+	private Traces traces = new Traces();
+	
 	static {
 		// lnaoui 23-11-2022
 		// this part is needed cause the endpoint has invalid SSL certificate, that
@@ -118,49 +121,43 @@ public class ThreeDSecureRequestor {
 		return this;
 	}
 
-	public ThreeDSecureResponse initAuth() throws ThreeDSecureRequestorException {
-		Util.writeInFileTransaction(logFolder, logFile,
+	public ThreeDSecureResponse initAuth(String logFolder, String logFile) throws ThreeDSecureRequestorException {
+		traces.writeInFileTransaction(logFolder, logFile,
 				"**************************** DEBUT APPEL 3DS SERVER *******************************");
 		ThreeDSecureResponse threeDsRes = new ThreeDSecureResponse();
-		//if (urlThreeDSS == null)
-		//	throw new ThreeDSecureRequestorException("[urlThreeDSS] field value is NULL");
+
 		if (authInitRequest == null)
 			throw new ThreeDSecureRequestorException("[authInitRequest] field instance is NULL");
-		// try {
-		// ReflectionUtil.executeNullFieldsChecker(authInitRequest);
-		// } catch(IllegalArgumentException e) {
-		// throw new ThreeDSecureRequestorException(e.getMessage(), e);
-		// }
+
 		try {
-			threeDsRes = callThreeDSServer();
+			threeDsRes = callThreeDSServer(logFolder, logFile);
 		} catch (Exception e) {
 			if (e instanceof SocketTimeoutException) {
-				Util.writeInFileTransaction(logFolder, logFile, "********* 2eme TENTATIVE ************");
+				traces.writeInFileTransaction(logFolder, logFile, "********* 2eme TENTATIVE ************");
 				try {
-					threeDsRes = callThreeDSServer();
+					threeDsRes = callThreeDSServer(logFolder, logFile);
 				} catch (Exception e2) {
 					throw new ThreeDSecureRequestorException((e2.getCause() != null) ? e2.getCause() : e2);
 				}
 			} else
 				throw new ThreeDSecureRequestorException((e.getCause() != null) ? e.getCause() : e);
 		}
-		Util.writeInFileTransaction(logFolder, logFile,
+		traces.writeInFileTransaction(logFolder, logFile,
 				"**************************** FIN APPEL 3DS SERVER *********************************");
 		return threeDsRes;
 	}
 
-	protected ThreeDSecureResponse callThreeDSServer()
+	protected ThreeDSecureResponse callThreeDSServer(String logFolder, String logFile)
 			throws KeyManagementException, KeyStoreException, NoSuchAlgorithmException {
-		Util.writeInFileTransaction(logFolder, logFile, "*********** DEBUT callThreeDSServer ***********");
+		traces.writeInFileTransaction(logFolder, logFile, "*********** DEBUT callThreeDSServer ***********");
 
 		HttpClient httpClient = HttpClientBuilder.create().build();
 		httpClient = getAllSSLClient();
-		//HttpPost httpPost = new HttpPost(urlThreeDSS);
 		HttpPost httpPost = new HttpPost(authInitRequest.getUrlThreeDSS());
 		ThreeDSecureResponse threeDsRes = new ThreeDSecureResponse();
 
 		final String jsonBody = gson.toJson(authInitRequest);
-		// added 2023-03-22 pcidss carte
+		// pcidss carte
 		AuthInitRequest authInitReqPCIDSS = new AuthInitRequest();
 		authInitReqPCIDSS.setPan(Util.displayCard(authInitRequest.getPan()));
 		authInitReqPCIDSS.setAmount(authInitRequest.getAmount());
@@ -180,7 +177,7 @@ public class ThreeDSecureRequestor {
 		authInitReqPCIDSS.setUrlThreeDSS(authInitRequest.getUrlThreeDSS());
 		
 		final String jsonBodyPCIDSS = gson.toJson(authInitReqPCIDSS);
-		Util.writeInFileTransaction(logFolder, logFile, "*********** jsonBodyPCIDSS ***********" + jsonBodyPCIDSS.toString());
+		traces.writeInFileTransaction(logFolder, logFile, "*********** jsonBodyPCIDSS ***********" + jsonBodyPCIDSS.toString());
 		// added 2023-03-22 pcidss carte
 		
 		final StringEntity entity = new StringEntity(jsonBody, StandardCharsets.UTF_8);
@@ -197,27 +194,27 @@ public class ThreeDSecureRequestor {
 			HttpResponse response = httpClient.execute(httpPost);
 
 			StatusLine responseStatusLine = response.getStatusLine();
-			Util.writeInFileTransaction(logFolder, logFile,
+			traces.writeInFileTransaction(logFolder, logFile,
 					"response StatusCode : " + response.getStatusLine().getStatusCode());
-			Util.writeInFileTransaction(logFolder, logFile, "responseStatusLine : " + responseStatusLine);
-			Util.writeInFileTransaction(logFolder, logFile, "response : " + response);
+			traces.writeInFileTransaction(logFolder, logFile, "responseStatusLine : " + responseStatusLine);
+			traces.writeInFileTransaction(logFolder, logFile, "response : " + response);
 			String respStr = EntityUtils.toString(response.getEntity());
-			Util.writeInFileTransaction(logFolder, logFile, "respStr : " + respStr);
+			traces.writeInFileTransaction(logFolder, logFile, "respStr : " + respStr);
 			// String responseStr = IOUtils.toString(is, "UTF-8");
 			// responseStr = "{\"reponseMPI\":\"Y\"}";
 
 			threeDsRes = gson.fromJson(respStr, ThreeDSecureResponse.class);
-			Util.writeInFileTransaction(logFolder, logFile, "threeDsRes toString : " + threeDsRes);
+			traces.writeInFileTransaction(logFolder, logFile, "threeDsRes toString : " + threeDsRes);
 
 			// ((InputStream) httpClient).close();
 
 		} catch (ClientProtocolException e) {
-			Util.writeInFileTransaction(logFolder, logFile, "[GW-EXCEPTION-ClientProtocolException] " + e);
+			traces.writeInFileTransaction(logFolder, logFile, "[GW-EXCEPTION-ClientProtocolException] " + e);
 		} catch (IOException e) {
-			Util.writeInFileTransaction(logFolder, logFile, "[GW-EXCEPTION-IOException] " + e);
+			traces.writeInFileTransaction(logFolder, logFile, "[GW-EXCEPTION-IOException] " + e);
 		}
 
-		Util.writeInFileTransaction(logFolder, logFile, "*********** FIN callThreeDSServer ***********");
+		traces.writeInFileTransaction(logFolder, logFile, "*********** FIN callThreeDSServer ***********");
 		return threeDsRes;
 	}
 

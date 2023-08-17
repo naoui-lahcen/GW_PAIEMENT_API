@@ -7,9 +7,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import ma.m2m.gateway.Utils.Util;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
 public class DemandePaiementDto implements Serializable {
 
 	/**
@@ -17,7 +14,7 @@ public class DemandePaiementDto implements Serializable {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	private int iddemande;
+	private Integer iddemande;
 
 	private String nom;
 	private String prenom;
@@ -80,13 +77,14 @@ public class DemandePaiementDto implements Serializable {
 	private String mois;
 	private CommercantDto commercantDto;
 	private GalerieDto galerieDto;
+	private String msgRefus;
 	
-	public static String htmlCreq;
+	private String creq;
 	
-	public int getIddemande() {
+	public Integer getIddemande() {
 		return iddemande;
 	}
-	public void setIddemande(int iddemande) {
+	public void setIddemande(Integer iddemande) {
 		this.iddemande = iddemande;
 	}
 	public String getNom() {
@@ -444,13 +442,12 @@ public class DemandePaiementDto implements Serializable {
 		this.mois = mois;
 	}
 	
-	public static String getHtmlCreq() {
-		return htmlCreq;
+	public String getCreq() {
+		return creq;
 	}
-	public static void setHtmlCreq(String htmlCreq) {
-		DemandePaiementDto.htmlCreq = htmlCreq;
+	public void setCreq(String creq) {
+		this.creq = creq;
 	}
-	
 	public String getDemxid() {
 		return demxid;
 	}
@@ -470,24 +467,121 @@ public class DemandePaiementDto implements Serializable {
 	public void setGalerieDto(GalerieDto galerieDto) {
 		this.galerieDto = galerieDto;
 	}
+	
+	public String getMsgRefus() {
+		return msgRefus;
+	}
+	public void setMsgRefus(String msgRefus) {
+		this.msgRefus = msgRefus;
+	}
+	public DemandePaiementDto() {
+		super();
+	}
+	
+	public DemandePaiementDto(Integer iddemande, String nom, String prenom, String commande, String email,
+			Double montant, String langue, String successURL, String failURL, String timeoutURL, String tel,
+			String address, String city, String state, String country, String postcode, String comid, String galid,
+			String etat_demande, String dem_cvv, String demxid, String dem_pan, String refdemande, Double frais,
+			String dem_date_time, String cartenaps, String dateexpnaps, String type_carte, String callbackURL,
+			String estimation, String recallRep, String type_annulation, String etat_chargement, String etat_timeout,
+			String id_client, String token, String is_cof, String is_tokenized, String is_cvv_verified,
+			String is_whitelist, String is_3ds, String is_national, String is_addcard, String is_withsave,
+			String is_bpay, String is_bpaytoken, String is_bpaysave, String dateSendMPI, String dateSendSWT,
+			String dateRetourSWT, String dateSendSWTAN, String dateRetourSWTAN, String dateSendRecall,
+			String dateRetourRecall, int nbreTenta, String tokencommande, boolean etat_annulation, String expery,
+			String annee, String mois, CommercantDto commercantDto, GalerieDto galerieDto, String creq, String msgRefus) {
+		super();
+		this.iddemande = iddemande;
+		this.nom = nom;
+		this.prenom = prenom;
+		this.commande = commande;
+		this.email = email;
+		this.montant = montant;
+		this.langue = langue;
+		this.successURL = successURL;
+		this.failURL = failURL;
+		this.timeoutURL = timeoutURL;
+		this.tel = tel;
+		this.address = address;
+		this.city = city;
+		this.state = state;
+		this.country = country;
+		this.postcode = postcode;
+		this.comid = comid;
+		this.galid = galid;
+		this.etat_demande = etat_demande;
+		this.dem_cvv = dem_cvv;
+		this.demxid = demxid;
+		this.dem_pan = dem_pan;
+		this.refdemande = refdemande;
+		this.frais = frais;
+		this.dem_date_time = dem_date_time;
+		this.cartenaps = cartenaps;
+		this.dateexpnaps = dateexpnaps;
+		this.type_carte = type_carte;
+		this.callbackURL = callbackURL;
+		this.estimation = estimation;
+		this.recallRep = recallRep;
+		this.type_annulation = type_annulation;
+		this.etat_chargement = etat_chargement;
+		this.etat_timeout = etat_timeout;
+		this.id_client = id_client;
+		this.token = token;
+		this.is_cof = is_cof;
+		this.is_tokenized = is_tokenized;
+		this.is_cvv_verified = is_cvv_verified;
+		this.is_whitelist = is_whitelist;
+		this.is_3ds = is_3ds;
+		this.is_national = is_national;
+		this.is_addcard = is_addcard;
+		this.is_withsave = is_withsave;
+		this.is_bpay = is_bpay;
+		this.is_bpaytoken = is_bpaytoken;
+		this.is_bpaysave = is_bpaysave;
+		this.dateSendMPI = dateSendMPI;
+		this.dateSendSWT = dateSendSWT;
+		this.dateRetourSWT = dateRetourSWT;
+		this.dateSendSWTAN = dateSendSWTAN;
+		this.dateRetourSWTAN = dateRetourSWTAN;
+		this.dateSendRecall = dateSendRecall;
+		this.dateRetourRecall = dateRetourRecall;
+		this.nbreTenta = nbreTenta;
+		this.tokencommande = tokencommande;
+		this.etat_annulation = etat_annulation;
+		this.expery = expery;
+		this.annee = annee;
+		this.mois = mois;
+		this.commercantDto = commercantDto;
+		this.galerieDto = galerieDto;
+		this.creq = creq;
+		this.msgRefus = msgRefus;
+	}
+	
 	// Util.displayCard(dem_pan) display carte pcidss
 	@Override
 	public String toString() {
 		return "DemandePaiementDto [iddemande=" + iddemande + ", nom=" + nom + ", prenom=" + prenom + ", commande="
-				+ commande + ", email=" + email + ", montant=" + montant + ", tel=" + tel + ", comid=" + comid
-				+ ", galid=" + galid + ", etat_demande=" + etat_demande + ", dem_cvv=" + dem_cvv + ", dem_xid="
-				+ demxid + ", dem_pan=" + Util.displayCard(dem_pan) + ", refdemande=" + refdemande + ", dem_date_time="
-				+ dem_date_time + ", type_carte=" + type_carte + ", callbackURL=" + callbackURL + ", estimation="
-				+ estimation + ", recallRep=" + recallRep + ", type_annulation=" + type_annulation
-				+ ", etat_chargement=" + etat_chargement + ", etat_timeout=" + etat_timeout + ", id_client=" + id_client
-				+ ", token=" + token + ", is_cof=" + is_cof + ", is_tokenized=" + is_tokenized + ", is_cvv_verified="
-				+ is_cvv_verified + ", is_whitelist=" + is_whitelist + ", is_3ds=" + is_3ds + ", is_national="
-				+ is_national + ", is_addcard=" + is_addcard + ", is_withsave=" + is_withsave + ", is_bpay=" + is_bpay
+				+ commande + ", email=" + email + ", montant=" + montant + ", langue=" + langue + ", successURL="
+				+ successURL + ", failURL=" + failURL + ", timeoutURL=" + timeoutURL + ", tel=" + tel + ", address="
+				+ address + ", city=" + city + ", state=" + state + ", country=" + country + ", postcode=" + postcode
+				+ ", comid=" + comid + ", galid=" + galid + ", etat_demande=" + etat_demande + ", dem_cvv=" + dem_cvv
+				+ ", demxid=" + demxid + ", dem_pan=" + Util.displayCard(dem_pan) + ", refdemande=" + refdemande + ", frais=" + frais
+				+ ", dem_date_time=" + dem_date_time + ", cartenaps=" + cartenaps + ", dateexpnaps=" + dateexpnaps
+				+ ", type_carte=" + type_carte + ", callbackURL=" + callbackURL + ", estimation=" + estimation
+				+ ", recallRep=" + recallRep + ", type_annulation=" + type_annulation + ", etat_chargement="
+				+ etat_chargement + ", etat_timeout=" + etat_timeout + ", id_client=" + id_client + ", token=" + token
+				+ ", is_cof=" + is_cof + ", is_tokenized=" + is_tokenized + ", is_cvv_verified=" + is_cvv_verified
+				+ ", is_whitelist=" + is_whitelist + ", is_3ds=" + is_3ds + ", is_national=" + is_national
+				+ ", is_addcard=" + is_addcard + ", is_withsave=" + is_withsave + ", is_bpay=" + is_bpay
 				+ ", is_bpaytoken=" + is_bpaytoken + ", is_bpaysave=" + is_bpaysave + ", dateSendMPI=" + dateSendMPI
 				+ ", dateSendSWT=" + dateSendSWT + ", dateRetourSWT=" + dateRetourSWT + ", dateSendSWTAN="
 				+ dateSendSWTAN + ", dateRetourSWTAN=" + dateRetourSWTAN + ", dateSendRecall=" + dateSendRecall
 				+ ", dateRetourRecall=" + dateRetourRecall + ", nbreTenta=" + nbreTenta + ", tokencommande="
-				+ tokencommande + ", etat_annulation=" + etat_annulation + "]";
+				+ tokencommande + ", etat_annulation=" + etat_annulation + ", expery=" + expery + ", annee=" + annee
+				+ ", mois=" + mois + ", commercantDto=" + commercantDto + ", galerieDto=" + galerieDto + ", msgRefus="
+				+ msgRefus + ", creq=" + creq + "]";
 	}
+
+
 	
 }
