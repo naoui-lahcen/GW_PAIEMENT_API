@@ -182,11 +182,11 @@ public class GWPaiementController {
 	}
 	
 	@RequestMapping(value = "/napspayment/authorization/token/{token}", method = RequestMethod.GET)
-	public String displayPagePayment(@PathVariable(value = "token") String token, Model model) {
+	public String showPagePayment(@PathVariable(value = "token") String token, Model model) {
 		// create file log
 		traces.creatFileTransaction(file);
-		traces.writeInFileTransaction(folder, file, "*********** Start displayPagePayment ************** ");
-		System.out.println("*********** Start displayPagePayment ************** ");
+		traces.writeInFileTransaction(folder, file, "*********** Start showPagePayment ************** ");
+		System.out.println("*********** Start showPagePayment ************** ");
 		
 		DemandePaiementDto demandeDto = demandePaiementService.findByTokencommande(token);
 				
@@ -234,8 +234,8 @@ public class GWPaiementController {
 		model.addAttribute("demandeDto", demandeDto);
 		System.out.println("findByTokencommande Iddemande recupérée : " + demandeDto.getIddemande());
 		
-		traces.writeInFileTransaction(folder, file, "*********** Fin displayPagePayment ************** ");
-		System.out.println("*********** Fin displayPagePayment ************** ");
+		traces.writeInFileTransaction(folder, file, "*********** Fin showPagePayment ************** ");
+		System.out.println("*********** Fin showPagePayment ************** ");
 
 		return "napspayment";
 	}
