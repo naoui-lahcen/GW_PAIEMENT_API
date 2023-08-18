@@ -3491,7 +3491,7 @@ public class APIController {
 
 	}
 
-	@PostMapping(value = "/napspayment/Cardtoken", consumes = "application/json", produces = "application/json")
+	@PostMapping(value = "/napspayment/cardtoken", consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public String getCardTken(@RequestHeader MultiValueMap<String, String> header, @RequestBody String cardtoken,
 			HttpServletResponse response) {
@@ -3717,7 +3717,7 @@ public class APIController {
 			cardtokenService.delete(cardTokenTodelete);
 
 			// Card info
-			jso.put("token", "");
+			jso.put("token", token);
 
 			// Transaction info
 			jso.put("statuscode", "00");
@@ -3728,7 +3728,7 @@ public class APIController {
 		} catch (Exception ex) {
 			traces.writeInFileTransaction(folder, file, "Error during delete token : " + ex);
 			// Card info
-			jso.put("token", "");
+			jso.put("token", token);
 
 			// Transaction info
 			jso.put("statuscode", "17");
