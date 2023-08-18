@@ -36,8 +36,8 @@
             <aside class="col-sm-12">
             <article class="card">
                <div class="card-body p-5">
-				   <p class="alert alert-danger text-center" th:utext="${demandeDto.getMsgRefus}"></p>
-<!--                  <p class="alert alert-danger text-center">Une erreur est survenue, merci de réessayer plus tard </p>-->
+				   <p class="alert alert-danger text-center" th:if="${demandeDto != null}" th:utext="${demandeDto.getMsgRefus}"></p>
+                  <p class="alert alert-danger text-center" th:if="${demandeDto == null}">Une erreur est survenue, merci de réessayer plus tard </p>
                </div>
                <!-- card-body.// -->
             </article>

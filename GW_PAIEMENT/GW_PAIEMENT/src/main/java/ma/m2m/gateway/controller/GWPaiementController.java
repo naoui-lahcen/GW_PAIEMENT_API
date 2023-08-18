@@ -95,7 +95,7 @@ public class GWPaiementController {
 		traces.writeInFileTransaction(folder, file, "*********** Start home() ************** ");
 		System.out.println("*********** Start home() ************** ");
 		
-		String msg="Bienvenue dans la plateforme NAPS de paiement !!!";
+		String msg="Bienvenue dans la plateforme de paiement NAPS !!!";
 
 		System.out.println("*********** Fin home() ************** ");
 
