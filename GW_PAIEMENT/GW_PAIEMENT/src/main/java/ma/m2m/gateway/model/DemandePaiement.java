@@ -158,6 +158,9 @@ public class DemandePaiement implements Serializable {
     @Column(name="creq")
     private String creq;
     
+    @Column(name="transactiontype")
+    private String transactiontype;
+    
     public DemandePaiement() {
 		super();
 		// TODO Auto-generated constructor stub
@@ -848,6 +851,16 @@ public class DemandePaiement implements Serializable {
 	}
 
 
+	public String getTransactiontype() {
+		return transactiontype;
+	}
+
+
+	public void setTransactiontype(String transactiontype) {
+		this.transactiontype = transactiontype;
+	}
+
+
 	public DemandePaiement(Integer iddemande, String nom, String prenom, String commande, Double montant, String email,
 			String langue, String successURL, String failURL, String timeoutURL, String tel, String address,
 			String city, String state, String country, String postcode, String comid, String galid, String etat_demande,
@@ -858,7 +871,7 @@ public class DemandePaiement implements Serializable {
 			String is_3ds, String is_national, String is_addcard, String is_withsave, String is_bpay,
 			String is_bpaytoken, String is_bpaysave, String dateSendMPI, String dateSendSWT, String dateRetourSWT,
 			String dateSendSWTAN, String dateRetourSWTAN, String dateSendRecall, String dateRetourRecall, int nbreTenta,
-			String tokencommande, String creq, boolean etat_annulation) {
+			String tokencommande, boolean etat_annulation, String creq, String transactiontype) {
 		super();
 		this.iddemande = iddemande;
 		this.nom = nom;
@@ -916,8 +929,9 @@ public class DemandePaiement implements Serializable {
 		this.dateRetourRecall = dateRetourRecall;
 		this.nbreTenta = nbreTenta;
 		this.tokencommande = tokencommande;
-		this.creq = creq;
 		this.etat_annulation = etat_annulation;
+		this.creq = creq;
+		this.transactiontype = transactiontype;
 	}
 
 
@@ -940,9 +954,9 @@ public class DemandePaiement implements Serializable {
 				+ ", dateSendSWT=" + dateSendSWT + ", dateRetourSWT=" + dateRetourSWT + ", dateSendSWTAN="
 				+ dateSendSWTAN + ", dateRetourSWTAN=" + dateRetourSWTAN + ", dateSendRecall=" + dateSendRecall
 				+ ", dateRetourRecall=" + dateRetourRecall + ", nbreTenta=" + nbreTenta + ", tokencommande="
-				+ tokencommande + ", creq=" + creq + ", etat_annulation=" + etat_annulation + "]";
+				+ tokencommande + ", etat_annulation=" + etat_annulation + ", creq=" + creq + ", transactiontype="
+				+ transactiontype + "]";
 	}
-
 
 	
 	

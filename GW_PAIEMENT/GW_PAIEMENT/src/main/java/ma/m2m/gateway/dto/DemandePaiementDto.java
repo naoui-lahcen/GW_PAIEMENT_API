@@ -84,6 +84,7 @@ public class DemandePaiementDto implements Serializable {
 	private CommercantDto commercantDto;
 	private GalerieDto galerieDto;
 	private String msgRefus;
+	private String transactiontype;
 	
 	private String creq;
 	
@@ -480,6 +481,13 @@ public class DemandePaiementDto implements Serializable {
 	public void setMsgRefus(String msgRefus) {
 		this.msgRefus = msgRefus;
 	}
+	
+	public String getTransactiontype() {
+		return transactiontype;
+	}
+	public void setTransactiontype(String transactiontype) {
+		this.transactiontype = transactiontype;
+	}
 	public DemandePaiementDto() {
 		super();
 	}
@@ -495,7 +503,8 @@ public class DemandePaiementDto implements Serializable {
 			String is_bpay, String is_bpaytoken, String is_bpaysave, String dateSendMPI, String dateSendSWT,
 			String dateRetourSWT, String dateSendSWTAN, String dateRetourSWTAN, String dateSendRecall,
 			String dateRetourRecall, int nbreTenta, String tokencommande, boolean etat_annulation, String expery,
-			String annee, String mois, CommercantDto commercantDto, GalerieDto galerieDto, String creq, String msgRefus) {
+			String annee, String mois, CommercantDto commercantDto, GalerieDto galerieDto, String msgRefus,
+			String transactiontype, String creq) {
 		super();
 		this.iddemande = iddemande;
 		this.nom = nom;
@@ -559,10 +568,10 @@ public class DemandePaiementDto implements Serializable {
 		this.mois = mois;
 		this.commercantDto = commercantDto;
 		this.galerieDto = galerieDto;
-		this.creq = creq;
 		this.msgRefus = msgRefus;
+		this.transactiontype = transactiontype;
+		this.creq = creq;
 	}
-	
 	// Util.displayCard(dem_pan) display carte pcidss
 	@Override
 	public String toString() {
@@ -585,7 +594,7 @@ public class DemandePaiementDto implements Serializable {
 				+ ", dateRetourRecall=" + dateRetourRecall + ", nbreTenta=" + nbreTenta + ", tokencommande="
 				+ tokencommande + ", etat_annulation=" + etat_annulation + ", expery=" + expery + ", annee=" + annee
 				+ ", mois=" + mois + ", commercantDto=" + commercantDto + ", galerieDto=" + galerieDto + ", msgRefus="
-				+ msgRefus + ", creq=" + creq + "]";
+				+ msgRefus + ", creq=" + creq +  ", transactiontype=" + transactiontype +"]";
 	}
 
 

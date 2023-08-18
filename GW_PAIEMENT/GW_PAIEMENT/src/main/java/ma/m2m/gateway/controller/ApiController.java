@@ -222,7 +222,7 @@ public class APIController {
 				merchantname, websiteName, websiteid, callbackUrl, cardnumber, token, expirydate, holdername, cvv,
 				fname, lname, email, country, phone, city, state, zipcode, address, mesg_type, merc_codeactivite,
 				acqcode, merchant_name, merchant_city, acq_type, processing_code, reason_code, transaction_condition,
-				transactiondate, transactiontime, date, rrn, heure, montanttrame, num_trs = "", successURL, failURL;
+				transactiondate, transactiontime, date, rrn, heure, montanttrame, num_trs = "", successURL, failURL, transactiontype;
 		// JSDONRequest
 		// Transaction info
 		DemandePaiementDto dmd = null;
@@ -241,6 +241,7 @@ public class APIController {
 			amount = (String) jsonOrequest.get("amount");
 			promoCode = (String) jsonOrequest.get("promocode");
 			transactionid = (String) jsonOrequest.get("transactionid");
+			transactiontype = (String) jsonOrequest.get("transactiontype");
 
 			// Merchnat info
 			merchantid = (String) jsonOrequest.get("merchantid");
@@ -336,10 +337,18 @@ public class APIController {
 
 		merchant_city = "MOROCCO        ";
 		traces.writeInFileTransaction(folder, file, "merchant_city : [" + merchant_city + "]");
+		
 		acq_type = "0000";
-		processing_code = "0";
 		reason_code = "H";
 		transaction_condition = "6";
+		processing_code = "";
+		if(transactiontype.equals("0")) {
+			processing_code = "0";
+		} else if(transactiontype.equals("P")) {
+			processing_code = "P";
+		} else {
+			processing_code = "0";
+		}
 
 		// get demandepaiement id , check if exist
 

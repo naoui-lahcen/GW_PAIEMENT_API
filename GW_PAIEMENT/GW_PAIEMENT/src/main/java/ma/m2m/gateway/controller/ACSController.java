@@ -448,16 +448,15 @@ public class ACSController {
 					String first_auth = "";
 					long lrec_serie = 0;
 
-					/* merchant_city = "Los Gatos      "; */ // "NETFLIX "; /* FIXPACK12082022*/
 					merchant_city = "MOROCCO        ";
-					traces.writeInFileTransaction(folder, file,
-							"FIXPACK12082022 merchant_city : [" + merchant_city + "]");
+					traces.writeInFileTransaction(folder, file, "merchant_city : [" + merchant_city + "]");
+					
 					acq_type = "0000";
-					processing_code = "0";
+					processing_code = dmd.getTransactiontype();
 					reason_code = "H";
 					transaction_condition = "6";
 					mesg_type = "0";
-
+					
 					// controls
 					traces.writeInFileTransaction(folder, file, "Switch processing start ...");
 
