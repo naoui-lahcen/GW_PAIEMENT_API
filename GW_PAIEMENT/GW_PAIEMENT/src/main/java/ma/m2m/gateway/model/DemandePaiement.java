@@ -11,6 +11,12 @@ import javax.persistence.Table;
 
 import org.springframework.stereotype.Component;
 
+/*
+* @author  LAHCEN NAOUI
+* @version 1.0
+* @since   2023-07-01 / 2023-09-01 
+ */
+
 @Entity
 @Table(name="DEMANDE_PAIEMENT")
 //@Component

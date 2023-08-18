@@ -4,6 +4,12 @@ import ma.m2m.gateway.Utils.Objects;
 import ma.m2m.gateway.dto.TransactionDto;
 import ma.m2m.gateway.model.Transaction;
 
+/*
+* @author  LAHCEN NAOUI
+* @version 1.0
+* @since   2023-07-01 / 2023-09-01 
+ */
+
 public class TransactionMapper {
 	
 	public TransactionDto model2VO(Transaction model) {

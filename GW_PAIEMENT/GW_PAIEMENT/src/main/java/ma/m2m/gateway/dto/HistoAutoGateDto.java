@@ -3,6 +3,11 @@ package ma.m2m.gateway.dto;
 import java.io.Serializable;
 import java.util.Date;
 
+/*
+* @author  LAHCEN NAOUI
+* @version 1.0
+* @since   2023-07-01 / 2023-09-01 
+ */
 
 public class HistoAutoGateDto implements Serializable {
 

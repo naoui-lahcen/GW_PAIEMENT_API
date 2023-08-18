@@ -8,6 +8,13 @@ import org.springframework.context.annotation.Configuration;
 //import springfox.documentation.spi.DocumentationType;
 //import springfox.documentation.spring.web.plugins.Docket;
 //import springfox.documentation.swagger2.annotations.EnableSwagger2;
+
+/*
+* @author  LAHCEN NAOUI
+* @version 1.0
+* @since   2023-07-01 / 2023-09-01 
+ */
+
 //
 //@Configuration
 //@EnableSwagger2

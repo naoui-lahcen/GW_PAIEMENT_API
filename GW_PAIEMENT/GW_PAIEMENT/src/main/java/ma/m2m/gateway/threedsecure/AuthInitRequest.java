@@ -2,6 +2,13 @@ package ma.m2m.gateway.threedsecure;
 
 import lombok.Data;
 import ma.m2m.gateway.Utils.Util;
+
+/*
+* @author  LAHCEN NAOUI
+* @version 1.0
+* @since   2023-07-01 / 2023-09-01 
+ */
+
 //@Data
 public class AuthInitRequest {
 	

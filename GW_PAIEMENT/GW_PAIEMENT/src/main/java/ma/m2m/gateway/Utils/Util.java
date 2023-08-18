@@ -23,6 +23,12 @@ import java.util.concurrent.ThreadLocalRandom;
 import lombok.extern.slf4j.Slf4j;
 // import org.apache.commons.io.FileUtils;
 
+/*
+* @author  LAHCEN NAOUI
+* @version 1.0
+* @since   2023-07-01 / 2023-09-01 
+ */
+
 @Slf4j
 public class Util {
 

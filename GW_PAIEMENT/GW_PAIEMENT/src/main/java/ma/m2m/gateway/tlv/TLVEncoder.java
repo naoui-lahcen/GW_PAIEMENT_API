@@ -10,6 +10,12 @@ import java.util.Map;
 
 import hirondelle.date4j.DateTime;
 
+/*
+* @author  LAHCEN NAOUI
+* @version 1.0
+* @since   2023-07-01 / 2023-09-01 
+ */
+
 /**
  * Class responsible for encoding many data fields into TLV format
  */

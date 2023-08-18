@@ -1,5 +1,11 @@
 package ma.m2m.gateway.model;
 
+/*
+* @author  LAHCEN NAOUI
+* @version 1.0
+* @since   2023-07-01 / 2023-09-01 
+ */
+
 public class DataDGI {
 	private int idDataDGI;
 	private String storeId; //code commerçant

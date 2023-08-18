@@ -4,6 +4,12 @@ import ma.m2m.gateway.Utils.Objects;
 import ma.m2m.gateway.dto.HistoAutoGateDto;
 import ma.m2m.gateway.model.HistoAutoGate;
 
+/*
+* @author  LAHCEN NAOUI
+* @version 1.0
+* @since   2023-07-01 / 2023-09-01 
+ */
+
 public class HistoAutoGateMapper {
 
 	public HistoAutoGateDto model2VO(HistoAutoGate model) {

@@ -8,6 +8,12 @@ import ma.m2m.gateway.mappers.TransactionMapper;
 import ma.m2m.gateway.model.Transaction;
 import ma.m2m.gateway.repository.TransactionDao;
 
+/*
+* @author  LAHCEN NAOUI
+* @version 1.0
+* @since   2023-07-01 / 2023-09-01 
+ */
+
 @Service
 public class TransactionServiceImpl implements TransactionService {
 	

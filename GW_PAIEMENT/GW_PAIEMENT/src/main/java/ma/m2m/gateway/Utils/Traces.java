@@ -9,12 +9,12 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
-/**
- * The Class Traces generate traces
- * 
- * @version 1.0 2023-04-21
- * @author lnaoui
+/*
+* @author  LAHCEN NAOUI
+* @version 1.0
+* @since   2023-07-01 / 2023-09-01 
  */
+
 
 @Component
 public class Traces {

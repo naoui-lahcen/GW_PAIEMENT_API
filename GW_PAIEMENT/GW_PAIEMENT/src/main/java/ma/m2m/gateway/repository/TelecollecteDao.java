@@ -8,6 +8,12 @@ import org.springframework.stereotype.Repository;
 
 import ma.m2m.gateway.model.Telecollecte;
 
+/*
+* @author  LAHCEN NAOUI
+* @version 1.0
+* @since   2023-07-01 / 2023-09-01 
+ */
+
 @Repository
 public interface TelecollecteDao extends JpaRepository<Telecollecte, Long>{
 	

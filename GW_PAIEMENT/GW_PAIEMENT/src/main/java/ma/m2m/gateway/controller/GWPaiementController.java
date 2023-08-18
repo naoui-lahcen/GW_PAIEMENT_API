@@ -42,6 +42,12 @@ import ma.m2m.gateway.service.DemandePaiementService;
 import ma.m2m.gateway.service.GalerieService;
 import ma.m2m.gateway.threedsecure.ThreeDSecureResponse;
 
+/*
+* @author  LAHCEN NAOUI
+* @version 1.0
+* @since   2023-07-01 / 2023-09-01 
+ */
+
 @Controller
 @CrossOrigin(origins = "*", allowedHeaders = "*", maxAge = 3600)
 public class GWPaiementController {

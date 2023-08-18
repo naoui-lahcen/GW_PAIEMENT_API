@@ -3,6 +3,12 @@ package ma.m2m.gateway.switching;
 import java.io.Serializable;
 import java.util.Objects;
 
+/*
+* @author  LAHCEN NAOUI
+* @version 1.0
+* @since   2023-07-01 / 2023-09-01 
+ */
+
 public class TrameTLV implements Serializable {
 	/**
 	 * 

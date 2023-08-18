@@ -5,6 +5,12 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import ma.m2m.gateway.dto.DemandePaiementDto;
 
+/*
+* @author  LAHCEN NAOUI
+* @version 1.0
+* @since   2023-07-01 / 2023-09-01 
+ */
+
 //@Service
 public interface DemandePaiementService {
 	

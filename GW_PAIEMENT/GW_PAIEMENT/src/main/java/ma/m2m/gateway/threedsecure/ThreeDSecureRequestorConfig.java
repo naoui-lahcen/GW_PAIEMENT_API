@@ -5,6 +5,12 @@ import com.google.gson.GsonBuilder;
 
 import lombok.experimental.UtilityClass;
 
+/*
+* @author  LAHCEN NAOUI
+* @version 1.0
+* @since   2023-07-01 / 2023-09-01 
+ */
+
 @UtilityClass
 public class ThreeDSecureRequestorConfig {
 	

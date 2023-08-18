@@ -8,6 +8,12 @@ import ma.m2m.gateway.mappers.TelecollecteMapper;
 import ma.m2m.gateway.model.Telecollecte;
 import ma.m2m.gateway.repository.TelecollecteDao;
 
+/*
+* @author  LAHCEN NAOUI
+* @version 1.0
+* @since   2023-07-01 / 2023-09-01 
+ */
+
 @Service
 public class TelecollecteServiceImpl implements TelecollecteService {
 	

@@ -7,6 +7,12 @@ import ma.m2m.gateway.dto.GalerieDto;
 import ma.m2m.gateway.mappers.GalerieMapper;
 import ma.m2m.gateway.repository.GalerieDao;
 
+/*
+* @author  LAHCEN NAOUI
+* @version 1.0
+* @since   2023-07-01 / 2023-09-01 
+ */
+
 @Service
 public class GalerieServiceImpl implements GalerieService {
 	
