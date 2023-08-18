@@ -3567,13 +3567,16 @@ public class APIController {
 
 			cardtokenDto.setToken(tokencard);
 			System.out.println("cardtokenDto token : " + cardtokenDto.getToken());
+			traces.writeInFileTransaction(folder, file, "cardtokenDto token : " + cardtokenDto.getToken());
 
 			Calendar dateCalendar = Calendar.getInstance();
 			Date dateToken = dateCalendar.getTime();
 			String dateTokenStr = dateFormat.format(dateToken);
 			System.out.println("cardtokenDto dateTokenStr : " + dateTokenStr);
+			traces.writeInFileTransaction(folder, file, "cardtokenDto dateTokenStr : " + dateTokenStr);
 			Date dateTokenFormated = dateFormat.parse(dateTokenStr);
 			System.out.println("cardtokenDto dateTokenFormated : " + dateTokenFormated);
+			traces.writeInFileTransaction(folder, file, "cardtokenDto dateTokenFormated : " + dateTokenFormated);
 			cardtokenDto.setTokenDate(dateTokenFormated);
 			cardtokenDto.setCardNumber(cardnumber);
 			cardtokenDto.setIdMerchant(merchantid);
@@ -3581,15 +3584,16 @@ public class APIController {
 			cardtokenDto.setLast_name(lname);
 
 			System.out.println("cardtokenDto expirydate : " + expirydate);
+			traces.writeInFileTransaction(folder, file, "Insert into table CARDTOKEN OK");
 
 			cardtokenDto.setExprDate(expirydate);
 			cardtokenDto.setHolderName(holdername);
 			cardtokenDto.setMcc(merchantid);
 
-			CardtokenDto dto = cardtokenService.save(cardtokenDto);
+			CardtokenDto cardtokenSaved = cardtokenService.save(cardtokenDto);
 
 			// Card info
-			jso.put("token", cardtokenDto.getToken());
+			jso.put("token", cardtokenSaved.getToken());
 
 			// Transaction info
 			jso.put("statuscode", "00");
@@ -3598,7 +3602,7 @@ public class APIController {
 			traces.writeInFileTransaction(folder, file, "Insert into table CARDTOKEN OK");
 
 		} catch (Exception ex) {
-			traces.writeInFileTransaction(folder, file, "Error during CARDTOKEN insertion : " + ex);
+			traces.writeInFileTransaction(folder, file, "Error during CARDTOKEN Saving : " + ex);
 			// Card info
 			jso.put("token", "");
 
