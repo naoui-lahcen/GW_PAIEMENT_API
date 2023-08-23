@@ -12,6 +12,10 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.SplittableRandom;
 
+import javax.servlet.http.HttpServletResponse;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -23,10 +27,13 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.ui.Model;
+import org.springframework.util.MultiValueMap;
+
 import ma.m2m.gateway.Utils.Traces;
 import ma.m2m.gateway.Utils.Util;
 import ma.m2m.gateway.config.JwtTokenUtil;
@@ -197,48 +204,64 @@ public class GWPaiementController {
 		traces.writeInFileTransaction(folder, file, "findByTokencommande token : " + token);
 		System.out.println("findByTokencommande token : " + token);		
 		
-		DemandePaiementDto demandeDto = demandePaiementService.findByTokencommande(token);
-				
-		if(demandeDto == null) {
-			traces.writeInFileTransaction(folder, file, "demandeDto null token : " + token);
-			System.out.println("demandeDto null token : " + token);		
-		}
-		
+		DemandePaiementDto demandeDto = null;
 		CommercantDto merchant = null;
 		String merchantid = "";
 		String orderid = "";
+		
+		String page="napspayment";
+		
 		try {
-			merchantid =demandeDto.getComid();
-			orderid = demandeDto.getCommande();
-			merchant = commercantService.findByCmrCode(merchantid);
-			if(merchant !=null) {
-				demandeDto.setCommercantDto(merchant);
+			demandeDto = demandePaiementService.findByTokencommande(token);
+			
+			if(demandeDto != null) {
+				try {
+					merchantid =demandeDto.getComid();
+					orderid = demandeDto.getCommande();
+					merchant = commercantService.findByCmrCode(merchantid);
+					if(merchant !=null) {
+						demandeDto.setCommercantDto(merchant);
+					}
+				} catch (Exception e) {
+					traces.writeInFileTransaction(folder, file,
+							"authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
+									+ "] and merchantid:[" + merchantid );
+
+					return "authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
+							+ "] and merchantid:[" + merchantid + "]";
+				}
+				GalerieDto galerie = null;
+				try {
+					merchantid =demandeDto.getComid();
+					orderid = demandeDto.getCommande();
+					galerie = galerieService.findByCodeCmr(merchantid);
+					if(galerie !=null) {
+						demandeDto.setGalerieDto(galerie);
+					}
+				} catch (Exception e) {
+					traces.writeInFileTransaction(folder, file,
+							"authorization 500 Galerie misconfigured in DB or not existing orderid:[" + orderid
+									+ "] and merchantid:[" + merchantid );
+
+					return "authorization 500 Galerie misconfigured in DB or not existing orderid:[" + orderid
+							+ "] and merchantid:[" + merchantid + "]";
+				}
+			} else {
+				 page="result";
+				traces.writeInFileTransaction(folder, file, "demandeDto null token : " + token);
+				System.out.println("demandeDto null token : " + token);		
 			}
+
 		} catch (Exception e) {
 			traces.writeInFileTransaction(folder, file,
-					"authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
-							+ "] and merchantid:[" + merchantid );
-
-			return "authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
-					+ "] and merchantid:[" + merchantid + "]";
-		}
-		GalerieDto galerie = null;
-		try {
-			merchantid =demandeDto.getComid();
-			orderid = demandeDto.getCommande();
-			galerie = galerieService.findByCodeCmr(merchantid);
-			if(galerie !=null) {
-				demandeDto.setGalerieDto(galerie);
-			}
-		} catch (Exception e) {
+					"authorization 500 DEMANDE_PAIEMENT misconfigured in DB or not existing token:[" + token + "]");
+			
 			traces.writeInFileTransaction(folder, file,
-					"authorization 500 Galerie misconfigured in DB or not existing orderid:[" + orderid
-							+ "] and merchantid:[" + merchantid );
-
-			return "authorization 500 Galerie misconfigured in DB or not existing orderid:[" + orderid
-					+ "] and merchantid:[" + merchantid + "]";
+					"authorization 500 exception" + e);
+			e.printStackTrace();
+			return "authorization 500 DEMANDE_PAIEMENT misconfigured in DB or not existing token:[" + token + "]";
 		}
-
+		
 		
 		model.addAttribute("demandeDto", demandeDto);
 		System.out.println("findByTokencommande Iddemande recupérée : " + demandeDto.getIddemande());
@@ -247,11 +270,12 @@ public class GWPaiementController {
 		traces.writeInFileTransaction(folder, file, "*********** Fin showPagePayment ************** ");
 		System.out.println("*********** Fin showPagePayment ************** ");
 
-		return "napspayment";
+		return page;
 	}
 	
-	@RequestMapping(path = "/napspayment/linkpayment", produces = "application/json; charset=UTF-8")
-	public ResponseEntity<responseDto> getLink(@RequestBody DemandePaiementDto demandeDto) {
+	
+	@RequestMapping(path = "/napspayment/linkpayment1", produces = "application/json; charset=UTF-8")
+	public ResponseEntity<responseDto> getLink1(@RequestBody DemandePaiementDto demandeDto) {
 
 		System.out.println("*********** Start getLink ************** ");
 		System.out.println("demandeDto commerçant recupérée : " + demandeDto.getComid());

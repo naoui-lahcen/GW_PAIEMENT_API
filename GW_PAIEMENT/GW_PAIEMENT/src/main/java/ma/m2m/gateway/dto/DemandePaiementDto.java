@@ -1,6 +1,7 @@
 package ma.m2m.gateway.dto;
 
 import java.io.Serializable;
+import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

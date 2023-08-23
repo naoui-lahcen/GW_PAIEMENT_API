@@ -28,6 +28,11 @@ public class Transaction implements Serializable {
 	 */
 	private static final long serialVersionUID = 5885509636447853241L;
 	
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "TRS_ID")	
+	private long trs_id;
+	
 	@Column(name = "TRS_NUMTRAIT")
 	private Double trs_numtrait;
 	@Column(name = "TRS_NUMCMR")
@@ -136,10 +141,7 @@ public class Transaction implements Serializable {
 	private Date    trs_datfin;
 	@Column(name = "TRS_ORDRECARTE")	
 	private String  trs_ordrecarte;
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "TRS_ID")	
-	private long trs_id;
+
 	@Column(name = "TRS_COMMANDE")	
 	private String   trs_commande;
 	

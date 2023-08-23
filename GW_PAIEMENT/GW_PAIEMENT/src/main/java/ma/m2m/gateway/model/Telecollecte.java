@@ -29,18 +29,16 @@ public class Telecollecte implements Serializable {
 	private static final long serialVersionUID = 248680037522737855L;
 
 	
-	
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "TLC_NUMTLCOLCTE")
+	private Long tlc_numtlcolcte;
 
-	
 	@Column(name = "TLC_NUMCMR")
 	private String tlc_numcmr;
 	@Column(name = "TLC_NUMTPE")
 	private String tlc_numtpe;
 	
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "TLC_NUMTLCOLCTE")
-	private Long tlc_numtlcolcte;
 	@Column(name = "TLC_NUMREMISE")
 	private Double tlc_numremise;
 	@Column(name = "TLC_NUMFICH")

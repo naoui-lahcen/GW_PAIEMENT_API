@@ -52,7 +52,6 @@ import ma.m2m.gateway.service.CardtokenService;
 import ma.m2m.gateway.service.CommercantService;
 import ma.m2m.gateway.service.DemandePaiementService;
 import ma.m2m.gateway.service.HistoAutoGateService;
-import ma.m2m.gateway.service.SWHistoAutoService;
 import ma.m2m.gateway.service.TelecollecteService;
 import ma.m2m.gateway.service.TransactionService;
 import ma.m2m.gateway.switching.SwitchTCPClient;
@@ -66,7 +65,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
-
+//import ma.m2m.gateway.service.SWHistoAutoService;
 
 /*
 * @author  LAHCEN NAOUI
@@ -130,8 +129,8 @@ public class APIController {
 	@Autowired
 	TelecollecteService telecollecteService;
 
-	@Autowired
-	SWHistoAutoService swHistoAutoService;
+	//@Autowired
+	//SWHistoAutoService swHistoAutoService;
 
 	@Autowired
 	CardtokenService cardtokenService;
@@ -748,7 +747,9 @@ public class APIController {
 				port = Integer.parseInt(s_port);
 
 				traces.writeInFileTransaction(folder, file, "Switch TCP client V2 Connecting ...");
+				
 				SwitchTCPClientV2 switchTCPClient = new SwitchTCPClientV2(sw_s, port);
+				
 				boolean s_conn = switchTCPClient.isConnected();
 
 				if (!s_conn) {
@@ -934,13 +935,14 @@ public class APIController {
 			tag66_resp_verified = tag66_resp;
 			String s_status, pan_auto = "";
 
-			SWHistoAutoDto swhist = null;
+			//SWHistoAutoDto swhist = null;
 
 			if (switch_ko == 1) {
 				pan_auto = Util.formatagePan(cardnumber);
 				traces.writeInFileTransaction(folder, file, "getSWHistoAuto pan_auto/rrn/amount/date/merchantid : "
 						+ pan_auto + "/" + rrn + "/" + amount + "/" + date + "/" + merchantid);
-				try {
+				//comment not used
+				/*try {
 
 					swhist = swHistoAutoService.getSWHistoAuto(pan_auto, rrn, amount, date, merchantid);
 
@@ -952,7 +954,7 @@ public class APIController {
 
 					return "authorization 500 Error during tlv Switch response cannot match switch history "
 							+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]";
-				}
+				}*/
 
 				/*if (swhist == null) {
 					traces.writeInFileTransaction(folder, file,
@@ -963,7 +965,7 @@ public class APIController {
 					return "authorization 500 Error during tlv Switch response cannot match switch history "
 							+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]";
 
-				}*/
+				}
 				tag20_resp_verified = swhist.getHat_coderep();
 				tag19_res_verified = swhist.getHat_nautemt();
 				tag66_resp_verified = swhist.getHat_nrefce();
@@ -975,7 +977,7 @@ public class APIController {
 
 					return "authorization 500 Error during tlv Switch response cannot match switch history "
 							+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]";
-				}
+				}*/
 
 			}
 
@@ -1353,10 +1355,10 @@ public class APIController {
 
 			} catch (Exception jsouterr) {
 				traces.writeInFileTransaction(folder, file,
-						"authorization 500 Error during jso out processing given authnumber" + "authnumber:["
+						"authorization 500 Error during jso out processing given authnumber:["
 								+ authnumber + "]" + jsouterr);
 
-				return "authorization 500 Error during jso out processing given authnumber" + "authnumber:["
+				return "authorization 500 Error during jso out processing given authnumber:["
 						+ authnumber + "]";
 
 			}
@@ -1460,6 +1462,242 @@ public class APIController {
 
 	}
 
+	
+	@PostMapping(value = "/napspayment/linkpayment", consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public String getLink(@RequestHeader MultiValueMap<String, String> header, @RequestBody String linkP,
+			HttpServletResponse response) {
+		// create file log
+		traces.creatFileTransaction(file);
+		traces.writeInFileTransaction(folder, file, "*********** Start getLink() ************** ");
+		System.out.println("*********** Start getLink() ************** ");
+
+		String api_key = "";
+		String api_product = "";
+		String api_version = "";
+		String api_user_agent = "";
+
+		traces.writeInFileTransaction(folder, file, "getLink api call start ...");
+		traces.writeInFileTransaction(folder, file, "getLink : [" + linkP + "]");
+		if (header != null)
+			traces.writeInFileTransaction(folder, file, "header : [" + header.toString() + "]");
+		else
+			traces.writeInFileTransaction(folder, file, "error header is null !");
+
+		try {
+
+			if (header != null) {
+
+				if (header.get("x-api-key") != null)
+					api_key = (String) header.get("x-api-key").get(0);
+				else if (header.get("x-api-key") != null)
+					api_key = (String) header.get("x-api-key").get(0);
+				if (header.get("x-product") != null)
+					api_product = (String) header.get("x-product").get(0);
+				else if (header.get("X-PRODUCT") != null)
+					api_product = (String) header.get("X-PRODUCT").get(0);
+				if (header.get("x-version") != null)
+					api_version = (String) header.get("x-version").get(0);
+				else if (header.get("X-VERSION") != null)
+					api_version = (String) header.get("X-VERSION").get(0);
+				if (header.get("user-agent") != null)
+					api_user_agent = (String) header.get("user-agent").get(0);
+				else if (header.get("USER-AGENT") != null)
+					api_user_agent = (String) header.get("USER-AGENT").get(0);
+			}
+
+		} catch (Exception head_err) {
+
+			if (header.toString() != null) {
+				traces.writeInFileTransaction(folder, file,
+						"getLink 500 malformed header" + header.toString() + head_err);
+				return "getLink 500 malformed header" + header.toString() + head_err;
+			} else {
+				traces.writeInFileTransaction(folder, file, "getLink 500 malformed header" + head_err);
+				return "getLink 500 malformed header" + head_err;
+			}
+
+		}
+
+		JSONObject jsonOrequest = null;
+		
+		DemandePaiementDto dmd = null;
+		DemandePaiementDto dmdSaved = null;
+		SimpleDateFormat formatter_1, formatter_2, formatheure, formatdate = null;
+		Date trsdate = null;
+		Integer Idmd_id = null;
+		
+		try {
+			jsonOrequest = new JSONObject(linkP);
+		}
+
+		catch (JSONException jserr) {
+			traces.writeInFileTransaction(folder, file, "getLink 500 malformed json expression" + linkP + jserr);
+			return "getLink 500 malformed json expression" + linkP + jserr;
+		}
+
+		String orderid, amount, merchantid, merchantname, websiteName, websiteid, 
+		country, phone, city, state, zipcode, address, expirydate,transactiondate, transactiontime,
+				callbackUrl, fname, lname, email = "", successURL, failURL;
+		try {
+			// Transaction info
+			orderid = (String) jsonOrequest.get("orderid");
+			amount = (String) jsonOrequest.get("amount");
+
+			// Merchnat info
+			merchantid = (String) jsonOrequest.get("merchantid");
+			merchantname = (String) jsonOrequest.get("merchantname");
+			websiteName = (String) jsonOrequest.get("websitename");
+			websiteid = (String) jsonOrequest.get("websiteid");
+			callbackUrl = (String) jsonOrequest.get("callbackurl");
+			successURL = (String) jsonOrequest.get("successURL");
+			failURL = (String) jsonOrequest.get("failURL");
+
+			// Client info
+			fname = (String) jsonOrequest.get("fname");
+			lname = (String) jsonOrequest.get("lname");
+			email = (String) jsonOrequest.get("email");
+			country = (String) jsonOrequest.get("country");
+			phone = (String) jsonOrequest.get("phone");
+			city = (String) jsonOrequest.get("city");
+			state = (String) jsonOrequest.get("state");
+			zipcode = (String) jsonOrequest.get("zipcode");
+			address = (String) jsonOrequest.get("address");
+
+		} catch (Exception jerr) {
+			traces.writeInFileTransaction(folder, file, "getLink 500 malformed json expression" + linkP + jerr);
+			return "getLink 500 malformed json expression" + linkP + jerr;
+
+		}
+
+		CommercantDto current_merchant = null;
+		try {
+			current_merchant = commercantService.findByCmrCode(merchantid);
+		} catch (Exception e) {
+			traces.writeInFileTransaction(folder, file,
+					"authorization 500" + "Merchant misconfigured in DB or not existing orderid:[" + orderid
+							+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]");
+
+			return "getLink 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
+					+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]";
+		}
+
+		if (current_merchant == null) {
+			traces.writeInFileTransaction(folder, file,
+					"getLink 500" + "Merchant misconfigured in DB or not existing orderid:[" + orderid
+							+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]");
+
+			return "getLink 500" + "Merchant misconfigured in DB or not existing orderid:[" + orderid
+					+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]";
+
+		}
+
+		if (current_merchant.getCmrCodactivite() == null) {
+			traces.writeInFileTransaction(folder, file,
+					"getLink 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
+							+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]");
+
+			return "getLink 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
+					+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]";
+
+		}
+
+		if (current_merchant.getCmrCodbqe() == null) {
+			traces.writeInFileTransaction(folder, file,
+					"getLink 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
+							+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]");
+
+			return "getLink 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
+					+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]";
+
+		}
+		
+		String url ="", status ="", statuscode ="";
+		
+		try {
+
+			dmd = new DemandePaiementDto();
+
+			dmd.setComid(merchantid);
+			dmd.setCommande(orderid);
+			dmd.setGalid(websiteid);
+			dmd.setSuccessURL(successURL);
+			dmd.setFailURL(failURL);
+			dmd.setMontant(Double.parseDouble(amount));
+			dmd.setNom(lname);
+			dmd.setPrenom(fname);
+			dmd.setEmail(email);
+			dmd.setTel(phone);
+			dmd.setAddress(address);
+			dmd.setCity(city);
+			dmd.setCountry(country);
+			dmd.setState(state);
+			dmd.setPostcode(zipcode);
+			dmd.setLangue("E");
+			dmd.setEtat_demande("INIT");
+
+			formatter_1 = new SimpleDateFormat("yyyy-MM-dd");
+			formatter_2 = new SimpleDateFormat("HH:mm:ss");
+			trsdate = new Date();
+			transactiondate = formatter_1.format(trsdate);
+			transactiontime = formatter_2.format(trsdate);
+			dmd.setDem_date_time(transactiondate + transactiontime);
+
+
+			dmd.setIs_addcard("N");
+			dmd.setIs_tokenized("N");
+			dmd.setIs_whitelist("N");
+			dmd.setIs_withsave("N");
+
+			// generer token
+			String tokencommande = Util.genTokenCom(dmd.getCommande(), dmd.getComid());
+			dmd.setTokencommande(tokencommande);
+
+			dmdSaved = demandePaiementService.save(dmd);
+			
+			url = link_success+dmdSaved.getTokencommande();
+			statuscode = "00";
+			status = "OK";
+
+		} catch (Exception err1) {
+			
+			url = "";
+			statuscode = "";
+			status = "KO";
+			traces.writeInFileTransaction(folder, file,
+					"getLink 500 Error during DEMANDE_PAIEMENT insertion for given orderid:["
+							+ orderid + "]" + err1);
+
+			return "getLink 500 Error during DEMANDE_PAIEMENT insertion for given orderid:["
+					+ orderid + "]";
+
+		}
+
+		JSONObject jso = new JSONObject();
+
+		try {
+			// Transaction info
+			jso.put("statuscode", statuscode);
+			jso.put("status", status);
+			jso.put("orderid", orderid);
+			jso.put("amount", amount);
+			jso.put("url", url);
+
+			// Merchant info
+			jso.put("merchantid", merchantid);
+
+		} catch (Exception err8) {
+			traces.writeInFileTransaction(folder, file, "refund 500 Error during jso out processing given "
+					+ "authnumber:[" + orderid + "]" + err8);
+
+			return "refund 500 Error during jso out processing given " + "orderid:[" + orderid + "]";
+
+		}
+
+		return jso.toString();
+
+	}
+	
 	@RequestMapping(path = "/napspayment/CreatTocken24")
 	@ResponseBody
 	public ResponseEntity<String> generateToken() {

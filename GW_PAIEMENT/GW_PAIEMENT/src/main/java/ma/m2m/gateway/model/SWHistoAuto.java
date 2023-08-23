@@ -16,8 +16,8 @@ import org.springframework.stereotype.Component;
 * @since   2023-07-01 / 2023-09-01 
  */
 
-@Entity
-@Table(name = "HISTOAUTO", schema = "MXSWITCH", catalog="MXSWITCH")
+//@Entity
+//@Table(name = "HISTOAUTO", schema = "MXSWITCH", catalog="MXSWITCH")
 //@Component
 public class SWHistoAuto implements Serializable {
 
@@ -27,167 +27,167 @@ public class SWHistoAuto implements Serializable {
 		super();
 	}
 
-	@Id
-	@Column(name = "HAT_NUMDEM")
+	//@Id
+	//@Column(name = "HAT_NUMDEM")
 	private int hat_numdem;
 
-	@Column(name = "HAT_NUMCMR")
+	//@Column(name = "HAT_NUMCMR")
 	private String hat_numcmr;
 
-	@Column(name = "HAT_MCC")
+	//@Column(name = "HAT_MCC")
 	private String hat_mcc;
 
-	@Column(name = "HAT_DATDEM")
+	//@Column(name = "HAT_DATDEM")
 	private Date hat_datdem;
 
-	@Column(name = "HAT_HERDEM")
+	//@Column(name = "HAT_HERDEM")
 	private String hat_herdem;
 
-	@Column(name = "HAT_CODTPE")
+	//@Column(name = "HAT_CODTPE")
 	private String hat_codtpe;
 
-	@Column(name = "HAT_PORTEUR")
+	//@Column(name = "HAT_PORTEUR")
 	private String hat_porteur;
 
-	@Column(name = "HAT_MONTANT")
+	//@Column(name = "HAT_MONTANT")
 	private Double hat_montant;
 
-	@Column(name = "HAT_DEVISE")
+	//@Column(name = "HAT_DEVISE")
 	private String hat_devise;
 
-	@Column(name = "HAT_CODEREP")
+	//@Column(name = "HAT_CODEREP")
 	private String hat_coderep;
 
-	@Column(name = "HAT_NAUTSRV")
+	//@Column(name = "HAT_NAUTSRV")
 	private String hat_nautsrv;
 
-	@Column(name = "HAT_NCOMPTE")
+	//@Column(name = "HAT_NCOMPTE")
 	private String hat_ncompte;
 
-	@Column(name = "HAT_NAUTEMT")
+	//@Column(name = "HAT_NAUTEMT")
 	private String hat_nautemt;
 
-	@Column(name = "HAT_CODTRNS")
+	//@Column(name = "HAT_CODTRNS")
 	private String hat_codtrns;
 
-	@Column(name = "HAT_NREFCE")
+	//@Column(name = "HAT_NREFCE")
 	private String hat_nrefce;
 
-	@Column(name = "HAT_MTFREF1")
+	//@Column(name = "HAT_MTFREF1")
 	private String hat_mtfref1;
 
-	@Column(name = "HAT_MTFREF2")
+	//@Column(name = "HAT_MTFREF2")
 	private String hat_mtfref2;
 
-	@Column(name = "HAT_PROCODE")
+	//@Column(name = "HAT_PROCODE")
 	private String hat_procode;
 
-	@Column(name = "HAT_REASREQ")
+	//@Column(name = "HAT_REASREQ")
 	private String hat_reasreq;
 
-	@Column(name = "HAT_ANOMALIE")
+	//@Column(name = "HAT_ANOMALIE")
 	private String hat_anomalie;
 
-	@Column(name = "HAT_INSTANCE")
+	//@Column(name = "HAT_INSTANCE")
 	private String hat_instance;
 
-	@Column(name = "HAT_APPELBQE")
+	//@Column(name = "HAT_APPELBQE")
 	private String hat_appelbqe;
 
-	@Column(name = "HAT_CODPAY")
+	//@Column(name = "HAT_CODPAY")
 	private String hat_codpay;
 
-	@Column(name = "HAT_DEMANDEUR")
+	//@Column(name = "HAT_DEMANDEUR")
 	private String hat_demandeur;
 
-	@Column(name = "HAT_REPONDEUR")
+	//@Column(name = "HAT_REPONDEUR")
 	private String hat_repondeur;
 
-	@Column(name = "HAT_NOMDEANDEUR")
+	//@Column(name = "HAT_NOMDEANDEUR")
 	private String hat_nomdeandeur;
 
-	@Column(name = "HAT_TYPPROTO")
+	//@Column(name = "HAT_TYPPROTO")
 	private String hat_typproto;
 
-	@Column(name = "HAT_ETAT")
+	//@Column(name = "HAT_ETAT")
 	private String hat_etat;
 
-	@Column(name = "HAT_EXPDATE")
+	//@Column(name = "HAT_EXPDATE")
 	private String hat_expdate;
 
-	@Column(name = "HAT_BQECMR")
+	//@Column(name = "HAT_BQECMR")
 	private String hat_bqecmr;
 
-	@Column(name = "HAT_AIP")
+	//@Column(name = "HAT_AIP")
 	private String hat_aip;
 
-	@Column(name = "HAT_ATC")
+	//@Column(name = "HAT_ATC")
 	private String hat_atc;
 
-	@Column(name="HAT_AC")
+	//@Column(name="HAT_AC")
 	private String hat_ac;
 
-	@Column(name="HAT_CID")
+	//@Column(name="HAT_CID")
 	private String hat_cid;
 
-	@Column(name="HAT_CVMRES")
+	//@Column(name="HAT_CVMRES")
 	private String hat_cvmres;
 
-	@Column(name="HAT_SERNUM")
+	//@Column(name="HAT_SERNUM")
 	private String hat_sernum;
 
-	@Column(name="HAT_IAD")
+	//@Column(name="HAT_IAD")
 	private String hat_iad;
 
-	@Column(name="HAT_TERMCAPAB")
+	//@Column(name="HAT_TERMCAPAB")
 	private String hat_termcapab;
 
-	@Column(name="HAT_TERMTYP")
+	//@Column(name="HAT_TERMTYP")
 	private String hat_termtyp;
 
-	@Column(name="HAT_TVR")
+	//@Column(name="HAT_TVR")
 	private String hat_tvr;
 
-	@Column(name="HAT_UN")
+	//@Column(name="HAT_UN")
 	private String hat_un;
 
-	@Column(name="HAT_MNTAUT")
+	//@Column(name="HAT_MNTAUT")
 	private String hat_mntaut;
 
-	@Column(name="HAT_MNTOTH")
+	//@Column(name="HAT_MNTOTH")
 	private String hat_mntoth;
 
-	@Column(name="HAT_APPEFFDAT")
+	//@Column(name="HAT_APPEFFDAT")
 	private Date hat_appeffdat;
 
-	@Column(name="HAT_APPEXPDAT")
+	//@Column(name="HAT_APPEXPDAT")
 	private Date hat_appexpdat;
 
-	@Column(name="HAT_PANSN")
+	//@Column(name="HAT_PANSN")
 	private String hat_pansn;
 
-	@Column(name="HAT_PIN")
+	//@Column(name="HAT_PIN")
 	private String hat_pin;
 
-	@Column(name="HAT_PANMOD")
+	//@Column(name="HAT_PANMOD")
 	private String hat_panmod;
 
-	@Column(name="HAT_TERCOUCOD")
+	//@Column(name="HAT_TERCOUCOD")
 	private String hat_tercoucod;
 
-	@Column(name="HAT_CODEDEVISE")
+	//@Column(name="HAT_CODEDEVISE")
 	private String hat_codedevise;
 
-	@Column(name="HAT_TRSDATE")
+	//@Column(name="HAT_TRSDATE")
 	private Date hat_trsdate;
 
-	@Column(name="HAT_TRSTYP")
+	//@Column(name="HAT_TRSTYP")
 	private String hat_trstyp;
 
-	@Column(name="HAT_ISSAUTH")
+	//@Column(name="HAT_ISSAUTH")
 	private String hat_issauth;
 
-	@Column(name="HAT_ISSSCRIPT")
+	//@Column(name="HAT_ISSSCRIPT")
 	private String hat_issscript;
 
 	public int getHat_numdem() {

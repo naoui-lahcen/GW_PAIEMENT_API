@@ -45,7 +45,6 @@ import ma.m2m.gateway.service.CommercantService;
 import ma.m2m.gateway.service.DemandePaiementService;
 import ma.m2m.gateway.service.HistoAutoGateService;
 import ma.m2m.gateway.service.InfoCommercantService;
-import ma.m2m.gateway.service.SWHistoAutoService;
 import ma.m2m.gateway.service.TelecollecteService;
 import ma.m2m.gateway.service.TransactionService;
 import ma.m2m.gateway.switching.SwitchTCPClientV2;
@@ -54,7 +53,7 @@ import ma.m2m.gateway.threedsecure.ThreeDSecureResponse;
 import ma.m2m.gateway.tlv.TLVEncoder;
 import ma.m2m.gateway.tlv.TLVParser;
 import ma.m2m.gateway.tlv.Tags;
-
+//import ma.m2m.gateway.service.SWHistoAutoService;
 /*
 * @author  LAHCEN NAOUI
 * @version 1.0
@@ -109,8 +108,8 @@ public class ACSController {
 	@Autowired
 	TelecollecteService telecollecteService;
 
-	@Autowired
-	SWHistoAutoService swHistoAutoService;
+	//@Autowired
+	//SWHistoAutoService swHistoAutoService;
 
 	@Autowired
 	CardtokenService cardtokenService;
@@ -565,9 +564,10 @@ public class ACSController {
 						port = Integer.parseInt(s_port);
 
 						traces.writeInFileTransaction(folder, file, "Switch TCP client V2 Connecting ...");
-						//SwitchTCPClientV2 switchTCPClient = new SwitchTCPClientV2(sw_s, port);
-						// comment for test
-						/*boolean s_conn = switchTCPClient.isConnected();
+						
+						SwitchTCPClientV2 switchTCPClient = new SwitchTCPClientV2(sw_s, port);
+						
+						boolean s_conn = switchTCPClient.isConnected();
 
 						if (!s_conn) {
 
@@ -585,9 +585,9 @@ public class ACSController {
 
 							traces.writeInFileTransaction(folder, file, "Switch TLV Request end.");
 							switchTCPClient.shutdown();
-						}*/
+						}
 
-					}/* catch (UnknownHostException e) {
+					} catch (UnknownHostException e) {
 						traces.writeInFileTransaction(folder, file, "Switch  malfunction UnknownHostException !!!" + e);
 						switch_ko = 1;
 						//response.sendRedirect(redirectFailURL(dmd, folder, file));
@@ -620,7 +620,7 @@ public class ACSController {
 								"authorization 500 Error Switch communication IOException" + "switch ip:[" + sw_s
 										+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
 						response.sendRedirect(link_result);
-					}*/
+					}
 
 					catch (Exception e) {
 						traces.writeInFileTransaction(folder, file, "Switch  malfunction Exception!!!" + e);
@@ -634,7 +634,7 @@ public class ACSController {
 					String resp = resp_tlv;
 					
 					// resp debug
-					 resp = "000001300101652345658188287990030010008008011800920090071180092014012000000051557015003504016006200721017006152650066012120114619926018006143901019006797535023001H020002000210026108000621072009800299";
+					// resp = "000001300101652345658188287990030010008008011800920090071180092014012000000051557015003504016006200721017006152650066012120114619926018006143901019006797535023001H020002000210026108000621072009800299";
 
 					if (switch_ko == 0 && resp == null) {
 						traces.writeInFileTransaction(folder, file, "Switch  malfunction resp null!!!");
@@ -761,7 +761,7 @@ public class ACSController {
 					 * if(switch_ko==1) { pan_auto = Util.formatagePan(cardnumber);
 					 * dmdservice.getSWHistoAutoN(pan_auto, rrn, amount, date, merchantid); }
 					 */
-					SWHistoAutoDto swhist = null;
+					//SWHistoAutoDto swhist = null;
 					if (switch_ko == 1) {
 						pan_auto = Util.formatagePan(cardnumber);
 						traces.writeInFileTransaction(folder, file,
@@ -1211,7 +1211,7 @@ public class ACSController {
 						
 					} catch (Exception jsouterr) {
 						traces.writeInFileTransaction(folder, file,
-								"authorization 500 Error during jso out processing given authnumber" + "authnumber:["
+								"authorization 500 Error during jso out processing given authnumber:["
 										+ authnumber + "]" + jsouterr);
 
 						response.sendRedirect(redirectFailURL(dmd, folder, file));
