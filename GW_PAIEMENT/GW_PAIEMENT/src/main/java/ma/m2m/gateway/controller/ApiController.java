@@ -602,10 +602,10 @@ public class APIController {
 
 		if (idDemande == null || idDemande.equals("")) {
 			traces.writeInFileTransaction(folder, file, "received idDemande from MPI is Null or Empty");
-			dmd.setEtat_demande("MPI_KO");
-			demandePaiementService.save(dmd);
+			dmdSaved.setEtat_demande("MPI_KO");
+			demandePaiementService.save(dmdSaved);
 			traces.writeInFileTransaction(folder, file,
-					"demandePaiement after update MPI_KO idDemande null : " + dmd.toString());
+					"demandePaiement after update MPI_KO idDemande null : " + dmdSaved.toString());
 			return "AUTO INVALIDE DEMANDE";
 		}
 

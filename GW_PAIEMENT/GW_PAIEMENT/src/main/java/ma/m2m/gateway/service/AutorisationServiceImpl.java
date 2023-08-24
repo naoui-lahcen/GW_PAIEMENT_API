@@ -145,20 +145,12 @@ public class AutorisationServiceImpl implements AutorisationService {
 		//traces.creatFileTransaction(file);
 		traces.writeInFileTransaction(folder, file, "Start callThree3DSS()");
 		System.out.println("Start callThree3DSS()");
-		
-		traces.writeInFileTransaction(folder, file, "demandeDto dem_pan : " + demandeDto.getDem_pan());
-		traces.writeInFileTransaction(folder, file, "demandeDto dem_cvv : " + demandeDto.getDem_cvv());
-		traces.writeInFileTransaction(folder, file, "demandeDto type_carte : " + demandeDto.getType_carte());
 
 		typeCarte = demandeDto.getType_carte();
-		traces.writeInFileTransaction(folder, file, "demandeDto enum type_carte : " + demandeDto.getType_carte());
-
-		System.out.println("demandeDto enum type_carte : " + demandeDto.getType_carte());
+		
 		//demandeDto.setExpery(demandeDto.getAnnee().concat(demandeDto.getMois()));
 		demandeDto.setExpery(demandeDto.getDateexpnaps());
-		traces.writeInFileTransaction(folder, file, "demandeDto expery : " + demandeDto.getExpery());
 
-		System.out.println("demandeDto expery : " + demandeDto.getExpery());
 		ThreeDSecureRequestor threeDSecureRequestor = new ThreeDSecureRequestor(folder,file);
 		AuthInitRequest authInitRequest= new AuthInitRequest();
 		ThreeDSecureResponse threeDsecureResponse = new ThreeDSecureResponse();
@@ -166,70 +158,44 @@ public class AutorisationServiceImpl implements AutorisationService {
 		infoCommercantDto = infoCommercantService.findByCmrCode(demandeDto.getComid());
 		
 		if(typeCarte.equals("2")) {
-			authInitRequest.setPan(demandeDto.getDem_pan());
-			authInitRequest.setAmount(demandeDto.getMontant());				
-			authInitRequest.setCurrency(infoCommercantDto.getCmrCurrency().trim());				
-			authInitRequest.setIdCommercant(demandeDto.getComid());
-			authInitRequest.setIdDemande(demandeDto.getIddemande());					
-			authInitRequest.setExpiry(demandeDto.getExpery());
-			//authInitRequest.setAcquirerBIN("11010");
-			authInitRequest.setBrowserAcceptHeader("test");
-			authInitRequest.setBrowserUserAgent("test");
-			authInitRequest.setEmail(infoCommercantDto.getCmrEmail());
-			authInitRequest.setMcc(commercant.getCmrCodactivite());
-			authInitRequest.setMerchantCountryCode(infoCommercantDto.getCmrCurrency().trim());
-			authInitRequest.setNomCommercant(infoCommercantDto.getCmrNom());	
-			authInitRequest.setNotificationURL(notificationACS);
-			authInitRequest.setUrlThreeDSS(urlThreeDSS_M);
-			
-			traces.writeInFileTransaction(folder, file,"authInitRequest : " + authInitRequest);
-			
-			threeDSecureRequestor.threeDSecureRequest(authInitRequest);
-			
-			traces.writeInFileTransaction(folder, file,"Debut appel ThreeDSecure ");
-			
-			try {
-				threeDsecureResponse = threeDSecureRequestor.initAuth(folder, file);
-			} catch (ThreeDSecureRequestorException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-			traces.writeInFileTransaction(folder, file,"fin appel ThreeDSecure response : " + threeDsecureResponse);
-			
+			traces.writeInFileTransaction(folder, file, "typeCarte 2 => Master Card ");
+			System.out.println("typeCarte 2 => Master Card ");
+			authInitRequest.setUrlThreeDSS(urlThreeDSS_M);		
 		} else if(typeCarte.equals("1")) {
-			authInitRequest.setPan(demandeDto.getDem_pan());
-			authInitRequest.setAmount(demandeDto.getMontant());				
-			authInitRequest.setCurrency(infoCommercantDto.getCmrCurrency().trim());				
-			authInitRequest.setIdCommercant(demandeDto.getComid());
-			authInitRequest.setIdDemande(demandeDto.getIddemande());					
-			authInitRequest.setExpiry(demandeDto.getExpery());
-			//authInitRequest.setAcquirerBIN("11010");
-			authInitRequest.setBrowserAcceptHeader("test");
-			authInitRequest.setBrowserUserAgent("test");
-			authInitRequest.setEmail(infoCommercantDto.getCmrEmail());
-			authInitRequest.setMcc(commercant.getCmrCodactivite());
-			authInitRequest.setMerchantCountryCode(infoCommercantDto.getCmrCurrency().trim());
-			authInitRequest.setNomCommercant(infoCommercantDto.getCmrNom());	
+			traces.writeInFileTransaction(folder, file, "typeCarte 1 => Visa ");
+			System.out.println("typeCarte 1 => Visa ");
 			authInitRequest.setUrlThreeDSS(urlThreeDSS_V);
-			authInitRequest.setNotificationURL(notificationACS);
-			
-			traces.writeInFileTransaction(folder, file,"authInitRequest : " + authInitRequest);
-			
-			threeDSecureRequestor.threeDSecureRequest(authInitRequest);
-			
-			traces.writeInFileTransaction(folder, file,"Debut appel ThreeDSecure ");
-			
-			try {
-				threeDsecureResponse = threeDSecureRequestor.initAuth(folder, file);
-			} catch (ThreeDSecureRequestorException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-			traces.writeInFileTransaction(folder, file,"fin appel ThreeDSecure response : " + threeDsecureResponse);
-			
 		}
+		
+		authInitRequest.setPan(demandeDto.getDem_pan());
+		authInitRequest.setAmount(demandeDto.getMontant());				
+		authInitRequest.setCurrency(infoCommercantDto.getCmrCurrency().trim());				
+		authInitRequest.setIdCommercant(demandeDto.getComid());
+		authInitRequest.setIdDemande(demandeDto.getIddemande());					
+		authInitRequest.setExpiry(demandeDto.getExpery());
+		//authInitRequest.setAcquirerBIN("11010");
+		authInitRequest.setBrowserAcceptHeader("test");
+		authInitRequest.setBrowserUserAgent("test");
+		authInitRequest.setEmail(demandeDto.getEmail());
+		authInitRequest.setMcc(commercant.getCmrCodactivite());
+		authInitRequest.setMerchantCountryCode(infoCommercantDto.getCmrCurrency().trim());
+		authInitRequest.setNomCommercant(infoCommercantDto.getCmrNom());	
+		authInitRequest.setNotificationURL(notificationACS);
+		
+		traces.writeInFileTransaction(folder, file,"authInitRequest : " + authInitRequest);
+		
+		threeDSecureRequestor.threeDSecureRequest(authInitRequest);
+		
+		traces.writeInFileTransaction(folder, file,"Debut appel ThreeDSecure ");
+		
+		try {
+			threeDsecureResponse = threeDSecureRequestor.initAuth(folder, file);
+		} catch (ThreeDSecureRequestorException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		traces.writeInFileTransaction(folder, file,"fin appel ThreeDSecure response : " + threeDsecureResponse);
 
 		
 		return threeDsecureResponse;
