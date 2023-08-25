@@ -253,6 +253,11 @@ public class GWPaiementController {
 			demandeDto = demandePaiementService.findByTokencommande(token);
 
 			if (demandeDto != null) {
+				System.out.println("findByTokencommande Iddemande recupérée : " + demandeDto.getIddemande());
+				traces.writeInFileTransaction(folder, file,
+						"findByTokencommande Iddemande recupérée : " + demandeDto.getIddemande());
+				model.addAttribute("demandeDto", demandeDto);
+				
 				try {
 					merchantid = demandeDto.getComid();
 					orderid = demandeDto.getCommande();
@@ -265,8 +270,12 @@ public class GWPaiementController {
 							"showPagePayment 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 									+ "] and merchantid:[" + merchantid);
 
-					return "showPagePayment 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
-							+ "] and merchantid:[" + merchantid + "]";
+					//return "showPagePayment 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
+					//		+ "] and merchantid:[" + merchantid + "]";
+					demandeDto = new DemandePaiementDto();
+					demandeDto.setMsgRefus("Merchant misconfigured in DB or not existing");
+					model.addAttribute("demandeDto", demandeDto);
+					page = "result";
 				}
 				GalerieDto galerie = null;
 				try {
@@ -281,13 +290,20 @@ public class GWPaiementController {
 							"showPagePayment 500 Galerie misconfigured in DB or not existing orderid:[" + orderid
 									+ "] and merchantid:[" + merchantid);
 
-					return "showPagePayment 500 Galerie misconfigured in DB or not existing orderid:[" + orderid
-							+ "] and merchantid:[" + merchantid + "]";
+					//return "showPagePayment 500 Galerie misconfigured in DB or not existing orderid:[" + orderid
+					//		+ "] and merchantid:[" + merchantid + "]";
+					demandeDto = new DemandePaiementDto();
+					demandeDto.setMsgRefus("Galerie misconfigured in DB or not existing");
+					model.addAttribute("demandeDto", demandeDto);
+					page = "result";
 				}
 			} else {
-				page = "result";
 				traces.writeInFileTransaction(folder, file, "demandeDto null token : " + token);
 				System.out.println("demandeDto null token : " + token);
+				demandeDto = new DemandePaiementDto();
+				demandeDto.setMsgRefus("DEMANDE_PAIEMENT not fount in DB");
+				model.addAttribute("demandeDto", demandeDto);
+				page = "result";
 			}
 
 		} catch (Exception e) {
@@ -296,13 +312,12 @@ public class GWPaiementController {
 
 			traces.writeInFileTransaction(folder, file, "showPagePayment 500 exception" + e);
 			e.printStackTrace();
-			return "showPagePayment 500 DEMANDE_PAIEMENT misconfigured in DB or not existing token:[" + token + "]";
+			//return "showPagePayment 500 DEMANDE_PAIEMENT misconfigured in DB or not existing token:[" + token + "]";
+			demandeDto = new DemandePaiementDto();
+			demandeDto.setMsgRefus("DEMANDE_PAIEMENT misconfigured in DB or not existing");
+			model.addAttribute("demandeDto", demandeDto);
+			page = "result";
 		}
-
-		model.addAttribute("demandeDto", demandeDto);
-		System.out.println("findByTokencommande Iddemande recupérée : " + demandeDto.getIddemande());
-		traces.writeInFileTransaction(folder, file,
-				"findByTokencommande Iddemande recupérée : " + demandeDto.getIddemande());
 
 		traces.writeInFileTransaction(folder, file, "*********** Fin showPagePayment ************** ");
 		System.out.println("*********** Fin showPagePayment ************** ");
