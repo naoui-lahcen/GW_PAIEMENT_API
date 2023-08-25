@@ -1088,9 +1088,9 @@ public class ACSController {
 						try {
 
 							traces.writeInFileTransaction(folder, file,
-									"transaction declinded ==> update Demandepaiement status to RE ...");
+									"transaction declinded ==> update Demandepaiement status to SW_REJET ...");
 
-							dmd.setEtat_demande("RE");
+							dmd.setEtat_demande("SW_REJET");
 							demandePaiementService.save(dmd);
 
 						} catch (Exception e) {
@@ -1103,7 +1103,7 @@ public class ACSController {
 
 						}
 
-						traces.writeInFileTransaction(folder, file, "update Demandepaiement status to RE OK.");
+						traces.writeInFileTransaction(folder, file, "update Demandepaiement status to SW_REJET OK.");
 
 					}
 

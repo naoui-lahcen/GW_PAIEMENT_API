@@ -91,13 +91,13 @@ public class GWPaiementController {
 
 	@Value("${key.LINK_INDEX}")
 	private String link_index;
-	
+
 	@Value("${key.SECRET}")
 	private String secret;
 
 	@Value("${key.USER_TOKEN}")
 	private String usernameToken;
-	
+
 	@Value("${key.SWITCH_URL}")
 	private String ipSwitch;
 
@@ -106,16 +106,16 @@ public class GWPaiementController {
 
 	@Autowired
 	CommercantService commercantService;
-	
+
 	@Autowired
 	private InfoCommercantService infoCommercantService;
 
 	@Autowired
 	GalerieService galerieService;
-	
+
 	@Autowired
 	HistoAutoGateService histoAutoGateService;
-	
+
 	@Autowired
 	TransactionService transactionService;
 
@@ -257,45 +257,58 @@ public class GWPaiementController {
 				traces.writeInFileTransaction(folder, file,
 						"findByTokencommande Iddemande recupérée : " + demandeDto.getIddemande());
 				model.addAttribute("demandeDto", demandeDto);
-				
-				try {
-					merchantid = demandeDto.getComid();
-					orderid = demandeDto.getCommande();
-					merchant = commercantService.findByCmrCode(merchantid);
-					if (merchant != null) {
-						demandeDto.setCommercantDto(merchant);
-					}
-				} catch (Exception e) {
-					traces.writeInFileTransaction(folder, file,
-							"showPagePayment 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
-									+ "] and merchantid:[" + merchantid);
-
-					//return "showPagePayment 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
-					//		+ "] and merchantid:[" + merchantid + "]";
-					demandeDto = new DemandePaiementDto();
-					demandeDto.setMsgRefus("Merchant misconfigured in DB or not existing");
+				if (demandeDto.getEtat_demande().equals("SW_PAYE") || demandeDto.getEtat_demande().equals("PAYE")) {
+					traces.writeInFileTransaction(folder, file, "Opération déjà effectuée");
+					demandeDto.setMsgRefus("Opération déjà effectuée");
+					model.addAttribute("demandeDto", demandeDto);
+					page = "operationEffectue";
+				} else if (demandeDto.getEtat_demande().equals("SW_REJET")) {
+					traces.writeInFileTransaction(folder, file, "Transaction rejetée");
+					demandeDto.setMsgRefus("Transaction rejetée");
 					model.addAttribute("demandeDto", demandeDto);
 					page = "result";
-				}
-				GalerieDto galerie = null;
-				try {
-					merchantid = demandeDto.getComid();
-					orderid = demandeDto.getCommande();
-					galerie = galerieService.findByCodeCmr(merchantid);
-					if (galerie != null) {
-						demandeDto.setGalerieDto(galerie);
-					}
-				} catch (Exception e) {
-					traces.writeInFileTransaction(folder, file,
-							"showPagePayment 500 Galerie misconfigured in DB or not existing orderid:[" + orderid
-									+ "] and merchantid:[" + merchantid);
+				} else {
+					try {
+						merchantid = demandeDto.getComid();
+						orderid = demandeDto.getCommande();
+						merchant = commercantService.findByCmrCode(merchantid);
+						if (merchant != null) {
+							demandeDto.setCommercantDto(merchant);
+						}
+					} catch (Exception e) {
+						traces.writeInFileTransaction(folder, file,
+								"showPagePayment 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
+										+ "] and merchantid:[" + merchantid);
 
-					//return "showPagePayment 500 Galerie misconfigured in DB or not existing orderid:[" + orderid
-					//		+ "] and merchantid:[" + merchantid + "]";
-					demandeDto = new DemandePaiementDto();
-					demandeDto.setMsgRefus("Galerie misconfigured in DB or not existing");
-					model.addAttribute("demandeDto", demandeDto);
-					page = "result";
+						// return "showPagePayment 500 Merchant misconfigured in DB or not existing
+						// orderid:[" + orderid
+						// + "] and merchantid:[" + merchantid + "]";
+						demandeDto = new DemandePaiementDto();
+						demandeDto.setMsgRefus("Merchant misconfigured in DB or not existing");
+						model.addAttribute("demandeDto", demandeDto);
+						page = "result";
+					}
+					GalerieDto galerie = null;
+					try {
+						merchantid = demandeDto.getComid();
+						orderid = demandeDto.getCommande();
+						galerie = galerieService.findByCodeCmr(merchantid);
+						if (galerie != null) {
+							demandeDto.setGalerieDto(galerie);
+						}
+					} catch (Exception e) {
+						traces.writeInFileTransaction(folder, file,
+								"showPagePayment 500 Galerie misconfigured in DB or not existing orderid:[" + orderid
+										+ "] and merchantid:[" + merchantid);
+
+						// return "showPagePayment 500 Galerie misconfigured in DB or not existing
+						// orderid:[" + orderid
+						// + "] and merchantid:[" + merchantid + "]";
+						demandeDto = new DemandePaiementDto();
+						demandeDto.setMsgRefus("Galerie misconfigured in DB or not existing");
+						model.addAttribute("demandeDto", demandeDto);
+						page = "result";
+					}
 				}
 			} else {
 				traces.writeInFileTransaction(folder, file, "demandeDto null token : " + token);
@@ -312,7 +325,8 @@ public class GWPaiementController {
 
 			traces.writeInFileTransaction(folder, file, "showPagePayment 500 exception" + e);
 			e.printStackTrace();
-			//return "showPagePayment 500 DEMANDE_PAIEMENT misconfigured in DB or not existing token:[" + token + "]";
+			// return "showPagePayment 500 DEMANDE_PAIEMENT misconfigured in DB or not
+			// existing token:[" + token + "]";
 			demandeDto = new DemandePaiementDto();
 			demandeDto.setMsgRefus("DEMANDE_PAIEMENT misconfigured in DB or not existing");
 			model.addAttribute("demandeDto", demandeDto);
@@ -398,19 +412,19 @@ public class GWPaiementController {
 		System.out.println("demandeDto montant : " + demandeDto.getMontant());
 
 		String capture, currency, orderid, recurring, amount, promoCode, transactionid, capture_id, merchantid,
-			merchantname, websiteName, websiteid, callbackUrl, cardnumber, token, expirydate, holdername, cvv,
-			fname, lname, email, country, phone, city, state, zipcode, address, mesg_type, merc_codeactivite,
-			acqcode, merchant_name, merchant_city, acq_type, processing_code, reason_code, transaction_condition,
-			transactiondate, transactiontime, date, rrn, heure, montanttrame, num_trs = "", successURL, failURL,
-			transactiontype;
-		
+				merchantname, websiteName, websiteid, callbackUrl, cardnumber, token, expirydate, holdername, cvv,
+				fname, lname, email, country, phone, city, state, zipcode, address, mesg_type, merc_codeactivite,
+				acqcode, merchant_name, merchant_city, acq_type, processing_code, reason_code, transaction_condition,
+				transactiondate, transactiontime, date, rrn, heure, montanttrame, num_trs = "", successURL, failURL,
+				transactiontype;
+
 		DemandePaiementDto dmd = null;
 		SimpleDateFormat formatter_1, formatter_2, formatheure, formatdate = null;
 		Date trsdate = null;
 		Integer Idmd_id = null;
 		String[] mm;
 		String[] m;
-		
+
 		String page = "chalenge";
 		try {
 			// Transaction info
@@ -431,7 +445,7 @@ public class GWPaiementController {
 			callbackUrl = demandeDto.getCallbackURL();
 			successURL = demandeDto.getSuccessURL();
 			failURL = demandeDto.getFailURL();
-			
+
 			// Card info
 			cardnumber = demandeDto.getDem_pan();
 			token = "";
@@ -464,8 +478,8 @@ public class GWPaiementController {
 			current_merchant = commercantService.findByCmrCode(merchantid);
 		} catch (Exception e) {
 			traces.writeInFileTransaction(folder, file,
-					"payer 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
-							+ "] and merchantid:[" + merchantid + "]");
+					"payer 500 Merchant misconfigured in DB or not existing orderid:[" + orderid + "] and merchantid:["
+							+ merchantid + "]");
 			demandeDto.setMsgRefus("Merchant misconfigured in DB or not existing");
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
@@ -474,8 +488,8 @@ public class GWPaiementController {
 
 		if (current_merchant == null) {
 			traces.writeInFileTransaction(folder, file,
-					"payer 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
-							+ "] and merchantid:[" + merchantid + "]");
+					"payer 500 Merchant misconfigured in DB or not existing orderid:[" + orderid + "] and merchantid:["
+							+ merchantid + "]");
 			demandeDto.setMsgRefus("Merchant misconfigured in DB or not existing");
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
@@ -485,30 +499,29 @@ public class GWPaiementController {
 
 		if (current_merchant.getCmrCodactivite() == null) {
 			traces.writeInFileTransaction(folder, file,
-					"payer 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
-							+ "] and merchantid:[" + merchantid + "]");
+					"payer 500 Merchant misconfigured in DB or not existing orderid:[" + orderid + "] and merchantid:["
+							+ merchantid + "]");
 			demandeDto.setMsgRefus("Merchant misconfigured in DB or not existing");
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
 			return page;
 
 		}
-		
+
 		mesg_type = "0";
 
 		if (current_merchant.getCmrCodbqe() == null) {
 			traces.writeInFileTransaction(folder, file,
-					"payer 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
-							+ "] and merchantid:[" + merchantid + "]");
+					"payer 500 Merchant misconfigured in DB or not existing orderid:[" + orderid + "] and merchantid:["
+							+ merchantid + "]");
 			demandeDto.setMsgRefus("Merchant misconfigured in DB or not existing");
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
 			return page;
 		}
-		
+
 		InfoCommercantDto current_infoCommercant = null;
-		
-		
+
 		try {
 			current_infoCommercant = infoCommercantService.findByCmrCode(merchantid);
 		} catch (Exception e) {
@@ -516,30 +529,30 @@ public class GWPaiementController {
 					"authorization 500 InfoCommercant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]");
 
-			//response.sendRedirect("GW-AUTO-INVALIDE-DEM");
+			// response.sendRedirect("GW-AUTO-INVALIDE-DEM");
 			demandeDto.setMsgRefus("InfoCommercant misconfigured in DB or not existing");
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
 			return page;
 		}
-		
+
 		if (current_infoCommercant == null) {
 			traces.writeInFileTransaction(folder, file,
 					"authorization 500 InfoCommercantDto misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]");
 
-			//response.sendRedirect("GW-AUTO-INVALIDE-DEM");
+			// response.sendRedirect("GW-AUTO-INVALIDE-DEM");
 			demandeDto.setMsgRefus("InfoCommercantDto misconfigured in DB or not existing");
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
 			return page;
 		}
-		
+
 		merchantname = current_merchant.getCmrNom();
 		websiteName = "";
 		websiteid = "";
 		String url = "", status = "", statuscode = "";
-		
+
 		merc_codeactivite = current_merchant.getCmrCodactivite();
 		acqcode = current_merchant.getCmrCodbqe();
 		merchant_name = Util.pad_merchant(merchantname, 19, ' ');
@@ -559,12 +572,12 @@ public class GWPaiementController {
 		} else {
 			processing_code = "0";
 		}
-		
+
 		int i_card_valid = Util.isCardValid(cardnumber);
 
 		if (i_card_valid == 1) {
-			traces.writeInFileTransaction(folder, file, "payer 500 Card number length is incorrect"
-					+ "orderid:[" + orderid + "] and merchantid:[" + merchantid + "]");
+			traces.writeInFileTransaction(folder, file, "payer 500 Card number length is incorrect" + "orderid:["
+					+ orderid + "] and merchantid:[" + merchantid + "]");
 			demandeDto.setMsgRefus("Card number length is incorrect");
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
@@ -582,8 +595,6 @@ public class GWPaiementController {
 		}
 
 		int i_card_type = Util.getCardIss(cardnumber);
-		
-		
 
 		try {
 
@@ -730,7 +741,7 @@ public class GWPaiementController {
 			demandePaiementService.save(demandeDto);
 			traces.writeInFileTransaction(folder, file,
 					"demandePaiement after update MPI_KO idDemande null : " + demandeDto.toString());
-			//return "AUTO INVALIDE DEMANDE";
+			// return "AUTO INVALIDE DEMANDE";
 			demandeDto.setMsgRefus("AUTO INVALIDE DEMANDE MPI_KO");
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
@@ -743,7 +754,7 @@ public class GWPaiementController {
 			Util.writeInFileTransaction(folder, file,
 					"demandePaiement not found !!!! demandePaiement = null  / received idDemande from MPI => "
 							+ idDemande);
-			//return "AUTO INVALIDE DEMANDE";
+			// return "AUTO INVALIDE DEMANDE";
 			demandeDto.setMsgRefus("AUTO INVALIDE DEMANDE demandePaiement not found");
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
@@ -756,13 +767,13 @@ public class GWPaiementController {
 			Util.writeInFileTransaction(folder, file,
 					"demandePaiement after update MPI_KO reponseMPI null : " + dmd.toString());
 			Util.writeInFileTransaction(folder, file, "Response 3DS is null");
-			//return "Response 3DS is null";
+			// return "Response 3DS is null";
 			demandeDto.setMsgRefus("AUTO INVALIDE DEMANDE Response 3DS is null");
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
 			return page;
 		}
-		
+
 		if (reponseMPI.equals("Y")) {
 			// ********************* Frictionless responseMPI equal Y *********************
 			traces.writeInFileTransaction(folder, file,
@@ -790,7 +801,7 @@ public class GWPaiementController {
 
 				demandeDto.setMsgRefus("cvv must be present in normal transaction");
 				model.addAttribute("demandeDto", demandeDto);
-				page ="result";
+				page = "result";
 				return page;
 
 			}
@@ -834,11 +845,11 @@ public class GWPaiementController {
 
 				} catch (Exception err4) {
 					traces.writeInFileTransaction(folder, file,
-							"payer 500 Error during switch tlv buildup for given orderid:["
-									+ orderid + "] and merchantid:[" + merchantid + "]" + err4);
+							"payer 500 Error during switch tlv buildup for given orderid:[" + orderid
+									+ "] and merchantid:[" + merchantid + "]" + err4);
 					demandeDto.setMsgRefus("Error during switch tlv buildup");
 					model.addAttribute("demandeDto", demandeDto);
-					page ="result";
+					page = "result";
 					return page;
 
 				}
@@ -914,7 +925,7 @@ public class GWPaiementController {
 			} catch (UnknownHostException e) {
 				traces.writeInFileTransaction(folder, file, "Switch  malfunction UnknownHostException !!!" + e);
 
-				page ="result";
+				page = "result";
 				return page;
 
 			} catch (java.net.ConnectException e) {
@@ -922,7 +933,7 @@ public class GWPaiementController {
 				switch_ko = 1;
 				demandeDto.setMsgRefus("Switch  malfunction ConnectException !!!");
 				model.addAttribute("demandeDto", demandeDto);
-				page ="result";
+				page = "result";
 				return page;
 
 			}
@@ -936,7 +947,7 @@ public class GWPaiementController {
 								+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
 				demandeDto.setMsgRefus("Error Switch communication SocketTimeoutException");
 				model.addAttribute("demandeDto", demandeDto);
-				page ="result";
+				page = "result";
 				return page;
 			}
 
@@ -948,7 +959,7 @@ public class GWPaiementController {
 						+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
 				demandeDto.setMsgRefus("Error Switch communication IOException");
 				model.addAttribute("demandeDto", demandeDto);
-				page ="result";
+				page = "result";
 				return page;
 			}
 
@@ -958,7 +969,7 @@ public class GWPaiementController {
 				e.printStackTrace();
 				demandeDto.setMsgRefus("Switch  malfunction Exception!!!");
 				model.addAttribute("demandeDto", demandeDto);
-				page ="result";
+				page = "result";
 				return page;
 
 			}
@@ -968,11 +979,11 @@ public class GWPaiementController {
 			if (switch_ko == 0 && resp == null) {
 				traces.writeInFileTransaction(folder, file, "Switch  malfunction resp null!!!");
 				switch_ko = 1;
-				traces.writeInFileTransaction(folder, file, "payer 500 Error Switch null response"
-						+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
+				traces.writeInFileTransaction(folder, file, "payer 500 Error Switch null response" + "switch ip:["
+						+ sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
 				demandeDto.setMsgRefus("Switch  malfunction resp null!!!");
 				model.addAttribute("demandeDto", demandeDto);
-				page ="result";
+				page = "result";
 				return page;
 			}
 
@@ -980,9 +991,8 @@ public class GWPaiementController {
 				switch_ko = 1;
 
 				traces.writeInFileTransaction(folder, file, "Switch  malfunction resp < 3 !!!");
-				traces.writeInFileTransaction(folder, file,
-						"payer 500 Error Switch short response length() < 3 " + "switch ip:[" + sw_s
-								+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
+				traces.writeInFileTransaction(folder, file, "payer 500 Error Switch short response length() < 3 "
+						+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
 			}
 
 			traces.writeInFileTransaction(folder, file, "Switch TLV Respnose :[" + resp + "]");
@@ -1022,9 +1032,8 @@ public class GWPaiementController {
 				} catch (Exception e) {
 					traces.writeInFileTransaction(folder, file, "Switch  malfunction tlv parsing !!!");
 					switch_ko = 1;
-					traces.writeInFileTransaction(folder, file,
-							"payer 500 Error during tlv Switch response parse" + "switch ip:[" + sw_s
-									+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
+					traces.writeInFileTransaction(folder, file, "payer 500 Error during tlv Switch response parse"
+							+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
 
 				}
 
@@ -1033,9 +1042,8 @@ public class GWPaiementController {
 					traces.writeInFileTransaction(folder, file, "Switch  malfunction !!! tag1_resp == null");
 					switch_ko = 1;
 					traces.writeInFileTransaction(folder, file,
-							"payer 500 Error during tlv Switch response parse tag1_resp tag null"
-									+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv
-									+ "]");
+							"payer 500 Error during tlv Switch response parse tag1_resp tag null" + "switch ip:[" + sw_s
+									+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
 
 				}
 
@@ -1052,9 +1060,8 @@ public class GWPaiementController {
 					traces.writeInFileTransaction(folder, file, "Switch  malfunction !!! tag20_resp == null");
 					switch_ko = 1;
 					traces.writeInFileTransaction(folder, file,
-							"payer 500 Error during tlv Switch response parse tag1_resp tag null"
-									+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv
-									+ "]");
+							"payer 500 Error during tlv Switch response parse tag1_resp tag null" + "switch ip:[" + sw_s
+									+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
 
 				}
 			}
@@ -1102,37 +1109,37 @@ public class GWPaiementController {
 				 * merchantid);
 				 * 
 				 * } catch (Exception ex) { traces.writeInFileTransaction(folder, file,
-				 * "payer 500 Error during tlv Switch response cannot match switch history "
-				 * + "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" +
+				 * "payer 500 Error during tlv Switch response cannot match switch history " +
+				 * "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" +
 				 * resp_tlv + "]");
 				 * 
 				 * return
-				 * "payer 500 Error during tlv Switch response cannot match switch history "
-				 * + "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" +
+				 * "payer 500 Error during tlv Switch response cannot match switch history " +
+				 * "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" +
 				 * resp_tlv + "]"; }
 				 */
 
 				/*
 				 * if (swhist == null) { traces.writeInFileTransaction(folder, file,
-				 * "payer 500 Error during tlv Switch response cannot match switch history "
-				 * + "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" +
+				 * "payer 500 Error during tlv Switch response cannot match switch history " +
+				 * "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" +
 				 * resp_tlv + "]");
 				 * 
 				 * return
-				 * "payer 500 Error during tlv Switch response cannot match switch history "
-				 * + "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" +
+				 * "payer 500 Error during tlv Switch response cannot match switch history " +
+				 * "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" +
 				 * resp_tlv + "]";
 				 * 
 				 * } tag20_resp_verified = swhist.getHat_coderep(); tag19_res_verified =
 				 * swhist.getHat_nautemt(); tag66_resp_verified = swhist.getHat_nrefce(); if
 				 * (tag20_resp_verified == null) { traces.writeInFileTransaction(folder, file,
-				 * "payer 500 Error during tlv Switch response cannot match switch history "
-				 * + "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" +
+				 * "payer 500 Error during tlv Switch response cannot match switch history " +
+				 * "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" +
 				 * resp_tlv + "]");
 				 * 
 				 * return
-				 * "payer 500 Error during tlv Switch response cannot match switch history "
-				 * + "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" +
+				 * "payer 500 Error during tlv Switch response cannot match switch history " +
+				 * "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" +
 				 * resp_tlv + "]"; }
 				 */
 
@@ -1258,8 +1265,8 @@ public class GWPaiementController {
 
 				} catch (Exception e) {
 					traces.writeInFileTransaction(folder, file,
-							"payer 500 Error during DEMANDE_PAIEMENT update etat demande for given "
-									+ "orderid:[" + orderid + "]" + e);
+							"payer 500 Error during DEMANDE_PAIEMENT update etat demande for given " + "orderid:["
+									+ orderid + "]" + e);
 				}
 
 				traces.writeInFileTransaction(folder, file, "udapate etat demande : SW_PAYE OK");
@@ -1426,12 +1433,11 @@ public class GWPaiementController {
 					demandePaiementService.save(dmd);
 
 				} catch (Exception e) {
-					traces.writeInFileTransaction(folder, file,
-							"payer 500" + "Error during  DemandePaiement update RE for given orderid:["
-									+ orderid + "]" + e);
+					traces.writeInFileTransaction(folder, file, "payer 500"
+							+ "Error during  DemandePaiement update RE for given orderid:[" + orderid + "]" + e);
 					demandeDto.setMsgRefus("Error during  DemandePaiement update RE");
 					model.addAttribute("demandeDto", demandeDto);
-					page ="result";
+					page = "result";
 					return page;
 
 				}
@@ -1449,11 +1455,10 @@ public class GWPaiementController {
 				paymentid = uuid_paymentid.substring(uuid_paymentid.length() - 22);
 			} catch (Exception e) {
 				traces.writeInFileTransaction(folder, file,
-						"payer 500 Error during  paymentid generation for given orderid:[" + orderid
-								+ "]" + e);
+						"payer 500 Error during  paymentid generation for given orderid:[" + orderid + "]" + e);
 				demandeDto.setMsgRefus("Error during  paymentid generation");
 				model.addAttribute("demandeDto", demandeDto);
-				page ="result";
+				page = "result";
 				return page;
 
 			}
@@ -1478,7 +1483,7 @@ public class GWPaiementController {
 						"payer 500 Error during authdata preparation orderid:[" + orderid + "]" + e);
 				demandeDto.setMsgRefus("Error during authdata preparation");
 				model.addAttribute("demandeDto", demandeDto);
-				page ="result";
+				page = "result";
 				return page;
 
 			}
@@ -1488,51 +1493,51 @@ public class GWPaiementController {
 			// reccurent insert and update
 
 			try {
-				
-				String data_noncrypt = "orderid=" + orderid + "&fname=" + fname + "&lname=" + lname + "&email="
-						+ email + "&amount=" + amount + "&coderep=" + coderep + "&authnumber="
-						+ authnumber + "&cardnumber=" + Util.formatCard(cardnumber) + "&transactionid="
-						+ transactionid + "&paymentid=" + paymentid;
-				
+
+				String data_noncrypt = "orderid=" + orderid + "&fname=" + fname + "&lname=" + lname + "&email=" + email
+						+ "&amount=" + amount + "&coderep=" + coderep + "&authnumber=" + authnumber + "&cardnumber="
+						+ Util.formatCard(cardnumber) + "&transactionid=" + transactionid + "&paymentid=" + paymentid;
+
 				traces.writeInFileTransaction(folder, file, "data_noncrypt : " + data_noncrypt);
 				System.out.println("data_noncrypt : " + data_noncrypt);
 
-				String plainTxtSignature = orderid
-						+ current_infoCommercant.getClePub();
-				
+				String plainTxtSignature = orderid + current_infoCommercant.getClePub();
+
 				traces.writeInFileTransaction(folder, file, "plainTxtSignature : " + plainTxtSignature);
 				System.out.println("plainTxtSignature : " + plainTxtSignature);
-				
-				String data = RSACrypto.encryptByPublicKeyWithMD5Sign(data_noncrypt,
-						current_infoCommercant.getClePub(), plainTxtSignature, folder, file);
-				
+
+				String data = RSACrypto.encryptByPublicKeyWithMD5Sign(data_noncrypt, current_infoCommercant.getClePub(),
+						plainTxtSignature, folder, file);
+
 				traces.writeInFileTransaction(folder, file, "data encrypt : " + data);
 				System.out.println("data encrypt : " + data);
-										
-				
-				if(coderep.equals("00")) {
-					traces.writeInFileTransaction(folder, file, "coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
+
+				if (coderep.equals("00")) {
+					traces.writeInFileTransaction(folder, file,
+							"coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
 					System.out.println("coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
-					//response.sendRedirect(dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" + merchantid);
+					// response.sendRedirect(dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" +
+					// merchantid);
 					page = "index";
 					return page;
 				} else {
-					traces.writeInFileTransaction(folder, file, "coderep !=00 => Redirect to failURL : " + dmd.getFailURL());
+					traces.writeInFileTransaction(folder, file,
+							"coderep !=00 => Redirect to failURL : " + dmd.getFailURL());
 					System.out.println("coderep !=00 => Redirect to failURL : " + dmd.getFailURL());
-					//response.sendRedirect(dmd.getFailURL() + "?data=" + data + "==&codecmr=" + merchantid);
+					// response.sendRedirect(dmd.getFailURL() + "?data=" + data + "==&codecmr=" +
+					// merchantid);
 					demandeDto.setMsgRefus("Error during response Switch coderep !=00");
 					model.addAttribute("demandeDto", demandeDto);
-					page ="result";
+					page = "result";
 					return page;
 				}
-				
+
 			} catch (Exception jsouterr) {
 				traces.writeInFileTransaction(folder, file,
-						"payer 500 Error during jso out processing given authnumber:["
-								+ authnumber + "]" + jsouterr);
+						"payer 500 Error during jso out processing given authnumber:[" + authnumber + "]" + jsouterr);
 				demandeDto.setMsgRefus("Error during jso out processing");
 				model.addAttribute("demandeDto", demandeDto);
-				page ="result";
+				page = "result";
 				return page;
 			}
 
@@ -1553,7 +1558,7 @@ public class GWPaiementController {
 				traces.writeInFileTransaction(folder, file, "payer 500 Error during jso out processing " + ex);
 				demandeDto.setMsgRefus("Error during jso out processing");
 				model.addAttribute("demandeDto", demandeDto);
-				page ="result";
+				page = "result";
 				return page;
 			}
 		} else {
@@ -1563,7 +1568,7 @@ public class GWPaiementController {
 				dmd.setDem_xid(threeDSServerTransID);
 				dmd.setEtat_demande("MPI_CMR_INEX");
 				demandePaiementService.save(dmd);
-				//return "COMMERCANT NON PARAMETRE";
+				// return "COMMERCANT NON PARAMETRE";
 				demandeDto.setMsgRefus("COMMERCANT NON PARAMETRE");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
@@ -1573,7 +1578,7 @@ public class GWPaiementController {
 				dmd.setEtat_demande("MPI_BIN_NON_PAR");
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
-				//return " BIN NON PARAMETREE";
+				// return " BIN NON PARAMETREE";
 				demandeDto.setMsgRefus("BIN NON PARAMETREE");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
@@ -1583,7 +1588,7 @@ public class GWPaiementController {
 				dmd.setEtat_demande("MPI_DS_ERR");
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
-				//return "MPI_DS_ERR";
+				// return "MPI_DS_ERR";
 				demandeDto.setMsgRefus("MPI_DS_ERR");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
@@ -1593,7 +1598,7 @@ public class GWPaiementController {
 				dmd.setEtat_demande("MPI_CART_ERROR");
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
-				//return "CARTE ERRONEE";
+				// return "CARTE ERRONEE";
 				demandeDto.setMsgRefus("CARTE ERRONEE");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
@@ -1603,7 +1608,7 @@ public class GWPaiementController {
 				dmd.setEtat_demande("MPI_CART_NON_ENR");
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
-				//return "CARTE NON ENROLLE";
+				// return "CARTE NON ENROLLE";
 				demandeDto.setMsgRefus("CARTE NON ENROLLE");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
@@ -1611,14 +1616,13 @@ public class GWPaiementController {
 			}
 		}
 
-
 		// ThreeDSecureResponse result = autorisationService.payer(demandeDto, folder,
 		// file);
 
 		String htmlCreq = "<form action='https://acs.naps.ma:443/lacs2' method='post' enctype='application/x-www-form-urlencoded'>"
 				+ "<input type='hidden' name='creq' value='ewogICJtZXNzYWdlVmVyc2lvbiI6ICIyLjEuMCIsCiAgInRocmVlRFNTZXJ2ZXJUcmFuc0lEIjogIjQxZDQ0ZTViLTBjOTYtNGVhNC05NjkxLTM1OWVmOGQ5NTdjMyIsCiAgImFjc1RyYW5zSUQiOiAiOTI3NTQyOGEtYzkzYi00ZWUzLTk3NDEtNDA4NzAzNDlmYzM2IiwKICAiY2hhbGxlbmdlV2luZG93U2l6ZSI6ICIwNSIsCiAgIm1lc3NhZ2VUeXBlIjogIkNSZXEiCn0=' />"
 				+ "</form>";
-		//demandeDto.setCreq(htmlCreq);
+		// demandeDto.setCreq(htmlCreq);
 		System.out.println("demandeDto htmlCreq : " + demandeDto.getCreq());
 
 		return page;
@@ -1709,7 +1713,8 @@ public class GWPaiementController {
 		traces.writeInFileTransaction(folder, file, "Start payer ()");
 		System.out.println("Start payer ()");
 
-		//ThreeDSecureResponse result = autorisationService.preparerReqThree3DSS(demandeDto, folder, file);
+		// ThreeDSecureResponse result =
+		// autorisationService.preparerReqThree3DSS(demandeDto, folder, file);
 
 		return "info-demande";
 	}
@@ -1758,8 +1763,7 @@ public class GWPaiementController {
 
 		return userDto;
 	}
-	
-	
+
 	private boolean is_reccuring_check(String recurring) {
 		if (recurring.equalsIgnoreCase("Y"))
 			return true;
@@ -1788,7 +1792,6 @@ public class GWPaiementController {
 			return false;
 		return true;
 	}
-
 
 	@SuppressWarnings("deprecation")
 	private Date getDateWithoutTime(Date d) {
