@@ -317,6 +317,7 @@ public class ACSController {
 				
 				// Merchnat info
 				merchantid = dmd.getComid();
+				websiteid = dmd.getGalid();
 
 				String timeStamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
 
@@ -399,7 +400,6 @@ public class ACSController {
 				merchantname = current_merchant.getCmrNom();
 				merchant_name = Util.pad_merchant(merchantname, 19, ' ');
 				websiteName = "";
-				websiteid = "";
 				callbackUrl = dmd.getCallbackURL();
 				successURL = dmd.getSuccessURL();
 				failURL = dmd.getFailURL();
@@ -511,7 +511,7 @@ public class ACSController {
 
 						} catch (Exception err4) {
 							traces.writeInFileTransaction(folder, file,
-									"authorization 500 Error during switch tlv buildup for given orderid" + "orderid:["
+									"authorization 500 Error during switch tlv buildup for given orderid:["
 											+ orderid + "] and merchantid:[" + merchantid + "]" + err4);
 
 							//response.sendRedirect(redirectFailURL(dmd, folder, file));
@@ -902,8 +902,7 @@ public class ACSController {
 						traces.writeInFileTransaction(folder, file,
 								"Error during  insert in histoautogate for given orderid");
 						traces.writeInFileTransaction(folder, file,
-								"authorization 500"
-										+ "Error during  insert in histoautogate for given orderid orderid:[" + orderid
+								"authorization 500 Error during  insert in histoautogate for given orderid:[" + orderid
 										+ "]" + e);
 
 					}
@@ -927,7 +926,7 @@ public class ACSController {
 
 						} catch (Exception e) {
 							traces.writeInFileTransaction(folder, file,
-									"authorization 500 Error during DEMANDE_PAIEMENT update etat demande for given " + "orderid:["
+									"authorization 500 Error during DEMANDE_PAIEMENT update etat demande for given orderid:["
 											+ orderid + "]" + e);
 						}
 
@@ -1097,7 +1096,7 @@ public class ACSController {
 						} catch (Exception e) {
 							traces.writeInFileTransaction(folder, file,
 									"authorization 500"
-											+ "Error during  DemandePaiement update RE for given orderid orderid:["
+											+ "Error during  DemandePaiement update RE for given orderid:["
 											+ orderid + "]" + e);
 
 							response.sendRedirect(redirectFailURL(dmd, folder, file));
@@ -1117,7 +1116,7 @@ public class ACSController {
 						paymentid = uuid_paymentid.substring(uuid_paymentid.length() - 22);
 					} catch (Exception e) {
 						traces.writeInFileTransaction(folder, file,
-								"authorization 500 Error during  paymentid generation for given orderid" + "orderid:["
+								"authorization 500 Error during  paymentid generation for given orderid:["
 										+ orderid + "]" + e);
 
 						response.sendRedirect(redirectFailURL(dmd, folder, file));
@@ -1177,37 +1176,17 @@ public class ACSController {
 						
 						traces.writeInFileTransaction(folder, file, "data encrypt : " + data);
 						System.out.println("data encrypt : " + data);
+												
 						
-						traces.writeInFileTransaction(folder, file, "SuccessURL : " + dmd.getSuccessURL());
-						System.out.println("SuccessURL : " + dmd.getSuccessURL());
-						
-						response.sendRedirect(dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" + merchantid);
-
-						// Transaction info
-						//jso.put("statuscode", coderep);
-						//jso.put("status", motif);
-						//jso.put("orderid", orderid);
-						//jso.put("amount", amount);
-						//jso.put("transactiondate", date);
-						//jso.put("transactiontime", heure);
-						//jso.put("authnumber", authnumber);
-						//jso.put("paymentid", paymentid);
-						//jso.put("transactionid", transactionid);
-
-						// Merchant info
-						//jso.put("merchantid", merchnatidauth);
-						//jso.put("merchantname", merchantname);
-						//jso.put("websitename", websiteName);
-						//jso.put("websiteid", websiteid);
-
-						// Card info
-						//jso.put("cardnumber", Util.formatCard(cardnumber));
-
-						// Client info
-						//jso.put("fname", fname);
-						//jso.put("lname", lname);
-						//jso.put("email", email);
-						
+						if(coderep.equals("00")) {
+							traces.writeInFileTransaction(folder, file, "coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
+							System.out.println("coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
+							response.sendRedirect(dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" + merchantid);
+						} else {
+							traces.writeInFileTransaction(folder, file, "coderep !=00 => Redirect to failURL : " + dmd.getFailURL());
+							System.out.println("coderep !=00 => Redirect to failURL : " + dmd.getFailURL());
+							response.sendRedirect(dmd.getFailURL() + "?data=" + data + "==&codecmr=" + merchantid);
+						}
 						
 					} catch (Exception jsouterr) {
 						traces.writeInFileTransaction(folder, file,
@@ -1218,9 +1197,6 @@ public class ACSController {
 						return;
 					}
 
-					System.out.println("autorization api response :  [" + jso.toString() + "]");	
-					traces.writeInFileTransaction(folder, file,
-							"autorization api response :  [" + jso.toString() + "]");
 					// fin
 					// *******************************************************************************************************************
 				} else if (reponseMPI.equals("C") || reponseMPI.equals("D")) {

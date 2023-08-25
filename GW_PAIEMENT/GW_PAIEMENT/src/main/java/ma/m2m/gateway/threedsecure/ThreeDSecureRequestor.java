@@ -128,8 +128,8 @@ public class ThreeDSecureRequestor {
 	}
 
 	public ThreeDSecureResponse initAuth(String logFolder, String logFile) throws ThreeDSecureRequestorException {
-		traces.writeInFileTransaction(logFolder, logFile,
-				"**************************** DEBUT APPEL 3DS SERVER *******************************");
+		traces.writeInFileTransaction(logFolder, logFile, 
+				"*********** DEBUT initAuth ***********");
 		ThreeDSecureResponse threeDsRes = new ThreeDSecureResponse();
 
 		if (authInitRequest == null)
@@ -149,7 +149,7 @@ public class ThreeDSecureRequestor {
 				throw new ThreeDSecureRequestorException((e.getCause() != null) ? e.getCause() : e);
 		}
 		traces.writeInFileTransaction(logFolder, logFile,
-				"**************************** FIN APPEL 3DS SERVER *********************************");
+				"*********** FIN initAuth ***********");
 		return threeDsRes;
 	}
 
@@ -160,7 +160,7 @@ public class ThreeDSecureRequestor {
 		HttpClient httpClient = HttpClientBuilder.create().build();
 		httpClient = getAllSSLClient();
 		HttpPost httpPost = new HttpPost(authInitRequest.getUrlThreeDSS());
-		ThreeDSecureResponse threeDsRes = new ThreeDSecureResponse();
+		ThreeDSecureResponse threeDSecureResponse = new ThreeDSecureResponse();
 
 		final String jsonBody = gson.toJson(authInitRequest);
 		// pcidss carte
@@ -200,16 +200,15 @@ public class ThreeDSecureRequestor {
 			HttpResponse response = httpClient.execute(httpPost);
 
 			StatusLine responseStatusLine = response.getStatusLine();
-			traces.writeInFileTransaction(logFolder, logFile,
-					"response StatusCode : " + response.getStatusLine().getStatusCode());
-			traces.writeInFileTransaction(logFolder, logFile, "response : " + response);
-			String respStr = EntityUtils.toString(response.getEntity());
-			traces.writeInFileTransaction(logFolder, logFile, "respStr : " + respStr);
-			// String responseStr = IOUtils.toString(is, "UTF-8");
-			// responseStr = "{\"reponseMPI\":\"Y\"}";
+			traces.writeInFileTransaction(logFolder, logFile, "Response StatusCode : " + responseStatusLine.getStatusCode());
+			
+			//traces.writeInFileTransaction(logFolder, logFile, "response : " + response);
+			
+			String responseStr = EntityUtils.toString(response.getEntity());
+			traces.writeInFileTransaction(logFolder, logFile, "Ares String : " + responseStr);
 
-			threeDsRes = gson.fromJson(respStr, ThreeDSecureResponse.class);
-			traces.writeInFileTransaction(logFolder, logFile, "threeDsRes toString : " + threeDsRes);
+			threeDSecureResponse = gson.fromJson(responseStr, ThreeDSecureResponse.class);
+			traces.writeInFileTransaction(logFolder, logFile,""+ threeDSecureResponse);
 
 			// ((InputStream) httpClient).close();
 
@@ -220,7 +219,7 @@ public class ThreeDSecureRequestor {
 		}
 
 		traces.writeInFileTransaction(logFolder, logFile, "*********** FIN callThreeDSServer ***********");
-		return threeDsRes;
+		return threeDSecureResponse;
 	}
 
 	public static HttpClient getAllSSLClient()
