@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+   <head>
+      <meta charset="ISO-8859-1">
+      <title>GATEWAY NAPS</title>
+      <link rel="stylesheet"
+         href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+         integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+         crossorigin="anonymous">
+      <link
+         href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+         rel="stylesheet" id="bootstrap-css">
+      <script
+         src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+      <script
+         src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+      <!------ Include the above in your HEAD tag ---------->
+      <link rel="stylesheet"
+         href="https://use.fontawesome.com/releases/v5.0.8/css/all.css">
+   </head>
+   <body>
+      <div class="container">
+         <br>
+         <div class="row">
+            <aside class="col-sm-12">
+            <article class="card">
+               <div class="card-body p-2">
+                  <img th:src="@{/images/powered_by_naps.png}" alt="Image" style="float:right;width:80px;margin-right:0px;" >
+               </div>
+               <!-- card-body.// -->
+            </article>
+            <!-- card.// -->
+         </div>
+         <br>
+         <div class="row">
+			 
+            <aside class="col-sm-12">
+            <article class="card">
+               <div class="card-body p-5">
+				     <p class="text-center" style="color: #DF6537; font-size: xx-large;font-weight: 760;">Espace de paiement
+                     en ligne
+                  </p>
+                   <br>
+                    <br>
+                  
+                  <div class="row">
+                   <p class="text-right" style="color: #DF6537;font-size: x-large;font-weight: 700;">. Informations de votre paiement
+                  </p>
+                  </div>
+                  <div class="row">
+					  
+                     <label for="commande" class="col-sm-6 col-form-label">Commande : 
+                     <span >2030405060</span>
+                     </label>
+                     <label for="comid" class="col-sm-6 col-form-label">Commerçant : 
+                     <span >123456</span>
+                     </label>
+                     <label for="galid" class="col-sm-6 col-form-label">Site web commerçant : 
+                     <span >www.test.com</span>
+                     </label>
+                     <label for="montant" class="col-sm-6 col-form-label">Montant à payer: 
+                     <span >100</span> DH
+                     </label>
+                  </div>
+                  <!--						<table> -->
+                  <!--							<tr>  -->
+                  <!--							<td><h4>Commande : </h4></td>  -->
+                  <!--							<td><h4 th:text="${demandeDto.commande}"></h4></td>  -->
+                  <!--							</tr>  -->
+                  <!--							<tr>  -->
+                  <!--							<td><h4>Commerçant : </h4></td>  -->
+                  <!--							<td><h4 th:text="${demandeDto.comid}"></h4></td>  -->
+                  <!--							</tr>  -->
+                  <!--							<tr>  -->
+                  <!--							<td><h4>Galerie : </h4></td>  -->
+                  <!--							<td><h4 th:text="${demandeDto.galid}"></h4></td>  -->
+                  <!--							</tr> -->
+                  <!--							<tr>  -->
+                  <!--							<td><h4>Montant : </h4></td>  -->
+                  <!--							<td><h4 th:text="${demandeDto.montant}">dh</h4></td>  -->
+                  <!--							</tr>   -->
+                  <!--						</table> -->
+               </div>
+
+            </article>
+            <!-- card.// -->
+         </div>
+          <br>
+        <div class="row">
+			 
+           <aside class="col-sm-12">
+            <article class="card">
+         <div class="card-body p-5">
+                <div class="row">
+                   <p class="text-left" style="color: #DF6537;font-size: x-large;font-weight: 700;">. Informations de votre carte
+                  </p>
+                  </div>
+                  <form role="form" method="POST" th:action="@{/}">
+                     <div class="form-group row">
+                        <label for="typeCarte" class="col-sm-3 col-form-label">TYPE
+                        CARTE BANCAIRE</label>
+                        <div class="col-sm-3">
+                           <select class="form-control">
+                              <option value="1">VISA</option>
+                              <option value="2">MASTERCARD</option>
+                              <option value="3">MAESTRO</option>
+                           </select>
+                        </div>
+                        <label for="num" class="col-sm-3 col-form-label">N°
+                        carte bancaire</label>
+                        <div class="col-sm-3">
+                           <input type="text" class="form-control" id="num"
+                              placeholder="N° carte bancaire">
+                        </div>
+                     </div>
+                     <div class="form-group row">
+                        <label for="xxx" class="col-sm-2 col-form-label">Date
+                        d'expiration</label>
+                        <div class="col-sm-2">
+                           <select class="form-control">
+                              <option value="">MM</option>
+                              <option value="01">Janvier</option>
+                              <option value="02">Février</option>
+                              <option value="03">Mars</option>
+                              <option value="04">Avril</option>
+                              <option value="05">Mai</option>
+                              <option value="06">Juin</option>
+                              <option value="07">Juillet</option>
+                              <option value="08">Aout</option>
+                              <option value="09">Septembre</option>
+                              <option value="10">Octobre</option>
+                              <option value="11">Novembre</option>
+                              <option value="12">Décembre</option>
+                           </select>
+                        </div>
+                        <div class="col-sm-2">
+                           <select class="form-control">
+                              <option value="">YY</option>
+                              <option value="23">2023</option>
+                              <option value="24">2024</option>
+                              <option value="25">2025</option>
+                              <option value="26">2026</option>
+                              <option value="27">2027</option>
+                              <option value="28">2028</option>
+                              <option value="29">2029</option>
+                              <option value="30">2030</option>
+                              <option value="31">2031</option>
+                              <option value="32">2032</option>
+                              <option value="33">2033</option>
+                           </select>
+                        </div>
+                        <label for="cvv" class="col-sm-3 col-form-label">Code de
+                        sécurité</label>
+                        <div class="col-sm-3">
+                           <input type="text" class="form-control" id="cvv"
+                              placeholder="CVV">
+                        </div>
+                     </div>
+                     <div class="col-sm-12 float-right">
+                        <button type="submit" style="color: #FFF;background: #DF6537;
+                           border-radius: 10px;
+                           margin-left: auto;
+                           width: 160px;
+                           border-color: #DF6537;
+                           border-top-right-radius: 10px;
+                           border-bottom-right-radius: 10px;
+                           font-size: 15px;"
+                           class="subscribe btn btn-primary btn-block">
+                        Payer</button>
+                     </div>
+                  </form>
+               </div>
+               <!-- card-body.// -->
+               </div>
+               </div>
+      </div>
+       <div class="container my-2" align="center">
+      	<footer class="bg-light text-center text-lg-start">
+  		<!-- Copyright -->
+		  <div class="text-center p-3" style="    border: 0.1px solid #d6d2d2;color: black;">
+		    Copyright © 2023 NAPS all rights reserved
+		    <a href="https://naps.ma/">naps.ma</a>
+		  </div>
+  		<!-- Copyright -->
+		</footer>
+      </div>
+   </body>
+</html>
