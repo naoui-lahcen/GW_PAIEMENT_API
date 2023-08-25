@@ -362,7 +362,7 @@ public class APIController {
 					"authorization 500 Error during PaiementRequest findByCommandeAndComid orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]" + err1);
 
-			return "authorization 500 Error during PaiementRequest findByNumCommandeAndNumCommercant" + " orderid:["
+			return "authorization 500 Error during PaiementRequest findByNumCommandeAndNumCommercant orderid:["
 					+ orderid + "] and merchantid:[" + merchantid + "]";
 		}
 		if (check_dmd != null) {
@@ -2005,9 +2005,9 @@ public class APIController {
 
 			} catch (Exception err2) {
 				traces.writeInFileTransaction(folder, file,
-						"status 500 Error during HistoAutoGate findByNumAuthAndNumCommercant" + " orderid:[" + orderid
+						"status 500 Error during HistoAutoGate findByNumAuthAndNumCommercant orderid:[" + orderid
 								+ "] and merchantid:[" + merchantid + "]" + err2);
-				return "status 500" + " orderid:[" + orderid + "] and merchantid:[" + merchantid + "]";
+				return "status 500 orderid:[" + orderid + "] and merchantid:[" + merchantid + "]";
 
 			}
 
@@ -2021,10 +2021,10 @@ public class APIController {
 
 			} catch (Exception err2) {
 				traces.writeInFileTransaction(folder, file,
-						"Error during HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmr" + " orderid:["
+						"Error during HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmr orderid:["
 								+ orderid + "] + and authnumber:[" + authnumber + "]" + "and merchantid:[" + merchantid
 								+ "]" + err2);
-				return "status 500" + " orderid:[" + orderid + "] and merchantid:[" + merchantid + "]";
+				return "status 500 orderid:[" + orderid + "] and merchantid:[" + merchantid + "]";
 
 			}
 		}
@@ -2400,9 +2400,9 @@ public class APIController {
 
 		} catch (Exception err1) {
 			traces.writeInFileTransaction(folder, file,
-					"capture 500 Error during PaiementRequest findByCommandeAndComid" + " orderid:[" + orderid
+					"capture 500 Error during PaiementRequest findByCommandeAndComid orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]" + err1);
-			return "capture 500 Error during PaiementRequest findByCommandeAndComid" + " orderid:[" + orderid
+			return "capture 500 Error during PaiementRequest findByCommandeAndComid orderid:[" + orderid
 					+ "] and merchantid:[" + merchantid + "]" + err1;
 
 		}
@@ -2428,7 +2428,7 @@ public class APIController {
 			traces.writeInFileTransaction(folder, file,
 					"capture 500 Error during HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmr" + "orderid:["
 							+ orderid + "] and merchantid:[" + merchantid + "]" + err2);
-			return "capture 500 Error during HistoAutoGate " + " orderid:[" + orderid + "] and merchantid:["
+			return "capture 500 Error during HistoAutoGate  orderid:[" + orderid + "] and merchantid:["
 					+ merchantid + "]";
 
 		}
@@ -2801,7 +2801,7 @@ public class APIController {
 		} catch (Exception err1) {
 			traces.writeInFileTransaction(folder, file, "refund 500 Error during PaiementRequest findByCommandeAndComid"
 					+ " orderid:[" + orderid + "] and merchantid:[" + merchantid + "]" + err1);
-			return "refund 500 Error during PaiementRequest findByCommandeAndComid" + " orderid:[" + orderid
+			return "refund 500 Error during PaiementRequest findByCommandeAndComid orderid:[" + orderid
 					+ "] and merchantid:[" + merchantid + "]";
 
 		}
@@ -2824,10 +2824,10 @@ public class APIController {
 
 		} catch (Exception err2) {
 			traces.writeInFileTransaction(folder, file,
-					"refund 500 Error during HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmr" + " orderid:["
+					"refund 500 Error during HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmr orderid:["
 							+ orderid + "] and merchantid:[" + merchantid + "]" + err2);
 
-			return "refund 500 Error during HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmr" + " orderid:["
+			return "refund 500 Error during HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmr orderid:["
 					+ orderid + "] and merchantid:[" + merchantid + "]";
 
 		}
@@ -3318,10 +3318,10 @@ public class APIController {
 
 		} catch (Exception err1) {
 			traces.writeInFileTransaction(folder, file,
-					"reversal 500" + "Error during PaiementRequest findByCommandeAndComid" + " orderid:[" + orderid
+					"reversal 500" + "Error during PaiementRequest findByCommandeAndComid orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]" + err1);
 
-			return "reversal 500" + "Error during PaiementRequest " + " orderid:[" + orderid + "] and merchantid:["
+			return "reversal 500" + "Error during PaiementRequest  orderid:[" + orderid + "] and merchantid:["
 					+ merchantid + "]";
 
 		}
