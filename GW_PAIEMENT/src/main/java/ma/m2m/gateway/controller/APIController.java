@@ -437,7 +437,8 @@ public class APIController {
 			trsdate = new Date();
 			transactiondate = formatter_1.format(trsdate);
 			transactiontime = formatter_2.format(trsdate);
-			dmd.setDem_date_time(transactiondate + transactiontime);
+			//dmd.setDem_date_time(transactiondate + transactiontime);
+			dmd.setDem_date_time(dateFormat.format(new Date()));
 			if (recurring.equalsIgnoreCase("Y"))
 				dmd.setIs_cof("Y");
 			if (recurring.equalsIgnoreCase("N"))

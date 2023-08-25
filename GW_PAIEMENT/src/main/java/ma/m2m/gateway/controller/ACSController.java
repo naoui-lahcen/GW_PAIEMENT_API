@@ -295,10 +295,8 @@ public class ACSController {
 
 				if (idDemande == null || idDemande.equals("")) {
 					traces.writeInFileTransaction(folder, file, "received idDemande from MPI is Null or Empty");
-					dmd.setEtat_demande("MPI_KO");
-					demandePaiementService.save(dmd);
 					traces.writeInFileTransaction(folder, file,
-							"demandePaiement after update MPI_KO idDemande null : " + dmd.toString());
+							"demandePaiement after update MPI_KO idDemande null");
 					//response.sendRedirect("GW-AUTO-INVALIDE-DEM");
 					response.sendRedirect(link_result);
 					return;
