@@ -226,8 +226,8 @@ public class GWPaiementController {
 		// create file log
 		traces.creatFileTransaction(file);
 		traces.writeInFileTransaction(folder, file, "Start index ()");
-		traces.writeInFileTransaction(folder, file, "*********** returns to index.html ************** ");
-		System.out.println("*********** returns to index.html ************** ");
+		traces.writeInFileTransaction(folder, file, "index.html ");
+		System.out.println("index.html ");
 
 		return "index";
 	}
@@ -236,8 +236,8 @@ public class GWPaiementController {
 	public String showPagePayment(@PathVariable(value = "token") String token, Model model) {
 		// create file log
 		traces.creatFileTransaction(file);
-		traces.writeInFileTransaction(folder, file, "*********** Start showPagePayment ************** ");
-		System.out.println("*********** Start showPagePayment ************** ");
+		traces.writeInFileTransaction(folder, file, "*********** Start showPagePayment ");
+		System.out.println("*********** Start showPagePayment ");
 
 		traces.writeInFileTransaction(folder, file, "findByTokencommande token : " + token);
 		System.out.println("findByTokencommande token : " + token);
@@ -1643,7 +1643,7 @@ public class GWPaiementController {
 		System.out.println("dem montant : " + dem.getMontant());
 
 		model.addAttribute("demandeDto", dem);
-		System.out.println("*********** returns to chalenge.html ************** ");
+		System.out.println("chalenge.html ");
 
 		return "chalenge";
 	}
@@ -1669,8 +1669,8 @@ public class GWPaiementController {
 		// create file log
 		traces.creatFileTransaction(file);
 		traces.writeInFileTransaction(folder, file, "Start saveDemande ()");
-		traces.writeInFileTransaction(folder, file, "*********** returns to napspayment.html ************** ");
-		System.out.println("*********** returns to napspayment.html ************** ");
+		traces.writeInFileTransaction(folder, file, "return to napspayment.html ");
+		System.out.println("return to napspayment.html ");
 
 		// String result = autorisationService.controllerDataRequestRequest(demandeDto);
 		String result = "";
@@ -1722,8 +1722,8 @@ public class GWPaiementController {
 	@RequestMapping(value = "/napspayment/index2", method = RequestMethod.GET)
 	public String index2() {
 		traces.creatFileTransaction(file);
-		traces.writeInFileTransaction(folder, file, "*********** returns to index2.html ************** ");
-		System.out.println("*********** returns to index2.html ************** ");
+		traces.writeInFileTransaction(folder, file, "return to index2.html ");
+		System.out.println("return to index2.html ");
 
 		return "index2";
 	}
@@ -1731,8 +1731,8 @@ public class GWPaiementController {
 	@RequestMapping(value = "/napspayment/result", method = RequestMethod.GET)
 	public String result() {
 		traces.creatFileTransaction(file);
-		System.out.println("*********** returns to result.html ************** ");
-		System.out.println("*********** returns to resut.html ************** ");
+		System.out.println("return to result.html ");
+		System.out.println("return to resut.html ");
 
 		return "result";
 	}

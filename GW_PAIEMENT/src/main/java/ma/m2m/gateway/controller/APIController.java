@@ -1877,9 +1877,6 @@ public class APIController {
 				}
 
 			}
-
-			System.out.println("*********** returns to chalenge.html ************** ");
-
 		} else {
 			DemandePaiementDto demande = new DemandePaiementDto();
 			msgRefus = "Votre commande est introuvable ";
@@ -1889,6 +1886,9 @@ public class APIController {
 			System.out.println("current_dem null ");
 			page = "error";
 		}
+
+		System.out.println("return to "+ page+".html");
+		
 		traces.writeInFileTransaction(folder, file, "*********** Fin chalengeapi ************** ");
 		System.out.println("*********** Fin chalengeapi ************** ");
 
