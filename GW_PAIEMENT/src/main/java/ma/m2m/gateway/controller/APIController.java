@@ -381,10 +381,10 @@ public class APIController {
 		int i_card_valid = Util.isCardValid(cardnumber);
 
 		if (i_card_valid == 1) {
-			traces.writeInFileTransaction(folder, file, "authorization 500 Card number length is incorrect"
-					+ "orderid:[" + orderid + "] and merchantid:[" + merchantid + "]");
+			traces.writeInFileTransaction(folder, file, "authorization 500 Card number length is incorrect orderid:[" 
+					+ orderid + "] and merchantid:[" + merchantid + "]");
 
-			return "authorization 500 Card number length is incorrect" + "orderid:[" + orderid + "] and merchantid:["
+			return "authorization 500 Card number length is incorrect orderid:[" + orderid + "] and merchantid:["
 					+ merchantid + "]";
 
 		}
@@ -462,10 +462,10 @@ public class APIController {
 
 		} catch (Exception err1) {
 			traces.writeInFileTransaction(folder, file,
-					"authorization 500 Error during DEMANDE_PAIEMENT insertion for given " + "orderid:[" + orderid + "]"
+					"authorization 500 Error during DEMANDE_PAIEMENT insertion for given orderid:[" + orderid + "]"
 							+ err1);
 
-			return "authorization 500 Error during DEMANDE_PAIEMENT insertion for given " + "orderid:[" + orderid + "]";
+			return "authorization 500 Error during DEMANDE_PAIEMENT insertion for given orderid:[" + orderid + "]";
 
 		}
 
@@ -1111,8 +1111,7 @@ public class APIController {
 
 				} catch (Exception e) {
 					traces.writeInFileTransaction(folder, file,
-							"authorization 500 Error during DEMANDE_PAIEMENT update etat demande for given "
-									+ "orderid:[" + orderid + "]" + e);
+							"authorization 500 Error during DEMANDE_PAIEMENT update etat demande for given orderid:[" + orderid + "]" + e);
 				}
 
 				traces.writeInFileTransaction(folder, file, "udapate etat demande : SW_PAYE OK");
@@ -1326,9 +1325,9 @@ public class APIController {
 				dtdem = dmd.getDem_pan();
 			} catch (Exception e) {
 				traces.writeInFileTransaction(folder, file,
-						"authorization 500 Error during authdata preparation" + "orderid:[" + orderid + "]" + e);
+						"authorization 500 Error during authdata preparation orderid:[" + orderid + "]" + e);
 
-				return "authorization 500 Error during authdata preparation" + "orderid:[" + orderid + "]";
+				return "authorization 500 Error during authdata preparation orderid:[" + orderid + "]";
 
 			}
 
@@ -1692,9 +1691,9 @@ public class APIController {
 
 		} catch (Exception err8) {
 			traces.writeInFileTransaction(folder, file,
-					"refund 500 Error during jso out processing given " + "authnumber:[" + orderid + "]" + err8);
+					"refund 500 Error during jso out processing given orderid:[" + orderid + "]" + err8);
 
-			return "refund 500 Error during jso out processing given " + "orderid:[" + orderid + "]";
+			return "refund 500 Error during jso out processing given orderid:[" + orderid + "]";
 
 		}
 
@@ -1997,17 +1996,17 @@ public class APIController {
 
 		} catch (Exception err1) {
 
-			traces.writeInFileTransaction(folder, file, "status 500 Error during PaiementRequest findByCommandeAndComid"
-					+ "orderid:[" + orderid + "] and merchantid:[" + merchantid + "]" + err1);
-			return "status 500 Error during PaiementRequest findByCommandeAndComid" + "orderid:[" + orderid
+			traces.writeInFileTransaction(folder, file, "status 500 Error during PaiementRequest findByCommandeAndComid orderid:[" 
+					+ orderid + "] and merchantid:[" + merchantid + "]" + err1);
+			return "status 500 Error during PaiementRequest findByCommandeAndComid orderid:[" + orderid
 					+ "] and merchantid:[" + merchantid + "]" + err1;
 
 		}
 
 		if (current_dmd == null) {
-			traces.writeInFileTransaction(folder, file, "status 500 PaiementRequest not found for " + "orderid:["
+			traces.writeInFileTransaction(folder, file, "status 500 PaiementRequest not found orderidderid:["
 					+ orderid + "] and merchantid:[" + merchantid + "]");
-			return "status 500 PaiementRequest not found for " + "orderid:[" + orderid + "] and merchantid:["
+			return "status 500 PaiementRequest not found for  orderid:[" + orderid + "] and merchantid:["
 					+ merchantid + "]";
 
 		}
@@ -2444,7 +2443,7 @@ public class APIController {
 
 		} catch (Exception err2) {
 			traces.writeInFileTransaction(folder, file,
-					"capture 500 Error during HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmr" + "orderid:["
+					"capture 500 Error during HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmr orderid:["
 							+ orderid + "] and merchantid:[" + merchantid + "]" + err2);
 			return "capture 500 Error during HistoAutoGate  orderid:[" + orderid + "] and merchantid:["
 					+ merchantid + "]";
@@ -2468,29 +2467,29 @@ public class APIController {
 			current_merchant = commercantService.findByCmrCode(merchantid);
 		} catch (Exception e) {
 			traces.writeInFileTransaction(folder, file,
-					"authorization 500 Merchant misconfigured in DB or not existing" + "orderid:[" + orderid
+					"authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]" + e);
 
-			return "authorization 500 Merchant misconfigured in DB or not existing" + "orderid:[" + orderid
+			return "authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 					+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]";
 		}
 
 		if (current_merchant.getCmrCodactivite() == null) {
 			traces.writeInFileTransaction(folder, file,
-					"authorization 500 Merchant misconfigured in DB or not existing" + "orderid:[" + orderid
+					"authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]");
 
-			return "authorization 500 Merchant misconfigured in DB or not existing" + "orderid:[" + orderid
+			return "authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 					+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]";
 
 		}
 
 		if (current_merchant.getCmrCodbqe() == null) {
 			traces.writeInFileTransaction(folder, file,
-					"authorization 500 Merchant misconfigured in DB or not existing" + "orderid:[" + orderid
+					"authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]");
 
-			return "authorization 500 Merchant misconfigured in DB or not existing" + "orderid:[" + orderid
+			return "authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 					+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]";
 
 		}
@@ -2988,7 +2987,7 @@ public class APIController {
 			traces.writeInFileTransaction(folder, file, "refund 500 Error during amount formatting for given "
 					+ "orderid:[" + orderid + "] and merchantid:[" + merchantid + "]" + err4);
 
-			return "refund 500 Error during amount formatting for given " + "orderid:[" + orderid + "] and merchantid:["
+			return "refund 500 Error during amount formatting for given  orderid:[" + orderid + "] and merchantid:["
 					+ merchantid + "]";
 		}
 
@@ -3002,39 +3001,39 @@ public class APIController {
 			current_merchant = commercantService.findByCmrCode(merchantid);
 		} catch (Exception e) {
 			traces.writeInFileTransaction(folder, file,
-					"authorization 500" + "Merchant misconfigured in DB or not existing" + "orderid:[" + orderid
+					"authorization 500" + "Merchant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]");
 
-			return "authorization 500 Merchant misconfigured in DB or not existing" + "orderid:[" + orderid
+			return "authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 					+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]";
 		}
 
 		if (current_merchant == null) {
 			traces.writeInFileTransaction(folder, file,
-					"authorization 500" + "Merchant misconfigured in DB or not existing" + "orderid:[" + orderid
+					"authorization 500" + "Merchant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]");
 
-			return "authorization 500" + "Merchant misconfigured in DB or not existing" + "orderid:[" + orderid
+			return "authorization 500" + "Merchant misconfigured in DB or not existing orderid:[" + orderid
 					+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]";
 
 		}
 
 		if (current_merchant.getCmrCodactivite() == null) {
 			traces.writeInFileTransaction(folder, file,
-					"authorization 500 Merchant misconfigured in DB or not existing" + "orderid:[" + orderid
+					"authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]");
 
-			return "authorization 500 Merchant misconfigured in DB or not existing" + "orderid:[" + orderid
+			return "authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 					+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]";
 
 		}
 
 		if (current_merchant.getCmrCodbqe() == null) {
 			traces.writeInFileTransaction(folder, file,
-					"authorization 500 Merchant misconfigured in DB or not existing" + "orderid:[" + orderid
+					"authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]");
 
-			return "authorization 500 Merchant misconfigured in DB or not existing" + "orderid:[" + orderid
+			return "authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 					+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]";
 
 		}
@@ -3060,9 +3059,9 @@ public class APIController {
 				demandePaiementService.save(current_dmd);
 			} catch (Exception e) {
 				traces.writeInFileTransaction(folder, file,
-						"refund 500 Error during  demandepaiement update  A for given " + "orderid:[" + orderid + "]");
+						"refund 500 Error during  demandepaiement update  A for given  orderid:[" + orderid + "]");
 
-				return "refund 500 Error during  demandepaiement update  A for given " + "orderid:[" + orderid + "]";
+				return "refund 500 Error during  demandepaiement update  A for given  orderid:[" + orderid + "]";
 
 			}
 
@@ -3397,7 +3396,7 @@ public class APIController {
 			traces.writeInFileTransaction(folder, file, "reversal 500 Error during date formatting for given "
 					+ "orderid:[" + orderid + "] and merchantid:[" + merchantid + "]" + err3);
 
-			return "reversal 500 Error during date formatting for given " + "orderid:[" + orderid + "] and merchantid:["
+			return "reversal 500 Error during date formatting for given  orderid:[" + orderid + "] and merchantid:["
 					+ merchantid + "]";
 
 		}
@@ -3424,7 +3423,7 @@ public class APIController {
 			traces.writeInFileTransaction(folder, file, "reversal 500 Error during amount formatting for given "
 					+ "orderid:[" + orderid + "] and merchantid:[" + merchantid + "]" + err4);
 
-			return "reversal 500 Error during amount formatting for given " + "orderid:[" + orderid
+			return "reversal 500 Error during amount formatting for given  orderid:[" + orderid
 					+ "] and merchantid:[" + merchantid + "]";
 		}
 
@@ -3449,39 +3448,39 @@ public class APIController {
 			current_merchant = commercantService.findByCmrCode(merchantid);
 		} catch (Exception e) {
 			traces.writeInFileTransaction(folder, file,
-					"reversal 500 Merchant misconfigured in DB or not existing" + "orderid:[" + orderid
+					"reversal 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]");
 
-			return "reversal 500 Merchant misconfigured in DB or not existing" + "orderid:[" + orderid
+			return "reversal 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 					+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]";
 		}
 
 		if (current_merchant == null) {
 			traces.writeInFileTransaction(folder, file,
-					"reversal 500 Merchant misconfigured in DB or not existing" + "orderid:[" + orderid
+					"reversal 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]");
 
-			return "reversal 500 Merchant misconfigured in DB or not existing" + "orderid:[" + orderid
+			return "reversal 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 					+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]";
 
 		}
 
 		if (current_merchant.getCmrCodactivite() == null) {
 			traces.writeInFileTransaction(folder, file,
-					"reversal 500 Merchant misconfigured in DB or not existing" + "orderid:[" + orderid
+					"reversal 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]");
 
-			return "reversal 500 Merchant misconfigured in DB or not existing" + "orderid:[" + orderid
+			return "reversal 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 					+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]";
 
 		}
 
 		if (current_merchant.getCmrCodbqe() == null) {
 			traces.writeInFileTransaction(folder, file,
-					"reversal 500 Merchant misconfigured in DB or not existing" + "orderid:[" + orderid
+					"reversal 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]");
 
-			return "reversal 500 Merchant misconfigured in DB or not existing" + "orderid:[" + orderid
+			return "reversal 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 					+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]";
 
 		}
@@ -3538,7 +3537,7 @@ public class APIController {
 			traces.writeInFileTransaction(folder, file, "reversal 500 Error during switch tlv buildu for given "
 					+ "orderid:[" + orderid + "] and merchantid:[" + merchantid + "]" + err4);
 
-			return "reversa 500 Error during switch tlv buildu for given " + "orderid:[" + orderid
+			return "reversa 500 Error during switch tlv buildu for given  orderid:[" + orderid
 					+ "] and merchantid:[" + merchantid + "]";
 
 		}
@@ -3718,10 +3717,10 @@ public class APIController {
 		traces.writeInFileTransaction(folder, file, "tag98_resp : [" + tag98_resp + "]");
 
 		if (tag20_resp == null) {
-			return "reversal 500 Switch malfunction response code not present " + "orderid:[" + orderid + "]";
+			return "reversal 500 Switch malfunction response code not present  orderid:[" + orderid + "]";
 		}
 		if (tag20_resp.length() < 1) {
-			return "reversal 500 Switch malfunction response code length incorrect" + "orderid:[" + orderid + "]";
+			return "reversal 500 Switch malfunction response code length incorrect orderid:[" + orderid + "]";
 		}
 
 		if (tag20_resp.equalsIgnoreCase("00"))

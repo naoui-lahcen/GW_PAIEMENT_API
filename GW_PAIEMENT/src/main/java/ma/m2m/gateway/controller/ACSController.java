@@ -1142,7 +1142,7 @@ public class ACSController {
 						transactionid = String.valueOf(hist.getHatNumdem());
 					} catch (Exception e) {
 						traces.writeInFileTransaction(folder, file,
-								"authorization 500 Error during authdata preparation" + "orderid:[" + orderid + "]"
+								"authorization 500 Error during authdata preparation orderid:[" + orderid + "]"
 										+ e);
 
 						response.sendRedirect(redirectFailURL(dmd, folder, file));

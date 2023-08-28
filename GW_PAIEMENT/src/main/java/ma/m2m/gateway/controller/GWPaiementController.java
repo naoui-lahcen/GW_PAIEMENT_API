@@ -576,7 +576,7 @@ public class GWPaiementController {
 		int i_card_valid = Util.isCardValid(cardnumber);
 
 		if (i_card_valid == 1) {
-			traces.writeInFileTransaction(folder, file, "payer 500 Card number length is incorrect" + "orderid:["
+			traces.writeInFileTransaction(folder, file, "payer 500 Card number length is incorrect orderid:["
 					+ orderid + "] and merchantid:[" + merchantid + "]");
 			demandeDto.setMsgRefus("Card number length is incorrect");
 			model.addAttribute("demandeDto", demandeDto);
@@ -1265,7 +1265,7 @@ public class GWPaiementController {
 
 				} catch (Exception e) {
 					traces.writeInFileTransaction(folder, file,
-							"payer 500 Error during DEMANDE_PAIEMENT update etat demande for given " + "orderid:["
+							"payer 500 Error during DEMANDE_PAIEMENT update etat demande for given orderid:["
 									+ orderid + "]" + e);
 				}
 
@@ -1710,8 +1710,8 @@ public class GWPaiementController {
 	public String infoDemande(@ModelAttribute("infoDemande") DemandePaiementDto demandeDto) {
 		// create file log
 		traces.creatFileTransaction(file);
-		traces.writeInFileTransaction(folder, file, "Start payer ()");
-		System.out.println("Start payer ()");
+		traces.writeInFileTransaction(folder, file, "Start infoDemande ()");
+		System.out.println("Start infoDemande ()");
 
 		// ThreeDSecureResponse result =
 		// autorisationService.preparerReqThree3DSS(demandeDto, folder, file);
