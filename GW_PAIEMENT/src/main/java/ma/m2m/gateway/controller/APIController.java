@@ -1464,7 +1464,8 @@ public class APIController {
 				return "CARTE NON ENROLLE";
 			}
 		}
-
+		traces.writeInFileTransaction(folder, file, "*********** Fin authorization() ************** ");
+		System.out.println("*********** Fin authorization() ************** ");
 		return jso.toString();
 
 	}
@@ -1696,6 +1697,9 @@ public class APIController {
 			return "refund 500 Error during jso out processing given orderid:[" + orderid + "]";
 
 		}
+		
+		traces.writeInFileTransaction(folder, file, "*********** Fin getLink() ************** ");
+		System.out.println("*********** Fin getLink() ************** ");
 
 		return jso.toString();
 
@@ -1823,6 +1827,7 @@ public class APIController {
 
 		// fin
 		System.out.println("*********** Fin generateToken() ************** ");
+		traces.writeInFileTransaction(folder, file, "*********** Fin generateToken() ************** ");
 
 		return jso.toString();
 	}
@@ -2300,7 +2305,9 @@ public class APIController {
 					+ "] and merchantid:[" + merchantid + "]";
 
 		}
-
+		traces.writeInFileTransaction(folder, file, "*********** Fin status() ************** ");
+		System.out.println("*********** Fin status() ************** ");
+		
 		return jso.toString();
 	}
 
@@ -2703,6 +2710,9 @@ public class APIController {
 					+ "] and merchantid:[" + merchantid + "]";
 
 		}
+		
+		traces.writeInFileTransaction(folder, file, "*********** Fin capture() ************** ");
+		System.out.println("*********** Fin capture() ************** ");
 
 		return jso.toString();
 
@@ -3224,6 +3234,9 @@ public class APIController {
 			return "refund 500 Error during jso out processing given authnumber" + "authnumber:[" + authnumber + "]";
 
 		}
+		
+		traces.writeInFileTransaction(folder, file, "*********** Fin refund() ************** ");
+		System.out.println("*********** Fin refund() ************** ");
 
 		return jso.toString();
 
@@ -3823,8 +3836,8 @@ public class APIController {
 			return "reversal 500 Error during jso out processing given authnumber" + "authnumber:[" + authnumber + "]";
 
 		}
-		traces.writeInFileTransaction(folder, file, "*********** Start reversal() ************** ");
-		System.out.println("*********** Start reversal() ************** ");
+		traces.writeInFileTransaction(folder, file, "*********** Fin reversal() ************** ");
+		System.out.println("*********** Fin reversal() ************** ");
 
 		return jso.toString();
 
@@ -3966,8 +3979,8 @@ public class APIController {
 			jso.put("status", "saving token failed ");
 		}
 
-		traces.writeInFileTransaction(folder, file, "*********** Start getCardTken() ************** ");
-		System.out.println("*********** Start getCardTken() ************** ");
+		traces.writeInFileTransaction(folder, file, "*********** Fin getCardTken() ************** ");
+		System.out.println("*********** Fin getCardTken() ************** ");
 
 		return jso.toString();
 	}
@@ -4074,8 +4087,8 @@ public class APIController {
 			jso.put("status", "delete token failed");
 		}
 
-		traces.writeInFileTransaction(folder, file, "*********** Start deleteCardTken() ************** ");
-		System.out.println("*********** Start deleteCardTken() ************** ");
+		traces.writeInFileTransaction(folder, file, "*********** Fin deleteCardTken() ************** ");
+		System.out.println("*********** Fin deleteCardTken() ************** ");
 
 		return jso.toString();
 	}
@@ -4095,7 +4108,8 @@ public class APIController {
 
 		responseDto response = new responseDto();
 
-		System.out.println("*********** Fin cpautorisation ************** ");
+		traces.writeInFileTransaction(folder, file, "*********** Fin cpautorisation() ************** ");
+		System.out.println("*********** Fin cpautorisation() ************** ");
 
 		return ResponseEntity.ok().body(response);
 	}
@@ -4108,7 +4122,7 @@ public class APIController {
 		// create file log
 		traces.creatFileTransaction(file);
 		traces.writeInFileTransaction(folder, file, "*********** Start testapi ************** ");
-		System.out.println("*********** Debut testapi ************** ");
+		System.out.println("*********** Start testapi ************** ");
 		
 		JSONObject jsonOrequest = null;
 		try {
