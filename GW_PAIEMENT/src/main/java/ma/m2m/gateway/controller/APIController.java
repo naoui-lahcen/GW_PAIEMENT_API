@@ -98,6 +98,9 @@ public class APIController {
 
 	@Value("${key.LINK_CHALENGE}")
 	private String link_chalenge;
+	
+	@Value("${key.LINK_INDEX}")
+	private String link_index;
 
 	@Value("${key.SWITCH_URL}")
 	private String ipSwitch;
@@ -1833,13 +1836,16 @@ public class APIController {
 		System.out.println("*********** Start chalengeapi ************** ");
 
 		String page = "chalenge";
+		
+		traces.writeInFileTransaction(folder, file, "findByTokencommande token : " + token);
+		System.out.println("findByTokencommande token : " + token);
 
 		DemandePaiementDto current_dem = demandePaiementService.findByTokencommande(token);
 		String msgRefus = "Une erreur est survenue, merci de réessayer plus tard";
 
 		if (current_dem != null) {
-			traces.writeInFileTransaction(folder, file, "current_dem exist ");
-			System.out.println("current_dem exist ");
+			traces.writeInFileTransaction(folder, file, "current_dem is exist OK");
+			System.out.println("current_dem is exist OK");
 			if (current_dem.getEtat_demande().equals("SW_PAYE") || current_dem.getEtat_demande().equals("PAYE")) {
 				msgRefus = "Votre commande est deja payé !!! ";
 				current_dem.setMsgRefus(msgRefus);
@@ -1857,10 +1863,20 @@ public class APIController {
 				// method='post'enctype='application/x-www-form-urlencoded'><input
 				// type='hidden'name='creq'value='ewogICJtZXNzYWdlVmVyc2lvbiI6ICIyLjEuMCIsCiAgInRocmVlRFNTZXJ2ZXJUcmFuc0lEIjogIjllZjUwNjk3LWRiMTctNGZmMy04MDYzLTc0ZTAwMTk0N2I4YiIsCiAgImFjc1RyYW5zSUQiOiAiZjM2ZDA3ZWQtZGJhOS00ZTkzLWE2OGMtMzNmYjAyMDgxZDVmIiwKICAiY2hhbGxlbmdlV2luZG93U2l6ZSI6ICIwNSIsCiAgIm1lc3NhZ2VUeXBlIjogIkNSZXEiCn0='/></form>";
 				// current_dem.setCreq(htmlCreq);
-				System.out.println("dem htmlCreq : " + current_dem.getCreq());
-				traces.writeInFileTransaction(folder, file, "dem htmlCreq : " + current_dem.getCreq());
+				if(current_dem.getCreq().equals("")) {
+					msgRefus = "Le lien de chalence acs est null !!!";
+					current_dem.setMsgRefus(msgRefus);
+					traces.writeInFileTransaction(folder, file, "Le lien de chalence acs est null !!!");
+					
+					model.addAttribute("demandeDto", current_dem);
+					page = "error";
+				} else {
+					System.out.println("current_dem htmlCreq : " + current_dem.getCreq());
+					traces.writeInFileTransaction(folder, file, "current_dem htmlCreq : " + current_dem.getCreq());
 
-				model.addAttribute("demandeDto", current_dem);
+					model.addAttribute("demandeDto", current_dem);
+				}
+
 			}
 
 			System.out.println("*********** returns to chalenge.html ************** ");
@@ -4083,6 +4099,75 @@ public class APIController {
 		System.out.println("*********** Fin cpautorisation ************** ");
 
 		return ResponseEntity.ok().body(response);
+	}
+	
+	@PostMapping(value = "/napspayment/testapi", consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public String testapi(@RequestHeader MultiValueMap<String, String> header, @RequestBody String req,
+			HttpServletResponse response, Model model) throws IOException {
+		
+		// create file log
+		traces.creatFileTransaction(file);
+		traces.writeInFileTransaction(folder, file, "*********** Start testapi ************** ");
+		System.out.println("*********** Debut testapi ************** ");
+		
+		JSONObject jsonOrequest = null;
+		try {
+			jsonOrequest = new JSONObject(req);
+		}
+
+		catch (JSONException jserr) {
+			traces.writeInFileTransaction(folder, file, "testapi 500 malformed json expression" + req + jserr);
+			return "testapi 500 malformed json expression";
+
+		}
+		
+		String capture, currency, orderid, recurring, amount, promoCode, transactionid, capture_id, merchantid,
+		merchantname, websiteName, websiteid, callbackUrl, cardnumber, token, expirydate, holdername, cvv,
+		fname, lname, email, country, phone, city, state, zipcode, address, mesg_type, merc_codeactivite,
+		acqcode, merchant_name, merchant_city, acq_type, processing_code, reason_code, transaction_condition,
+		transactiondate, transactiontime, date, rrn, heure, montanttrame, num_trs = "", successURL, failURL,
+		transactiontype;
+		
+		JSONObject jso = new JSONObject();
+		
+		try {
+			DemandePaiementDto dmd = new DemandePaiementDto();
+			
+			dmd.setMsgRefus("testapi");
+			dmd.setTokencommande("6B3FZ2015425468441HH67V1210500");
+			 //String htmlCreq = "<form action='https://acs2.bankofafrica.ma:443/lacs2' method='post'enctype='application/x-www-form-urlencoded'><input type='hidden'name='creq'value='ewogICJtZXNzYWdlVmVyc2lvbiI6ICIyLjEuMCIsCiAgInRocmVlRFNTZXJ2ZXJUcmFuc0lEIjogIjllZjUwNjk3LWRiMTctNGZmMy04MDYzLTc0ZTAwMTk0N2I4YiIsCiAgImFjc1RyYW5zSUQiOiAiZjM2ZDA3ZWQtZGJhOS00ZTkzLWE2OGMtMzNmYjAyMDgxZDVmIiwKICAiY2hhbGxlbmdlV2luZG93U2l6ZSI6ICIwNSIsCiAgIm1lc3NhZ2VUeXBlIjogIkNSZXEiCn0='/></form>";
+			 //dmd.setCreq(htmlCreq);
+			
+			model.addAttribute("demandeDto", dmd);
+			
+			String linkacs = link_chalenge + dmd.getTokencommande();
+			
+			//response.sendRedirect(link_index);
+			response.sendRedirect(linkacs);
+			
+			// Transaction info
+			jso.put("orderid", "12345678912546");
+			jso.put("amount", "100");
+			jso.put("transactionid", "1122554466");
+			jso.put("statuscode", "00");
+			jso.put("status", "OK");
+
+			// Link ACS chalenge info
+			jso.put("linkacs", linkacs);
+			
+			System.out.println("testapi jso : " + jso.toString());
+
+		} catch (Exception ex) {
+			System.out.println("Error " + ex);
+			// Transaction info
+			jso.put("statuscode", "17");
+			jso.put("status", "failed");
+			System.out.println("testapi error jso : " + jso.toString());
+		}
+
+		System.out.println("*********** Fin testapi ************** ");
+		return jso.toString();
 	}
 
 	private boolean is_reccuring_check(String recurring) {

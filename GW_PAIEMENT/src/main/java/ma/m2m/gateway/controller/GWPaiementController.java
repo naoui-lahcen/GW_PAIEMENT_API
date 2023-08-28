@@ -1427,15 +1427,15 @@ public class GWPaiementController {
 				try {
 
 					traces.writeInFileTransaction(folder, file,
-							"transaction declinded ==> update Demandepaiement status to RE ...");
+							"transaction declinded ==> update Demandepaiement status to SW_REJET ...");
 
-					dmd.setEtat_demande("RE");
+					dmd.setEtat_demande("SW_REJET");
 					demandePaiementService.save(dmd);
 
 				} catch (Exception e) {
 					traces.writeInFileTransaction(folder, file, "payer 500"
 							+ "Error during  DemandePaiement update RE for given orderid:[" + orderid + "]" + e);
-					demandeDto.setMsgRefus("Error during  DemandePaiement update RE");
+					demandeDto.setMsgRefus("Error during  DemandePaiement update SW_REJET");
 					model.addAttribute("demandeDto", demandeDto);
 					page = "result";
 					return page;
