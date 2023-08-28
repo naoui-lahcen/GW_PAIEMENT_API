@@ -225,7 +225,6 @@ public class GWPaiementController {
 	public String index() {
 		// create file log
 		traces.creatFileTransaction(file);
-		traces.writeInFileTransaction(folder, file, "Start index ()");
 		traces.writeInFileTransaction(folder, file, "return to index.html");
 		System.out.println("return to index.html");
 
@@ -236,8 +235,8 @@ public class GWPaiementController {
 	public String showPagePayment(@PathVariable(value = "token") String token, Model model) {
 		// create file log
 		traces.creatFileTransaction(file);
-		traces.writeInFileTransaction(folder, file, "*********** Start showPagePayment ");
-		System.out.println("*********** Start showPagePayment ");
+		traces.writeInFileTransaction(folder, file, "*********** Start showPagePayment ***********");
+		System.out.println("*********** Start showPagePayment ***********");
 
 		traces.writeInFileTransaction(folder, file, "findByTokencommande token : " + token);
 		System.out.println("findByTokencommande token : " + token);
