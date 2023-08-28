@@ -452,6 +452,8 @@ public class APIController {
 			// generer token
 			String tokencommande = Util.genTokenCom(dmd.getCommande(), dmd.getComid());
 			dmd.setTokencommande(tokencommande);
+			// set transctiontype
+			dmd.setTransactiontype(transactiontype);
 
 			dmdSaved = demandePaiementService.save(dmd);
 
