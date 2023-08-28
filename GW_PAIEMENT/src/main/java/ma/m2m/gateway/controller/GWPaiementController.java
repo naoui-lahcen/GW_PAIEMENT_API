@@ -1732,7 +1732,6 @@ public class GWPaiementController {
 	public String result() {
 		traces.creatFileTransaction(file);
 		System.out.println("return to result.html");
-		System.out.println("return to resut.html");
 
 		return "result";
 	}
