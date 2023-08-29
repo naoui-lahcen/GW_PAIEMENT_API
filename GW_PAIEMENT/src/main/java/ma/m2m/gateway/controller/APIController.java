@@ -23,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -74,6 +75,7 @@ import org.json.JSONObject;
  */
 
 @Controller
+@CrossOrigin(origins = "*", allowedHeaders = "*", maxAge = 3600)
 public class APIController {
 
 	private static Logger logger = LogManager.getLogger(APIController.class);
@@ -1648,7 +1650,8 @@ public class APIController {
 			trsdate = new Date();
 			transactiondate = formatter_1.format(trsdate);
 			transactiontime = formatter_2.format(trsdate);
-			dmd.setDem_date_time(transactiondate + transactiontime);
+			//dmd.setDem_date_time(transactiondate + transactiontime);
+			dmd.setDem_date_time(dateFormat.format(new Date()));
 
 			dmd.setIs_addcard("N");
 			dmd.setIs_tokenized("N");
