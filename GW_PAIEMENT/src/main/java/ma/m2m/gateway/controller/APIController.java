@@ -1712,7 +1712,7 @@ public class APIController {
 
 	}
 
-	@PostMapping(value = "/napspayment/CreatTocken24", consumes = "application/json", produces = "application/json")
+	@PostMapping(value = "/napspayment/createtocken24", consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public String generateToken(@RequestHeader MultiValueMap<String, String> header, @RequestBody String token24,
 			HttpServletResponse response) {
@@ -1797,7 +1797,8 @@ public class APIController {
 		JSONObject jso = new JSONObject();
 		String token = "";
 		try {
-			token = jwtTokenUtil.generateToken(usernameToken, secret);
+			//token = jwtTokenUtil.generateToken(usernameToken, secret);
+			token = jwtTokenUtil.generateToken(cx_user, cx_password);
 			String userFromToken = jwtTokenUtil.getUsernameFromToken(token);
 			Date dateExpiration = jwtTokenUtil.getExpirationDateFromToken(token);
 			Boolean isTokenExpired = jwtTokenUtil.isTokenExpired(token);
