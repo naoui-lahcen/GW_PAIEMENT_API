@@ -634,7 +634,11 @@ public class APIController {
 			Util.writeInFileTransaction(folder, file, "Response 3DS is null");
 			return "Response 3DS is null";
 		}
-
+		// for test
+		//reponseMPI = "D";
+		//String htmlCreq = "<form  action='https://acs2.bankofafrica.ma:443/lacs2' method='post'enctype='application/x-www-form-urlencoded'><input type='hidden'name='creq'value='ewogICJtZXNzYWdlVmVyc2lvbiI6ICIyLjEuMCIsCiAgInRocmVlRFNTZXJ2ZXJUcmFuc0lEIjogIjllZjUwNjk3LWRiMTctNGZmMy04MDYzLTc0ZTAwMTk0N2I4YiIsCiAgImFjc1RyYW5zSUQiOiAiZjM2ZDA3ZWQtZGJhOS00ZTkzLWE2OGMtMzNmYjAyMDgxZDVmIiwKICAiY2hhbGxlbmdlV2luZG93U2l6ZSI6ICIwNSIsCiAgIm1lc3NhZ2VUeXBlIjogIkNSZXEiCn0=' /></form>";
+		//threeDsecureResponse.setHtmlCreq(htmlCreq);
+		// fin
 		if (reponseMPI.equals("Y")) {
 			// ********************* Frictionless responseMPI equal Y *********************
 			traces.writeInFileTransaction(folder, file,
@@ -1854,12 +1858,12 @@ public class APIController {
 			traces.writeInFileTransaction(folder, file, "current_dem is exist OK");
 			System.out.println("current_dem is exist OK");
 			if (current_dem.getEtat_demande().equals("SW_PAYE") || current_dem.getEtat_demande().equals("PAYE")) {
-				msgRefus = "Votre commande est deja payé !!! ";
+				msgRefus = "La transaction en cours n’a pas abouti (Opération déjà effectuée), votre compte ne sera pas débité, merci de réessayer .";
 				current_dem.setMsgRefus(msgRefus);
 				model.addAttribute("demandeDto", current_dem);
 				page = "error";
 			} else if (current_dem.getEtat_demande().equals("SW_REJET")) {
-				msgRefus = "Transaction refusée par votre banque";
+				msgRefus = "La transaction en cours n’a pas abouti (Transaction rejetée), votre compte ne sera pas débité, merci de réessayer .";
 				current_dem.setMsgRefus(msgRefus);
 				model.addAttribute("demandeDto", current_dem);
 				page = "error";
@@ -1871,7 +1875,7 @@ public class APIController {
 				// type='hidden'name='creq'value='ewogICJtZXNzYWdlVmVyc2lvbiI6ICIyLjEuMCIsCiAgInRocmVlRFNTZXJ2ZXJUcmFuc0lEIjogIjllZjUwNjk3LWRiMTctNGZmMy04MDYzLTc0ZTAwMTk0N2I4YiIsCiAgImFjc1RyYW5zSUQiOiAiZjM2ZDA3ZWQtZGJhOS00ZTkzLWE2OGMtMzNmYjAyMDgxZDVmIiwKICAiY2hhbGxlbmdlV2luZG93U2l6ZSI6ICIwNSIsCiAgIm1lc3NhZ2VUeXBlIjogIkNSZXEiCn0='/></form>";
 				// current_dem.setCreq(htmlCreq);
 				if(current_dem.getCreq().equals("")) {
-					msgRefus = "Le lien de chalence acs est null !!!";
+					msgRefus = "La transaction en cours n’a pas abouti (Le lien de chalence acs est null), votre compte ne sera pas débité, merci de réessayer .";
 					current_dem.setMsgRefus(msgRefus);
 					traces.writeInFileTransaction(folder, file, "Le lien de chalence acs est null !!!");
 					

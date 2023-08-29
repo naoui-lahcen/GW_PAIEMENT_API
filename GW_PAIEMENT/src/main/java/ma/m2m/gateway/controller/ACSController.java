@@ -1294,13 +1294,13 @@ public class ACSController {
 				demandeP = demandePaiementService.findByDem_xid(cleanCres.getThreeDSServerTransID());
 
 				if (demandeP != null) {
-					msgRefus = "Une erreur est survenue, merci de réessayer plus tard, TransStatus = N";
+					msgRefus = "La transaction en cours n’a pas abouti (TransStatus = N), votre compte ne sera pas débité, merci de réessayer .";
 					// demandeP.setMsgRefus(msgRefus);
 					// model.addAttribute("demandeDto", demandeP);
 					response.sendRedirect(link_result);
 				} else {
 					// DemandePaiementDto demande = new DemandePaiementDto();
-					msgRefus = "Une erreur est survenue, merci de réessayer plus tard, TransStatus = N";
+					msgRefus = "La transaction en cours n’a pas abouti (TransStatus = N), votre compte ne sera pas débité, merci de réessayer .";
 					// demande.setMsgRefus(msgRefus);
 					// model.addAttribute("demandeDto", demande);
 					response.sendRedirect(link_result);

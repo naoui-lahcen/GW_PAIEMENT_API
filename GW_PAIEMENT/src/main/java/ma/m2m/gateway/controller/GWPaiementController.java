@@ -258,12 +258,12 @@ public class GWPaiementController {
 				model.addAttribute("demandeDto", demandeDto);
 				if (demandeDto.getEtat_demande().equals("SW_PAYE") || demandeDto.getEtat_demande().equals("PAYE")) {
 					traces.writeInFileTransaction(folder, file, "Opération déjà effectuée");
-					demandeDto.setMsgRefus("Opération déjà effectuée");
+					demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (Opération déjà effectuée), votre compte ne sera pas débité, merci de réessayer .");
 					model.addAttribute("demandeDto", demandeDto);
 					page = "operationEffectue";
 				} else if (demandeDto.getEtat_demande().equals("SW_REJET")) {
 					traces.writeInFileTransaction(folder, file, "Transaction rejetée");
-					demandeDto.setMsgRefus("Transaction rejetée");
+					demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (Transaction rejetée), votre compte ne sera pas débité, merci de réessayer .");
 					model.addAttribute("demandeDto", demandeDto);
 					page = "result";
 				} else {
@@ -741,7 +741,7 @@ public class GWPaiementController {
 			traces.writeInFileTransaction(folder, file,
 					"demandePaiement after update MPI_KO idDemande null : " + demandeDto.toString());
 			// return "AUTO INVALIDE DEMANDE";
-			demandeDto.setMsgRefus("AUTO INVALIDE DEMANDE MPI_KO");
+			demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (MPI_KO), votre compte ne sera pas débité, merci de réessayer .");
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
 			return page;
@@ -754,7 +754,7 @@ public class GWPaiementController {
 					"demandePaiement not found !!!! demandePaiement = null  / received idDemande from MPI => "
 							+ idDemande);
 			// return "AUTO INVALIDE DEMANDE";
-			demandeDto.setMsgRefus("AUTO INVALIDE DEMANDE demandePaiement not found");
+			demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (demandePaiement not found), votre compte ne sera pas débité, merci de réessayer .");
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
 			return page;
@@ -767,7 +767,7 @@ public class GWPaiementController {
 					"demandePaiement after update MPI_KO reponseMPI null : " + dmd.toString());
 			Util.writeInFileTransaction(folder, file, "Response 3DS is null");
 			// return "Response 3DS is null";
-			demandeDto.setMsgRefus("AUTO INVALIDE DEMANDE Response 3DS is null");
+			demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (MPI_KO reponseMPI null), votre compte ne sera pas débité, merci de réessayer .");
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
 			return page;
@@ -798,7 +798,7 @@ public class GWPaiementController {
 				traces.writeInFileTransaction(folder, file,
 						"payer 500 cvv not set , reccuring flag set to N, cvv must be present in normal transaction");
 
-				demandeDto.setMsgRefus("cvv must be present in normal transaction");
+				demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (cvv must be present in normal transaction), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 				return page;
@@ -846,7 +846,7 @@ public class GWPaiementController {
 					traces.writeInFileTransaction(folder, file,
 							"payer 500 Error during switch tlv buildup for given orderid:[" + orderid
 									+ "] and merchantid:[" + merchantid + "]" + err4);
-					demandeDto.setMsgRefus("Error during switch tlv buildup");
+					demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (Error during switch tlv buildup), votre compte ne sera pas débité, merci de réessayer .");
 					model.addAttribute("demandeDto", demandeDto);
 					page = "result";
 					return page;
@@ -930,7 +930,7 @@ public class GWPaiementController {
 			} catch (java.net.ConnectException e) {
 				traces.writeInFileTransaction(folder, file, "Switch  malfunction ConnectException !!!" + e);
 				switch_ko = 1;
-				demandeDto.setMsgRefus("Switch  malfunction ConnectException !!!");
+				demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (Switch  malfunction ConnectException), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 				return page;
@@ -944,7 +944,7 @@ public class GWPaiementController {
 				traces.writeInFileTransaction(folder, file,
 						"payer 500 Error Switch communication SocketTimeoutException" + "switch ip:[" + sw_s
 								+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-				demandeDto.setMsgRefus("Error Switch communication SocketTimeoutException");
+				demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (Error Switch communication SocketTimeoutException), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 				return page;
@@ -956,7 +956,7 @@ public class GWPaiementController {
 				e.printStackTrace();
 				traces.writeInFileTransaction(folder, file, "payer 500 Error Switch communication IOException"
 						+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-				demandeDto.setMsgRefus("Error Switch communication IOException");
+				demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (Error Switch communication IOException), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 				return page;
@@ -966,7 +966,7 @@ public class GWPaiementController {
 				traces.writeInFileTransaction(folder, file, "Switch  malfunction Exception!!!" + e);
 				switch_ko = 1;
 				e.printStackTrace();
-				demandeDto.setMsgRefus("Switch  malfunction Exception!!!");
+				demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (Switch  malfunction Exception), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 				return page;
@@ -980,7 +980,7 @@ public class GWPaiementController {
 				switch_ko = 1;
 				traces.writeInFileTransaction(folder, file, "payer 500 Error Switch null response" + "switch ip:["
 						+ sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-				demandeDto.setMsgRefus("Switch  malfunction resp null!!!");
+				demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (Switch  malfunction resp null), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 				return page;
@@ -1434,7 +1434,7 @@ public class GWPaiementController {
 				} catch (Exception e) {
 					traces.writeInFileTransaction(folder, file, "payer 500"
 							+ "Error during  DemandePaiement update RE for given orderid:[" + orderid + "]" + e);
-					demandeDto.setMsgRefus("Error during  DemandePaiement update SW_REJET");
+					demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (Error during  DemandePaiement update SW_REJET), votre compte ne sera pas débité, merci de réessayer .");
 					model.addAttribute("demandeDto", demandeDto);
 					page = "result";
 					return page;
@@ -1455,7 +1455,7 @@ public class GWPaiementController {
 			} catch (Exception e) {
 				traces.writeInFileTransaction(folder, file,
 						"payer 500 Error during  paymentid generation for given orderid:[" + orderid + "]" + e);
-				demandeDto.setMsgRefus("Error during  paymentid generation");
+				demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (Error during  paymentid generation), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 				return page;
@@ -1480,7 +1480,7 @@ public class GWPaiementController {
 			} catch (Exception e) {
 				traces.writeInFileTransaction(folder, file,
 						"payer 500 Error during authdata preparation orderid:[" + orderid + "]" + e);
-				demandeDto.setMsgRefus("Error during authdata preparation");
+				demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (Error during authdata preparation), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 				return page;
@@ -1525,7 +1525,7 @@ public class GWPaiementController {
 					System.out.println("coderep !=00 => Redirect to failURL : " + dmd.getFailURL());
 					// response.sendRedirect(dmd.getFailURL() + "?data=" + data + "==&codecmr=" +
 					// merchantid);
-					demandeDto.setMsgRefus("Error during response Switch coderep !=00");
+					demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (Error during response Switch coderep !=00), votre compte ne sera pas débité, merci de réessayer .");
 					model.addAttribute("demandeDto", demandeDto);
 					page = "result";
 					return page;
@@ -1534,7 +1534,7 @@ public class GWPaiementController {
 			} catch (Exception jsouterr) {
 				traces.writeInFileTransaction(folder, file,
 						"payer 500 Error during jso out processing given authnumber:[" + authnumber + "]" + jsouterr);
-				demandeDto.setMsgRefus("Error during jso out processing");
+				demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (Error during jso out processing), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 				return page;
@@ -1555,7 +1555,7 @@ public class GWPaiementController {
 
 			} catch (Exception ex) {
 				traces.writeInFileTransaction(folder, file, "payer 500 Error during jso out processing " + ex);
-				demandeDto.setMsgRefus("Error during jso out processing");
+				demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (Error during jso out processing), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 				return page;
@@ -1568,7 +1568,7 @@ public class GWPaiementController {
 				dmd.setEtat_demande("MPI_CMR_INEX");
 				demandePaiementService.save(dmd);
 				// return "COMMERCANT NON PARAMETRE";
-				demandeDto.setMsgRefus("COMMERCANT NON PARAMETRE");
+				demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (COMMERCANT NON PARAMETRE), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 				return page;
@@ -1578,7 +1578,7 @@ public class GWPaiementController {
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				// return " BIN NON PARAMETREE";
-				demandeDto.setMsgRefus("BIN NON PARAMETREE");
+				demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (BIN NON PARAMETREE), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 				return page;
@@ -1588,7 +1588,7 @@ public class GWPaiementController {
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				// return "MPI_DS_ERR";
-				demandeDto.setMsgRefus("MPI_DS_ERR");
+				demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (MPI_DS_ERR), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 				return page;
@@ -1598,7 +1598,7 @@ public class GWPaiementController {
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				// return "CARTE ERRONEE";
-				demandeDto.setMsgRefus("CARTE ERRONEE");
+				demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (CARTE ERRONEE), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 				return page;
@@ -1608,7 +1608,7 @@ public class GWPaiementController {
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				// return "CARTE NON ENROLLE";
-				demandeDto.setMsgRefus("CARTE NON ENROLLE");
+				demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (CARTE NON ENROLLE), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 				return page;
