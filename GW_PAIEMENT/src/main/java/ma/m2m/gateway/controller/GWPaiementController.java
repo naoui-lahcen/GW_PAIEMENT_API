@@ -469,7 +469,7 @@ public class GWPaiementController {
 			// Card info
 			cardnumber = demandeDto.getDem_pan();
 			token = "";
-			expirydate = demandeDto.getAnnee().concat(demandeDto.getMois());
+			expirydate = demandeDto.getAnnee().substring(2,4).concat(demandeDto.getMois());
 			holdername = "";
 			cvv = demandeDto.getDem_cvv();
 
@@ -615,6 +615,33 @@ public class GWPaiementController {
 		}
 
 		int i_card_type = Util.getCardIss(cardnumber);
+
+
+		try {
+
+			demandeDto.setDem_pan(cardnumber);
+			demandeDto.setDem_cvv(cvv);
+			demandeDto.setType_carte(i_card_type + "");
+			demandeDto.setDateexpnaps(expirydate);
+			demandeDto.setEtat_demande("INIT");
+
+			formatter_1 = new SimpleDateFormat("yyyy-MM-dd");
+			formatter_2 = new SimpleDateFormat("HH:mm:ss");
+			trsdate = new Date();
+			transactiondate = formatter_1.format(trsdate);
+			transactiontime = formatter_2.format(trsdate);
+			demandeDto.setDem_date_time(dateFormat.format(new Date()));
+
+			demandeDto = demandePaiementService.save(demandeDto);
+
+		} catch (Exception err1) {
+			traces.writeInFileTransaction(folder, file,
+					"authorization 500 Error during DEMANDE_PAIEMENT insertion for given orderid:[" + orderid + "]"
+							+ err1);
+
+			return "authorization 500 Error during DEMANDE_PAIEMENT insertion for given orderid:[" + orderid + "]";
+
+		}
 
 		try {
 

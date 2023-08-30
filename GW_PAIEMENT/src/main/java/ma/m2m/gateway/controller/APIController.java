@@ -412,7 +412,7 @@ public class APIController {
 		int i_card_type = Util.getCardIss(cardnumber);
 
 		try {
-
+			
 			dmd = new DemandePaiementDto();
 
 			dmd.setComid(merchantid);
@@ -423,6 +423,9 @@ public class APIController {
 			dmd.setSuccessURL(successURL);
 			dmd.setFailURL(failURL);
 			dmd.setType_carte(i_card_type + "");
+			if(amount.equals("") || amount == null) {
+				amount = "0";
+			}
 			dmd.setMontant(Double.parseDouble(amount));
 			dmd.setNom(lname);
 			dmd.setPrenom(fname);
@@ -1635,7 +1638,10 @@ public class APIController {
 			dmd.setCommande(orderid);
 			dmd.setGalid(websiteid);
 			dmd.setSuccessURL(successURL);
-			dmd.setFailURL(failURL);
+			dmd.setFailURL(failURL);		
+			if(amount.equals("") || amount == null) {
+				amount = "0";
+			}
 			dmd.setMontant(Double.parseDouble(amount));
 			dmd.setNom(lname);
 			dmd.setPrenom(fname);
