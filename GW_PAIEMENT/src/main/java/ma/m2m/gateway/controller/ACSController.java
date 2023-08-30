@@ -1241,6 +1241,13 @@ public class ACSController {
 						response.sendRedirect(redirectFailURL(dmd, folder, file));
 
 					}
+				} else if (reponseMPI.equals("E")) {
+					// ********************* Cas responseMPI equal E
+					// *********************
+					traces.writeInFileTransaction(folder, file, "****** Cas responseMPI equal E ******");
+					traces.writeInFileTransaction(folder, file, "errmpi/idDemande : " + errmpi +"/" + idDemande);
+					dmd.setEtat_demande("MPI_DS_ERR");
+					response.sendRedirect(link_result);				
 				} else {
 					switch (errmpi) {
 					case "COMMERCANT NON PARAMETRE":

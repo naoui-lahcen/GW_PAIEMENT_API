@@ -1625,7 +1625,19 @@ public class GWPaiementController {
 				page = "result";
 				return page;
 			}
-		} else {
+		} else if (reponseMPI.equals("E")) {
+				// ********************* Cas responseMPI equal E
+				// *********************
+				traces.writeInFileTransaction(folder, file, "****** Cas responseMPI equal E ******");
+				traces.writeInFileTransaction(folder, file, "errmpi/idDemande : " + errmpi +"/" + idDemande);
+				dmd.setEtat_demande("MPI_DS_ERR");
+				demandePaiementService.save(dmd);
+				demandeDto.setMsgRefus(
+						"La transaction en cours n’a pas abouti (Error 3DSS), votre compte ne sera pas débité, merci de réessayer .");
+				model.addAttribute("demandeDto", demandeDto);
+				page = "result";
+				return page;				
+			} else {
 			switch (errmpi) {
 			case "COMMERCANT NON PARAMETRE":
 				traces.writeInFileTransaction(folder, file, "COMMERCANT NON PARAMETRE : " + idDemande);
