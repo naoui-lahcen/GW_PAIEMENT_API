@@ -88,6 +88,8 @@ public class DemandePaiementDto implements Serializable {
 	private String transactiontype;
 	
 	private String creq;
+	private List<Integer> years;
+	private List<MonthDto> months;
 	
 	public Integer getIddemande() {
 		return iddemande;
@@ -488,6 +490,20 @@ public class DemandePaiementDto implements Serializable {
 	}
 	public void setTransactiontype(String transactiontype) {
 		this.transactiontype = transactiontype;
+	}
+	
+	public List<Integer> getYears() {
+		return years;
+	}
+	public void setYears(List<Integer> years) {
+		this.years = years;
+	}
+	
+	public List<MonthDto> getMonths() {
+		return months;
+	}
+	public void setMonths(List<MonthDto> months) {
+		this.months = months;
 	}
 	public DemandePaiementDto() {
 		super();

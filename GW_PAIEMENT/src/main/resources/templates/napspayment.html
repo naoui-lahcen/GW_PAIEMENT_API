@@ -109,57 +109,40 @@
                         <label for="num" class="col-sm-3 col-form-label">N°
                         carte bancaire</label>
                         <div class="col-sm-3">
-                           <input type="text" th:field="*{dem_pan}" class="form-control" id="num"
+                           <input type="text" th:field="*{dem_pan}" class="form-control" id="num" required="required"
                               placeholder="N° carte bancaire">
                         </div>
                      </div>
                      <div class="form-group row">
-                        <label for="xxx" class="col-sm-2 col-form-label">Date
+                        <label for="xxx" class="col-sm-3 col-form-label">Date
                         d'expiration</label>
-                        <div class="col-sm-2">
-                           <select class="form-control" th:field="*{mois}">
-                              <option value="">MM</option>
-                              <option value="01">Janvier</option>
-                              <option value="02">Février</option>
-                              <option value="03">Mars</option>
-                              <option value="04">Avril</option>
-                              <option value="05">Mai</option>
-                              <option value="06">Juin</option>
-                              <option value="07">Juillet</option>
-                              <option value="08">Aout</option>
-                              <option value="09">Septembre</option>
-                              <option value="10">Octobre</option>
-                              <option value="11">Novembre</option>
-                              <option value="12">Décembre</option>
-                           </select>
-                        </div>
-                        <div class="col-sm-2">
-                           <select class="form-control" th:field="*{annee}">
-                              <option value="">YY</option>
-                              <option value="23">2023</option>
-                              <option value="24">2024</option>
-                              <option value="25">2025</option>
-                              <option value="26">2026</option>
-                              <option value="27">2027</option>
-                              <option value="28">2028</option>
-                              <option value="29">2029</option>
-                              <option value="30">2030</option>
-                              <option value="31">2031</option>
-                              <option value="32">2032</option>
-                              <option value="33">2033</option>
-                           </select>
-                        </div>
-                        <label for="cvv" class="col-sm-3 col-form-label">Code de
-                        sécurité</label>
+                       
                         <div class="col-sm-3">
-                           <input type="text" th:field="*{dem_cvv}" class="form-control" id="cvv"
-                              placeholder="CVV">
+							<select class="form-control" th:field="*{annee}" required="required">
+								<option value="">YY</option>
+                             	<option th:each="item : ${demandeDto.years}" th:value="${item}" th:text="${item}"></option>
+                           </select>
+                        </div>
+                         <label for="xxx" class="col-sm-3 col-form-label">Mois</label>
+                         <div class="col-sm-3">
+							<select class="form-control" th:field="*{mois}" required="required">
+                               <option value="">MM</option>
+							   <option th:each="item : ${demandeDto.months}" th:value="${item.value}" th:text="${item.month}"></option>
+                           </select>
                         </div>
                         <input type="hidden" th:field="*{commande}" class="form-control">
                         <input type="hidden" th:field="*{comid}" class="form-control">
                         <input type="hidden" th:field="*{galid}" class="form-control">
                         <input type="hidden" th:field="*{montant}" class="form-control">
                      </div>
+                     <div class="form-group row">
+						<label for="cvv" class="col-sm-3 col-form-label">Code de
+                        		sécurité</label>
+                     	<div class="col-sm-3">
+                           <input type="text" class="form-control" id="cvv" required="required"
+                              placeholder="CVV">
+                      	</div>
+				    </div>	
                      <div class="col-sm-12 float-right">
                         <button type="submit" style="color: #FFF;background: #DF6537;
                            border-radius: 10px;

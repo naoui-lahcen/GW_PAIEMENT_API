@@ -7,8 +7,12 @@ import java.net.UnknownHostException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.Month;
+import java.time.Year;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -44,6 +48,7 @@ import ma.m2m.gateway.Utils.Util;
 import ma.m2m.gateway.config.JwtTokenUtil;
 import ma.m2m.gateway.dto.CommercantDto;
 import ma.m2m.gateway.dto.DemandePaiementDto;
+import ma.m2m.gateway.dto.MonthDto;
 import ma.m2m.gateway.dto.GalerieDto;
 import ma.m2m.gateway.dto.HistoAutoGateDto;
 import ma.m2m.gateway.dto.InfoCommercantDto;
@@ -255,15 +260,31 @@ public class GWPaiementController {
 				System.out.println("findByTokencommande Iddemande recupérée : " + demandeDto.getIddemande());
 				traces.writeInFileTransaction(folder, file,
 						"findByTokencommande Iddemande recupérée : " + demandeDto.getIddemande());
+
+				// get list of years + 10
+				int currentYear = Year.now().getValue();
+				List<Integer> years = generateYearList(currentYear, currentYear + 10);
+
+				demandeDto.setYears(years);
+
+				// get list of months
+				List<Month> months = Arrays.asList(Month.values());
+				List<String> monthNames = convertMonthListToStringList(months);
+				List<MonthDto> monthValues = convertStringAGListToFR(monthNames);
+
+				demandeDto.setMonths(monthValues);
 				model.addAttribute("demandeDto", demandeDto);
+				
 				if (demandeDto.getEtat_demande().equals("SW_PAYE") || demandeDto.getEtat_demande().equals("PAYE")) {
 					traces.writeInFileTransaction(folder, file, "Opération déjà effectuée");
-					demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (Opération déjà effectuée), votre compte ne sera pas débité, merci de réessayer .");
+					demandeDto.setMsgRefus(
+							"La transaction en cours n’a pas abouti (Opération déjà effectuée), votre compte ne sera pas débité, merci de réessayer .");
 					model.addAttribute("demandeDto", demandeDto);
 					page = "operationEffectue";
 				} else if (demandeDto.getEtat_demande().equals("SW_REJET")) {
 					traces.writeInFileTransaction(folder, file, "Transaction rejetée");
-					demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (Transaction rejetée), votre compte ne sera pas débité, merci de réessayer .");
+					demandeDto.setMsgRefus(
+							"La transaction en cours n’a pas abouti (Transaction rejetée), votre compte ne sera pas débité, merci de réessayer .");
 					model.addAttribute("demandeDto", demandeDto);
 					page = "result";
 				} else {
@@ -575,8 +596,8 @@ public class GWPaiementController {
 		int i_card_valid = Util.isCardValid(cardnumber);
 
 		if (i_card_valid == 1) {
-			traces.writeInFileTransaction(folder, file, "payer 500 Card number length is incorrect orderid:["
-					+ orderid + "] and merchantid:[" + merchantid + "]");
+			traces.writeInFileTransaction(folder, file, "payer 500 Card number length is incorrect orderid:[" + orderid
+					+ "] and merchantid:[" + merchantid + "]");
 			demandeDto.setMsgRefus("Card number length is incorrect");
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
@@ -741,7 +762,8 @@ public class GWPaiementController {
 			traces.writeInFileTransaction(folder, file,
 					"demandePaiement after update MPI_KO idDemande null : " + demandeDto.toString());
 			// return "AUTO INVALIDE DEMANDE";
-			demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (MPI_KO), votre compte ne sera pas débité, merci de réessayer .");
+			demandeDto.setMsgRefus(
+					"La transaction en cours n’a pas abouti (MPI_KO), votre compte ne sera pas débité, merci de réessayer .");
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
 			return page;
@@ -754,7 +776,8 @@ public class GWPaiementController {
 					"demandePaiement not found !!!! demandePaiement = null  / received idDemande from MPI => "
 							+ idDemande);
 			// return "AUTO INVALIDE DEMANDE";
-			demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (demandePaiement not found), votre compte ne sera pas débité, merci de réessayer .");
+			demandeDto.setMsgRefus(
+					"La transaction en cours n’a pas abouti (demandePaiement not found), votre compte ne sera pas débité, merci de réessayer .");
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
 			return page;
@@ -767,7 +790,8 @@ public class GWPaiementController {
 					"demandePaiement after update MPI_KO reponseMPI null : " + dmd.toString());
 			Util.writeInFileTransaction(folder, file, "Response 3DS is null");
 			// return "Response 3DS is null";
-			demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (MPI_KO reponseMPI null), votre compte ne sera pas débité, merci de réessayer .");
+			demandeDto.setMsgRefus(
+					"La transaction en cours n’a pas abouti (MPI_KO reponseMPI null), votre compte ne sera pas débité, merci de réessayer .");
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
 			return page;
@@ -798,7 +822,8 @@ public class GWPaiementController {
 				traces.writeInFileTransaction(folder, file,
 						"payer 500 cvv not set , reccuring flag set to N, cvv must be present in normal transaction");
 
-				demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (cvv must be present in normal transaction), votre compte ne sera pas débité, merci de réessayer .");
+				demandeDto.setMsgRefus(
+						"La transaction en cours n’a pas abouti (cvv must be present in normal transaction), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 				return page;
@@ -846,7 +871,8 @@ public class GWPaiementController {
 					traces.writeInFileTransaction(folder, file,
 							"payer 500 Error during switch tlv buildup for given orderid:[" + orderid
 									+ "] and merchantid:[" + merchantid + "]" + err4);
-					demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (Error during switch tlv buildup), votre compte ne sera pas débité, merci de réessayer .");
+					demandeDto.setMsgRefus(
+							"La transaction en cours n’a pas abouti (Error during switch tlv buildup), votre compte ne sera pas débité, merci de réessayer .");
 					model.addAttribute("demandeDto", demandeDto);
 					page = "result";
 					return page;
@@ -930,7 +956,8 @@ public class GWPaiementController {
 			} catch (java.net.ConnectException e) {
 				traces.writeInFileTransaction(folder, file, "Switch  malfunction ConnectException !!!" + e);
 				switch_ko = 1;
-				demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (Switch  malfunction ConnectException), votre compte ne sera pas débité, merci de réessayer .");
+				demandeDto.setMsgRefus(
+						"La transaction en cours n’a pas abouti (Switch  malfunction ConnectException), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 				return page;
@@ -944,7 +971,8 @@ public class GWPaiementController {
 				traces.writeInFileTransaction(folder, file,
 						"payer 500 Error Switch communication SocketTimeoutException" + "switch ip:[" + sw_s
 								+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-				demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (Error Switch communication SocketTimeoutException), votre compte ne sera pas débité, merci de réessayer .");
+				demandeDto.setMsgRefus(
+						"La transaction en cours n’a pas abouti (Error Switch communication SocketTimeoutException), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 				return page;
@@ -956,7 +984,8 @@ public class GWPaiementController {
 				e.printStackTrace();
 				traces.writeInFileTransaction(folder, file, "payer 500 Error Switch communication IOException"
 						+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-				demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (Error Switch communication IOException), votre compte ne sera pas débité, merci de réessayer .");
+				demandeDto.setMsgRefus(
+						"La transaction en cours n’a pas abouti (Error Switch communication IOException), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 				return page;
@@ -966,7 +995,8 @@ public class GWPaiementController {
 				traces.writeInFileTransaction(folder, file, "Switch  malfunction Exception!!!" + e);
 				switch_ko = 1;
 				e.printStackTrace();
-				demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (Switch  malfunction Exception), votre compte ne sera pas débité, merci de réessayer .");
+				demandeDto.setMsgRefus(
+						"La transaction en cours n’a pas abouti (Switch  malfunction Exception), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 				return page;
@@ -980,7 +1010,8 @@ public class GWPaiementController {
 				switch_ko = 1;
 				traces.writeInFileTransaction(folder, file, "payer 500 Error Switch null response" + "switch ip:["
 						+ sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-				demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (Switch  malfunction resp null), votre compte ne sera pas débité, merci de réessayer .");
+				demandeDto.setMsgRefus(
+						"La transaction en cours n’a pas abouti (Switch  malfunction resp null), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 				return page;
@@ -1264,8 +1295,8 @@ public class GWPaiementController {
 
 				} catch (Exception e) {
 					traces.writeInFileTransaction(folder, file,
-							"payer 500 Error during DEMANDE_PAIEMENT update etat demande for given orderid:["
-									+ orderid + "]" + e);
+							"payer 500 Error during DEMANDE_PAIEMENT update etat demande for given orderid:[" + orderid
+									+ "]" + e);
 				}
 
 				traces.writeInFileTransaction(folder, file, "udapate etat demande : SW_PAYE OK");
@@ -1434,7 +1465,8 @@ public class GWPaiementController {
 				} catch (Exception e) {
 					traces.writeInFileTransaction(folder, file, "payer 500"
 							+ "Error during  DemandePaiement update RE for given orderid:[" + orderid + "]" + e);
-					demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (Error during  DemandePaiement update SW_REJET), votre compte ne sera pas débité, merci de réessayer .");
+					demandeDto.setMsgRefus(
+							"La transaction en cours n’a pas abouti (Error during  DemandePaiement update SW_REJET), votre compte ne sera pas débité, merci de réessayer .");
 					model.addAttribute("demandeDto", demandeDto);
 					page = "result";
 					return page;
@@ -1455,7 +1487,8 @@ public class GWPaiementController {
 			} catch (Exception e) {
 				traces.writeInFileTransaction(folder, file,
 						"payer 500 Error during  paymentid generation for given orderid:[" + orderid + "]" + e);
-				demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (Error during  paymentid generation), votre compte ne sera pas débité, merci de réessayer .");
+				demandeDto.setMsgRefus(
+						"La transaction en cours n’a pas abouti (Error during  paymentid generation), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 				return page;
@@ -1480,7 +1513,8 @@ public class GWPaiementController {
 			} catch (Exception e) {
 				traces.writeInFileTransaction(folder, file,
 						"payer 500 Error during authdata preparation orderid:[" + orderid + "]" + e);
-				demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (Error during authdata preparation), votre compte ne sera pas débité, merci de réessayer .");
+				demandeDto.setMsgRefus(
+						"La transaction en cours n’a pas abouti (Error during authdata preparation), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 				return page;
@@ -1525,7 +1559,8 @@ public class GWPaiementController {
 					System.out.println("coderep !=00 => Redirect to failURL : " + dmd.getFailURL());
 					// response.sendRedirect(dmd.getFailURL() + "?data=" + data + "==&codecmr=" +
 					// merchantid);
-					demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (Error during response Switch coderep !=00), votre compte ne sera pas débité, merci de réessayer .");
+					demandeDto.setMsgRefus(
+							"La transaction en cours n’a pas abouti (Error during response Switch coderep !=00), votre compte ne sera pas débité, merci de réessayer .");
 					model.addAttribute("demandeDto", demandeDto);
 					page = "result";
 					return page;
@@ -1534,7 +1569,8 @@ public class GWPaiementController {
 			} catch (Exception jsouterr) {
 				traces.writeInFileTransaction(folder, file,
 						"payer 500 Error during jso out processing given authnumber:[" + authnumber + "]" + jsouterr);
-				demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (Error during jso out processing), votre compte ne sera pas débité, merci de réessayer .");
+				demandeDto.setMsgRefus(
+						"La transaction en cours n’a pas abouti (Error during jso out processing), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 				return page;
@@ -1555,7 +1591,8 @@ public class GWPaiementController {
 
 			} catch (Exception ex) {
 				traces.writeInFileTransaction(folder, file, "payer 500 Error during jso out processing " + ex);
-				demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (Error during jso out processing), votre compte ne sera pas débité, merci de réessayer .");
+				demandeDto.setMsgRefus(
+						"La transaction en cours n’a pas abouti (Error during jso out processing), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 				return page;
@@ -1568,7 +1605,8 @@ public class GWPaiementController {
 				dmd.setEtat_demande("MPI_CMR_INEX");
 				demandePaiementService.save(dmd);
 				// return "COMMERCANT NON PARAMETRE";
-				demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (COMMERCANT NON PARAMETRE), votre compte ne sera pas débité, merci de réessayer .");
+				demandeDto.setMsgRefus(
+						"La transaction en cours n’a pas abouti (COMMERCANT NON PARAMETRE), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 				return page;
@@ -1578,7 +1616,8 @@ public class GWPaiementController {
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				// return " BIN NON PARAMETREE";
-				demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (BIN NON PARAMETREE), votre compte ne sera pas débité, merci de réessayer .");
+				demandeDto.setMsgRefus(
+						"La transaction en cours n’a pas abouti (BIN NON PARAMETREE), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 				return page;
@@ -1588,7 +1627,8 @@ public class GWPaiementController {
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				// return "MPI_DS_ERR";
-				demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (MPI_DS_ERR), votre compte ne sera pas débité, merci de réessayer .");
+				demandeDto.setMsgRefus(
+						"La transaction en cours n’a pas abouti (MPI_DS_ERR), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 				return page;
@@ -1598,7 +1638,8 @@ public class GWPaiementController {
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				// return "CARTE ERRONEE";
-				demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (CARTE ERRONEE), votre compte ne sera pas débité, merci de réessayer .");
+				demandeDto.setMsgRefus(
+						"La transaction en cours n’a pas abouti (CARTE ERRONEE), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 				return page;
@@ -1608,7 +1649,8 @@ public class GWPaiementController {
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				// return "CARTE NON ENROLLE";
-				demandeDto.setMsgRefus("La transaction en cours n’a pas abouti (CARTE NON ENROLLE), votre compte ne sera pas débité, merci de réessayer .");
+				demandeDto.setMsgRefus(
+						"La transaction en cours n’a pas abouti (CARTE NON ENROLLE), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 				return page;
@@ -1760,6 +1802,85 @@ public class GWPaiementController {
 		System.out.println("email userDto apres remplacement : " + userDto.getEmail());
 
 		return userDto;
+	}
+
+	private List<Integer> generateYearList(int startYear, int endYear) {
+		List<Integer> years = new ArrayList<>();
+		for (int year = startYear; year <= endYear; year++) {
+			years.add(year);
+		}
+		return years;
+	}
+
+	private List<String> convertMonthListToStringList(List<Month> monthList) {
+		List<String> monthNames = new ArrayList<>();
+		for (Month month : monthList) {
+			monthNames.add(month.toString()); // Convert Month to its string representation
+		}
+		return monthNames;
+	}
+
+	private List<MonthDto> convertStringAGListToFR(List<String> monthList) {
+		List<String> monthNames = new ArrayList<>();
+		List<MonthDto> monthNamesValues = new ArrayList<>();
+
+		for (String month : monthList) {
+			MonthDto exp = new MonthDto();
+			if (month.equals("JANUARY")) {
+				month = "Janvier";
+				exp.setMonth(month);
+				exp.setValue("01");
+			} else if (month.toString().equals("FEBRUARY")) {
+				month = "Février";
+				exp.setMonth(month);
+				exp.setValue("02");
+			} else if (month.toString().equals("MARCH")) {
+				month = "Mars";
+				exp.setMonth(month);
+				exp.setValue("03");
+			} else if (month.toString().equals("APRIL")) {
+				month = "Avril";
+				exp.setMonth(month);
+				exp.setValue("04");
+			} else if (month.toString().equals("MAY")) {
+				month = "Mai";
+				exp.setMonth(month);
+				exp.setValue("05");
+			} else if (month.toString().equals("JUNE")) {
+				month = "Juin";
+				exp.setMonth(month);
+				exp.setValue("06");
+			} else if (month.toString().equals("JULY")) {
+				month = "Juillet";
+				exp.setMonth(month);
+				exp.setValue("07");
+			} else if (month.toString().equals("AUGUST")) {
+				month = "Aout";
+				exp.setMonth(month);
+				exp.setValue("08");
+			} else if (month.toString().equals("SEPTEMBER")) {
+				month = "Septembre";
+				exp.setMonth(month);
+				exp.setValue("09");
+			} else if (month.toString().equals("OCTOBER")) {
+				month = "Octobre";
+				exp.setMonth(month);
+				exp.setValue("10");
+			} else if (month.toString().equals("NOVEMBER")) {
+				month = "Novembre";
+				exp.setMonth(month);
+				exp.setValue("11");
+			} else if (month.toString().equals("DECEMBER")) {
+				month = "Décembre";
+				exp.setMonth(month);
+				exp.setValue("12");
+			}
+			// Convert Month to its string representation
+			monthNames.add(month.toString());
+			monthNamesValues.add(exp);
+
+		}
+		return monthNamesValues;
 	}
 
 	private boolean is_reccuring_check(String recurring) {
