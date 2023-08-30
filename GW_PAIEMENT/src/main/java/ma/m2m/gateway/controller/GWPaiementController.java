@@ -618,21 +618,22 @@ public class GWPaiementController {
 
 
 		try {
-
-			demandeDto.setDem_pan(cardnumber);
-			demandeDto.setDem_cvv(cvv);
-			demandeDto.setType_carte(i_card_type + "");
-			demandeDto.setDateexpnaps(expirydate);
-			demandeDto.setEtat_demande("INIT");
+			DemandePaiementDto dmdToEdit = demandePaiementService.findByIdDemande(demandeDto.getIddemande());
+			
+			dmdToEdit.setDem_pan(cardnumber);
+			dmdToEdit.setDem_cvv(cvv);
+			dmdToEdit.setType_carte(i_card_type + "");
+			dmdToEdit.setDateexpnaps(expirydate);
+			dmdToEdit.setEtat_demande("INIT");
 
 			formatter_1 = new SimpleDateFormat("yyyy-MM-dd");
 			formatter_2 = new SimpleDateFormat("HH:mm:ss");
 			trsdate = new Date();
 			transactiondate = formatter_1.format(trsdate);
 			transactiontime = formatter_2.format(trsdate);
-			demandeDto.setDem_date_time(dateFormat.format(new Date()));
+			dmdToEdit.setDem_date_time(dateFormat.format(new Date()));
 
-			demandeDto = demandePaiementService.save(demandeDto);
+			demandeDto = demandePaiementService.save(dmdToEdit);
 
 		} catch (Exception err1) {
 			traces.writeInFileTransaction(folder, file,
