@@ -1552,13 +1552,14 @@ public class APIController {
 			return "getLink 500 malformed json expression" + linkP + jserr;
 		}
 
-		String orderid, amount, merchantid, merchantname, websiteName, websiteid, country, phone, city, state, zipcode,
+		String orderid, amount, merchantid, merchantname, websiteName, websiteid,recurring, country, phone, city, state, zipcode,
 				address, expirydate, transactiondate, transactiontime, callbackUrl, fname, lname, email = "",
 				successURL, failURL;
 		try {
 			// Transaction info
 			orderid = (String) jsonOrequest.get("orderid");
 			amount = (String) jsonOrequest.get("amount");
+			recurring = (String) jsonOrequest.get("recurring");
 
 			// Merchnat info
 			merchantid = (String) jsonOrequest.get("merchantid");
@@ -1662,6 +1663,11 @@ public class APIController {
 			transactiontime = formatter_2.format(trsdate);
 			//dmd.setDem_date_time(transactiondate + transactiontime);
 			dmd.setDem_date_time(dateFormat.format(new Date()));
+			
+			if (recurring.equalsIgnoreCase("Y"))
+				dmd.setIs_cof("Y");
+			if (recurring.equalsIgnoreCase("N"))
+				dmd.setIs_cof("N");
 
 			dmd.setIs_addcard("N");
 			dmd.setIs_tokenized("N");

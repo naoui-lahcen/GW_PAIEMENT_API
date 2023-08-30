@@ -273,6 +273,11 @@ public class GWPaiementController {
 				List<MonthDto> monthValues = convertStringAGListToFR(monthNames);
 
 				demandeDto.setMonths(monthValues);
+				// if cmr don't accept transaction cof demandeDto.getIs_cof() = N don't show carte
+				if(demandeDto.getIs_cof() == null || demandeDto.getIs_cof().equals("N")) {
+					demandeDto.setDem_pan("");
+				}
+				// if cmr accept transaction cof demandeDto.getIs_cof() = Y show your carte saved
 				model.addAttribute("demandeDto", demandeDto);
 				
 				if (demandeDto.getEtat_demande().equals("SW_PAYE") || demandeDto.getEtat_demande().equals("PAYE")) {
