@@ -1975,6 +1975,15 @@ public class GWPaiementController {
 		return d_notime;
 
 	}
+	
+	@PostMapping(path = "/napspayment/linkpayment-xml", consumes = MediaType.APPLICATION_XML_VALUE)
+	@ResponseBody
+	 public String userInformation(@RequestBody UserDto user) {
+		
+			System.out.println(user.getName() + " " + user.getEmail());
+			
+	        return "User information saved successfully ::.";
+	    }
 // 
 //    @GetMapping("/napspayment/showFormForUpdate/{id}")
 //    public String updateForm(@PathVariable(value = "id") long id, Model model) {
