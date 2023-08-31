@@ -303,7 +303,7 @@ public class GWPaiementController {
 					} catch (Exception e) {
 						traces.writeInFileTransaction(folder, file,
 								"showPagePayment 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
-										+ "] and merchantid:[" + merchantid);
+										+ "] and merchantid:[" + merchantid + "]" + e);
 
 						// return "showPagePayment 500 Merchant misconfigured in DB or not existing
 						// orderid:[" + orderid
@@ -324,7 +324,7 @@ public class GWPaiementController {
 					} catch (Exception e) {
 						traces.writeInFileTransaction(folder, file,
 								"showPagePayment 500 Galerie misconfigured in DB or not existing orderid:[" + orderid
-										+ "] and merchantid:[" + merchantid);
+										+ "] and merchantid:[" + merchantid + "]" + e);
 
 						// return "showPagePayment 500 Galerie misconfigured in DB or not existing
 						// orderid:[" + orderid
@@ -346,7 +346,7 @@ public class GWPaiementController {
 
 		} catch (Exception e) {
 			traces.writeInFileTransaction(folder, file,
-					"showPagePayment 500 DEMANDE_PAIEMENT misconfigured in DB or not existing token:[" + token + "]");
+					"showPagePayment 500 DEMANDE_PAIEMENT misconfigured in DB or not existing token:[" + token + "]" + e);
 
 			traces.writeInFileTransaction(folder, file, "showPagePayment 500 exception" + e);
 			e.printStackTrace();
@@ -504,7 +504,7 @@ public class GWPaiementController {
 		} catch (Exception e) {
 			traces.writeInFileTransaction(folder, file,
 					"payer 500 Merchant misconfigured in DB or not existing orderid:[" + orderid + "] and merchantid:["
-							+ merchantid + "]");
+							+ merchantid + "]" + e);
 			demandeDto.setMsgRefus("Merchant misconfigured in DB or not existing");
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
@@ -552,7 +552,7 @@ public class GWPaiementController {
 		} catch (Exception e) {
 			traces.writeInFileTransaction(folder, file,
 					"authorization 500 InfoCommercant misconfigured in DB or not existing orderid:[" + orderid
-							+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]");
+							+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]" + e);
 
 			// response.sendRedirect("GW-AUTO-INVALIDE-DEM");
 			demandeDto.setMsgRefus("InfoCommercant misconfigured in DB or not existing");
@@ -930,7 +930,7 @@ public class GWPaiementController {
 					traces.writeInFileTransaction(folder, file, "tlv2 : " + tlv2);
 
 				} catch (Exception e) {
-					traces.writeInFileTransaction(folder, file, "Switch TLV Request ecncoding error");
+					traces.writeInFileTransaction(folder, file, "Switch TLV Request ecncoding error " + e);
 					e.printStackTrace();
 				}
 
@@ -1093,7 +1093,7 @@ public class GWPaiementController {
 					tag98_resp = tlvp.getTag(Tags.tag98);
 
 				} catch (Exception e) {
-					traces.writeInFileTransaction(folder, file, "Switch  malfunction tlv parsing !!!");
+					traces.writeInFileTransaction(folder, file, "Switch  malfunction tlv parsing !!!" + e);
 					switch_ko = 1;
 					traces.writeInFileTransaction(folder, file, "payer 500 Error during tlv Switch response parse"
 							+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
@@ -1304,8 +1304,7 @@ public class GWPaiementController {
 
 			} catch (Exception e) {
 				traces.writeInFileTransaction(folder, file, "Error during  insert in histoautogate for given orderid");
-				traces.writeInFileTransaction(folder, file, "payer 500"
-						+ "Error during  insert in histoautogate for given orderid orderid:[" + orderid + "]" + e);
+				traces.writeInFileTransaction(folder, file, "payer 500 Error during  insert in histoautogate for given orderid:[" + orderid + "]" + e);
 
 			}
 
@@ -1470,7 +1469,7 @@ public class GWPaiementController {
 
 						} catch (Exception e) {
 							exp_flag = 1;
-							traces.writeInFileTransaction(folder, file, "inserting into telec ko..do nothing");
+							traces.writeInFileTransaction(folder, file, "inserting into telec ko..do nothing " + e);
 
 						}
 
@@ -1496,8 +1495,7 @@ public class GWPaiementController {
 					demandePaiementService.save(dmd);
 
 				} catch (Exception e) {
-					traces.writeInFileTransaction(folder, file, "payer 500"
-							+ "Error during  DemandePaiement update RE for given orderid:[" + orderid + "]" + e);
+					traces.writeInFileTransaction(folder, file, "payer 500 Error during  DemandePaiement update RE for given orderid:[" + orderid + "]" + e);
 					demandeDto.setMsgRefus(
 							"La transaction en cours n’a pas abouti (Error during  DemandePaiement update SW_REJET), votre compte ne sera pas débité, merci de réessayer .");
 					model.addAttribute("demandeDto", demandeDto);

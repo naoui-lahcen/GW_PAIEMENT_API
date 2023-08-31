@@ -327,7 +327,7 @@ public class ACSController {
 				} catch (Exception e) {
 					traces.writeInFileTransaction(folder, file,
 							"authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
-									+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]");
+									+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]" + e);
 
 					//response.sendRedirect("GW-AUTO-INVALIDE-DEM");
 					response.sendRedirect(link_result);
@@ -369,7 +369,7 @@ public class ACSController {
 				} catch (Exception e) {
 					traces.writeInFileTransaction(folder, file,
 							"authorization 500 InfoCommercant misconfigured in DB or not existing orderid:[" + orderid
-									+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]");
+									+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]" + e);
 
 					//response.sendRedirect("GW-AUTO-INVALIDE-DEM");
 					response.sendRedirect(link_result);
@@ -536,7 +536,7 @@ public class ACSController {
 							traces.writeInFileTransaction(folder, file, "tlv2 : " + tlv2);
 
 						} catch (Exception e) {
-							traces.writeInFileTransaction(folder, file, "Switch TLV Request ecncoding error");
+							traces.writeInFileTransaction(folder, file, "Switch TLV Request ecncoding error " + e);
 							e.printStackTrace();
 						}
 
@@ -689,7 +689,7 @@ public class ACSController {
 							tag98_resp = tlvp.getTag(Tags.tag98);
 
 						} catch (Exception e) {
-							traces.writeInFileTransaction(folder, file, "Switch  malfunction tlv parsing !!!");
+							traces.writeInFileTransaction(folder, file, "Switch  malfunction tlv parsing !!!" + e);
 							switch_ko = 1;
 							traces.writeInFileTransaction(folder, file,
 									"authorization 500 Error during tlv Switch response parse" + "switch ip:[" + sw_s
@@ -898,8 +898,6 @@ public class ACSController {
 
 					} catch (Exception e) {
 						traces.writeInFileTransaction(folder, file,
-								"Error during  insert in histoautogate for given orderid");
-						traces.writeInFileTransaction(folder, file,
 								"authorization 500 Error during  insert in histoautogate for given orderid:[" + orderid
 										+ "]" + e);
 
@@ -1066,7 +1064,7 @@ public class ACSController {
 
 								} catch (Exception e) {
 									exp_flag = 1;
-									traces.writeInFileTransaction(folder, file, "inserting into telec ko..do nothing");
+									traces.writeInFileTransaction(folder, file, "inserting into telec ko..do nothing " + e);
 
 								}
 
@@ -1093,8 +1091,7 @@ public class ACSController {
 
 						} catch (Exception e) {
 							traces.writeInFileTransaction(folder, file,
-									"authorization 500"
-											+ "Error during  DemandePaiement update RE for given orderid:["
+									"authorization 500 Error during  DemandePaiement update SW_REJET for given orderid:["
 											+ orderid + "]" + e);
 
 							response.sendRedirect(redirectFailURL(dmd, folder, file));

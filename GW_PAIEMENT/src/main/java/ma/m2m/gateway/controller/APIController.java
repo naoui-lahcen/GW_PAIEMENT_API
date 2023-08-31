@@ -736,7 +736,7 @@ public class APIController {
 					traces.writeInFileTransaction(folder, file, "tlv2 : " + tlv2);
 
 				} catch (Exception e) {
-					traces.writeInFileTransaction(folder, file, "Switch TLV Request ecncoding error");
+					traces.writeInFileTransaction(folder, file, "Switch TLV Request ecncoding error " + e);
 					e.printStackTrace();
 				}
 
@@ -882,7 +882,7 @@ public class APIController {
 					tag98_resp = tlvp.getTag(Tags.tag98);
 
 				} catch (Exception e) {
-					traces.writeInFileTransaction(folder, file, "Switch  malfunction tlv parsing !!!");
+					traces.writeInFileTransaction(folder, file, "Switch  malfunction tlv parsing !!!" + e);
 					switch_ko = 1;
 					traces.writeInFileTransaction(folder, file,
 							"authorization 500 Error during tlv Switch response parse" + "switch ip:[" + sw_s
@@ -1095,9 +1095,8 @@ public class APIController {
 				histoAutoGateService.save(hist);
 
 			} catch (Exception e) {
-				traces.writeInFileTransaction(folder, file, "Error during  insert in histoautogate for given orderid");
 				traces.writeInFileTransaction(folder, file, "authorization 500"
-						+ "Error during  insert in histoautogate for given orderid orderid:[" + orderid + "]" + e);
+						+ "Error during  insert in histoautogate for given orderid:[" + orderid + "]" + e);
 
 			}
 
@@ -1261,7 +1260,7 @@ public class APIController {
 
 						} catch (Exception e) {
 							exp_flag = 1;
-							traces.writeInFileTransaction(folder, file, "inserting into telec ko..do nothing");
+							traces.writeInFileTransaction(folder, file, "inserting into telec ko..do nothing" + e);
 
 						}
 
@@ -1582,7 +1581,7 @@ public class APIController {
 			address = (String) jsonOrequest.get("address");
 
 		} catch (Exception jerr) {
-			traces.writeInFileTransaction(folder, file, "getLink 500 malformed json expression" + linkP + jerr);
+			traces.writeInFileTransaction(folder, file, "getLink 500 malformed json expression " + linkP + jerr);
 			return "getLink 500 malformed json expression" + linkP + jerr;
 
 		}
@@ -1593,7 +1592,7 @@ public class APIController {
 		} catch (Exception e) {
 			traces.writeInFileTransaction(folder, file,
 					"authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
-							+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]");
+							+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]" + e);
 
 			return "getLink 500 Merchant misconfigured in DB or not existing orderid:[" + orderid + "] and merchantid:["
 					+ merchantid + "] and websiteid:[" + websiteid + "]";
@@ -1832,6 +1831,7 @@ public class APIController {
 			error_msg = "le token est généré avec succès";
 			error_code = "00";
 		} catch (Exception ex) {
+			traces.writeInFileTransaction(folder, file, "echec lors de la génération du token");
 			error_msg = "echec lors de la génération du token";
 			error_code = "17";
 		}
@@ -1970,7 +1970,7 @@ public class APIController {
 		} catch (Exception head_err) {
 
 			if (header.toString() != null) {
-				traces.writeInFileTransaction(folder, file, "500 malformed header" + header.toString() + head_err);
+				traces.writeInFileTransaction(folder, file, "500 malformed header " + header.toString() + head_err);
 				return "status 500 malformed header";
 			} else {
 				traces.writeInFileTransaction(folder, file, "status 500 malformed header" + head_err);
@@ -1998,7 +1998,7 @@ public class APIController {
 			merchantid = (String) jsonOrequest.get("merchantid");
 
 		} catch (Exception jerr) {
-			traces.writeInFileTransaction(folder, file, "status 500 malformed json expression" + status + jerr);
+			traces.writeInFileTransaction(folder, file, "status 500 malformed json expression " + status + jerr);
 			return "status 500 malformed json expression";
 		}
 
@@ -2428,7 +2428,7 @@ public class APIController {
 			email = (String) jsonOrequest.get("email");
 
 		} catch (Exception jerr) {
-			traces.writeInFileTransaction(folder, file, "capture 500 malformed json expression" + capture + jerr);
+			traces.writeInFileTransaction(folder, file, "capture 500 malformed json expression " + capture + jerr);
 			return "capture 500 malformed json expression";
 
 		}
@@ -2831,7 +2831,7 @@ public class APIController {
 			email = (String) jsonOrequest.get("email");
 
 		} catch (Exception jerr) {
-			traces.writeInFileTransaction(folder, file, "refund 500 malformed json expression" + refund + jerr);
+			traces.writeInFileTransaction(folder, file, "refund 500 malformed json expression " + refund + jerr);
 			return "refund 500 malformed json expression" + refund + jerr;
 
 		}
@@ -3032,7 +3032,7 @@ public class APIController {
 		} catch (Exception e) {
 			traces.writeInFileTransaction(folder, file,
 					"authorization 500" + "Merchant misconfigured in DB or not existing orderid:[" + orderid
-							+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]");
+							+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]" + e);
 
 			return "authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 					+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]";
@@ -3089,7 +3089,7 @@ public class APIController {
 				demandePaiementService.save(current_dmd);
 			} catch (Exception e) {
 				traces.writeInFileTransaction(folder, file,
-						"refund 500 Error during  demandepaiement update  A for given  orderid:[" + orderid + "]");
+						"refund 500 Error during  demandepaiement update  A for given  orderid:[" + orderid + "]" + e);
 
 				return "refund 500 Error during  demandepaiement update  A for given  orderid:[" + orderid + "]";
 
@@ -3191,12 +3191,9 @@ public class APIController {
 			} catch (Exception e) {
 				traces.writeInFileTransaction(folder, file,
 						"refund 500"
-								+ "Error during  HistoAutoGate insertion or Transaction insertion A for given orderid"
-								+ "orderid:[" + orderid + "]" + e);
+								+ "Error during  HistoAutoGate insertion or Transaction insertion A for given orderid:[" + orderid + "]" + e);
 
-				return "refund 500"
-						+ "Error during  HistoAutoGate insertion or Transaction insertion A for given orderid"
-						+ "orderid:[" + orderid + "]";
+				return "refund 500 Error during  HistoAutoGate insertion or Transaction insertion A for given orderid:[" + orderid + "]";
 
 			}
 
@@ -3217,7 +3214,7 @@ public class APIController {
 
 		} catch (Exception e) {
 			traces.writeInFileTransaction(folder, file,
-					"refund 500 Error during  refund_id generation for given orderid:[" + orderid + "]");
+					"refund 500 Error during  refund_id generation for given orderid:[" + orderid + "]" + e);
 
 			return "refund 500 Error during  refund_id generation for given orderid:[" + orderid + "]";
 
@@ -3352,7 +3349,7 @@ public class APIController {
 			email = (String) jsonOrequest.get("email");
 
 		} catch (Exception jerr) {
-			traces.writeInFileTransaction(folder, file, "reversal 500 malformed json expression" + reversal + jerr);
+			traces.writeInFileTransaction(folder, file, "reversal 500 malformed json expression " + reversal + jerr);
 			return "reversal 500 malformed json expression" + reversal + jerr;
 
 		}
@@ -3482,7 +3479,7 @@ public class APIController {
 		} catch (Exception e) {
 			traces.writeInFileTransaction(folder, file,
 					"reversal 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
-							+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]");
+							+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]" + e);
 
 			return "reversal 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 					+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]";
@@ -3611,7 +3608,7 @@ public class APIController {
 
 				traces.writeInFileTransaction(folder, file, "Switch  malfunction !!!");
 
-				return "reversal 500 Error Switch communication s_conn false " + "switch ip:[" + sw_s
+				return "reversal 500 Error Switch communication s_conn false switch ip:[" + sw_s
 						+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]";
 
 			}
@@ -3619,27 +3616,27 @@ public class APIController {
 		} catch (SocketTimeoutException e) {
 			traces.writeInFileTransaction(folder, file, "Switch  malfunction !!!");
 
-			return "reversal 500 Error Switch communication SocketTimeoutException " + "switch ip:[" + sw_s
+			return "reversal 500 Error Switch communication SocketTimeoutException switch ip:[" + sw_s
 					+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]";
 
 		} catch (UnknownHostException e) {
 			traces.writeInFileTransaction(folder, file, "Switch  malfunction !!!");
 
-			return "reversal 500 Error Switch communication UnknownHostException " + "switch ip:[" + sw_s
+			return "reversal 500 Error Switch communication UnknownHostException switch ip:[" + sw_s
 					+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]";
 
 		}
 
 		catch (IOException e) {
-			traces.writeInFileTransaction(folder, file, "Switch  malfunction !!!");
+			traces.writeInFileTransaction(folder, file, "Switch  malfunction !!!" + e);
 
-			return "reversal 500 Error Switch communication IOException " + "switch ip:[" + sw_s + "] and switch port:["
+			return "reversal 500 Error Switch communication IOException switch ip:[" + sw_s + "] and switch port:["
 					+ port + "] resp_tlv : [" + resp_tlv + "]";
 
 		} catch (Exception e) {
-			traces.writeInFileTransaction(folder, file, "Switch  malfunction !!!");
+			traces.writeInFileTransaction(folder, file, "Switch  malfunction !!!" + e);
 
-			return "reversal 500 Error Switch communication General Exception " + "switch ip:[" + sw_s
+			return "reversal 500 Error Switch communication General Exception switch ip:[" + sw_s
 					+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]";
 
 		}
@@ -3703,9 +3700,9 @@ public class APIController {
 			tag98_resp = tlvp.getTag(Tags.tag98);
 
 		} catch (Exception e) {
-			traces.writeInFileTransaction(folder, file, "Switch  malfunction !!!");
+			traces.writeInFileTransaction(folder, file, "Switch  malfunction !!!" + e);
 
-			return "reversal 500 Error during tlv Switch response parse" + "switch ip:[" + sw_s + "] and switch port:["
+			return "reversal 500 Error during tlv Switch response parse switch ip:[" + sw_s + "] and switch port:["
 					+ port + "] resp_tlv : [" + resp_tlv + "]";
 
 		}
@@ -3771,7 +3768,7 @@ public class APIController {
 			} catch (Exception e) {
 				traces.writeInFileTransaction(folder, file,
 						"reversal 500 Error during  demandepaiement update  A for given orderid:[" + orderid
-								+ "]");
+								+ "]" + e);
 
 				return "reversal 500 Error during  demandepaiement update  A for given orderid:[" + orderid
 						+ "]";
@@ -3789,7 +3786,7 @@ public class APIController {
 				e.printStackTrace();
 				traces.writeInFileTransaction(folder, file,
 						"reversal 500 Error during  HistoAutoGate update  A for given orderid:[" + orderid
-								+ "]");
+								+ "]" + e);
 
 				return "reversal 500 Error during  HistoAutoGate update  A for given orderid:[" + orderid
 						+ "]";
@@ -3820,7 +3817,7 @@ public class APIController {
 			reversalid = uuid_reversalid.substring(uuid_reversalid.length() - 22);
 		} catch (Exception e) {
 			traces.writeInFileTransaction(folder, file,
-					"reversal 500 Error during  reversalid generation for given orderid:[" + orderid + "]");
+					"reversal 500 Error during  reversalid generation for given orderid:[" + orderid + "]" + e);
 
 			return "reversal 500 Error during  reversalid generation for given orderid:[" + orderid + "]";
 
@@ -3850,10 +3847,9 @@ public class APIController {
 			jso.put("lname", lname);
 			jso.put("email", email);
 		} catch (Exception err8) {
-			traces.writeInFileTransaction(folder, file, "reversal 500 Error during jso out processing given authnumber"
-					+ "authnumber:[" + authnumber + "]" + err8);
+			traces.writeInFileTransaction(folder, file, "reversal 500 Error during jso out processing given authnumber:[" + authnumber + "]" + err8);
 
-			return "reversal 500 Error during jso out processing given authnumber" + "authnumber:[" + authnumber + "]";
+			return "reversal 500 Error during jso out processing given authnumber:[" + authnumber + "]";
 
 		}
 		traces.writeInFileTransaction(folder, file, "*********** Fin reversal() ************** ");
