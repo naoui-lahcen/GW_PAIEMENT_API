@@ -4172,8 +4172,6 @@ public class APIController {
 			
 			String linkacs = link_chalenge + dmd.getTokencommande();
 			
-			//response.sendRedirect(link_index);
-			response.sendRedirect(linkacs);
 			
 			// Transaction info
 			jso.put("orderid", "12345678912546");
@@ -4185,14 +4183,21 @@ public class APIController {
 			// Link ACS chalenge info
 			jso.put("linkacs", linkacs);
 			
+			traces.writeInFileTransaction(folder, file, "testapi jso : " + jso.toString());
 			System.out.println("testapi jso : " + jso.toString());
+			
+			//response.sendRedirect(link_index);
+			response.sendRedirect(linkacs);
+			
 
 		} catch (Exception ex) {
-			System.out.println("Error " + ex);
 			// Transaction info
 			jso.put("statuscode", "17");
 			jso.put("status", "failed");
 			System.out.println("testapi error jso : " + jso.toString());
+			traces.writeInFileTransaction(folder, file, "testapi error jso : " + jso.toString());
+			traces.writeInFileTransaction(folder, file, "testapi exception : " + ex);
+			System.out.println("testapi exception : " + ex);
 		}
 
 		System.out.println("*********** Fin testapi ************** ");
