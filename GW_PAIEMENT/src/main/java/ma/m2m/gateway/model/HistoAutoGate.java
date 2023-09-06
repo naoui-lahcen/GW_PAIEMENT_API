@@ -31,7 +31,7 @@ public class HistoAutoGate implements java.io.Serializable {
 	@Id
     @Column(name="HAT_ID")
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Integer id;
 	@Column(name = "HAT_NUMDEM")
 	private Long hatNumdem;
 	@Column(name = "HAT_NUMCMR")
@@ -136,11 +136,11 @@ public class HistoAutoGate implements java.io.Serializable {
 		// TODO Auto-generated constructor stub
 	}
 
-	public long getId() {
+	public Integer getId() {
 		return id;
 	}
 
-	public void setId(long id) {
+	public void setId(Integer id) {
 		this.id = id;
 	}
 
@@ -536,7 +536,7 @@ public class HistoAutoGate implements java.io.Serializable {
 		this.is_withsave = is_withsave;
 	}
 
-	public HistoAutoGate(long id, Long hatNumdem, String hatNumcmr, Date hatDatdem, String hatHerdem, String hatCodtpe,
+	public HistoAutoGate(Integer id, Long hatNumdem, String hatNumcmr, Date hatDatdem, String hatHerdem, String hatCodtpe,
 			String hatPorteur, Double hatMontant, String hatDevise, String hatCoderep, String hatNautsrv,
 			String hatNcompte, String hatNautemt, Character hatCodtrns, String hatNrefce, String hatMtfref1,
 			String hatMtfref2, Character hatProcode, Character hatReasreq, Character hatAnomalie, Character hatInstance,

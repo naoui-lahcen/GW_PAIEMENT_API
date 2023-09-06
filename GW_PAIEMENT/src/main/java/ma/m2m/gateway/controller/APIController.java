@@ -620,6 +620,18 @@ public class APIController {
 				montanttrame = "";
 
 				mm = new String[2];
+				System.out.println("montant v0 : " + amount);
+				traces.writeInFileTransaction(folder, file, "montant v0 : " + amount);
+				
+				if(amount.contains(",")) {
+					amount = amount.replace(",", ".");
+				}
+				if(!amount.contains(".") && !amount.contains(",")) {
+					amount = amount +"."+"00";
+				}
+				System.out.println("montant v1 : " + amount);
+				traces.writeInFileTransaction(folder, file, "montant v1 : " + amount);
+				
 				String montantt = amount + "";
 
 				mm = montantt.split("\\.");
@@ -636,7 +648,8 @@ public class APIController {
 				} else
 					montanttrame = montanttrame.replace(".", "");
 				montanttrame = Util.formatageCHamps(montanttrame, 12);
-				
+				System.out.println("montanttrame : " + montanttrame);
+				traces.writeInFileTransaction(folder, file, "montanttrame : " + montanttrame);
 			} catch (Exception err3) {
 				traces.writeInFileTransaction(folder, file,
 						"authorization 500 Error during  amount formatting for given orderid:[" + orderid
@@ -959,7 +972,7 @@ public class APIController {
 					traces.writeInFileTransaction(folder, file, "Switch  malfunction !!! tag1_resp == null");
 					switch_ko = 1;
 					traces.writeInFileTransaction(folder, file,
-							"authorization 500" + "Error during tlv Switch response parse tag1_resp length tag  < 3"
+							"authorization 500 Error during tlv Switch response parse tag1_resp length tag  < 3"
 									+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv
 									+ "]");
 				}
@@ -1344,7 +1357,7 @@ public class APIController {
 					traces.writeInFileTransaction(folder, file, "authorization 500"
 							+ "Error during  DemandePaiement update SW_REJET for given orderid:[" + orderid + "]" + e);
 
-					return "authorization 500" + "Error during  DemandePaiement update SW_REJET for given orderid:["
+					return "authorization 500 Error during  DemandePaiement update SW_REJET for given orderid:["
 							+ orderid + "]";
 
 				}
@@ -2618,7 +2631,7 @@ public class APIController {
 					"capture 500 Error during Transaction findByTrsnumautAndTrsnumcmr for given authnumber:["
 							+ authnumber + "] and merchantid:[" + merchantid + "]" + err4);
 
-			return "capture 500" + "Error during Transaction findByTrsnumautAndTrsnumcmr for given authnumber:[" 
+			return "capture 500 Error during Transaction findByTrsnumautAndTrsnumcmr for given authnumber:[" 
 					+ authnumber + "] and merchantid:[" + merchantid + "]";
 		}
 
@@ -2968,10 +2981,10 @@ public class APIController {
 
 		} catch (Exception err4) {
 			traces.writeInFileTransaction(folder, file,
-					"refund 500" + "Error during Transaction findByTrsnumautAndTrsnumcmr for given authnumber:[" 
+					"refund 500 Error during Transaction findByTrsnumautAndTrsnumcmr for given authnumber:[" 
 					+ authnumber + "] and merchantid:[" + merchantid + "]" + err4);
 
-			return "refund 500" + "Error during Transaction findByTrsnumautAndTrsnumcmr for given authnumber:[" 
+			return "refund 500 Error during Transaction findByTrsnumautAndTrsnumcmr for given authnumber:[" 
 					+ authnumber + "] and merchantid:[" + merchantid + "]";
 		}
 
@@ -3054,6 +3067,19 @@ public class APIController {
 			montanttrame = "";
 
 			mm = new String[2];
+			
+			System.out.println("montant v0 : " + amount);
+			traces.writeInFileTransaction(folder, file, "montant v0 : " + amount);
+			
+			if(amount.contains(",")) {
+				amount = amount.replace(",", ".");
+			}
+			if(!amount.contains(".") && !amount.contains(",")) {
+				amount = amount +"."+"00";
+			}
+			System.out.println("montant v1 : " + amount);
+			traces.writeInFileTransaction(folder, file, "montant v1 : " + amount);
+			
 			String montantt = amount + "";
 
 			mm = montantt.split("\\.");
@@ -3070,6 +3096,8 @@ public class APIController {
 			} else
 				montanttrame = montanttrame.replace(".", "");
 			montanttrame = Util.formatageCHamps(montanttrame, 12);
+			System.out.println("montanttrame : " + montanttrame);
+			traces.writeInFileTransaction(folder, file, "montanttrame : " + montanttrame);
 		} catch (Exception err4) {
 			traces.writeInFileTransaction(folder, file, "refund 500 Error during amount formatting for given orderid:[" 
 					+ orderid + "] and merchantid:[" + merchantid + "]" + err4);
@@ -3420,10 +3448,10 @@ public class APIController {
 
 		} catch (Exception err1) {
 			traces.writeInFileTransaction(folder, file,
-					"reversal 500" + "Error during PaiementRequest findByCommandeAndComid orderid:[" + orderid
+					"reversal 500 Error during PaiementRequest findByCommandeAndComid orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]" + err1);
 
-			return "reversal 500" + "Error during PaiementRequest  orderid:[" + orderid + "] and merchantid:["
+			return "reversal 500 Error during PaiementRequest  orderid:[" + orderid + "] and merchantid:["
 					+ merchantid + "]";
 
 		}
@@ -3492,8 +3520,20 @@ public class APIController {
 			montanttrame = "";
 
 			mm = new String[2];
+			System.out.println("montant v0 : " + amount);
+			traces.writeInFileTransaction(folder, file, "montant v0 : " + amount);
+			
+			if(amount.contains(",")) {
+				amount = amount.replace(",", ".");
+			}
+			if(!amount.contains(".") && !amount.contains(",")) {
+				amount = amount +"."+"00";
+			}
+			System.out.println("montant v1 : " + amount);
+			traces.writeInFileTransaction(folder, file, "montant v1 : " + amount);
+			
 			String montantt = amount + "";
-
+			
 			mm = montantt.split("\\.");
 			if (mm[1].length() == 1) {
 				montanttrame = amount + "0";
@@ -3508,6 +3548,8 @@ public class APIController {
 			} else
 				montanttrame = montanttrame.replace(".", "");
 			montanttrame = Util.formatageCHamps(montanttrame, 12);
+			System.out.println("montanttrame : " + montanttrame);
+			traces.writeInFileTransaction(folder, file, "montanttrame : " + montanttrame);
 		} catch (Exception err4) {
 			traces.writeInFileTransaction(folder, file, "reversal 500 Error during amount formatting for given orderid:[" 
 					+ orderid + "] and merchantid:[" + merchantid + "]" + err4);
@@ -3515,7 +3557,6 @@ public class APIController {
 			return "reversal 500 Error during amount formatting for given  orderid:[" + orderid + "] and merchantid:["
 					+ merchantid + "]";
 		}
-		
 
 		traces.writeInFileTransaction(folder, file, "Switch processing start ...");
 
@@ -3774,7 +3815,7 @@ public class APIController {
 		if (tag1_resp.length() < 3) {
 			traces.writeInFileTransaction(folder, file, "Switch  malfunction !!!");
 
-			return "reversal 500" + "Error during tlv Switch response parse tag1_resp length tag  < 3" + "switch ip:["
+			return "reversal 500 Error during tlv Switch response parse tag1_resp length tag  < 3" + "switch ip:["
 					+ sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]";
 		}
 

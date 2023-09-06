@@ -827,6 +827,19 @@ public class GWPaiementController {
 				montanttrame = "";
 
 				mm = new String[2];
+				
+				System.out.println("montant v0 : " + amount);
+				traces.writeInFileTransaction(folder, file, "montant v0 : " + amount);
+				
+				if(amount.contains(",")) {
+					amount = amount.replace(",", ".");
+				}
+				if(!amount.contains(".") && !amount.contains(",")) {
+					amount = amount +"."+"00";
+				}
+				System.out.println("montant v1 : " + amount);
+				traces.writeInFileTransaction(folder, file, "montant v1 : " + amount);
+				
 				String montantt = amount + "";
 
 				mm = montantt.split("\\.");
@@ -843,6 +856,8 @@ public class GWPaiementController {
 				} else
 					montanttrame = montanttrame.replace(".", "");
 				montanttrame = Util.formatageCHamps(montanttrame, 12);
+				System.out.println("montanttrame : " + montanttrame);
+				traces.writeInFileTransaction(folder, file, "montanttrame : " + montanttrame);
 			} catch (Exception err3) {
 				traces.writeInFileTransaction(folder, file,
 						"authorization 500 Error during  amount formatting for given orderid:[" + orderid

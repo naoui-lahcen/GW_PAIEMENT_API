@@ -17,7 +17,7 @@ public class HistoAutoGateDto implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
 
-	private long hatId;
+	private Integer id;
 	private Long hatNumdem;
 	private String hatNumcmr;
 	private Date hatDatdem;
@@ -76,12 +76,12 @@ public class HistoAutoGateDto implements Serializable {
 		// TODO Auto-generated constructor stub
 	}
 
-	public long getHatId() {
-		return hatId;
+	public Integer getId() {
+		return id;
 	}
 
-	public void setHatId(long hatId) {
-		this.hatId = hatId;
+	public void setId(Integer hatId) {
+		this.id = hatId;
 	}
 
 	public Long getHatNumdem() {
@@ -477,7 +477,7 @@ public class HistoAutoGateDto implements Serializable {
 		this.operateurtlc = operateurtlc;
 	}
 
-	public HistoAutoGateDto(long hatId, Long hatNumdem, String hatNumcmr, Date hatDatdem, String hatHerdem,
+	public HistoAutoGateDto(Integer id, Long hatNumdem, String hatNumcmr, Date hatDatdem, String hatHerdem,
 			String hatCodtpe, String hatPorteur, Double hatMontant, String hatDevise, String hatCoderep,
 			String hatNautsrv, String hatNcompte, String hatNautemt, String hatNrefce, String hatMtfref1,
 			String hatMtfref2, Character hatProcode, String hatCodpay, String hatDemandeur, String hatRepondeur,
@@ -487,7 +487,7 @@ public class HistoAutoGateDto implements Serializable {
 			String is_cvv_verified, String is_whitelist, String is_3ds, String is_national, String is_addcard,
 			String is_withsave) {
 		super();
-		this.hatId = hatId;
+		this.id = id;
 		this.hatNumdem = hatNumdem;
 		this.hatNumcmr = hatNumcmr;
 		this.hatDatdem = hatDatdem;
@@ -530,7 +530,7 @@ public class HistoAutoGateDto implements Serializable {
 		this.is_withsave = is_withsave;
 	}
 
-	public HistoAutoGateDto(long hatId, Long hatNumdem, String hatNumcmr, Date hatDatdem, String hatHerdem,
+	public HistoAutoGateDto(Integer id, Long hatNumdem, String hatNumcmr, Date hatDatdem, String hatHerdem,
 			String hatCodtpe, String hatPorteur, Double hatMontant, String hatDevise, String hatCoderep,
 			String hatNautsrv, String hatNcompte, String hatNautemt, Character hatCodtrns, String hatNrefce,
 			String hatMtfref1, String hatMtfref2, Character hatProcode, Character hatReasreq, Character hatAnomalie,
@@ -542,7 +542,7 @@ public class HistoAutoGateDto implements Serializable {
 			String is_cvv_verified, String is_whitelist, String is_3ds, String is_national, String is_addcard,
 			String is_withsave) {
 		super();
-		this.hatId = hatId;
+		this.id = id;
 		this.hatNumdem = hatNumdem;
 		this.hatNumcmr = hatNumcmr;
 		this.hatDatdem = hatDatdem;
@@ -596,7 +596,7 @@ public class HistoAutoGateDto implements Serializable {
 
 	@Override
 	public String toString() {
-		return "HistoAutoGateDto [hatId=" + hatId + ", hatNumdem=" + hatNumdem + ", hatNumcmr=" + hatNumcmr
+		return "HistoAutoGateDto [id=" + id + ", hatNumdem=" + hatNumdem + ", hatNumcmr=" + hatNumcmr
 				+ ", hatDatdem=" + hatDatdem + ", hatHerdem=" + hatHerdem + ", hatCodtpe=" + hatCodtpe + ", hatPorteur="
 				+ hatPorteur + ", hatMontant=" + hatMontant + ", hatDevise=" + hatDevise + ", hatCoderep=" + hatCoderep
 				+ ", hatNautsrv=" + hatNautsrv + ", hatNcompte=" + hatNcompte + ", hatNautemt=" + hatNautemt
