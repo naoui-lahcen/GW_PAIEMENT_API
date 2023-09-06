@@ -2123,13 +2123,11 @@ public class APIController {
 			current_dmd = demandePaiementService.findByCommandeAndComid(orderid, merchantid);
 
 		} catch (Exception err1) {
-
 			traces.writeInFileTransaction(folder, file,
 					"status 500 Error during PaiementRequest findByCommandeAndComid orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]" + err1);
 			return "status 500 Error during PaiementRequest findByCommandeAndComid orderid:[" + orderid
 					+ "] and merchantid:[" + merchantid + "]" + err1;
-
 		}
 
 		if (current_dmd == null) {
@@ -2143,7 +2141,6 @@ public class APIController {
 		HistoAutoGateDto current_hist = null;
 
 		if (authnumber.length() < 1) {
-
 			try {
 
 				// get histoauto check if exist
@@ -2154,13 +2151,10 @@ public class APIController {
 						"status 500 Error during HistoAutoGate findByNumAuthAndNumCommercant orderid:[" + orderid
 								+ "] and merchantid:[" + merchantid + "]" + err2);
 				return "status 500 orderid:[" + orderid + "] and merchantid:[" + merchantid + "]";
-
 			}
-
 		} else {
 
 			try {
-
 				// get histoauto check if exist
 				current_hist = histoAutoGateService.findByHatNumCommandeAndHatNautemtAndHatNumcmr(orderid, authnumber,
 						merchantid);
@@ -2171,7 +2165,6 @@ public class APIController {
 								+ "] + and authnumber:[" + authnumber + "]" + "and merchantid:[" + merchantid + "]"
 								+ err2);
 				return "status 500 orderid:[" + orderid + "] and merchantid:[" + merchantid + "]";
-
 			}
 		}
 
@@ -2185,17 +2178,14 @@ public class APIController {
 						"Inconsitence HistoAutoGate not found for authnumber and DemandePaiement is PAYE status"
 								+ "HistoAutoGate not found for authnumber:[" + authnumber + "] and merchantid:["
 								+ merchantid + "]");
-				return "status 500"
-						+ "Inconsitence HistoAutoGate not found for authnumber and DemandePaiement is PAYE status"
+				return "status 500 Inconsitence HistoAutoGate not found for authnumber and DemandePaiement is PAYE status"
 						+ "HistoAutoGate not found for authnumber:[" + authnumber + "] and merchantid:[" + merchantid
 						+ "]";
-
 			} else {
 
 				E = 'X';
 
 			}
-
 		}
 
 		char pr = '\0';
@@ -2220,9 +2210,8 @@ public class APIController {
 			traces.writeInFileTransaction(folder, file, "status 500 Error during status processing for given authnumber"
 					+ " :[" + authnumber + "] and merchantid:[" + merchantid + "]" + err2);
 
-			return "status 500 Error during status processing for given authnumber" + " :[" + authnumber
+			return "status 500 Error during status processing for given authnumber:[" + authnumber
 					+ "] and merchantid:[" + merchantid + "]";
-
 		}
 
 		JSONObject jso = new JSONObject();
@@ -2275,22 +2264,18 @@ public class APIController {
 		TransactionDto trs_check = null;
 
 		if (E == 'T') {
-
 			try {
 
 				trs_check = transactionService.findByTrsnumautAndTrsnumcmr(authnumber, merchantid);
 
 			} catch (Exception err4) {
-
 				traces.writeInFileTransaction(folder, file,
-						"status 500" + "Error during Transaction findByTrsnumautAndTrsnumcmr for given authnumber"
+						"status 500 Error during Transaction findByTrsnumautAndTrsnumcmr for given authnumber"
 								+ " :[" + authnumber + "] and merchantid:[" + merchantid + "]" + err4);
 
-				return "status 500" + "Error during Transaction findByNumAuthAndNumCommercant for given authnumber"
+				return "status 500 Error during Transaction findByNumAuthAndNumCommercant for given authnumber"
 						+ " :[" + authnumber + "] and merchantid:[" + merchantid + "]";
-
 			}
-
 		}
 
 		if (E == 'T')
@@ -2487,12 +2472,10 @@ public class APIController {
 						"capture 500 malformed header" + header.toString() + head_err);
 				return "capture 500 malformed header " + header.toString() + head_err;
 			}
-
 			else {
 				traces.writeInFileTransaction(folder, file, "capture 500 malformed header " + head_err);
 				return "capture 500 malformed header " + head_err;
 			}
-
 		}
 
 		JSONObject jsonOrequest = null;
@@ -2503,7 +2486,6 @@ public class APIController {
 		catch (JSONException jserr) {
 			traces.writeInFileTransaction(folder, file, "capture 500 malformed json expression" + capture + jserr);
 			return "capture 500 malformed json expression";
-
 		}
 
 		// String sheader = header.toString();
@@ -2536,7 +2518,6 @@ public class APIController {
 		} catch (Exception jerr) {
 			traces.writeInFileTransaction(folder, file, "capture 500 malformed json expression " + capture + jerr);
 			return "capture 500 malformed json expression";
-
 		}
 		String timeStamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
 
@@ -2554,7 +2535,6 @@ public class APIController {
 							+ "] and merchantid:[" + merchantid + "]" + err1);
 			return "capture 500 Error during PaiementRequest findByCommandeAndComid orderid:[" + orderid
 					+ "] and merchantid:[" + merchantid + "]" + err1;
-
 		}
 
 		if (current_dmd == null) {
@@ -2580,7 +2560,6 @@ public class APIController {
 							+ orderid + "] and merchantid:[" + merchantid + "]" + err2);
 			return "capture 500 Error during HistoAutoGate  orderid:[" + orderid + "] and merchantid:[" + merchantid
 					+ "]";
-
 		}
 
 		if (current_hist == null) {
@@ -2589,10 +2568,8 @@ public class APIController {
 							+ "HistoAutoGate not found for authnumber:[" + authnumber + "] and merchantid:["
 							+ merchantid + "]");
 
-			return "capture 500"
-					+ "Inconsitence HistoAutoGate not found for authnumber and DemandePaiement is PAYE status"
+			return "capture 500 Inconsitence HistoAutoGate not found for authnumber and DemandePaiement is PAYE status"
 					+ "HistoAutoGate not found for authnumber:[" + authnumber + "] and merchantid:[" + merchantid + "]";
-
 		}
 
 		CommercantDto current_merchant = null;
@@ -2614,7 +2591,6 @@ public class APIController {
 
 			return "authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 					+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]";
-
 		}
 
 		if (current_merchant.getCmrCodbqe() == null) {
@@ -2624,7 +2600,6 @@ public class APIController {
 
 			return "authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 					+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]";
-
 		}
 
 		String merc_codeactivite = current_merchant.getCmrCodactivite();
@@ -2640,21 +2615,19 @@ public class APIController {
 
 		} catch (Exception err4) {
 			traces.writeInFileTransaction(folder, file,
-					"capture 500" + "Error during Transaction findByTrsnumautAndTrsnumcmr for given " + "authnumber:["
+					"capture 500 Error during Transaction findByTrsnumautAndTrsnumcmr for given authnumber:["
 							+ authnumber + "] and merchantid:[" + merchantid + "]" + err4);
 
-			return "capture 500" + "Error during Transaction findByTrsnumautAndTrsnumcmr for given authnumber"
-					+ "authnumber:[" + authnumber + "] and merchantid:[" + merchantid + "]";
-
+			return "capture 500" + "Error during Transaction findByTrsnumautAndTrsnumcmr for given authnumber:[" 
+					+ authnumber + "] and merchantid:[" + merchantid + "]";
 		}
 
 		if (trs_check != null) {
 			traces.writeInFileTransaction(folder, file, "capture 500 Transaction already captured  for given "
 					+ "authnumber:[" + authnumber + "] and merchantid:[" + merchantid + "]");
 
-			return "500 Transaction already captured  for given " + "authnumber:[" + authnumber + "] and merchantid:["
+			return "500 Transaction already captured  for given authnumber:[" + authnumber + "] and merchantid:["
 					+ merchantid + "]";
-
 		}
 
 		TelecollecteDto n_tlc = telecollecteService.getMAXTLC_N(merchantid);
@@ -2696,12 +2669,11 @@ public class APIController {
 
 			} catch (Exception err5) {
 				traces.writeInFileTransaction(folder, file,
-						"capture 500" + "Error during insert into telec for given authnumber for given "
-								+ "authnumber:[" + authnumber + "] and merchantid:[" + merchantid + "]" + err5);
+						"capture 500 Error during insert into telec for given authnumber:[" 
+								+ authnumber + "] and merchantid:[" + merchantid + "]" + err5);
 
-				return "capture 500" + "Error during insert into telec for given authnumber for given " + "authnumber:["
+				return "capture 500 Error during insert into telec for given authnumber:["
 						+ authnumber + "] and merchantid:[" + merchantid + "]";
-
 			}
 		} else {
 
@@ -2717,12 +2689,11 @@ public class APIController {
 				telecollecteService.save(n_tlc);
 			} catch (Exception err55) {
 				traces.writeInFileTransaction(folder, file,
-						"capture 500" + "Error during update telec for given authnumber for given " + "authnumber:["
+						"capture 500 Error during update telec for given authnumber:["
 								+ authnumber + "] and merchantid:[" + merchantid + "]" + err55);
 
-				return "capture 500" + "Error during update telec for given authnumber for given " + "authnumber:["
+				return "capture 500 Error during update telec for given authnumber:["
 						+ authnumber + "] and merchantid:[" + merchantid + "]";
-
 			}
 
 		}
@@ -2760,12 +2731,11 @@ public class APIController {
 
 		} catch (Exception err6) {
 			traces.writeInFileTransaction(folder, file,
-					"capture 500" + "Error during insert into transaction for given " + "authnumber:[" + authnumber
+					"capture 500 Error during insert into transaction for given authnumber:[" + authnumber
 							+ "] and merchantid:[" + merchantid + "]" + err6);
 
-			return "capture 500 Error during insert into transaction for given " + "authnumber:[" + authnumber
+			return "capture 500 Error during insert into transaction for given authnumber:[" + authnumber
 					+ "] and merchantid:[" + merchantid + "]";
-
 		}
 
 		try {
@@ -2775,12 +2745,11 @@ public class APIController {
 			histoAutoGateService.save(current_hist);
 
 		} catch (Exception err7) {
-			traces.writeInFileTransaction(folder, file, "capture 500 Error during histoauto_gate update for given "
-					+ "authnumber:[" + authnumber + "] and merchantid:[" + merchantid + "]" + err7);
+			traces.writeInFileTransaction(folder, file, "capture 500 Error during histoauto_gate update for given authnumber:[" 
+					+ authnumber + "] and merchantid:[" + merchantid + "]" + err7);
 
-			return "capture 500 Error during histoauto_gate update for given " + "authnumber:[" + authnumber
+			return "capture 500 Error during histoauto_gate update for given authnumber:[" + authnumber
 					+ "] and merchantid:[" + merchantid + "]";
-
 		}
 
 		String capture_id, dtpattern, sdt, tmpattern, stm = "";
@@ -2800,12 +2769,11 @@ public class APIController {
 			stm = sftm.format(dt);
 
 		} catch (Exception err8) {
-			traces.writeInFileTransaction(folder, file, "capture 500 Error during jso data preparationfor given "
-					+ "authnumber:[" + authnumber + "] and merchantid:[" + merchantid + "]" + err8);
+			traces.writeInFileTransaction(folder, file, "capture 500 Error during jso data preparationfor given authnumber:[" 
+					+ authnumber + "] and merchantid:[" + merchantid + "]" + err8);
 
-			return "capture 500 Error during jso data preparationfor given " + "authnumber:[" + authnumber
+			return "capture 500 Error during jso data preparationfor given authnumber:[" + authnumber
 					+ "] and merchantid:[" + merchantid + "]";
-
 		}
 
 		JSONObject jso = new JSONObject();
@@ -2941,7 +2909,6 @@ public class APIController {
 		} catch (Exception jerr) {
 			traces.writeInFileTransaction(folder, file, "refund 500 malformed json expression " + refund + jerr);
 			return "refund 500 malformed json expression" + refund + jerr;
-
 		}
 
 		String timeStamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
@@ -2954,29 +2921,26 @@ public class APIController {
 			current_dmd = demandePaiementService.findByCommandeAndComid(orderid, merchantid);
 
 		} catch (Exception err1) {
-			traces.writeInFileTransaction(folder, file, "refund 500 Error during PaiementRequest findByCommandeAndComid"
-					+ " orderid:[" + orderid + "] and merchantid:[" + merchantid + "]" + err1);
+			traces.writeInFileTransaction(folder, file, "refund 500 Error during PaiementRequest findByCommandeAndComid orderid:[" 
+					+ orderid + "] and merchantid:[" + merchantid + "]" + err1);
 			return "refund 500 Error during PaiementRequest findByCommandeAndComid orderid:[" + orderid
 					+ "] and merchantid:[" + merchantid + "]";
-
 		}
 		if (current_dmd == null) {
 			traces.writeInFileTransaction(folder, file, "refund 500 PaiementRequest not found for given orderid"
-					+ "orderid:[" + orderid + "] and merchantid:[" + merchantid + "]");
+					+ orderid + "] and merchantid:[" + merchantid + "]");
 
 			return "refund 500 PaiementRequest not found for given orderid:[" + orderid + "] and merchantid:["
 					+ merchantid + "]";
-
 		}
 
 		HistoAutoGateDto current_hist = null;
 
 		try {
-
 			// get histoauto check if exist
 			current_hist = histoAutoGateService.findByHatNumCommandeAndHatNautemtAndHatNumcmr(orderid, authnumber,
 					merchantid);
-
+			
 		} catch (Exception err2) {
 			traces.writeInFileTransaction(folder, file,
 					"refund 500 Error during HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmr orderid:["
@@ -2984,20 +2948,16 @@ public class APIController {
 
 			return "refund 500 Error during HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmr orderid:["
 					+ orderid + "] and merchantid:[" + merchantid + "]";
-
 		}
 
 		if (current_hist == null) {
 			traces.writeInFileTransaction(folder, file,
-					"refund 500"
-							+ "Inconsitence HistoAutoGate not found for authnumber and DemandePaiement is PAYE status"
+					"refund 500 Inconsitence HistoAutoGate not found for authnumber and DemandePaiement is PAYE status"
 							+ "HistoAutoGate not found for authnumber:[" + authnumber + "] and merchantid:["
 							+ merchantid + "]");
 
-			return "refund 500"
-					+ "Inconsitence HistoAutoGate not found for authnumber and DemandePaiement is PAYE status"
+			return "refund 500 Inconsitence HistoAutoGate not found for authnumber and DemandePaiement is PAYE status"
 					+ "HistoAutoGate not found for authnumber:[" + authnumber + "] and merchantid:[" + merchantid + "]";
-
 		}
 
 		TransactionDto trs_check = null;
@@ -3008,80 +2968,64 @@ public class APIController {
 
 		} catch (Exception err4) {
 			traces.writeInFileTransaction(folder, file,
-					"refund 500" + "Error during Transaction findByTrsnumautAndTrsnumcmr for given authnumber"
-							+ "authnumber:[" + authnumber + "] and merchantid:[" + merchantid + "]" + err4);
+					"refund 500" + "Error during Transaction findByTrsnumautAndTrsnumcmr for given authnumber:[" 
+					+ authnumber + "] and merchantid:[" + merchantid + "]" + err4);
 
-			return "refund 500" + "Error during Transaction findByTrsnumautAndTrsnumcmr for given authnumber"
-					+ "authnumber:[" + authnumber + "] and merchantid:[" + merchantid + "]";
-
+			return "refund 500" + "Error during Transaction findByTrsnumautAndTrsnumcmr for given authnumber:[" 
+					+ authnumber + "] and merchantid:[" + merchantid + "]";
 		}
 
 		if (trs_check == null) {
-			traces.writeInFileTransaction(folder, file, "refund 500"
-					+ "Inconsitence Captured Transaction not found for authnumber and DemandePaiement is PAYE status"
+			traces.writeInFileTransaction(folder, file, "refund 500 Inconsitence Captured Transaction not found for authnumber and DemandePaiement is PAYE status"
 					+ "Captured Transaction not found for authnumber:[" + authnumber + "] and merchantid:[" + merchantid
 					+ "]");
 
-			return "refund 500"
-					+ "Inconsitence Captured Transaction not found for authnumber and DemandePaiement is PAYE status"
+			return "refund 500 Inconsitence Captured Transaction not found for authnumber and DemandePaiement is PAYE status"
 					+ "Captured Transaction not found for authnumber:[" + authnumber + "] and merchantid:[" + merchantid
 					+ "]";
-
 		}
 
 		String trs_procod = trs_check.getTrs_procod();
 		String trs_state = trs_check.getTrs_etat();
 
 		if (trs_procod == null) {
-			traces.writeInFileTransaction(folder, file, "refund 500"
-					+ "Inconsitence Captured Transaction trs_procod null for authnumber and DemandePaiement is PAYE status"
+			traces.writeInFileTransaction(folder, file, "refund 500 Inconsitence Captured Transaction trs_procod null for authnumber and DemandePaiement is PAYE status"
 					+ "Captured Transaction trs_procod null  for authnumber:[" + authnumber + "] and merchantid:["
 					+ merchantid + "]");
 
-			return "refund 500"
-					+ "Inconsitence Captured Transaction trs_procod null for authnumber and DemandePaiement is PAYE status"
+			return "refund 500 Inconsitence Captured Transaction trs_procod null for authnumber and DemandePaiement is PAYE status"
 					+ "Captured Transaction trs_procod null  for authnumber:[" + authnumber + "] and merchantid:["
 					+ merchantid + "]";
-
 		}
 
 		if (trs_state == null) {
-			traces.writeInFileTransaction(folder, file, "refund 500"
-					+ "Inconsitence Captured Transaction trs_procod null for authnumber and DemandePaiement is PAYE status"
+			traces.writeInFileTransaction(folder, file, "refund 500 Inconsitence Captured Transaction trs_procod null for authnumber and DemandePaiement is PAYE status"
 					+ "Captured Transaction trs_state null for authnumber:[" + authnumber + "] and merchantid:["
 					+ merchantid + "]");
 
-			return "refund 500"
-					+ "Inconsitence Captured Transaction trs_procod null for authnumber and DemandePaiement is PAYE status"
+			return "refund 500 Inconsitence Captured Transaction trs_procod null for authnumber and DemandePaiement is PAYE status"
 					+ "Captured Transaction trs_state null for authnumber:[" + authnumber + "] and merchantid:["
 					+ merchantid + "]";
-
 		}
 
 		if (!trs_procod.equalsIgnoreCase("0")) {
-			traces.writeInFileTransaction(folder, file, "refund 500"
-					+ "Inconsitence Captured Transaction trs_procod <> 0 for authnumber and DemandePaiement is PAYE status"
+			traces.writeInFileTransaction(folder, file, "refund 500 Inconsitence Captured Transaction trs_procod <> 0 for authnumber and DemandePaiement is PAYE status"
 					+ "Captured Transaction trs_procod <> 0   for authnumber:[" + authnumber + "] and merchantid:["
 					+ merchantid + "]");
 
-			return "refund 500"
-					+ "Inconsitence Captured Transaction trs_procod <> 0 for authnumber and DemandePaiement is PAYE status"
+			return "refund 500 Inconsitence Captured Transaction trs_procod <> 0 for authnumber and DemandePaiement is PAYE status"
 					+ "Captured Transaction trs_procod <> 0   for authnumber:[" + authnumber + "] and merchantid:["
 					+ merchantid + "]";
-
 		}
 
 		if (!trs_state.equalsIgnoreCase("E")) {
-			traces.writeInFileTransaction(folder, file, "refund 500"
-					+ "Inconsitence Captured Transaction trs_state <> E for authnumber and DemandePaiement is PAYE status"
+			traces.writeInFileTransaction(folder, file, "refund 500 Inconsitence Captured Transaction trs_state <> E for authnumber and DemandePaiement is PAYE status"
 					+ "Captured Transaction  trs_state <> E  for authnumber:[" + authnumber + "] and merchantid:["
 					+ merchantid + "]");
 
-			return "refund 500"
-					+ "Inconsitence Captured Transaction trs_state <> E for authnumber and DemandePaiement is PAYE status"
+			return "refund 500 Inconsitence Captured Transaction trs_state <> E for authnumber and DemandePaiement is PAYE status"
 					+ "Captured Transaction  trs_state <> E  for authnumber:[" + authnumber + "] and merchantid:["
 					+ merchantid + "]";
-
 		}
 
 		SimpleDateFormat formatheure, formatdate = null;
@@ -3095,35 +3039,40 @@ public class APIController {
 			jul = Util.convertToJulian(new Date()) + "";
 
 		} catch (Exception err3) {
-			traces.writeInFileTransaction(folder, file, "refund 500 Error during date formatting for given orderid"
-					+ "orderid:[" + orderid + "] and merchantid:[" + merchantid + "]" + err3);
+			traces.writeInFileTransaction(folder, file, "refund 500 Error during date formatting for given orderid:[" 
+					+ orderid + "] and merchantid:[" + merchantid + "]" + err3);
 
 			return "refund 500 Error during date formatting for given orderid:[" + orderid + "] and merchantid:["
 					+ merchantid + "]";
-
 		}
 
 		String[] mm;
+		String[] m;
 		String montanttrame = "";
+
 		try {
+			montanttrame = "";
+
 			mm = new String[2];
-			mm = amount.split("\\.");
-			if (mm[0].length() == 1) {
+			String montantt = amount + "";
+
+			mm = montantt.split("\\.");
+			if (mm[1].length() == 1) {
 				montanttrame = amount + "0";
 			} else {
 				montanttrame = amount + "";
 			}
 
-			String[] m = new String[2];
+			m = new String[2];
 			m = montanttrame.split("\\.");
-			if (m[0].equals("0")) {
+			if (m[1].equals("0")) {
 				montanttrame = montanttrame.replace(".", "0");
 			} else
 				montanttrame = montanttrame.replace(".", "");
 			montanttrame = Util.formatageCHamps(montanttrame, 12);
 		} catch (Exception err4) {
-			traces.writeInFileTransaction(folder, file, "refund 500 Error during amount formatting for given "
-					+ "orderid:[" + orderid + "] and merchantid:[" + merchantid + "]" + err4);
+			traces.writeInFileTransaction(folder, file, "refund 500 Error during amount formatting for given orderid:[" 
+					+ orderid + "] and merchantid:[" + merchantid + "]" + err4);
 
 			return "refund 500 Error during amount formatting for given  orderid:[" + orderid + "] and merchantid:["
 					+ merchantid + "]";
@@ -3139,7 +3088,7 @@ public class APIController {
 			current_merchant = commercantService.findByCmrCode(merchantid);
 		} catch (Exception e) {
 			traces.writeInFileTransaction(folder, file,
-					"authorization 500" + "Merchant misconfigured in DB or not existing orderid:[" + orderid
+					"authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]" + e);
 
 			return "authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
@@ -3148,12 +3097,11 @@ public class APIController {
 
 		if (current_merchant == null) {
 			traces.writeInFileTransaction(folder, file,
-					"authorization 500" + "Merchant misconfigured in DB or not existing orderid:[" + orderid
+					"authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]");
 
-			return "authorization 500" + "Merchant misconfigured in DB or not existing orderid:[" + orderid
+			return "authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 					+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]";
-
 		}
 
 		if (current_merchant.getCmrCodactivite() == null) {
@@ -3163,7 +3111,6 @@ public class APIController {
 
 			return "authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 					+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]";
-
 		}
 
 		if (current_merchant.getCmrCodbqe() == null) {
@@ -3173,7 +3120,6 @@ public class APIController {
 
 			return "authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 					+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]";
-
 		}
 
 		// offline processing
@@ -3200,7 +3146,6 @@ public class APIController {
 						"refund 500 Error during  demandepaiement update  A for given  orderid:[" + orderid + "]" + e);
 
 				return "refund 500 Error during  demandepaiement update  A for given  orderid:[" + orderid + "]";
-
 			}
 
 			traces.writeInFileTransaction(folder, file, "Setting DemandePaiement status OK.");
@@ -3298,13 +3243,11 @@ public class APIController {
 
 			} catch (Exception e) {
 				traces.writeInFileTransaction(folder, file,
-						"refund 500"
-								+ "Error during  HistoAutoGate insertion or Transaction insertion A for given orderid:["
+						"refund 500 Error during  HistoAutoGate insertion or Transaction insertion A for given orderid:["
 								+ orderid + "]" + e);
 
 				return "refund 500 Error during  HistoAutoGate insertion or Transaction insertion A for given orderid:["
 						+ orderid + "]";
-
 			}
 
 			traces.writeInFileTransaction(folder, file, "inserting HistoAutoGate  OK.");
@@ -3485,8 +3428,8 @@ public class APIController {
 
 		}
 		if (current_dmd == null) {
-			traces.writeInFileTransaction(folder, file, "reversal 500 PaiementRequest not found for given orderid"
-					+ "orderid:[" + orderid + "] and merchantid:[" + merchantid + "]");
+			traces.writeInFileTransaction(folder, file, "reversal 500 PaiementRequest not found for given orderid:[" 
+					+ orderid + "] and merchantid:[" + merchantid + "]");
 
 			return "reversal 500 PaiementRequest not found for given orderid:[" + orderid + "] and merchantid:["
 					+ merchantid + "]";
@@ -3503,23 +3446,21 @@ public class APIController {
 
 		} catch (Exception err2) {
 			traces.writeInFileTransaction(folder, file,
-					"reversal 500 Error during HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmr"
-							+ " orderid:[" + orderid + "] and merchantid:[" + merchantid + "]" + err2);
+					"reversal 500 Error during HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmr orderid:[" 
+					+ orderid + "] and merchantid:[" + merchantid + "]" + err2);
 
-			return "reversal 500 Error during HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmr"
-					+ " orderid:[" + orderid + "] and merchantid:[" + merchantid + "]";
+			return "reversal 500 Error during HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmr  orderid:[" 
+					+ orderid + "] and merchantid:[" + merchantid + "]";
 
 		}
 
 		if (current_hist == null) {
 			traces.writeInFileTransaction(folder, file,
-					"reversal 500"
-							+ "Inconsitence HistoAutoGate not found for authnumber and DemandePaiement is PAYE status"
+					"reversal 500 Inconsitence HistoAutoGate not found for authnumber and DemandePaiement is PAYE status"
 							+ "HistoAutoGate not found for authnumber:[" + authnumber + "] and merchantid:["
 							+ merchantid + "]");
 
-			return "reversal 500"
-					+ "Inconsitence HistoAutoGate not found for authnumber and DemandePaiement is PAYE status"
+			return "reversal 500 Inconsitence HistoAutoGate not found for authnumber and DemandePaiement is PAYE status"
 					+ "HistoAutoGate not found for authnumber:[" + authnumber + "] and merchantid:[" + merchantid + "]";
 
 		}
@@ -3535,41 +3476,46 @@ public class APIController {
 			jul = Util.convertToJulian(new Date()) + "";
 
 		} catch (Exception err3) {
-			traces.writeInFileTransaction(folder, file, "reversal 500 Error during date formatting for given "
-					+ "orderid:[" + orderid + "] and merchantid:[" + merchantid + "]" + err3);
+			traces.writeInFileTransaction(folder, file, "reversal 500 Error during date formatting for given orderid:[" 
+					+ orderid + "] and merchantid:[" + merchantid + "]" + err3);
 
-			return "reversal 500 Error during date formatting for given  orderid:[" + orderid + "] and merchantid:["
-					+ merchantid + "]";
+			return "reversal 500 Error during date formatting for given  orderid:[" 
+					+ orderid + "] and merchantid:[" + merchantid + "]";
 
 		}
 
 		String[] mm;
+		String[] m;
 		String montanttrame = "";
+
 		try {
+			montanttrame = "";
+
 			mm = new String[2];
-			mm = amount.split("\\.");
-			if (mm[0].length() == 1) {
+			String montantt = amount + "";
+
+			mm = montantt.split("\\.");
+			if (mm[1].length() == 1) {
 				montanttrame = amount + "0";
 			} else {
 				montanttrame = amount + "";
 			}
 
-			String[] m = new String[2];
+			m = new String[2];
 			m = montanttrame.split("\\.");
-			if (m[0].equals("0")) {
+			if (m[1].equals("0")) {
 				montanttrame = montanttrame.replace(".", "0");
 			} else
 				montanttrame = montanttrame.replace(".", "");
 			montanttrame = Util.formatageCHamps(montanttrame, 12);
 		} catch (Exception err4) {
-			traces.writeInFileTransaction(folder, file, "reversal 500 Error during amount formatting for given "
-					+ "orderid:[" + orderid + "] and merchantid:[" + merchantid + "]" + err4);
+			traces.writeInFileTransaction(folder, file, "reversal 500 Error during amount formatting for given orderid:[" 
+					+ orderid + "] and merchantid:[" + merchantid + "]" + err4);
 
 			return "reversal 500 Error during amount formatting for given  orderid:[" + orderid + "] and merchantid:["
 					+ merchantid + "]";
 		}
-
-		// controls
+		
 
 		traces.writeInFileTransaction(folder, file, "Switch processing start ...");
 
@@ -3676,12 +3622,11 @@ public class APIController {
 			traces.writeInFileTransaction(folder, file, "tag19_request : [" + authnumber + "]");
 
 		} catch (Exception err4) {
-			traces.writeInFileTransaction(folder, file, "reversal 500 Error during switch tlv buildu for given "
-					+ "orderid:[" + orderid + "] and merchantid:[" + merchantid + "]" + err4);
+			traces.writeInFileTransaction(folder, file, "reversal 500 Error during switch tlv buildu for given orderid:[" 
+					+ orderid + "] and merchantid:[" + merchantid + "]" + err4);
 
 			return "reversa 500 Error during switch tlv buildu for given  orderid:[" + orderid + "] and merchantid:["
 					+ merchantid + "]";
-
 		}
 
 		traces.writeInFileTransaction(folder, file, "Switch TLV Request :[" + tlv + "]");
@@ -3816,7 +3761,6 @@ public class APIController {
 
 			return "reversal 500 Error during tlv Switch response parse switch ip:[" + sw_s + "] and switch port:["
 					+ port + "] resp_tlv : [" + resp_tlv + "]";
-
 		}
 
 		// controle switch
@@ -3825,7 +3769,6 @@ public class APIController {
 
 			return "reversal 500 Error during tlv Switch response parse tag1_resp tag null" + "switch ip:[" + sw_s
 					+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]";
-
 		}
 
 		if (tag1_resp.length() < 3) {
@@ -3833,7 +3776,6 @@ public class APIController {
 
 			return "reversal 500" + "Error during tlv Switch response parse tag1_resp length tag  < 3" + "switch ip:["
 					+ sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]";
-
 		}
 
 		traces.writeInFileTransaction(folder, file, "Switch TLV Respnose Processed");
