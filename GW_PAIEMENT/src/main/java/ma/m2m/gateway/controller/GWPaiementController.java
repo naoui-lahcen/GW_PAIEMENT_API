@@ -147,6 +147,8 @@ public class GWPaiementController {
 	@RequestMapping(path = "/")
 	@ResponseBody
 	public String home() {
+		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
+		file = "GW_" + randomWithSplittableRandom;
 		// create file log
 		traces.creatFileTransaction(file);
 		traces.writeInFileTransaction(folder, file, "*********** Start home() ************** ");
@@ -162,6 +164,8 @@ public class GWPaiementController {
 	@RequestMapping(path = "/napspayment/generatetoken")
 	@ResponseBody
 	public ResponseEntity<String> generateToken() {
+		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
+		file = "GW_" + randomWithSplittableRandom;
 		// create file log
 		traces.creatFileTransaction(file);
 		traces.writeInFileTransaction(folder, file, "*********** Start generateToken() ************** ");
@@ -204,6 +208,8 @@ public class GWPaiementController {
 	@RequestMapping(path = "/napspayment/generateexcel")
 	@ResponseBody
 	public String generateExcel() {
+		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
+		file = "GW_" + randomWithSplittableRandom;
 		// create file log
 		traces.creatFileTransaction(file);
 		traces.writeInFileTransaction(folder, file, "*********** Start generateExcel() ************** ");
@@ -228,6 +234,8 @@ public class GWPaiementController {
 
 	@RequestMapping("/napspayment/index")
 	public String index() {
+		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
+		file = "GW_" + randomWithSplittableRandom;
 		// create file log
 		traces.creatFileTransaction(file);
 		traces.writeInFileTransaction(folder, file, "return to index.html");
@@ -238,6 +246,8 @@ public class GWPaiementController {
 
 	@RequestMapping(value = "/napspayment/authorization/token/{token}", method = RequestMethod.GET)
 	public String showPagePayment(@PathVariable(value = "token") String token, Model model) {
+		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
+		file = "GW_" + randomWithSplittableRandom;
 		// create file log
 		traces.creatFileTransaction(file);
 		traces.writeInFileTransaction(folder, file, "*********** Start showPagePayment ***********");
@@ -273,13 +283,15 @@ public class GWPaiementController {
 				List<MonthDto> monthValues = convertStringAGListToFR(monthNames);
 
 				demandeDto.setMonths(monthValues);
-				// if cmr don't accept transaction cof demandeDto.getIs_cof() = N don't show carte
-				if(demandeDto.getIs_cof() == null || demandeDto.getIs_cof().equals("N")) {
+				// if cmr don't accept transaction cof demandeDto.getIs_cof() = N don't show
+				// carte
+				if (demandeDto.getIs_cof() == null || demandeDto.getIs_cof().equals("N")) {
 					demandeDto.setDem_pan("");
 				}
-				// if cmr accept transaction cof demandeDto.getIs_cof() = Y show your carte saved
+				// if cmr accept transaction cof demandeDto.getIs_cof() = Y show your carte
+				// saved
 				model.addAttribute("demandeDto", demandeDto);
-				
+
 				if (demandeDto.getEtat_demande().equals("SW_PAYE") || demandeDto.getEtat_demande().equals("PAYE")) {
 					traces.writeInFileTransaction(folder, file, "Opération déjà effectuée");
 					demandeDto.setMsgRefus(
@@ -346,7 +358,8 @@ public class GWPaiementController {
 
 		} catch (Exception e) {
 			traces.writeInFileTransaction(folder, file,
-					"showPagePayment 500 DEMANDE_PAIEMENT misconfigured in DB or not existing token:[" + token + "]" + e);
+					"showPagePayment 500 DEMANDE_PAIEMENT misconfigured in DB or not existing token:[" + token + "]"
+							+ e);
 
 			traces.writeInFileTransaction(folder, file, "showPagePayment 500 exception" + e);
 			e.printStackTrace();
@@ -366,6 +379,8 @@ public class GWPaiementController {
 
 	@RequestMapping(path = "/napspayment/linkpayment1", produces = "application/json; charset=UTF-8")
 	public ResponseEntity<responseDto> getLink1(@RequestBody DemandePaiementDto demandeDto) {
+		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
+		file = "GW_" + randomWithSplittableRandom;
 
 		System.out.println("*********** Start getLink ************** ");
 		System.out.println("demandeDto commerçant recupérée : " + demandeDto.getComid());
@@ -429,6 +444,8 @@ public class GWPaiementController {
 
 	@PostMapping("/payer")
 	public String payer(Model model, @ModelAttribute("demandeDto") DemandePaiementDto demandeDto) {
+		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
+		file = "GW_" + randomWithSplittableRandom;
 		// create file log
 		traces.creatFileTransaction(file);
 		traces.writeInFileTransaction(folder, file, "Start payer ()");
@@ -474,7 +491,7 @@ public class GWPaiementController {
 			// Card info
 			cardnumber = demandeDto.getDem_pan();
 			token = "";
-			expirydate = demandeDto.getAnnee().substring(2,4).concat(demandeDto.getMois());
+			expirydate = demandeDto.getAnnee().substring(2, 4).concat(demandeDto.getMois());
 			holdername = "";
 			cvv = demandeDto.getDem_cvv();
 
@@ -533,8 +550,6 @@ public class GWPaiementController {
 
 		}
 
-		mesg_type = "0";
-
 		if (current_merchant.getCmrCodbqe() == null) {
 			traces.writeInFileTransaction(folder, file,
 					"payer 500 Merchant misconfigured in DB or not existing orderid:[" + orderid + "] and merchantid:["
@@ -573,31 +588,6 @@ public class GWPaiementController {
 			return page;
 		}
 
-		merchantname = current_merchant.getCmrNom();
-		websiteName = "";
-		websiteid = "";
-		String url = "", status = "", statuscode = "";
-
-		merc_codeactivite = current_merchant.getCmrCodactivite();
-		acqcode = current_merchant.getCmrCodbqe();
-		merchant_name = Util.pad_merchant(merchantname, 19, ' ');
-		traces.writeInFileTransaction(folder, file, "merchant_name : [" + merchant_name + "]");
-
-		merchant_city = "MOROCCO        ";
-		traces.writeInFileTransaction(folder, file, "merchant_city : [" + merchant_city + "]");
-
-		acq_type = "0000";
-		reason_code = "H";
-		transaction_condition = "6";
-		processing_code = "";
-		if (transactiontype.equals("0")) {
-			processing_code = "0";
-		} else if (transactiontype.equals("P")) {
-			processing_code = "P";
-		} else {
-			processing_code = "0";
-		}
-
 		int i_card_valid = Util.isCardValid(cardnumber);
 
 		if (i_card_valid == 1) {
@@ -621,10 +611,9 @@ public class GWPaiementController {
 
 		int i_card_type = Util.getCardIss(cardnumber);
 
-
 		try {
 			DemandePaiementDto dmdToEdit = demandePaiementService.findByIdDemande(demandeDto.getIddemande());
-			
+
 			dmdToEdit.setDem_pan(cardnumber);
 			dmdToEdit.setDem_cvv(cvv);
 			dmdToEdit.setType_carte(i_card_type + "");
@@ -669,39 +658,6 @@ public class GWPaiementController {
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
 			return page;
-		}
-
-		try {
-
-			mm = new String[2];
-			montanttrame = "";
-
-			mm = amount.split("\\.");
-			if (mm[0].length() == 1) {
-				montanttrame = amount + "0";
-			} else {
-				montanttrame = amount + "";
-			}
-
-			m = new String[2];
-			// num_trs = Util.formatageCHamps((dmdservice.getMAX_ID("HISTOAUTO_GATE",
-			// "HAT_ID") + 1) + "", 6);
-			m = montanttrame.split("\\.");
-			if (m[0].equals("0")) {
-				montanttrame = montanttrame.replace(".", "0");
-			} else
-				montanttrame = montanttrame.replace(".", "");
-			montanttrame = Util.formatageCHamps(montanttrame, 12);
-
-		} catch (Exception err3) {
-			traces.writeInFileTransaction(folder, file,
-					"authorization 500 Error during  amount formatting for given orderid:[" + orderid
-							+ "] and merchantid:[" + merchantid + "]" + err3);
-			demandeDto.setMsgRefus("Error during  amount formatting");
-			model.addAttribute("demandeDto", demandeDto);
-			page = "result";
-			return page;
-
 		}
 
 		JSONObject jso = new JSONObject();
@@ -838,6 +794,107 @@ public class GWPaiementController {
 			dmd.setDem_xid(threeDSServerTransID);
 			demandePaiementService.save(dmd);
 
+//			try {
+//				mm = new String[2];
+//				montanttrame = "";
+//
+//				mm = amount.split("\\.");
+//				if (mm[0].length() == 1) {
+//					montanttrame = amount + "0";
+//				} else {
+//					montanttrame = amount + "";
+//				}
+//
+//				m = new String[2];
+//				m = montanttrame.split("\\.");
+//				if (m[0].equals("0")) {
+//					montanttrame = montanttrame.replace(".", "0");
+//				} else
+//					montanttrame = montanttrame.replace(".", "");
+//				montanttrame = Util.formatageCHamps(montanttrame, 12);
+//
+//			} catch (Exception err3) {
+//				traces.writeInFileTransaction(folder, file,
+//						"authorization 500 Error during  amount formatting for given orderid:[" + orderid
+//								+ "] and merchantid:[" + merchantid + "]" + err3);
+//				demandeDto.setMsgRefus("Error during  amount formatting");
+//				model.addAttribute("demandeDto", demandeDto);
+//				page = "result";
+//				return page;
+//			}
+			
+			try {
+				montanttrame = "";
+
+				mm = new String[2];
+				String montantt = amount + "";
+
+				mm = montantt.split("\\.");
+				if (mm[1].length() == 1) {
+					montanttrame = amount + "0";
+				} else {
+					montanttrame = amount + "";
+				}
+
+				m = new String[2];
+				m = montanttrame.split("\\.");
+				if (m[1].equals("0")) {
+					montanttrame = montanttrame.replace(".", "0");
+				} else
+					montanttrame = montanttrame.replace(".", "");
+				montanttrame = Util.formatageCHamps(montanttrame, 12);
+			} catch (Exception err3) {
+				traces.writeInFileTransaction(folder, file,
+						"authorization 500 Error during  amount formatting for given orderid:[" + orderid
+								+ "] and merchantid:[" + merchantid + "]" + err3);
+				demandeDto.setMsgRefus("Error during  amount formatting");
+				model.addAttribute("demandeDto", demandeDto);
+				page = "result";
+				return page;
+			}
+
+			merchantname = current_merchant.getCmrNom();
+			websiteName = "";
+			websiteid = "";
+			String url = "", status = "", statuscode = "";
+
+			merc_codeactivite = current_merchant.getCmrCodactivite();
+			acqcode = current_merchant.getCmrCodbqe();
+			merchant_name = Util.pad_merchant(merchantname, 19, ' ');
+			traces.writeInFileTransaction(folder, file, "merchant_name : [" + merchant_name + "]");
+
+			merchant_city = "MOROCCO        ";
+			traces.writeInFileTransaction(folder, file, "merchant_city : [" + merchant_city + "]");
+
+			acq_type = "0000";
+			reason_code = "H";
+			transaction_condition = "6";
+			mesg_type = "0";
+
+			processing_code = "";
+			if (transactiontype.equals("0")) {
+				processing_code = "0";
+			} else if (transactiontype.equals("P")) {
+				processing_code = "P";
+			} else {
+				processing_code = "0";
+			}
+
+			// ajout cavv (cavv+eci) xid dans la trame
+			String champ_cavv = "";
+			xid = threeDSServerTransID;
+			if (cavv == null || eci == null) {
+				champ_cavv = null;
+				traces.writeInFileTransaction(folder, file, "cavv == null || eci == null");
+			} else if (cavv != null && eci != null) {
+				champ_cavv = cavv + eci;
+				traces.writeInFileTransaction(folder, file, "cavv != null && eci != null");
+				traces.writeInFileTransaction(folder, file, "champ_cavv : [" + champ_cavv + "]");
+			} else {
+				traces.writeInFileTransaction(folder, file, "champ_cavv = null");
+				champ_cavv = null;
+			}
+
 			boolean cvv_present = check_cvv_presence(cvv);
 			boolean is_reccuring = is_reccuring_check(recurring);
 			boolean is_first_trs = true;
@@ -868,6 +925,22 @@ public class GWPaiementController {
 				traces.writeInFileTransaction(folder, file, "not reccuring , normal cvv_present && !is_reccuring");
 				try {
 
+					/*
+					 * old old sans cavv et xid
+					 * tlv = new TLVEncoder().withField(Tags.tag0,
+					 * mesg_type).withField(Tags.tag1, cardnumber) .withField(Tags.tag3,
+					 * processing_code).withField(Tags.tag22, transaction_condition)
+					 * .withField(Tags.tag49, acq_type).withField(Tags.tag14, montanttrame)
+					 * .withField(Tags.tag15, currency).withField(Tags.tag23, reason_code)
+					 * .withField(Tags.tag18, "761454").withField(Tags.tag42, expirydate)
+					 * .withField(Tags.tag16, date).withField(Tags.tag17, heure)
+					 * .withField(Tags.tag10, merc_codeactivite).withField(Tags.tag8, "0" +
+					 * merchantid) .withField(Tags.tag9, merchantid).withField(Tags.tag66,
+					 * rrn).withField(Tags.tag67, cvv) .withField(Tags.tag11,
+					 * merchant_name).withField(Tags.tag12, merchant_city) .withField(Tags.tag90,
+					 * acqcode).encode();
+					 */
+
 					tlv = new TLVEncoder().withField(Tags.tag0, mesg_type).withField(Tags.tag1, cardnumber)
 							.withField(Tags.tag3, processing_code).withField(Tags.tag22, transaction_condition)
 							.withField(Tags.tag49, acq_type).withField(Tags.tag14, montanttrame)
@@ -877,7 +950,8 @@ public class GWPaiementController {
 							.withField(Tags.tag10, merc_codeactivite).withField(Tags.tag8, "0" + merchantid)
 							.withField(Tags.tag9, merchantid).withField(Tags.tag66, rrn).withField(Tags.tag67, cvv)
 							.withField(Tags.tag11, merchant_name).withField(Tags.tag12, merchant_city)
-							.withField(Tags.tag90, acqcode).encode();
+							.withField(Tags.tag90, acqcode).withField(Tags.tag167, champ_cavv)
+							.withField(Tags.tag168, xid).encode();
 
 					traces.writeInFileTransaction(folder, file, "tag0_request : [" + mesg_type + "]");
 					traces.writeInFileTransaction(folder, file, "tag1_request : [" + cardnumber + "]");
@@ -899,6 +973,8 @@ public class GWPaiementController {
 					traces.writeInFileTransaction(folder, file, "tag11_request : [" + merchant_name + "]");
 					traces.writeInFileTransaction(folder, file, "tag12_request : [" + merchant_city + "]");
 					traces.writeInFileTransaction(folder, file, "tag90_request : [" + acqcode + "]");
+					traces.writeInFileTransaction(folder, file, "tag167_request : [" + champ_cavv + "]");
+					traces.writeInFileTransaction(folder, file, "tag168_request : [" + xid + "]");
 
 				} catch (Exception err4) {
 					traces.writeInFileTransaction(folder, file,
@@ -1304,7 +1380,8 @@ public class GWPaiementController {
 
 			} catch (Exception e) {
 				traces.writeInFileTransaction(folder, file, "Error during  insert in histoautogate for given orderid");
-				traces.writeInFileTransaction(folder, file, "payer 500 Error during  insert in histoautogate for given orderid:[" + orderid + "]" + e);
+				traces.writeInFileTransaction(folder, file,
+						"payer 500 Error during  insert in histoautogate for given orderid:[" + orderid + "]" + e);
 
 			}
 
@@ -1495,7 +1572,9 @@ public class GWPaiementController {
 					demandePaiementService.save(dmd);
 
 				} catch (Exception e) {
-					traces.writeInFileTransaction(folder, file, "payer 500 Error during  DemandePaiement update RE for given orderid:[" + orderid + "]" + e);
+					traces.writeInFileTransaction(folder, file,
+							"payer 500 Error during  DemandePaiement update RE for given orderid:[" + orderid + "]"
+									+ e);
 					demandeDto.setMsgRefus(
 							"La transaction en cours n’a pas abouti (Error during  DemandePaiement update SW_REJET), votre compte ne sera pas débité, merci de réessayer .");
 					model.addAttribute("demandeDto", demandeDto);
@@ -1616,9 +1695,12 @@ public class GWPaiementController {
 			try {
 
 				// insertion htmlCreq dans la demandePaiement
-				dmd.setCreq(threeDsecureResponse.getHtmlCreq());
+				// dmd.setCreq(threeDsecureResponse.getHtmlCreq());
+				//dmd.setCreq(
+				//		"<form  action='https://acs2.sgmaroc.com:443/lacs2' method='post' enctype='application/x-www-form-urlencoded'><input type='hidden' name='creq' value='ewogICJtZXNzYWdlVmVyc2lvbiI6ICIyLjEuMCIsCiAgInRocmVlRFNTZXJ2ZXJUcmFuc0lEIjogIjBlYmU1ODEwLTlhMDMtNGYzZi05MDgzLTJlZWNhNjhiMjY2YSIsCiAgImFjc1RyYW5zSUQiOiAiMmM5MjAxNDgtNjhiOC00ZjA0LWJhODQtY2RiYTFlOTM5MDM3IiwKICAiY2hhbGxlbmdlV2luZG93U2l6ZSI6ICIwNSIsCiAgIm1lc3NhZ2VUeXBlIjogIkNSZXEiCn0=' /></form>");
 				dmd.setDem_xid(threeDSServerTransID);
 				demandeDto = demandePaiementService.save(dmd);
+				model.addAttribute("demandeDto", demandeDto);
 
 			} catch (Exception ex) {
 				traces.writeInFileTransaction(folder, file, "payer 500 Error during jso out processing " + ex);
@@ -1629,18 +1711,18 @@ public class GWPaiementController {
 				return page;
 			}
 		} else if (reponseMPI.equals("E")) {
-				// ********************* Cas responseMPI equal E
-				// *********************
-				traces.writeInFileTransaction(folder, file, "****** Cas responseMPI equal E ******");
-				traces.writeInFileTransaction(folder, file, "errmpi/idDemande : " + errmpi +"/" + idDemande);
-				dmd.setEtat_demande("MPI_DS_ERR");
-				demandePaiementService.save(dmd);
-				demandeDto.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Error 3DSS), votre compte ne sera pas débité, merci de réessayer .");
-				model.addAttribute("demandeDto", demandeDto);
-				page = "result";
-				return page;				
-			} else {
+			// ********************* Cas responseMPI equal E
+			// *********************
+			traces.writeInFileTransaction(folder, file, "****** Cas responseMPI equal E ******");
+			traces.writeInFileTransaction(folder, file, "errmpi/idDemande : " + errmpi + "/" + idDemande);
+			dmd.setEtat_demande("MPI_DS_ERR");
+			demandePaiementService.save(dmd);
+			demandeDto.setMsgRefus(
+					"La transaction en cours n’a pas abouti (Error 3DSS), votre compte ne sera pas débité, merci de réessayer .");
+			model.addAttribute("demandeDto", demandeDto);
+			page = "result";
+			return page;
+		} else {
 			switch (errmpi) {
 			case "COMMERCANT NON PARAMETRE":
 				traces.writeInFileTransaction(folder, file, "COMMERCANT NON PARAMETRE : " + idDemande);
@@ -1700,20 +1782,18 @@ public class GWPaiementController {
 			}
 		}
 
-		// ThreeDSecureResponse result = autorisationService.payer(demandeDto, folder,
-		// file);
-
-		String htmlCreq = "<form action='https://acs.naps.ma:443/lacs2' method='post' enctype='application/x-www-form-urlencoded'>"
-				+ "<input type='hidden' name='creq' value='ewogICJtZXNzYWdlVmVyc2lvbiI6ICIyLjEuMCIsCiAgInRocmVlRFNTZXJ2ZXJUcmFuc0lEIjogIjQxZDQ0ZTViLTBjOTYtNGVhNC05NjkxLTM1OWVmOGQ5NTdjMyIsCiAgImFjc1RyYW5zSUQiOiAiOTI3NTQyOGEtYzkzYi00ZWUzLTk3NDEtNDA4NzAzNDlmYzM2IiwKICAiY2hhbGxlbmdlV2luZG93U2l6ZSI6ICIwNSIsCiAgIm1lc3NhZ2VUeXBlIjogIkNSZXEiCn0=' />"
-				+ "</form>";
-		// demandeDto.setCreq(htmlCreq);
 		System.out.println("demandeDto htmlCreq : " + demandeDto.getCreq());
+		System.out.println("return page : " + page);
 
 		return page;
 	}
 
 	@RequestMapping(value = "/chalenge", method = RequestMethod.GET)
 	public String chlenge(Model model) {
+		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
+		file = "GW_" + randomWithSplittableRandom;
+		// create file log
+		traces.creatFileTransaction(file);
 		DemandePaiementDto dem = new DemandePaiementDto();
 		System.out.println("Start chalenge ()");
 
@@ -1734,15 +1814,54 @@ public class GWPaiementController {
 
 	@RequestMapping(value = "/napspayment/error/token/{token}", method = RequestMethod.GET)
 	public String error(@PathVariable(value = "token") String token, Model model) {
+		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
+		file = "GW_" + randomWithSplittableRandom;
 		// create file log
 		traces.creatFileTransaction(file);
 		traces.writeInFileTransaction(folder, file, "*********** Start error ************** ");
 		System.out.println("*********** Start error ************** ");
 
+		String page = "error";
+
+		traces.writeInFileTransaction(folder, file, "findByTokencommande token : " + token);
+		System.out.println("findByTokencommande token : " + token);
+
+		DemandePaiementDto current_dem = demandePaiementService.findByTokencommande(token);
+		String msgRefus = "Une erreur est survenue, merci de réessayer plus tard";
+
+		if (current_dem != null) {
+			traces.writeInFileTransaction(folder, file, "current_dem is exist OK");
+			System.out.println("current_dem is exist OK");
+			if (current_dem.getEtat_demande().equals("SW_PAYE") || current_dem.getEtat_demande().equals("PAYE")) {
+				msgRefus = "La transaction en cours n’a pas abouti (Opération déjà effectuée), votre compte ne sera pas débité, merci de réessayer .";
+				current_dem.setMsgRefus(msgRefus);
+				model.addAttribute("demandeDto", current_dem);
+				page = "error";
+			} else if (current_dem.getEtat_demande().equals("SW_REJET")) {
+				msgRefus = "La transaction en cours n’a pas abouti (Transaction rejetée), votre compte ne sera pas débité, merci de réessayer .";
+				current_dem.setMsgRefus(msgRefus);
+				model.addAttribute("demandeDto", current_dem);
+				page = "error";
+			} else {
+				msgRefus = "La transaction en cours n’a pas abouti (Problème authentification 3DSecure), votre compte ne sera pas débité, merci de contacter votre banque .";
+				current_dem.setMsgRefus(msgRefus);
+				model.addAttribute("demandeDto", current_dem);
+				page = "error";
+			}
+		} else {
+			DemandePaiementDto demande = new DemandePaiementDto();
+			msgRefus = "Votre commande est introuvable ";
+			demande.setMsgRefus(msgRefus);
+			model.addAttribute("demandeDto", demande);
+			traces.writeInFileTransaction(folder, file, "current_dem not found ");
+			System.out.println("current_dem null ");
+			page = "error";
+		}
+		
 		traces.writeInFileTransaction(folder, file, "*********** Fin error ************** ");
 		System.out.println("*********** Fin error ************** ");
 
-		return "error";
+		return page;
 	}
 
 	@PostMapping(value = "/saveDemande")
@@ -1805,6 +1924,8 @@ public class GWPaiementController {
 
 	@RequestMapping(value = "/napspayment/index2", method = RequestMethod.GET)
 	public String index2() {
+		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
+		file = "GW_" + randomWithSplittableRandom;
 		traces.creatFileTransaction(file);
 		traces.writeInFileTransaction(folder, file, "return to index2.html");
 		System.out.println("return to index2.html");
@@ -1814,6 +1935,8 @@ public class GWPaiementController {
 
 	@RequestMapping(value = "/napspayment/result", method = RequestMethod.GET)
 	public String result() {
+		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
+		file = "GW_" + randomWithSplittableRandom;
 		traces.creatFileTransaction(file);
 		System.out.println("return to result.html");
 
@@ -1975,15 +2098,15 @@ public class GWPaiementController {
 		return d_notime;
 
 	}
-	
+
 	@PostMapping(path = "/napspayment/linkpayment-xml", consumes = MediaType.APPLICATION_XML_VALUE)
 	@ResponseBody
-	 public String userInformation(@RequestBody UserDto user) {
-		
-			System.out.println(user.getName() + " " + user.getEmail());
-			
-	        return "User information saved successfully ::.";
-	    }
+	public String userInformation(@RequestBody UserDto user) {
+
+		System.out.println(user.getName() + " " + user.getEmail());
+
+		return "User information saved successfully ::.";
+	}
 // 
 //    @GetMapping("/napspayment/showFormForUpdate/{id}")
 //    public String updateForm(@PathVariable(value = "id") long id, Model model) {

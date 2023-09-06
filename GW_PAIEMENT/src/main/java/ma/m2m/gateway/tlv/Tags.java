@@ -37,6 +37,8 @@ public final class Tags {
 	public static String  tag80="080";
 	public static String  tag98="090";
 	public static String  tag601="601";
+	public static String  tag167="167";
+	public static String  tag168="168";
 	
 
 }
