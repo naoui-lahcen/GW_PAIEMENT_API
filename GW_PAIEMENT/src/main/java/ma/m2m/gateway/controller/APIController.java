@@ -221,7 +221,6 @@ public class APIController {
 		catch (JSONException jserr) {
 			traces.writeInFileTransaction(folder, file, "authorization 500 malformed json expression" + auths + jserr);
 			return "authorization 500 malformed json expression";
-
 		}
 
 		String capture, currency, orderid, recurring, amount, promoCode, transactionid, capture_id, merchantid,
@@ -280,7 +279,6 @@ public class APIController {
 		} catch (Exception jerr) {
 			traces.writeInFileTransaction(folder, file, "authorization 500 malformed json expression" + jerr);
 			return "authorization 500 malformed json expression";
-
 		}
 		// get cardnumber by token
 		if (!token.equals("") && token != null) {
@@ -357,7 +355,6 @@ public class APIController {
 
 			return "authorization 500 Error Already exist in PaiementRequest findByCommandeAndComid orderid:[" + orderid
 					+ "] and merchantid:[" + merchantid + "]";
-
 		}
 
 		int i_card_valid = Util.isCardValid(cardnumber);
@@ -368,7 +365,6 @@ public class APIController {
 
 			return "authorization 500 Card number length is incorrect orderid:[" + orderid + "] and merchantid:["
 					+ merchantid + "]";
-
 		}
 
 		if (i_card_valid == 2) {
@@ -378,7 +374,6 @@ public class APIController {
 
 			return "authorization 500 Card number  is not valid incorrect luhn check orderid:[" + orderid
 					+ "] and merchantid:[" + merchantid + "]";
-
 		}
 
 		int i_card_type = Util.getCardIss(cardnumber);
@@ -397,6 +392,9 @@ public class APIController {
 			dmd.setType_carte(i_card_type + "");
 			if (amount.equals("") || amount == null) {
 				amount = "0";
+			}
+			if(amount.contains(",")) {
+				amount = amount.replace(",", ".");
 			}
 			dmd.setMontant(Double.parseDouble(amount));
 			dmd.setNom(lname);
@@ -443,7 +441,6 @@ public class APIController {
 							+ err1);
 
 			return "authorization 500 Error during DEMANDE_PAIEMENT insertion for given orderid:[" + orderid + "]";
-
 		}
 
 		try {
@@ -714,7 +711,6 @@ public class APIController {
 						"authorization 500 cvv not set , reccuring flag set to N, cvv must be present in normal transaction");
 
 				return "authorization 500 cvv not set , reccuring flag set to N, cvv must be present in normal transaction";
-
 			}
 
 			// not reccuring , normal
@@ -780,7 +776,6 @@ public class APIController {
 
 					return "authorization 500 Error during switch tlv buildup for given orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]";
-
 				}
 
 				traces.writeInFileTransaction(folder, file, "Switch TLV Request :[" + tlv + "]");
@@ -835,12 +830,10 @@ public class APIController {
 				boolean s_conn = switchTCPClient.isConnected();
 
 				if (!s_conn) {
-
 					traces.writeInFileTransaction(folder, file, "Switch  malfunction cannot connect!!!");
 
 					return "authorization 500 Error Switch communication s_conn false" + "switch ip:[" + sw_s
 							+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]";
-
 				}
 
 				if (s_conn) {
@@ -864,7 +857,6 @@ public class APIController {
 				switch_ko = 1;
 				return "authorization 500 Error Switch communication ConnectException" + "switch ip:[" + sw_s
 						+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]";
-
 			}
 
 			catch (SocketTimeoutException e) {
@@ -892,7 +884,6 @@ public class APIController {
 				e.printStackTrace();
 				return "authorization 500 Error Switch communication General Exception" + "switch ip:[" + sw_s
 						+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]";
-
 			}
 
 			String resp = resp_tlv;
@@ -954,7 +945,6 @@ public class APIController {
 					traces.writeInFileTransaction(folder, file,
 							"authorization 500 Error during tlv Switch response parse" + "switch ip:[" + sw_s
 									+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-
 				}
 
 				// controle switch
@@ -965,7 +955,6 @@ public class APIController {
 							"authorization 500 Error during tlv Switch response parse tag1_resp tag null"
 									+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv
 									+ "]");
-
 				}
 
 				if (tag1_resp != null && tag1_resp.length() < 3) {
@@ -984,7 +973,6 @@ public class APIController {
 							"authorization 500 Error during tlv Switch response parse tag1_resp tag null"
 									+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv
 									+ "]");
-
 				}
 			}
 			traces.writeInFileTransaction(folder, file, "Switch TLV Respnose Processed");
@@ -1023,48 +1011,6 @@ public class APIController {
 				pan_auto = Util.formatagePan(cardnumber);
 				traces.writeInFileTransaction(folder, file, "getSWHistoAuto pan_auto/rrn/amount/date/merchantid : "
 						+ pan_auto + "/" + rrn + "/" + amount + "/" + date + "/" + merchantid);
-				// comment not used
-				/*
-				 * try {
-				 * 
-				 * swhist = swHistoAutoService.getSWHistoAuto(pan_auto, rrn, amount, date,
-				 * merchantid);
-				 * 
-				 * } catch (Exception ex) { traces.writeInFileTransaction(folder, file,
-				 * "authorization 500 Error during tlv Switch response cannot match switch history "
-				 * + "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" +
-				 * resp_tlv + "]");
-				 * 
-				 * return
-				 * "authorization 500 Error during tlv Switch response cannot match switch history "
-				 * + "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" +
-				 * resp_tlv + "]"; }
-				 */
-
-				/*
-				 * if (swhist == null) { traces.writeInFileTransaction(folder, file,
-				 * "authorization 500 Error during tlv Switch response cannot match switch history "
-				 * + "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" +
-				 * resp_tlv + "]");
-				 * 
-				 * return
-				 * "authorization 500 Error during tlv Switch response cannot match switch history "
-				 * + "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" +
-				 * resp_tlv + "]";
-				 * 
-				 * } tag20_resp_verified = swhist.getHat_coderep(); tag19_res_verified =
-				 * swhist.getHat_nautemt(); tag66_resp_verified = swhist.getHat_nrefce(); if
-				 * (tag20_resp_verified == null) { traces.writeInFileTransaction(folder, file,
-				 * "authorization 500 Error during tlv Switch response cannot match switch history "
-				 * + "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" +
-				 * resp_tlv + "]");
-				 * 
-				 * return
-				 * "authorization 500 Error during tlv Switch response cannot match switch history "
-				 * + "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" +
-				 * resp_tlv + "]"; }
-				 */
-
 			}
 
 			HistoAutoGateDto hist = null;
@@ -1164,7 +1110,6 @@ public class APIController {
 			} catch (Exception e) {
 				traces.writeInFileTransaction(folder, file, "authorization 500"
 						+ "Error during  insert in histoautogate for given orderid:[" + orderid + "]" + e);
-
 			}
 
 			traces.writeInFileTransaction(folder, file, "HistoAutoGate OK.");
@@ -1177,13 +1122,11 @@ public class APIController {
 
 			{
 				traces.writeInFileTransaction(folder, file, "SWITCH RESONSE CODE :[00]");
-
 				try {
 					traces.writeInFileTransaction(folder, file, "udapate etat demande : SW_PAYE ...");
 
 					dmd.setEtat_demande("SW_PAYE");
 					demandePaiementService.save(dmd);
-
 				} catch (Exception e) {
 					traces.writeInFileTransaction(folder, file,
 							"authorization 500 Error during DEMANDE_PAIEMENT update etat demande for given orderid:["
@@ -1218,14 +1161,11 @@ public class APIController {
 					}
 
 					if (trs_check != null) {
-
 						// do nothing
 						traces.writeInFileTransaction(folder, file, "trs_check != null do nothing for now ...");
-
 					} else {
 
 						traces.writeInFileTransaction(folder, file, "inserting into telec start ...");
-
 						try {
 
 							// insert into telec
@@ -1329,15 +1269,12 @@ public class APIController {
 						} catch (Exception e) {
 							exp_flag = 1;
 							traces.writeInFileTransaction(folder, file, "inserting into telec ko..do nothing" + e);
-
 						}
-
 					}
 					if (capture_status.equalsIgnoreCase("Y") && exp_flag == 1)
 						capture_status.equalsIgnoreCase("N");
 
 					traces.writeInFileTransaction(folder, file, "Automatic capture end.");
-
 				}
 
 			} else {
@@ -1359,7 +1296,6 @@ public class APIController {
 
 					return "authorization 500 Error during  DemandePaiement update SW_REJET for given orderid:["
 							+ orderid + "]";
-
 				}
 
 				traces.writeInFileTransaction(folder, file, "update Demandepaiement status to SW_REJET OK.");
@@ -1376,9 +1312,7 @@ public class APIController {
 			} catch (Exception e) {
 				traces.writeInFileTransaction(folder, file,
 						"authorization 500 Error during  paymentid generation for given orderid:[" + orderid + "]" + e);
-
 				return "authorization 500 Error during  paymentid generation for given orderid:[" + orderid + "]";
-
 			}
 
 			traces.writeInFileTransaction(folder, file, "Generating paymentid OK");
@@ -1401,7 +1335,6 @@ public class APIController {
 						"authorization 500 Error during authdata preparation orderid:[" + orderid + "]" + e);
 
 				return "authorization 500 Error during authdata preparation orderid:[" + orderid + "]";
-
 			}
 
 			// reccurent transaction processing
@@ -1439,9 +1372,7 @@ public class APIController {
 				traces.writeInFileTransaction(folder, file,
 						"authorization 500 Error during jso out processing given authnumber:[" + authnumber + "]"
 								+ jsouterr);
-
 				return "authorization 500 Error during jso out processing given authnumber:[" + authnumber + "]";
-
 			}
 
 			System.out.println("autorization api response frictionless :  [" + jso.toString() + "]");
@@ -1495,12 +1426,10 @@ public class APIController {
 				System.out.println("autorization api response chalenge :  [" + jso.toString() + "]");
 				traces.writeInFileTransaction(folder, file,
 						"autorization api response chalenge :  [" + jso.toString() + "]");
-
 			} catch (Exception ex) {
 				traces.writeInFileTransaction(folder, file, "authorization 500 Error during jso out processing " + ex);
 
 				return "authorization 500 Error during jso out processing ";
-
 			}
 		} else if (reponseMPI.equals("E")) {
 			// ********************* Cas responseMPI equal E
@@ -1751,6 +1680,9 @@ public class APIController {
 			dmd.setFailURL(failURL);
 			if (amount.equals("") || amount == null) {
 				amount = "0";
+			}
+			if(amount.contains(",")) {
+				amount = amount.replace(",", ".");
 			}
 			dmd.setMontant(Double.parseDouble(amount));
 			dmd.setNom(lname);

@@ -333,8 +333,6 @@ public class ACSController {
 					traces.writeInFileTransaction(folder, file,
 							"authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 									+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]" + e);
-
-					// response.sendRedirect("GW-AUTO-INVALIDE-DEM");
 					response.sendRedirect(link_result);
 				}
 
@@ -342,8 +340,6 @@ public class ACSController {
 					traces.writeInFileTransaction(folder, file,
 							"authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 									+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]");
-
-					// response.sendRedirect("GW-AUTO-INVALIDE-DEM");
 					response.sendRedirect(link_result);
 				}
 
@@ -351,8 +347,6 @@ public class ACSController {
 					traces.writeInFileTransaction(folder, file,
 							"authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 									+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]");
-
-					// response.sendRedirect("GW-AUTO-INVALIDE-DEM");
 					response.sendRedirect(link_result);
 				}
 
@@ -360,8 +354,6 @@ public class ACSController {
 					traces.writeInFileTransaction(folder, file,
 							"authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 									+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]");
-
-					// response.sendRedirect("GW-AUTO-INVALIDE-DEM");
 					response.sendRedirect(link_result);
 				}
 				InfoCommercantDto current_infoCommercant = null;
@@ -372,8 +364,6 @@ public class ACSController {
 					traces.writeInFileTransaction(folder, file,
 							"authorization 500 InfoCommercant misconfigured in DB or not existing orderid:[" + orderid
 									+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]" + e);
-
-					// response.sendRedirect("GW-AUTO-INVALIDE-DEM");
 					response.sendRedirect(link_result);
 				}
 
@@ -382,8 +372,6 @@ public class ACSController {
 							"authorization 500 InfoCommercantDto misconfigured in DB or not existing orderid:["
 									+ orderid + "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid
 									+ "]");
-
-					// response.sendRedirect("GW-AUTO-INVALIDE-DEM");
 					response.sendRedirect(link_result);
 				}
 
@@ -430,7 +418,6 @@ public class ACSController {
 					date = formatdate.format(new Date());
 					heure = formatheure.format(new Date());
 					rrn = Util.getGeneratedRRN();
-
 				} catch (Exception err2) {
 					traces.writeInFileTransaction(folder, file,
 							"authorization 500 Error during  date formatting for given orderid:[" + orderid
@@ -487,7 +474,6 @@ public class ACSController {
 						montanttrame = "";
 
 						mm = new String[2];
-						
 						System.out.println("montant v0 : " + amount);
 						traces.writeInFileTransaction(folder, file, "montant v0 : " + amount);
 						
@@ -503,7 +489,7 @@ public class ACSController {
 						String montantt = amount + "";
 
 						mm = montantt.split("\\.");
-						if (mm[0].length() == 1) {
+						if (mm[1].length() == 1) {
 							montanttrame = amount + "0";
 						} else {
 							montanttrame = amount + "";
@@ -563,10 +549,8 @@ public class ACSController {
 					traces.writeInFileTransaction(folder, file, "Preparing Switch TLV Request start ...");
 
 					if (!cvv_present && !is_reccuring) {
-						traces.writeInFileTransaction(folder, file, "authorization 500"
-								+ "cvv not set , reccuring flag set to N, cvv must be present in normal transaction");
-
-						// response.sendRedirect(redirectFailURL(dmd, folder, file));
+						traces.writeInFileTransaction(folder, file,
+								"authorization 500 cvv not set , reccuring flag set to N, cvv must be present in normal transaction");
 						response.sendRedirect(link_result);
 					}
 
@@ -631,10 +615,7 @@ public class ACSController {
 							traces.writeInFileTransaction(folder, file,
 									"authorization 500 Error during switch tlv buildup for given orderid:[" + orderid
 											+ "] and merchantid:[" + merchantid + "]" + err4);
-
-							// response.sendRedirect(redirectFailURL(dmd, folder, file));
 							response.sendRedirect(link_result);
-
 						}
 
 						traces.writeInFileTransaction(folder, file, "Switch TLV Request :[" + tlv + "]");
@@ -660,7 +641,7 @@ public class ACSController {
 						 * } catch (Exception e) { traces.writeInFileTransaction(folder, file,
 						 * "Switch TLV Request ecncoding error " + e); e.printStackTrace(); }
 						 */
-
+						
 					}
 
 					// reccuring
@@ -689,11 +670,9 @@ public class ACSController {
 						boolean s_conn = switchTCPClient.isConnected();
 
 						if (!s_conn) {
-
 							traces.writeInFileTransaction(folder, file, "Switch  malfunction cannot connect!!!");
 
 							response.sendRedirect(redirectFailURL(dmd, folder, file));
-
 						}
 
 						if (s_conn) {
@@ -709,15 +688,11 @@ public class ACSController {
 					} catch (UnknownHostException e) {
 						traces.writeInFileTransaction(folder, file, "Switch  malfunction UnknownHostException !!!" + e);
 						switch_ko = 1;
-						// response.sendRedirect(redirectFailURL(dmd, folder, file));
 						response.sendRedirect(link_result);
-
 					} catch (java.net.ConnectException e) {
 						traces.writeInFileTransaction(folder, file, "Switch  malfunction ConnectException !!!" + e);
 						switch_ko = 1;
-						// response.sendRedirect(redirectFailURL(dmd, folder, file));
 						response.sendRedirect(link_result);
-
 					}
 
 					catch (SocketTimeoutException e) {
@@ -745,9 +720,7 @@ public class ACSController {
 						traces.writeInFileTransaction(folder, file, "Switch  malfunction Exception!!!" + e);
 						switch_ko = 1;
 						e.printStackTrace();
-						// response.sendRedirect(redirectFailURL(dmd, folder, file));
 						response.sendRedirect(link_result);
-
 					}
 
 					String resp = resp_tlv;
@@ -844,7 +817,6 @@ public class ACSController {
 									"authorization 500 Error during tlv Switch response parse tag1_resp tag null"
 											+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : ["
 											+ resp_tlv + "]");
-
 						}
 					}
 					traces.writeInFileTransaction(folder, file, "Switch TLV Respnose Processed");
@@ -877,52 +849,13 @@ public class ACSController {
 					tag66_resp_verified = tag66_resp;
 					String s_status, pan_auto = "";
 
-					/*
-					 * if(switch_ko==1) { pan_auto = Util.formatagePan(cardnumber);
-					 * dmdservice.getSWHistoAutoN(pan_auto, rrn, amount, date, merchantid); }
-					 */
 					// SWHistoAutoDto swhist = null;
+					
 					if (switch_ko == 1) {
 						pan_auto = Util.formatagePan(cardnumber);
 						traces.writeInFileTransaction(folder, file,
 								"getSWHistoAuto pan_auto/rrn/amount/date/merchantid : " + pan_auto + "/" + rrn + "/"
 										+ amount + "/" + date + "/" + merchantid);
-						// comment not used
-						/*
-						 * try {
-						 * 
-						 * swhist = swHistoAutoService.getSWHistoAuto(pan_auto, rrn, amount, date,
-						 * merchantid);
-						 * 
-						 * } catch (Exception ex) { traces.writeInFileTransaction(folder, file,
-						 * "authorization 500 Error during tlv Switch response cannot match switch history "
-						 * + "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" +
-						 * resp_tlv + "]");
-						 * 
-						 * response.sendRedirect(redirectFailURL(dmd, folder, file)); }
-						 */
-
-						/*
-						 * if (swhist == null) { traces.writeInFileTransaction(folder, file,
-						 * "authorization 500" +
-						 * "Error during tlv Switch response cannot match switch history " +
-						 * "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" +
-						 * resp_tlv + "]");
-						 * 
-						 * response.sendRedirect(redirectFailURL(dmd, folder, file));
-						 * 
-						 * }
-						 * 
-						 * tag20_resp_verified = swhist.getHat_coderep(); tag19_res_verified =
-						 * swhist.getHat_nautemt(); tag66_resp_verified = swhist.getHat_nrefce(); if
-						 * (tag20_resp_verified == null) { traces.writeInFileTransaction(folder, file,
-						 * "authorization 500" +
-						 * "Error during tlv Switch response cannot match switch history " +
-						 * "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" +
-						 * resp_tlv + "]");
-						 * 
-						 * response.sendRedirect(redirectFailURL(dmd, folder, file)); }
-						 */
 					}
 					HistoAutoGateDto hist = null;
 					Integer Ihist_id = null;
@@ -1022,7 +955,6 @@ public class ACSController {
 						traces.writeInFileTransaction(folder, file,
 								"authorization 500 Error during  insert in histoautogate for given orderid:[" + orderid
 										+ "]" + e);
-
 					}
 
 					traces.writeInFileTransaction(folder, file, "HistoAutoGate OK.");
@@ -1076,10 +1008,8 @@ public class ACSController {
 							}
 
 							if (trs_check != null) {
-
 								// do nothing
 								traces.writeInFileTransaction(folder, file, "trs_check != null do nothing for now ...");
-
 							} else {
 
 								traces.writeInFileTransaction(folder, file, "inserting into telec start ...");
@@ -1188,7 +1118,6 @@ public class ACSController {
 									exp_flag = 1;
 									traces.writeInFileTransaction(folder, file,
 											"inserting into telec ko..do nothing " + e);
-
 								}
 
 							}
@@ -1196,7 +1125,6 @@ public class ACSController {
 								capture_status.equalsIgnoreCase("N");
 
 							traces.writeInFileTransaction(folder, file, "Automatic capture end.");
-
 						}
 
 					} else {
@@ -1205,7 +1133,6 @@ public class ACSController {
 						traces.writeInFileTransaction(folder, file, "SWITCH RESONSE CODE :[" + tag20_resp + "]");
 
 						try {
-
 							traces.writeInFileTransaction(folder, file,
 									"transaction declinded ==> update Demandepaiement status to SW_REJET ...");
 
@@ -1216,13 +1143,9 @@ public class ACSController {
 							traces.writeInFileTransaction(folder, file,
 									"authorization 500 Error during  DemandePaiement update SW_REJET for given orderid:["
 											+ orderid + "]" + e);
-
 							response.sendRedirect(redirectFailURL(dmd, folder, file));
-
 						}
-
 						traces.writeInFileTransaction(folder, file, "update Demandepaiement status to SW_REJET OK.");
-
 					}
 
 					traces.writeInFileTransaction(folder, file, "Generating paymentid...");
@@ -1236,7 +1159,6 @@ public class ACSController {
 						traces.writeInFileTransaction(folder, file,
 								"authorization 500 Error during  paymentid generation for given orderid:[" + orderid
 										+ "]" + e);
-
 						response.sendRedirect(redirectFailURL(dmd, folder, file));
 					}
 
@@ -1263,9 +1185,7 @@ public class ACSController {
 					} catch (Exception e) {
 						traces.writeInFileTransaction(folder, file,
 								"authorization 500 Error during authdata preparation orderid:[" + orderid + "]" + e);
-
 						response.sendRedirect(redirectFailURL(dmd, folder, file));
-
 					}
 
 					// reccurent transaction processing
@@ -1318,7 +1238,6 @@ public class ACSController {
 						traces.writeInFileTransaction(folder, file,
 								"authorization 500 Error during jso out processing given authnumber:[" + authnumber
 										+ "]" + jsouterr);
-
 						response.sendRedirect(redirectFailURL(dmd, folder, file));
 						return;
 					}
@@ -1366,9 +1285,7 @@ public class ACSController {
 					} catch (Exception ex) {
 						traces.writeInFileTransaction(folder, file,
 								"authorization 500 Error during jso out processing " + ex);
-
 						response.sendRedirect(redirectFailURL(dmd, folder, file));
-
 					}
 				} else if (reponseMPI.equals("E")) {
 					// ********************* Cas responseMPI equal E
@@ -1477,14 +1394,12 @@ public class ACSController {
 					msgRefus = "La transaction en cours n’a pas abouti (TransStatus = N), votre compte ne sera pas débité, merci de réessayer .";
 					response.sendRedirect(link_result);
 				}
-
 			}
 		} catch (Exception ex) {
 			traces.writeInFileTransaction(folder, file, "ACSController RETOUR ACS =====> Exception " + ex);
 			System.out.println("ACSController RETOUR ACS =====> Exception " + ex);
 			response.sendRedirect(link_result);
 		}
-
 	}
 
 	public String redirectFailURL(DemandePaiementDto demandePaiementDto, String folder, String file)
