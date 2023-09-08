@@ -15,5 +15,7 @@ import ma.m2m.gateway.model.Commercant;
 public interface CommercantDao extends JpaRepository<Commercant, String> {
 	
 	Commercant findByCmrCode(String numCMR);
+	
+	Commercant findByCmrNumcmr(String cmrNumcmr);
 
 }

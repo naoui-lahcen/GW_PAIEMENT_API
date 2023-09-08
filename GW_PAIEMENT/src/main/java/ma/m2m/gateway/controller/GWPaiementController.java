@@ -308,7 +308,7 @@ public class GWPaiementController {
 					try {
 						merchantid = demandeDto.getComid();
 						orderid = demandeDto.getCommande();
-						merchant = commercantService.findByCmrCode(merchantid);
+						merchant = commercantService.findByCmrNumcmr(merchantid);
 						if (merchant != null) {
 							demandeDto.setCommercantDto(merchant);
 						}
@@ -506,7 +506,7 @@ public class GWPaiementController {
 
 		CommercantDto current_merchant = null;
 		try {
-			current_merchant = commercantService.findByCmrCode(merchantid);
+			current_merchant = commercantService.findByCmrNumcmr(merchantid);
 		} catch (Exception e) {
 			traces.writeInFileTransaction(folder, file,
 					"payer 500 Merchant misconfigured in DB or not existing orderid:[" + orderid + "] and merchantid:["

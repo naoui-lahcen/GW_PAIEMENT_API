@@ -328,7 +328,7 @@ public class ACSController {
 
 				CommercantDto current_merchant = null;
 				try {
-					current_merchant = commercantService.findByCmrCode(merchantid);
+					current_merchant = commercantService.findByCmrNumcmr(merchantid);
 				} catch (Exception e) {
 					traces.writeInFileTransaction(folder, file,
 							"authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid

@@ -11,5 +11,7 @@ import ma.m2m.gateway.dto.CommercantDto;
 public interface CommercantService {
 	
 	CommercantDto findByCmrCode(String numCMR);
+	
+	CommercantDto findByCmrNumcmr(String cmrNumcmr);
 
 }

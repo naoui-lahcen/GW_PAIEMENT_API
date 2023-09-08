@@ -26,4 +26,9 @@ public class CommercantServiceImpl implements CommercantService {
 		return commercantMapper.model2VO(commercantDao.findByCmrCode(numCMR));
 	}
 
+	@Override
+	public CommercantDto findByCmrNumcmr(String cmrNumcmr) {
+		return commercantMapper.model2VO(commercantDao.findByCmrNumcmr(cmrNumcmr));
+	}
+
 }
