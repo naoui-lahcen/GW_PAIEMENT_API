@@ -1765,6 +1765,9 @@ public class APIController {
 
 			// Merchant info
 			jso.put("merchantid", merchantid);
+			
+			traces.writeInFileTransaction(folder, file, "json : " + jso.toString());
+			System.out.println("json : " + jso.toString());
 
 		} catch (Exception err8) {
 			traces.writeInFileTransaction(folder, file,
