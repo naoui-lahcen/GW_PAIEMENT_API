@@ -1,5 +1,7 @@
 package ma.m2m.gateway.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ma.m2m.gateway.repository.HistoAutoGateDao;
@@ -50,6 +52,16 @@ public class HistoAutoGateServiceImpl implements HistoAutoGateService {
 	public Integer getMAX_ID() {
 		Integer idHisG = histoAutoGateDao.getMAX_ID();
 		return idHisG;
+	}
+
+	@Override
+	public List<HistoAutoGateDto> findAll() {
+		return histoAutoGateMapper.modelList2VOList(histoAutoGateDao.findAll());
+	}
+
+	@Override
+	public List<HistoAutoGateDto> findByHatNumcmr(String numCmr) {
+		return histoAutoGateMapper.modelList2VOList(histoAutoGateDao.findByHatNumcmr(numCmr));
 	}
 
 }

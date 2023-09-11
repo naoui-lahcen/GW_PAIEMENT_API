@@ -219,7 +219,7 @@ public class GWPaiementController {
 		// pour tester la generation du fichier
 		GenerateExcel excel = new GenerateExcel();
 		try {
-			excel.generateExcel();
+			excel.generateExpExcel();
 			msg = "le fichier excel est généré avec succès";
 		} catch (Exception ex) {
 			msg = "echec lors de la génération du fichier excel";
@@ -229,7 +229,25 @@ public class GWPaiementController {
 
 		System.out.println("*********** Fin generateExcel() ************** ");
 
-		return "OK";
+		return msg;
+	}
+
+	@RequestMapping(value = "/napspayment/histo/exportexcel/{merchantid}", method = RequestMethod.GET)
+	public void exportToExcel(HttpServletResponse response,@PathVariable(value = "merchantid") String merchantid) throws IOException {
+		
+		response.setContentType("application/octet-stream");
+		DateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
+		String currentDateTime = dateFormatter.format(new Date());
+		String headerKey = "Content-Disposition";
+		String headerValue = "attachment; filename=users_" + currentDateTime + ".xlsx";
+		response.setHeader(headerKey, headerValue);
+		
+		//List<HistoAutoGateDto> listHistoGate = histoAutoGateService.findAll();
+		List<HistoAutoGateDto> listHistoGate = histoAutoGateService.findByHatNumcmr(merchantid);
+		
+		GenerateExcel excelExporter = new GenerateExcel(listHistoGate);
+		
+		excelExporter.export(response);
 	}
 
 	@RequestMapping("/napspayment/index")

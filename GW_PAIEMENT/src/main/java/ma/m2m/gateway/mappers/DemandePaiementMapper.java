@@ -1,5 +1,6 @@
 package ma.m2m.gateway.mappers;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.mapstruct.Mapper;
@@ -37,7 +38,7 @@ public class DemandePaiementMapper {
 	
 	public List<DemandePaiementDto> modelList2VOList(List<DemandePaiement> vos) {
 		DemandePaiementDto model = null;
-		List<DemandePaiementDto> dtos = null;
+		List<DemandePaiementDto> dtos = new ArrayList<>();
 		if (vos != null) {
 			for (DemandePaiement vo : vos) {
 		

@@ -1,5 +1,7 @@
 package ma.m2m.gateway.service;
 
+import java.util.List;
+
 import ma.m2m.gateway.dto.HistoAutoGateDto;
 
 /*
@@ -17,6 +19,10 @@ public interface HistoAutoGateService {
 	HistoAutoGateDto findByHatNumCommandeAndHatNumcmr(String commande, String numCmr);
 	
 	HistoAutoGateDto findByHatNumCommandeAndHatNautemtAndHatNumcmr(String commande, String numAuth, String numCmr);
+	
+	List<HistoAutoGateDto> findByHatNumcmr(String numCmr);
+	
+	List<HistoAutoGateDto> findAll();
 	
 	Integer getMAX_ID();
 }

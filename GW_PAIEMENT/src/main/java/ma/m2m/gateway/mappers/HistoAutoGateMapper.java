@@ -1,5 +1,8 @@
 package ma.m2m.gateway.mappers;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import ma.m2m.gateway.Utils.Objects;
 import ma.m2m.gateway.dto.HistoAutoGateDto;
 import ma.m2m.gateway.model.HistoAutoGate;
@@ -28,5 +31,20 @@ public class HistoAutoGateMapper {
 			Objects.copyProperties(model, vo);
 		}
 		return model;
+	}
+	
+	public List<HistoAutoGateDto> modelList2VOList(List<HistoAutoGate> vos) {
+		HistoAutoGateDto model = null;
+		List<HistoAutoGateDto> dtos = new ArrayList<>();
+		if (vos != null) {
+			for (HistoAutoGate vo : vos) {
+		
+			model = new HistoAutoGateDto();
+			Objects.copyProperties(model, vo);
+			dtos.add(model);
+			}
+
+		}
+		return dtos;
 	}
 }
