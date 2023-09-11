@@ -4118,7 +4118,7 @@ public class APIController {
 		DateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
 		String currentDateTime = dateFormatter.format(new Date());
 		String headerKey = "Content-Disposition";
-		String headerValue = "attachment; filename=users_" + currentDateTime + ".xlsx";
+		String headerValue = "attachment; filename=HistoriqueTrs_" + currentDateTime + ".xlsx";
 		response.setHeader(headerKey, headerValue);
 
 		JSONObject jsonOrequest = null;
@@ -4140,13 +4140,24 @@ public class APIController {
 		} catch (JSONException jserr) {
 			traces.writeInFileTransaction(folder, file, "exportToExcel 500 malformed json expression" + req + jserr);
 		}
+
+		try {
+			
+			//List<HistoAutoGateDto> listHistoGate = histoAutoGateService.findAll();
+			List<HistoAutoGateDto> listHistoGate = histoAutoGateService.findByHatNumcmr(merchantid);
+
+			GenerateExcel excelExporter = new GenerateExcel(listHistoGate);
+			
+			excelExporter.export(response);
+			
+		} catch (Exception e) {
+			traces.writeInFileTransaction(folder, file, "exportToExcel 500 merchantid:[" + merchantid + "]");
+			traces.writeInFileTransaction(folder, file, "exportToExcel 500 exception" + e);
+			e.printStackTrace();
+		}
 		
-		//List<HistoAutoGateDto> listHistoGate = histoAutoGateService.findAll();
-		List<HistoAutoGateDto> listHistoGate = histoAutoGateService.findByHatNumcmr(merchantid);
-
-		GenerateExcel excelExporter = new GenerateExcel(listHistoGate);
-
-		excelExporter.export(response);
+		traces.writeInFileTransaction(folder, file, "*********** Fin exportToExcel ***********");
+		System.out.println("*********** Fin exportToExcel ***********");
 	}
 
 	@RequestMapping(path = "/napspayment/cpautorisation", produces = "application/json; charset=UTF-8")

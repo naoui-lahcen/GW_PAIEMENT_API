@@ -234,20 +234,40 @@ public class GWPaiementController {
 
 	@RequestMapping(value = "/napspayment/histo/exportexcel/{merchantid}", method = RequestMethod.GET)
 	public void exportToExcel(HttpServletResponse response,@PathVariable(value = "merchantid") String merchantid) throws IOException {
+		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
+		file = "GW_" + randomWithSplittableRandom;
+		// create file log
+		traces.creatFileTransaction(file);
+		traces.writeInFileTransaction(folder, file, "*********** Start exportToExcel ***********");
+		System.out.println("*********** Start exportToExcel ***********");
+
+		traces.writeInFileTransaction(folder, file, "findByHatNumcmr merchantid : " + merchantid);
+		System.out.println("findByHatNumcmr merchantid : " + merchantid);
 		
 		response.setContentType("application/octet-stream");
 		DateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
 		String currentDateTime = dateFormatter.format(new Date());
 		String headerKey = "Content-Disposition";
-		String headerValue = "attachment; filename=users_" + currentDateTime + ".xlsx";
+		String headerValue = "attachment; filename=HistoriqueTrs_" + currentDateTime + ".xlsx";
 		response.setHeader(headerKey, headerValue);
+
+		try {
+			
+			//List<HistoAutoGateDto> listHistoGate = histoAutoGateService.findAll();
+			List<HistoAutoGateDto> listHistoGate = histoAutoGateService.findByHatNumcmr(merchantid);
+			
+			GenerateExcel excelExporter = new GenerateExcel(listHistoGate);
+			
+			excelExporter.export(response);
+			
+		} catch (Exception e) {
+			traces.writeInFileTransaction(folder, file, "exportToExcel 500 merchantid:[" + merchantid + "]");
+			traces.writeInFileTransaction(folder, file, "exportToExcel 500 exception" + e);
+			e.printStackTrace();
+		}
 		
-		//List<HistoAutoGateDto> listHistoGate = histoAutoGateService.findAll();
-		List<HistoAutoGateDto> listHistoGate = histoAutoGateService.findByHatNumcmr(merchantid);
-		
-		GenerateExcel excelExporter = new GenerateExcel(listHistoGate);
-		
-		excelExporter.export(response);
+		traces.writeInFileTransaction(folder, file, "*********** Fin exportToExcel ***********");
+		System.out.println("*********** Fin exportToExcel ***********");
 	}
 
 	@RequestMapping("/napspayment/index")

@@ -79,7 +79,7 @@ public class GenerateExcel {
 
 	private void writeHeaderLine() {
 
-		sheet = workbook.createSheet("HistoriqueTRs");
+		sheet = workbook.createSheet("HistoriqueTrs");
 
 		Row row = sheet.createRow(0);
 
