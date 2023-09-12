@@ -288,8 +288,8 @@ public class GWPaiementController {
 		file = "GW_" + randomWithSplittableRandom;
 		// create file log
 		traces.creatFileTransaction(file);
-		traces.writeInFileTransaction(folder, file, "*********** Start showPagePayment ***********");
-		System.out.println("*********** Start showPagePayment ***********");
+		traces.writeInFileTransaction(folder, file, "*********** Start affichage page ***********");
+		System.out.println("*********** Start affichage page ***********");
 
 		traces.writeInFileTransaction(folder, file, "findByTokencommande token : " + token);
 		System.out.println("findByTokencommande token : " + token);
@@ -305,9 +305,9 @@ public class GWPaiementController {
 			demandeDto = demandePaiementService.findByTokencommande(token);
 
 			if (demandeDto != null) {
-				System.out.println("DemandePaiement exist Iddemande/Commande : " + demandeDto.getIddemande() + "/" + demandeDto.getCommande());
+				System.out.println("DemandePaiement is found idDemande/Commande : " + demandeDto.getIddemande() + "/" + demandeDto.getCommande());
 				traces.writeInFileTransaction(folder, file,
-						"DemandePaiement exist Iddemande/Commande : " + demandeDto.getIddemande() + "/" + demandeDto.getCommande());
+						"DemandePaiement is found iddemande/Commande : " + demandeDto.getIddemande() + "/" + demandeDto.getCommande());
 
 				// get list of years + 10
 				int currentYear = Year.now().getValue();
@@ -325,6 +325,7 @@ public class GWPaiementController {
 				// carte
 				if (demandeDto.getIs_cof() == null || demandeDto.getIs_cof().equals("N")) {
 					demandeDto.setDem_pan("");
+					demandeDto.setDem_cvv("");
 				}
 				// if cmr accept transaction cof demandeDto.getIs_cof() = Y show your carte
 				// saved
@@ -378,8 +379,8 @@ public class GWPaiementController {
 					}
 				}
 			} else {
-				traces.writeInFileTransaction(folder, file, "demandeDto null token : " + token);
-				System.out.println("demandeDto null token : " + token);
+				traces.writeInFileTransaction(folder, file, "demandeDto not found token : " + token);
+				System.out.println("demandeDto not found token : " + token);
 				demandeDto = new DemandePaiementDto();
 				demandeDto.setMsgRefus("DEMANDE_PAIEMENT not fount in DB");
 				model.addAttribute("demandeDto", demandeDto);
@@ -399,8 +400,8 @@ public class GWPaiementController {
 			page = "result";
 		}
 
-		traces.writeInFileTransaction(folder, file, "*********** Fin showPagePayment ************** ");
-		System.out.println("*********** Fin showPagePayment ************** ");
+		traces.writeInFileTransaction(folder, file, "*********** Fin affichage page ************** ");
+		System.out.println("*********** Fin affichage page ************** ");
 
 		return page;
 	}

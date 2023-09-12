@@ -86,6 +86,7 @@ public class DemandePaiementDto implements Serializable {
 	private GalerieDto galerieDto;
 	private String msgRefus;
 	private String transactiontype;
+	private boolean condition;
 	
 	private String creq;
 	private List<Integer> years;
@@ -504,6 +505,13 @@ public class DemandePaiementDto implements Serializable {
 	}
 	public void setMonths(List<MonthDto> months) {
 		this.months = months;
+	}
+	
+	public boolean isCondition() {
+		return condition;
+	}
+	public void setCondition(boolean condition) {
+		this.condition = condition;
 	}
 	public DemandePaiementDto() {
 		super();
