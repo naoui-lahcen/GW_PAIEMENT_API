@@ -17,6 +17,12 @@
       <!------ Include the above in your HEAD tag ---------->
       <link rel="stylesheet"
          href="https://use.fontawesome.com/releases/v5.0.8/css/all.css">
+        
+<style>
+ .dialog {
+	 display : none;
+ }
+</style>	 
    </head>
    <body>
       <div class="container">
@@ -97,21 +103,29 @@
                   </div>
                   <form role="form" method="POST" th:action="@{/}">
                      <div class="form-group row">
-                        <label for="typeCarte" class="col-sm-3 col-form-label">TYPE
-                        CARTE BANCAIRE</label>
-                        <div class="col-sm-3">
-                           <select class="form-control">
-                              <option value="1">VISA</option>
-                              <option value="2">MASTERCARD</option>
-                              <option value="3">MAESTRO</option>
-                           </select>
-                        </div>
+<!--                        <label for="typeCarte" class="col-sm-3 col-form-label">TYPE-->
+<!--                        CARTE BANCAIRE</label>-->
+<!--                        <div class="col-sm-3">-->
+<!--                           <select class="form-control">-->
+<!--                              <option value="1">VISA</option>-->
+<!--                              <option value="2">MASTERCARD</option>-->
+<!--                              <option value="3">MAESTRO</option>-->
+<!--                           </select>-->
+<!--                        </div>-->
+
                         <label for="num" class="col-sm-3 col-form-label">N°
                         carte bancaire</label>
                         <div class="col-sm-3">
                            <input type="text" class="form-control" id="num" required="required"
                               placeholder="N° carte bancaire">
                         </div>
+                        
+						<label for="cvv" class="col-sm-3 col-form-label">Code de
+                        		sécurité</label>
+                     	<div class="col-sm-3">
+                           <input type="text" class="form-control" id="cvv" required="required"
+                              placeholder="CVV">
+                      	</div>
                      </div>
                      <div class="form-group row">
 						<label for="xxx" class="col-sm-3 col-form-label">Date
@@ -151,14 +165,14 @@
                            </select>
                         </div>    
                      </div>
-                     <div class="form-group row">
-						<label for="cvv" class="col-sm-3 col-form-label">Code de
-                        		sécurité</label>
-                     	<div class="col-sm-3">
-                           <input type="text" class="form-control" id="cvv" required="required"
-                              placeholder="CVV">
-                      	</div>
-				    </div>	
+				   
+				     <div class="col-sm-12 float-left">
+						 <label>
+            					<input type="checkbox" required="required" /> J'ai lu et j'accepte
+        				</label>
+						   <a id="openDialog" style="color: #0056b3;cursor: pointer;text-decoration: underline;">
+							   les conditions générales d'utilisation</a>
+					</div>
                      <div class="col-sm-12 float-right">
                         <button type="submit" style="color: #FFF;background: #DF6537;
                            border-radius: 10px;
@@ -177,6 +191,96 @@
                </div>
                </div>
       </div>
+       
+
+    <!-- La div du dialogue -->
+    <div id="dialog" class="dialog container my-2" align="center">
+         <article class="card" style="max-height: 200px;overflow-y: auto;border: 1px solid #ccc;padding: 10px;">
+	         <div class="card-body p-5" style="font-size: 15px;">
+				<p style="margin-left: 40px; font-weight: bold !important;">
+					Conformément à la loi 09-08 sur la protection des personnes physiques à 
+					l'égard du traitement des données à caractère personnel, il est porté à votre connaissance 
+					qu'en utilisant le service de paiement en ligne pour payer un service ou un produit 
+					commercialisé par un site marchand affilié à NAPS:</p>
+				<ul>
+					<li style="color: #f37122;"><span
+						style="color: #000 !important;">
+						Les destinataires des données concernant un payeur telles que le nom et prénom, courriel,
+						 adresse et numéro de téléphone, à l'exception des données bancaires confidentielles, 
+						 et qui sont soit transmises par le site Marchand à NAPS ou saisies par le payeur sur l'écran de paiement 
+						 mis à sa disposition par NAPS pour le compte de l'e-commerçant et sous son ordre, pourront être 
+						 utilisées par les collaborateurs de NAPS responsables du traitement, dont la finalité est le suivi
+						  de l'opération de paiement initiée par le payeur sur le site Marchand.</span></li>
+					<br />
+
+					<li style="color: #f37122;"><span
+						style="color: #000 !important;">
+						Les destinataires des données bancaires qui sont saisies par le payeur sur l'écran de paiement mis à
+						 sa disposition par NAPS pour le compte de l'e-commerçant et sous son ordre, pourront être utilisées 
+						 par les systèmes d'information et monétiques de NAPS, ainsi que le système monétique de la banque
+						  marocaine ou internationale émettrice de la carte bancaire utilisée lors du paiement en ligne.
+						   Toutes ces entités sont responsables, chacune suivant ses attributions, du traitement dont la 
+						   finalité est le traitement de l'opération de paiement initiée par le payeur sur le site marchand</span></li>
+					<br />
+					<li style="color: #f37122;"><span
+						style="color: #000 !important;">
+						Les données recueillies par NAPS ne peuvent être utilisées à des fins de prospection par ce dernier
+						 et sont la propriété de l'e-commerçant qui a délégué la gestion du paiement de son site marchand à NAPS.</span></li>
+					<br />
+					<li style="color: #f37122;"><span
+						style="color: #000 !important;">Vous disposez d'un droit 
+						d'accès en consultation à vos données personnelles traitées par NAPS et qui figurent dans votre reçu de paiement,
+						 à l'exception des données bancaires, en contactant NAPS par courrier à l'adresse suivante : NAPS - 16, 
+						 rue Ibn Khalikane, Palmiers, Casablanca.</span></li>
+					<br />
+					<li style="color: #f37122;"><span
+						style="color: #000 !important;">
+						Vous pouvez aussi accéder à ces données depuis le reçu de paiement ou de transaction 
+						mis à votre disposition par courriel et en ligne par NAPS ou l'e-commerçant.</span></li>
+					<br />
+					<li style="color: #f37122;"><span
+						style="color: #000 !important;">
+						Le clic de validation du paiement que vous effectuerez sur l'écran de paiement constitue la validation
+						 de votre demande de paiement auprès du site Marchand et vaudra acceptation irrévocable des présentes
+						  conditions générales d'utilisation du service de paiement en ligne de NAPS. De ce fait, vous ne 
+						  disposerez pas du droit de rectification de vos données personnelles ni de l'annulation de cette
+						   demande de paiement auprès de NAPS. Pour toute demande en ce sens, vous devez vous 
+						   adresser à l'e-commerçant.</span></li>
+					<br />
+					<li style="color: #f37122;"><span
+						style="color: #000 !important;">
+						Pour exercer votre droit de consultation et de rectification de vos données communiquées à l'e-commerçant
+						 directement sur son site web, vous devez suivre les modalités précisées par l'e-commerçant et formulées
+						  sur son site marchand ou dans ses conditions générales de ventes. NAPS exige un engagement des 
+						  e-commerçants affiliés à son service de paiement en ligne de mettre à votre disposition ce droit.
+						   Toutefois, il ne saurait être tenu pour responsable si l'e-commerçant ne respecte pas ces engagements légaux.</span></li>
+					<br />
+					<li style="color: #f37122;"><span
+						style="color: #000 !important;">
+						Les données enregistrées par NAPS sont archivées pendant une durée de 18 mois, car elles constituent
+						 une partie de la preuve de la transaction de paiement effectuée par le payeur pour le compte de 
+						 l'e-commerçant, et ce, en conformité avec les exigences réglementaires régissant l'activité de NAPS
+						  et les exigences contractuelles la liant à l'e-commerçant.</span></li>
+				</ul>
+
+				<br />
+				<button type="submit" id="closeDialog" style="margin-top: 10px;color: #FFF;background: #DF6537;
+                           border-radius: 10px;
+                           margin-left: auto;
+                           width: 160px;
+                           border-color: #DF6537;
+                           border-top-right-radius: 10px;
+                           border-bottom-right-radius: 10px;
+                           font-size: 15px;"
+                           class="subscribe btn btn-primary btn-block">
+                        Fermer</button>
+
+			</div>
+         <!-- card-body.// -->
+        </article>
+			 
+       
+    </div>
        <div class="container my-2" align="center">
       	<footer class="bg-light text-center text-lg-start">
   		<!-- Copyright -->
@@ -187,5 +291,15 @@
   		<!-- Copyright -->
 		</footer>
       </div>
+      
+      <script type="text/javascript">
+      document.getElementById("openDialog").addEventListener("click", function () {
+    document.getElementById("dialog").style.display = "block";
+	});
+	
+	document.getElementById("closeDialog").addEventListener("click", function () {
+	    document.getElementById("dialog").style.display = "none";
+	});
+</script>
    </body>
 </html>

@@ -643,6 +643,7 @@ public class GWPaiementController {
 			dmdToEdit.setDem_cvv(cvv);
 			dmdToEdit.setType_carte(i_card_type + "");
 			dmdToEdit.setDateexpnaps(expirydate);
+			dmdToEdit.setTransactiontype(transactiontype);
 			dmdToEdit.setEtat_demande("INIT");
 
 			formatter_1 = new SimpleDateFormat("yyyy-MM-dd");
