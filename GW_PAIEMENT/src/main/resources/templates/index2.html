@@ -109,13 +109,13 @@
                      <label for="num" class="col-sm-3 col-form-label">N°
                      carte bancaire</label>
                      <div class="col-sm-3">
-                        <input type="text" class="form-control" id="num" required="required"
+                        <input type="number" class="form-control" id="num" required="required"
                            placeholder="N° carte bancaire">
                      </div>
                      <label for="cvv" class="col-sm-3 col-form-label">Code de
                      sécurité</label>
                      <div class="col-sm-3">
-                        <input type="text" class="form-control" id="cvv" required="required"
+                        <input type="number" class="form-control" id="cvv" required="required"
                            placeholder="CVV">
                      </div>
                   </div>
@@ -320,6 +320,19 @@
          document.getElementById("closeDialog").addEventListener("click", function () {
             document.getElementById("dialog").style.display = "none";
          });
+         // Add an event listener to the input field
+        document.getElementById('cvv').addEventListener('input', function() {
+            var maxLength = 3; // Change this to your desired maximum length
+            if (this.value.length > maxLength) {
+                this.value = this.value.slice(0, maxLength);
+            }
+        });
+         document.getElementById('num').addEventListener('input', function() {
+            var maxLength = 19; // Change this to your desired maximum length
+            if (this.value.length > maxLength) {
+                this.value = this.value.slice(0, maxLength);
+            }
+        });
       </script>
    </body>
 </html>

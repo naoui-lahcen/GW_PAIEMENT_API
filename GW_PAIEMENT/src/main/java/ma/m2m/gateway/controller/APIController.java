@@ -153,39 +153,6 @@ public class APIController {
 		this.gson = new GsonBuilder().serializeNulls().create();
 	}
 
-	public String getMsgError(JSONObject jsonOrequest, String msg, String coderep) {
-		traces.writeInFileTransaction(folder, file, "*********** Start getMsgError() ************** ");
-		System.out.println("*********** Start getMsgError() ************** ");
-
-		JSONObject jso = new JSONObject();
-		if (jsonOrequest != null) {
-			jso.put("orderid", (String) jsonOrequest.get("orderid"));
-			jso.put("merchantid", (String) jsonOrequest.get("merchantid"));
-			jso.put("amount", (String) jsonOrequest.get("amount"));
-		} else {
-			jso.put("orderid", "");
-			jso.put("merchantid", "");
-			jso.put("amount", "");
-		}
-		if (coderep != null) {
-			jso.put("statuscode", coderep);
-		} else {
-			jso.put("statuscode", "17");
-		}
-
-		jso.put("status", msg);
-		jso.put("etataut", "N");
-		jso.put("linkacs", "");
-		jso.put("url", "");
-
-		traces.writeInFileTransaction(folder, file, "json : " + jso.toString());
-		System.out.println("json : " + jso.toString());
-
-		traces.writeInFileTransaction(folder, file, "*********** Fin getMsgError() ************** ");
-		System.out.println("*********** Fin getMsgError() ************** ");
-		return jso.toString();
-	}
-
 	@PostMapping(value = "/napspayment/authorization", consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public String authorization(@RequestHeader MultiValueMap<String, String> header, @RequestBody String auths,
@@ -4257,6 +4224,39 @@ public class APIController {
 		return jso.toString();
 	}
 
+	public String getMsgError(JSONObject jsonOrequest, String msg, String coderep) {
+		traces.writeInFileTransaction(folder, file, "*********** Start getMsgError() ************** ");
+		System.out.println("*********** Start getMsgError() ************** ");
+
+		JSONObject jso = new JSONObject();
+		if (jsonOrequest != null) {
+			jso.put("orderid", (String) jsonOrequest.get("orderid"));
+			jso.put("merchantid", (String) jsonOrequest.get("merchantid"));
+			jso.put("amount", (String) jsonOrequest.get("amount"));
+		} else {
+			jso.put("orderid", "");
+			jso.put("merchantid", "");
+			jso.put("amount", "");
+		}
+		if (coderep != null) {
+			jso.put("statuscode", coderep);
+		} else {
+			jso.put("statuscode", "17");
+		}
+
+		jso.put("status", msg);
+		jso.put("etataut", "N");
+		jso.put("linkacs", "");
+		jso.put("url", "");
+
+		traces.writeInFileTransaction(folder, file, "json : " + jso.toString());
+		System.out.println("json : " + jso.toString());
+
+		traces.writeInFileTransaction(folder, file, "*********** Fin getMsgError() ************** ");
+		System.out.println("*********** Fin getMsgError() ************** ");
+		return jso.toString();
+	}
+	
 	private boolean is_reccuring_check(String recurring) {
 		if (recurring.equalsIgnoreCase("Y"))
 			return true;

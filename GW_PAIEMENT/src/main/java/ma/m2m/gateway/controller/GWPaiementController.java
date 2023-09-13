@@ -1834,64 +1834,6 @@ public class GWPaiementController {
 		return page;
 	}
 
-	@PostMapping(value = "/saveDemande")
-	public String saveDemande(Model model, @RequestBody DemandePaiementDto demandeDto) {
-		System.out.println("demandeDto commande : " + demandeDto.getCommande());
-		System.out.println("demandeDto montant : " + demandeDto.getMontant());
-		model.addAttribute("demandeDto", demandeDto);
-		// create file log
-		traces.creatFileTransaction(file);
-		traces.writeInFileTransaction(folder, file, "Start saveDemande ()");
-		traces.writeInFileTransaction(folder, file, "return to napspayment.html");
-		System.out.println("return to napspayment.html");
-
-		// String result = autorisationService.controllerDataRequestRequest(demandeDto);
-		String result = "";
-
-		// pour teste la fonction findByDem_xid
-		DemandePaiementDto demandeP = new DemandePaiementDto();
-		demandeDto.setDem_xid("a1adb46d-f916-4895-9f02-20425478697f");
-		traces.writeInFileTransaction(folder, file, "findByDem_xid xid : " + demandeDto.getDem_xid());
-		System.out.println("findByDem_xid xid : " + demandeDto.getDem_xid());
-		demandeP = demandePaiementService.findByDem_xid(demandeDto.getDem_xid());
-		System.out.println("findByDem_xid apres return xid : " + demandeP.getDem_xid());
-
-		if (result.equals("")) {
-
-			String tokencommande = Util.genTokenCom(demandeDto.getCommande(), demandeDto.getComid());
-			demandeDto.setTokencommande(tokencommande);
-//			DemandePaiementDto demandeSaved = demandePaiementService.save(demandeDto);
-//			
-//			traces.writeInFileTransaction(folder, file, "*********** demandeSaved apres save ************** ");
-//			System.out.println("*********** demandeSaved apres save ************** ");
-//			
-//			traces.writeInFileTransaction(folder, file, "demandeSaved apres save idDemande : " + demandeSaved.getIddemande());
-//			System.out.println("demandeSaved apres save idDemande : " + demandeSaved.getIddemande());
-//			
-//			Objects.copyProperties(demandeDto, demandeSaved);
-
-		} else {
-			traces.writeInFileTransaction(folder, file, "Manque d'information dans la demande : ");
-			traces.writeInFileTransaction(folder, file, "message : " + result);
-			System.out.println("Manque d'information dans la demande : ");
-		}
-
-		return "result";
-	}
-
-	@PostMapping("/infoDemande")
-	public String infoDemande(@ModelAttribute("infoDemande") DemandePaiementDto demandeDto) {
-		// create file log
-		traces.creatFileTransaction(file);
-		traces.writeInFileTransaction(folder, file, "Start infoDemande ()");
-		System.out.println("Start infoDemande ()");
-
-		// ThreeDSecureResponse result =
-		// autorisationService.preparerReqThree3DSS(demandeDto, folder, file);
-
-		return "info-demande";
-	}
-
 	@RequestMapping(value = "/napspayment/index2", method = RequestMethod.GET)
 	public String index2() {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
@@ -1913,33 +1855,15 @@ public class GWPaiementController {
 		return "result";
 	}
 
-	@RequestMapping(path = "/napspayment/api", produces = "application/json; charset=UTF-8")
+	@PostMapping(path = "/napspayment/linkpayment-xml", consumes = MediaType.APPLICATION_XML_VALUE)
 	@ResponseBody
-	public UserDto getUser(@RequestBody UserDto userDto) {
+	public String userInformation(@RequestBody UserDto user) {
 
-		System.out.println("*********** getUser ************** ");
-		System.out.println("userDto name json : " + userDto.getName());
-		System.out.println("userDto email json : " + userDto.getEmail());
+		System.out.println(user.getName() + " " + user.getEmail());
 
-		UserDto newuser = new UserDto();
-
-		newuser.setEmail("lucas@gmail.com");
-		newuser.setName("lucas");
-
-		System.out.println("*********** getUser ************** ");
-		System.out.println("newuser name : " + newuser.getName());
-		System.out.println("newuser email : " + newuser.getEmail());
-
-		userDto.setEmail(newuser.getEmail());
-		userDto.setName(newuser.getName());
-
-		System.out.println("*********** getUser ************** ");
-		System.out.println("name userDto  apres remplacement : " + userDto.getName());
-		System.out.println("email userDto apres remplacement : " + userDto.getEmail());
-
-		return userDto;
+		return "User information saved successfully ::.";
 	}
-
+	
 	private List<Integer> generateYearList(int startYear, int endYear) {
 		List<Integer> years = new ArrayList<>();
 		for (int year = startYear; year <= endYear; year++) {
@@ -2069,27 +1993,5 @@ public class GWPaiementController {
 
 	}
 
-	@PostMapping(path = "/napspayment/linkpayment-xml", consumes = MediaType.APPLICATION_XML_VALUE)
-	@ResponseBody
-	public String userInformation(@RequestBody UserDto user) {
-
-		System.out.println(user.getName() + " " + user.getEmail());
-
-		return "User information saved successfully ::.";
-	}
-// 
-//    @GetMapping("/napspayment/showFormForUpdate/{id}")
-//    public String updateForm(@PathVariable(value = "id") long id, Model model) {
-//        DemandePaiement DemandePaiement = demandePaiementService.findById(id);
-//        model.addAttribute("demandePaiement", DemandePaiement);
-//        return "index";
-//    }
-// 
-//    @GetMapping("/napspayment/deleteDemandePaiement/{id}")
-//    public String deleteThroughId(@PathVariable(value = "id") long id) {
-//        demandePaiementService.deleteViaId(id);
-//        return "redirect:/";
-// 
-//    }
 
 }
