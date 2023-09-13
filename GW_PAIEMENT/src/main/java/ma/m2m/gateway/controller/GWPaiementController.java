@@ -592,7 +592,7 @@ public class GWPaiementController {
 			current_infoCommercant = infoCommercantService.findByCmrCode(merchantid);
 		} catch (Exception e) {
 			traces.writeInFileTransaction(folder, file,
-					"authorization 500 InfoCommercant misconfigured in DB or not existing orderid:[" + orderid
+					"payer 500 InfoCommercant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]" + e);
 
 			// response.sendRedirect("GW-AUTO-INVALIDE-DEM");
@@ -604,7 +604,7 @@ public class GWPaiementController {
 
 		if (current_infoCommercant == null) {
 			traces.writeInFileTransaction(folder, file,
-					"authorization 500 InfoCommercantDto misconfigured in DB or not existing orderid:[" + orderid
+					"payer 500 InfoCommercantDto misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]");
 
 			// response.sendRedirect("GW-AUTO-INVALIDE-DEM");
@@ -658,9 +658,12 @@ public class GWPaiementController {
 
 		} catch (Exception err1) {
 			traces.writeInFileTransaction(folder, file,
-					"authorization 500 Error during DEMANDE_PAIEMENT insertion for given orderid:[" + orderid + "]"
+					"payer 500 Error during DEMANDE_PAIEMENT insertion for given orderid:[" + orderid + "]"
 							+ err1);
-			return "authorization 500 Error during DEMANDE_PAIEMENT insertion for given orderid:[" + orderid + "]";
+			demandeDto.setMsgRefus("Error during DEMANDE_PAIEMENT insertion");
+			model.addAttribute("demandeDto", demandeDto);
+			page = "result";
+			return page;
 		}
 
 		try {
@@ -672,7 +675,7 @@ public class GWPaiementController {
 			rrn = Util.getGeneratedRRN();
 		} catch (Exception err2) {
 			traces.writeInFileTransaction(folder, file,
-					"authorization 500 Error during  date formatting for given orderid:[" + orderid
+					"payer 500 Error during  date formatting for given orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]" + err2);
 			demandeDto.setMsgRefus("Error during  date formatting");
 			model.addAttribute("demandeDto", demandeDto);
@@ -832,7 +835,7 @@ public class GWPaiementController {
 //
 //			} catch (Exception err3) {
 //				traces.writeInFileTransaction(folder, file,
-//						"authorization 500 Error during  amount formatting for given orderid:[" + orderid
+//						"payer 500 Error during  amount formatting for given orderid:[" + orderid
 //								+ "] and merchantid:[" + merchantid + "]" + err3);
 //				demandeDto.setMsgRefus("Error during  amount formatting");
 //				model.addAttribute("demandeDto", demandeDto);
@@ -877,7 +880,7 @@ public class GWPaiementController {
 				traces.writeInFileTransaction(folder, file, "montanttrame : " + montanttrame);
 			} catch (Exception err3) {
 				traces.writeInFileTransaction(folder, file,
-						"authorization 500 Error during  amount formatting for given orderid:[" + orderid
+						"payer 500 Error during  amount formatting for given orderid:[" + orderid
 								+ "] and merchantid:[" + merchantid + "]" + err3);
 				demandeDto.setMsgRefus("Error during  amount formatting");
 				model.addAttribute("demandeDto", demandeDto);
