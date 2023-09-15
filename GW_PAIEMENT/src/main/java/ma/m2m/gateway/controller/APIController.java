@@ -158,7 +158,7 @@ public class APIController {
 	public String authorization(@RequestHeader MultiValueMap<String, String> header, @RequestBody String auths,
 			HttpServletResponse response) {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		file = "API_" + randomWithSplittableRandom;
+		file = "API_AUTH_" + randomWithSplittableRandom;
 		// create file log
 		traces.creatFileTransaction(file);
 		traces.writeInFileTransaction(folder, file, "*********** Start authorization() ************** ");
@@ -1522,7 +1522,7 @@ public class APIController {
 	public String getLink(@RequestHeader MultiValueMap<String, String> header, @RequestBody String linkP,
 			HttpServletResponse response) {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		file = "API_" + randomWithSplittableRandom;
+		file = "API_LINK_" + randomWithSplittableRandom;
 		// create file log
 		traces.creatFileTransaction(file);
 		traces.writeInFileTransaction(folder, file, "*********** Start getLink() ************** ");

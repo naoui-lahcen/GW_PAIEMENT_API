@@ -285,7 +285,7 @@ public class GWPaiementController {
 	@RequestMapping(value = "/napspayment/authorization/token/{token}", method = RequestMethod.GET)
 	public String showPagePayment(@PathVariable(value = "token") String token, Model model) {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		file = "GW_" + randomWithSplittableRandom;
+		file = "GW_PAGE_" + randomWithSplittableRandom;
 		// create file log
 		traces.creatFileTransaction(file);
 		traces.writeInFileTransaction(folder, file, "*********** Start affichage page ***********");
@@ -474,7 +474,7 @@ public class GWPaiementController {
 	@PostMapping("/payer")
 	public String payer(Model model, @ModelAttribute("demandeDto") DemandePaiementDto demandeDto) {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		file = "GW_" + randomWithSplittableRandom;
+		file = "GW_PAYE_" + randomWithSplittableRandom;
 		// create file log
 		traces.creatFileTransaction(file);
 		traces.writeInFileTransaction(folder, file, "Start payer ()");

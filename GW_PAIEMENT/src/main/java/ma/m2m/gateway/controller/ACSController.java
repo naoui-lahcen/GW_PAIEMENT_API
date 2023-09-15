@@ -120,7 +120,7 @@ public class ACSController {
 
 	public ACSController() {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		file = "RETOUR_ACS_" + randomWithSplittableRandom;
+		file = "R_ACS_" + randomWithSplittableRandom;
 		// date of folder logs
 		date = LocalDateTime.now(ZoneId.systemDefault());
 		folder = date.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
@@ -132,7 +132,7 @@ public class ACSController {
 	public void processRequest(HttpServletRequest request, HttpServletResponse response, Model model)
 			throws IOException {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		file = "RETOUR_ACS_" + randomWithSplittableRandom;
+		file = "R_ACS_" + randomWithSplittableRandom;
 		// create file log
 		traces.creatFileTransaction(file);
 		traces.writeInFileTransaction(folder, file, "Start processRequest ()");
