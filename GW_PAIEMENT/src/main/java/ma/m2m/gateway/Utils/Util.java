@@ -92,7 +92,7 @@ public class Util {
 		LocalDateTime date = LocalDateTime.now(ZoneId.systemDefault());
 		String folder = date.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
 
-		String path = "D:/logs/" + folder;
+		String path = "D:/GW_LOGS/" + folder;
 
 		File myObj = new File(path);
 		if (myObj.mkdir()) {
@@ -119,7 +119,7 @@ public class Util {
 		String dateTr = date.format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS"));
 		try {
 
-			FileWriter myWriter = new FileWriter("D:/logs/" + folder + "/" + file + ".trc", true);
+			FileWriter myWriter = new FileWriter("D:/GW_LOGS/" + folder + "/" + file + ".trc", true);
 
 			myWriter.write(dateTr + "   " + input + System.getProperty("line.separator"));
 

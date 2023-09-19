@@ -1803,8 +1803,8 @@ public class GWPaiementController {
 		String msgRefus = "Une erreur est survenue, merci de réessayer plus tard";
 
 		if (current_dem != null) {
-			traces.writeInFileTransaction(folder, file, "current_dem is exist OK");
-			System.out.println("current_dem is exist OK");
+			traces.writeInFileTransaction(folder, file, "current_dem is found OK");
+			System.out.println("current_dem is found OK");
 			if (current_dem.getEtat_demande().equals("SW_PAYE") || current_dem.getEtat_demande().equals("PAYE")) {
 				msgRefus = "La transaction en cours n’a pas abouti (Opération déjà effectuée), votre compte ne sera pas débité, merci de réessayer .";
 				current_dem.setMsgRefus(msgRefus);
@@ -1853,6 +1853,7 @@ public class GWPaiementController {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		file = "GW_" + randomWithSplittableRandom;
 		traces.creatFileTransaction(file);
+		traces.writeInFileTransaction(folder, file, "return to result.html");
 		System.out.println("return to result.html");
 
 		return "result";
