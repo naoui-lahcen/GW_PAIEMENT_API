@@ -1593,7 +1593,7 @@ public class APIController {
 
 		String orderid, amount, merchantid, merchantname, websiteName, websiteid, recurring, country, phone, city,
 				state, zipcode, address, expirydate, transactiondate, transactiontime, callbackUrl, fname, lname,
-				email = "", successURL, failURL;
+				email = "", successURL, failURL, idDemande;
 		try {
 			// Transaction info
 			orderid = (String) jsonOrequest.get("orderid");
@@ -1603,7 +1603,7 @@ public class APIController {
 			// Merchnat info
 			merchantid = (String) jsonOrequest.get("merchantid");
 			merchantname = (String) jsonOrequest.get("merchantname");
-			websiteName = (String) jsonOrequest.get("websitename");
+			//websiteName = (String) jsonOrequest.get("websitename");
 			websiteid = (String) jsonOrequest.get("websiteid");
 			callbackUrl = (String) jsonOrequest.get("callbackurl");
 			successURL = (String) jsonOrequest.get("successURL");
@@ -1717,11 +1717,13 @@ public class APIController {
 			url = link_success + dmdSaved.getTokencommande();
 			statuscode = "00";
 			status = "OK";
+			idDemande = String.valueOf(dmdSaved.getIddemande());
 
 		} catch (Exception err1) {
 			url = "";
 			statuscode = "";
 			status = "KO";
+			idDemande = "";
 			traces.writeInFileTransaction(folder, file,
 					"getLink 500 Error during DEMANDE_PAIEMENT insertion for given orderid:[" + orderid + "]" + err1);
 
@@ -1736,6 +1738,7 @@ public class APIController {
 			jso.put("status", status);
 			jso.put("orderid", orderid);
 			jso.put("amount", amount);
+			jso.put("idDemande", idDemande);
 			jso.put("url", url);
 
 			// Merchant info
@@ -4248,7 +4251,8 @@ public class APIController {
 		jso.put("etataut", "N");
 		jso.put("linkacs", "");
 		jso.put("url", "");
-
+		jso.put("idDemande", "");
+		
 		traces.writeInFileTransaction(folder, file, "json : " + jso.toString());
 		System.out.println("json : " + jso.toString());
 
