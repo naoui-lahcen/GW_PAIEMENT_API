@@ -163,7 +163,7 @@
                            border-bottom-right-radius: 10px;
                            font-size: 15px;"
                            class="subscribe btn btn-primary btn-block"
-                           onclick="goBack()">Annuler
+                           onclick="window.history.back();">Annuler
                         </button>
                      </div>
                      <div class="col-sm-3 float-right">
@@ -287,13 +287,8 @@
          </footer>
       </div>
       <script type="text/javascript">
-         // JavaScript function to go back to the previous page
-               function goBack() {
-                   window.history.back(); // This will navigate back to the previous page
-               }
-               
-            	 document.getElementById("openDialog").addEventListener("click", function () {
-            	 document.getElementById("dialog").style.display = "block";
+         document.getElementById("openDialog").addEventListener("click", function () {
+            document.getElementById("dialog").style.display = "block";
          });
          
          document.getElementById("closeDialog").addEventListener("click", function () {
