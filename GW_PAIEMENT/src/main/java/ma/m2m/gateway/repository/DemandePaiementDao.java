@@ -20,7 +20,13 @@ public interface DemandePaiementDao extends JpaRepository<DemandePaiement,Long> 
 	
 	DemandePaiement findByCommandeAndComid(String commande, String comid);
 	
-	@Query(value = "select * from DemandePaiement dp where "
+	@Query(value = "select * from MXGATEWAY.DEMANDE_PAIEMENT dp where "
+			+ "dp.commande=?1 "
+			+ "AND dp.comid=?2 "
+			+ "AND dp.dem_date_time LIKE (?3) ", nativeQuery = true)
+	DemandePaiement findByCommandeAndComidAndDate(String commande, String comid, String dateDem);
+	
+	@Query(value = "select * from MXGATEWAY.DEMANDE_PAIEMENT dp where "
 			+ "dp.commande=?1 "
 			+ "AND dp.comid=?2 "
 			+ "AND dp.etat_demande LIKE 'SW_PA%' ", nativeQuery = true)

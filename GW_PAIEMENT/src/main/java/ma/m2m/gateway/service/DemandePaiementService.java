@@ -24,6 +24,8 @@ public interface DemandePaiementService {
         
     DemandePaiementDto findByCommandeAndComid(String commande, String comid);
     
+    DemandePaiementDto findByCommandeAndComidAndDate(String commande, String comid, String dateDem);
+    
     DemandePaiementDto findSWPAYEByNumCommandeAndNumCommercant(String numCommande, String numCommercant);
     
     DemandePaiementDto findByTokencommande(String tokencommande);

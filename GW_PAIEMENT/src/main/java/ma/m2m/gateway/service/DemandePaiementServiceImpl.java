@@ -98,6 +98,11 @@ public class DemandePaiementServiceImpl implements DemandePaiementService {
 	public void deleteViaId(long id) {
 		demandePaiementDao.deleteById(id);	
 	}
+
+	@Override
+	public DemandePaiementDto findByCommandeAndComidAndDate(String commande, String comid, String dateDem) {
+		return demandePaiementMapper.model2VO(demandePaiementDao.findByCommandeAndComidAndDate(commande, comid, dateDem));
+	}
 	
 
 	

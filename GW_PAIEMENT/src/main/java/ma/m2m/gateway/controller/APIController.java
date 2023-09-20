@@ -1660,6 +1660,34 @@ public class APIController {
 			return getMsgError(jsonOrequest, "getLink 500 Merchant misconfigured in DB or not existing", "15");
 		}
 
+		DemandePaiementDto check_dmd = null;
+
+		try {
+			/*
+			 * get demandePaiement par datetime avec cette format
+			 * DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH");
+				String dateSysStr = dateFormat.format(new Date());
+				System.out.println("dateSysStr : " + dateSysStr);
+				dateSysStr = dateSysStr+"%";
+				check_dmd = demandePaiementService.findByCommandeAndComidAndDate(orderid, merchantid, dateSysStr);
+			 */
+			check_dmd = demandePaiementService.findByCommandeAndComid(orderid, merchantid);
+
+		} catch (Exception err1) {
+			traces.writeInFileTransaction(folder, file,
+					"getLink 500 Error during PaiementRequest findByCommandeAndComid orderid:[" + orderid
+							+ "] and merchantid:[" + merchantid + "]" + err1);
+
+			return getMsgError(jsonOrequest, "getLink 500 Error during PaiementRequest", null);
+		}
+		if (check_dmd != null) {
+			traces.writeInFileTransaction(folder, file,
+					"getLink 500 Error Already exist in PaiementRequest findByCommandeAndComid orderid:["
+							+ orderid + "] and merchantid:[" + merchantid + "]");
+
+			return getMsgError(jsonOrequest, "getLink 500 Error Already exist in PaiementRequest", "16");
+		}
+		
 		String url = "", status = "", statuscode = "";
 
 		try {
