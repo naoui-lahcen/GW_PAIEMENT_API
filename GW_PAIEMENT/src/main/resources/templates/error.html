@@ -38,11 +38,28 @@
                <div class="card-body p-5">
 				   <p class="alert alert-danger text-center">Une erreur est survenue, merci de réessayer plus tard </p>
                    <p class="alert alert-danger text-center" th:if="${demandeDto != null and demandeDto.getMsgRefus != null}" th:utext="${demandeDto.getMsgRefus}"></p>
+                   <button type="submit" style="color: #FFF;background: #DF6537;
+                           border-radius: 10px;
+                           margin-left: auto;
+                           width: 160px;
+                           border-color: #DF6537;
+                           border-top-right-radius: 10px;
+                           border-bottom-right-radius: 10px;
+                           font-size: 15px;"
+                           class="subscribe btn btn-primary btn-block"
+                           onclick="goBack()">Retour
+                        </button>
                </div>
                <!-- card-body.// -->
             </article>
             <!-- card.// -->
          </div>
       </div>
+      <script type="text/javascript">
+         // JavaScript function to go back to the previous page
+            function goBack() {
+                window.history.back(); // This will navigate back to the previous page
+            }               
+      </script>
    </body>
 </html>
