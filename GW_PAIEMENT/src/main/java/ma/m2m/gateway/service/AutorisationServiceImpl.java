@@ -180,7 +180,11 @@ public class AutorisationServiceImpl implements AutorisationService {
 		//authInitRequest.setAcquirerBIN("11010");
 		authInitRequest.setBrowserAcceptHeader("test");
 		authInitRequest.setBrowserUserAgent("test");
-		authInitRequest.setEmail(demandeDto.getEmail());
+		if(demandeDto.getEmail() == null || demandeDto.getEmail().equals("")) {
+			authInitRequest.setEmail(infoCommercantDto.getCmrEmail());
+		} else {
+			authInitRequest.setEmail(demandeDto.getEmail());
+		}
 		authInitRequest.setMcc(commercant.getCmrCodactivite());
 		authInitRequest.setMerchantCountryCode(infoCommercantDto.getCmrCurrency().trim());
 		authInitRequest.setNomCommercant(infoCommercantDto.getCmrNom());	

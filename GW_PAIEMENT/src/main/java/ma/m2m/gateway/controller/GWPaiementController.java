@@ -5,6 +5,7 @@ import java.math.BigInteger;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.Month;
@@ -337,6 +338,18 @@ public class GWPaiementController {
 				}
 				// if cmr accept transaction cof demandeDto.getIs_cof() = Y show your carte
 				// saved
+				// Créez un objet DecimalFormat avec le modèle "0.00"
+		        DecimalFormat df = new DecimalFormat("0.00");
+
+		        // Formatez le nombre en une chaîne avec deux chiffres après la virgule
+		        Double mont = demandeDto.getMontant();
+		        String mtFormate = df.format(mont);
+		        if (mtFormate.contains(",")) {
+		        	mtFormate = mtFormate.replace(",", ".");
+		        }
+		        
+		        demandeDto.setMontantStr(mtFormate);
+
 				model.addAttribute("demandeDto", demandeDto);
 
 				if (demandeDto.getEtat_demande().equals("SW_PAYE") || demandeDto.getEtat_demande().equals("PAYE")) {

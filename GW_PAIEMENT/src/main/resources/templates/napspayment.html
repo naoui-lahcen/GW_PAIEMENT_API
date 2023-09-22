@@ -61,7 +61,9 @@
                      <span th:text="${demandeDto.galerieDto.urlGal}"></span>
                      </label>
                      <label for="montant" class="col-sm-6 col-form-label">Montant à payer : 
-                     <span th:text="${demandeDto.montant}" style="color: #DF6537;font-weight: 700;"></span> DH
+                     <span th:text="${demandeDto.montantStr}" style="color: #DF6537;font-weight: 700;"></span> DH
+				<!-- <span th:text="${demandeDto.montant}" style="color: #DF6537;font-weight: 700;"></span> DH  -->
+					<!-- pour afficher avec 2 chifres apres vergule  -->
                      </label>
                   </div>
                   <!--						<table> -->

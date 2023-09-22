@@ -28,6 +28,7 @@ public class DemandePaiementDto implements Serializable {
 	private String commande;
 	private String email;
 	private Double montant;
+	private String montantStr;
 	private String langue;
 	private String successURL;
 	private String failURL;
@@ -127,6 +128,12 @@ public class DemandePaiementDto implements Serializable {
 	}
 	public void setMontant(Double montant) {
 		this.montant = montant;
+	}
+	public String getMontantStr() {
+		return montantStr;
+	}
+	public void setMontantStr(String montantStr) {
+		this.montantStr = montantStr;
 	}
 	public String getLangue() {
 		return langue;
