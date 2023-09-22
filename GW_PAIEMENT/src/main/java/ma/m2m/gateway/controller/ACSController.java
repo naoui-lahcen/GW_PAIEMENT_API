@@ -302,7 +302,6 @@ public class ACSController {
 				if (idDemande == null || idDemande.equals("")) {
 					traces.writeInFileTransaction(folder, file, "received idDemande from MPI is Null or Empty");
 					traces.writeInFileTransaction(folder, file, "demandePaiement after update MPI_KO idDemande null");
-					// response.sendRedirect("GW-AUTO-INVALIDE-DEM");
 					response.sendRedirect(link_result);
 					return;
 				}
@@ -313,7 +312,6 @@ public class ACSController {
 					Util.writeInFileTransaction(folder, file,
 							"demandePaiement not found !!!! demandePaiement = null  / received idDemande from MPI => "
 									+ idDemande);
-					// response.sendRedirect("GW-AUTO-INVALIDE-DEM");
 					response.sendRedirect(link_result);
 					return;
 				}
@@ -443,32 +441,6 @@ public class ACSController {
 
 					dmd.setDem_xid(threeDSServerTransID);
 					demandePaiementService.save(dmd);
-
-//					try {
-//						mm = new String[2];
-//						montanttrame = "";
-//
-//						mm = amount.split("\\.");
-//						if (mm[0].length() == 1) {
-//							montanttrame = amount + "0";
-//						} else {
-//							montanttrame = amount + "";
-//						}
-//
-//						m = new String[2];
-//						m = montanttrame.split("\\.");
-//						if (m[0].equals("0")) {
-//							montanttrame = montanttrame.replace(".", "0");
-//						} else
-//							montanttrame = montanttrame.replace(".", "");
-//						montanttrame = Util.formatageCHamps(montanttrame, 12);
-//
-//					} catch (Exception err3) {
-//						traces.writeInFileTransaction(folder, file,
-//								"authorization 500 Error during  amount formatting for given orderid:[" + orderid
-//										+ "] and merchantid:[" + merchantid + "]" + err3);
-//						response.sendRedirect(link_result);
-//					}
 					
 					try {
 						montanttrame = "";

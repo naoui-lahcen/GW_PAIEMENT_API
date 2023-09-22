@@ -159,43 +159,41 @@ public class ThreeDSecureRequestor {
 
 		HttpClient httpClient = HttpClientBuilder.create().build();
 		httpClient = getAllSSLClient();
-		HttpPost httpPost = new HttpPost(authInitRequest.getUrlThreeDSS());
 		ThreeDSecureResponse threeDSecureResponse = new ThreeDSecureResponse();
 
-		final String jsonBody = gson.toJson(authInitRequest);
-		// pcidss carte
-		AuthInitRequest authInitReqPCIDSS = new AuthInitRequest();
-		authInitReqPCIDSS.setPan(Util.displayCard(authInitRequest.getPan()));
-		authInitReqPCIDSS.setAmount(authInitRequest.getAmount());
-		authInitReqPCIDSS.setIdCommercant(authInitRequest.getIdCommercant());
-		authInitReqPCIDSS.setCurrency(authInitRequest.getCurrency());
-		authInitReqPCIDSS.setIdDemande(authInitRequest.getIdDemande());
-		authInitReqPCIDSS.setExpiry(authInitRequest.getExpiry());
-		authInitReqPCIDSS.setAcquirerBIN(authInitRequest.getAcquirerBIN());
-		authInitReqPCIDSS.setBrowserUserAgent(authInitRequest.getBrowserUserAgent());
-		authInitReqPCIDSS.setEmail(authInitRequest.getEmail());
-		authInitReqPCIDSS.setMcc(authInitRequest.getMcc());
-		authInitReqPCIDSS.setMerchantCountryCode(authInitRequest.getMerchantCountryCode());
-		authInitReqPCIDSS.setNomCommercant(authInitRequest.getNomCommercant());
-		authInitReqPCIDSS.setNotificationURL(authInitRequest.getNotificationURL());
-		authInitReqPCIDSS.setThreeDSRequestorAuthenticationInd(authInitRequest.getThreeDSRequestorAuthenticationInd());
-		authInitReqPCIDSS.setMessageCategory(authInitRequest.getMessageCategory());
-		authInitReqPCIDSS.setUrlThreeDSS(authInitRequest.getUrlThreeDSS());
-		
-		final String jsonBodyPCIDSS = gson.toJson(authInitReqPCIDSS);
-		traces.writeInFileTransaction(logFolder, logFile, "*********** jsonBodyPCIDSS ***********" + jsonBodyPCIDSS.toString());
-		// added 2023-03-22 pcidss carte
-		
-		final StringEntity entity = new StringEntity(jsonBody, StandardCharsets.UTF_8);
-
-		httpPost.setEntity(entity);
-		// httpPost.setHeader("Accept", ContentType.APPLICATION_JSON.getMimeType());
-		// httpPost.setHeader("Content-type",
-		// ContentType.APPLICATION_JSON.getMimeType());
-		httpPost.setHeader("Accept", "application/json");
-		httpPost.setHeader("Content-type", "application/json");
-
 		try {
+			
+			HttpPost httpPost = new HttpPost(authInitRequest.getUrlThreeDSS());
+
+			final String jsonBody = gson.toJson(authInitRequest);
+			// pcidss carte
+			AuthInitRequest authInitReqPCIDSS = new AuthInitRequest();
+			authInitReqPCIDSS.setPan(Util.displayCard(authInitRequest.getPan()));
+			authInitReqPCIDSS.setAmount(authInitRequest.getAmount());
+			authInitReqPCIDSS.setIdCommercant(authInitRequest.getIdCommercant());
+			authInitReqPCIDSS.setCurrency(authInitRequest.getCurrency());
+			authInitReqPCIDSS.setIdDemande(authInitRequest.getIdDemande());
+			authInitReqPCIDSS.setExpiry(authInitRequest.getExpiry());
+			authInitReqPCIDSS.setAcquirerBIN(authInitRequest.getAcquirerBIN());
+			authInitReqPCIDSS.setBrowserUserAgent(authInitRequest.getBrowserUserAgent());
+			authInitReqPCIDSS.setEmail(authInitRequest.getEmail());
+			authInitReqPCIDSS.setMcc(authInitRequest.getMcc());
+			authInitReqPCIDSS.setMerchantCountryCode(authInitRequest.getMerchantCountryCode());
+			authInitReqPCIDSS.setNomCommercant(authInitRequest.getNomCommercant());
+			authInitReqPCIDSS.setNotificationURL(authInitRequest.getNotificationURL());
+			authInitReqPCIDSS.setThreeDSRequestorAuthenticationInd(authInitRequest.getThreeDSRequestorAuthenticationInd());
+			authInitReqPCIDSS.setMessageCategory(authInitRequest.getMessageCategory());
+			authInitReqPCIDSS.setUrlThreeDSS(authInitRequest.getUrlThreeDSS());
+			
+			final String jsonBodyPCIDSS = gson.toJson(authInitReqPCIDSS);
+			traces.writeInFileTransaction(logFolder, logFile, "*********** jsonBodyPCIDSS ***********" + jsonBodyPCIDSS.toString());
+			// added 2023-03-22 pcidss carte
+			
+			final StringEntity entity = new StringEntity(jsonBody, StandardCharsets.UTF_8);
+
+			httpPost.setEntity(entity);
+			httpPost.setHeader("Accept", "application/json");
+			httpPost.setHeader("Content-type", "application/json");
 
 			HttpResponse response = httpClient.execute(httpPost);
 

@@ -41,6 +41,7 @@ import ma.m2m.gateway.Utils.Util;
 import ma.m2m.gateway.config.JwtTokenUtil;
 import ma.m2m.gateway.dto.CardtokenDto;
 import ma.m2m.gateway.dto.CommercantDto;
+import ma.m2m.gateway.dto.ControlRiskCmrDto;
 import ma.m2m.gateway.dto.DemandePaiementDto;
 import ma.m2m.gateway.dto.HistoAutoGateDto;
 import ma.m2m.gateway.dto.RequestDto;
@@ -50,9 +51,11 @@ import ma.m2m.gateway.dto.TransactionDto;
 import ma.m2m.gateway.dto.responseDto;
 import ma.m2m.gateway.model.SWHistoAuto;
 import ma.m2m.gateway.reporting.GenerateExcel;
+import ma.m2m.gateway.risk.GWRiskAnalysis;
 import ma.m2m.gateway.service.AutorisationService;
 import ma.m2m.gateway.service.CardtokenService;
 import ma.m2m.gateway.service.CommercantService;
+import ma.m2m.gateway.service.ControlRiskCmrService;
 import ma.m2m.gateway.service.DemandePaiementService;
 import ma.m2m.gateway.service.HistoAutoGateService;
 import ma.m2m.gateway.service.TelecollecteService;
@@ -141,6 +144,9 @@ public class APIController {
 
 	@Autowired
 	CardtokenService cardtokenService;
+
+	@Autowired
+	private ControlRiskCmrService controlRiskCmrService;
 
 	DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -318,10 +324,6 @@ public class APIController {
 					"authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]");
 
-			// return "authorization 500 Merchant misconfigured in DB or not existing
-			// orderid:[" + orderid
-			// + "] and merchantid:[" + merchantid + "]";
-
 			return getMsgError(jsonOrequest, "authorization 500 Merchant misconfigured in DB or not existing", "15");
 		}
 
@@ -447,6 +449,26 @@ public class APIController {
 			return getMsgError(jsonOrequest, "authorization 500 Error during DEMANDE_PAIEMENT insertion", null);
 		}
 
+		// for test control risk
+		GWRiskAnalysis riskAnalysis = new GWRiskAnalysis(folder, file);
+		try {
+			ControlRiskCmrDto controlRiskCmr = controlRiskCmrService.findByNumCommercant(dmdSaved.getComid());
+			List<HistoAutoGateDto> porteurFlowPerDay = histoAutoGateService
+					.getPorteurMerchantFlowPerDay(dmdSaved.getComid(), dmdSaved.getDem_pan());
+			String msg = riskAnalysis.executeRiskControls(dmdSaved.getComid(), dmdSaved.getMontant(),
+					dmdSaved.getDem_pan(), controlRiskCmr, porteurFlowPerDay);
+			if (!msg.equalsIgnoreCase("OK")) {
+				traces.writeInFileTransaction(folder, file, "authorization 500" + msg);
+				return getMsgError(jsonOrequest, "authorization 500 " + msg, null);
+			}
+			// fin control risk
+		} catch (Exception e) {
+			traces.writeInFileTransaction(folder, file,
+					"authorization 500 ControlRiskCmr misconfigured in DB or not existing merchantid:[" + dmdSaved.getComid()
+							+ e);
+			return getMsgError(jsonOrequest, "authorization 500 Error ControlRiskCmr", null);
+		}
+		
 		try {
 			formatheure = new SimpleDateFormat("HHmmss");
 			formatdate = new SimpleDateFormat("ddMMyy");
@@ -587,34 +609,6 @@ public class APIController {
 
 			dmd.setDem_xid(threeDSServerTransID);
 			demandePaiementService.save(dmd);
-
-//			try {
-//				mm = new String[2];
-//				montanttrame = "";
-//
-//				mm = amount.split("\\.");
-//				if (mm[0].length() == 1) {
-//					montanttrame = amount + "0";
-//				} else {
-//					montanttrame = amount + "";
-//				}
-//
-//				m = new String[2];
-//				m = montanttrame.split("\\.");
-//				if (m[0].equals("0")) {
-//					montanttrame = montanttrame.replace(".", "0");
-//				} else
-//					montanttrame = montanttrame.replace(".", "");
-//				montanttrame = Util.formatageCHamps(montanttrame, 12);
-//
-//			} catch (Exception err3) {
-//				traces.writeInFileTransaction(folder, file,
-//						"authorization 500 Error during  amount formatting for given orderid:[" + orderid
-//								+ "] and merchantid:[" + merchantid + "]" + err3);
-//
-//				return "authorization 500 Error during  amount formatting for given orderid:[" + orderid
-//						+ "] and merchantid:[" + merchantid + "]";
-//			}
 
 			try {
 				montanttrame = "";
@@ -1603,7 +1597,7 @@ public class APIController {
 			// Merchnat info
 			merchantid = (String) jsonOrequest.get("merchantid");
 			merchantname = (String) jsonOrequest.get("merchantname");
-			//websiteName = (String) jsonOrequest.get("websitename");
+			// websiteName = (String) jsonOrequest.get("websitename");
 			websiteid = (String) jsonOrequest.get("websiteid");
 			callbackUrl = (String) jsonOrequest.get("callbackurl");
 			successURL = (String) jsonOrequest.get("successURL");
@@ -1664,12 +1658,12 @@ public class APIController {
 
 		try {
 			/*
-			 * get demandePaiement par datetime avec cette format
-			 * DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH");
-				String dateSysStr = dateFormat.format(new Date());
-				System.out.println("dateSysStr : " + dateSysStr);
-				dateSysStr = dateSysStr+"%";
-				check_dmd = demandePaiementService.findByCommandeAndComidAndDate(orderid, merchantid, dateSysStr);
+			 * get demandePaiement par datetime avec cette format DateFormat dateFormat =
+			 * new SimpleDateFormat("yyyy-MM-dd HH"); String dateSysStr =
+			 * dateFormat.format(new Date()); System.out.println("dateSysStr : " +
+			 * dateSysStr); dateSysStr = dateSysStr+"%"; check_dmd =
+			 * demandePaiementService.findByCommandeAndComidAndDate(orderid, merchantid,
+			 * dateSysStr);
 			 */
 			check_dmd = demandePaiementService.findByCommandeAndComid(orderid, merchantid);
 
@@ -1682,12 +1676,12 @@ public class APIController {
 		}
 		if (check_dmd != null) {
 			traces.writeInFileTransaction(folder, file,
-					"getLink 500 Error Already exist in PaiementRequest findByCommandeAndComid orderid:["
-							+ orderid + "] and merchantid:[" + merchantid + "]");
+					"getLink 500 Error Already exist in PaiementRequest findByCommandeAndComid orderid:[" + orderid
+							+ "] and merchantid:[" + merchantid + "]");
 
 			return getMsgError(jsonOrequest, "getLink 500 Error Already exist in PaiementRequest", "16");
 		}
-		
+
 		String url = "", status = "", statuscode = "";
 
 		try {
@@ -4127,7 +4121,7 @@ public class APIController {
 			traces.writeInFileTransaction(folder, file, "exportToExcel 500 malformed json expression " + req + jserr);
 		}
 
-		String merchantid ="", orderid ="", dateDem ="";
+		String merchantid = "", orderid = "", dateDem = "";
 		try {
 			// Transaction info
 			merchantid = (String) jsonOrequest.get("merchantid");
@@ -4140,20 +4134,20 @@ public class APIController {
 		}
 
 		try {
-			
-			//List<HistoAutoGateDto> listHistoGate = histoAutoGateService.findAll();
+
+			// List<HistoAutoGateDto> listHistoGate = histoAutoGateService.findAll();
 			List<HistoAutoGateDto> listHistoGate = histoAutoGateService.findByHatNumcmr(merchantid);
 
 			GenerateExcel excelExporter = new GenerateExcel(listHistoGate);
-			
+
 			excelExporter.export(response);
-			
+
 		} catch (Exception e) {
 			traces.writeInFileTransaction(folder, file, "exportToExcel 500 merchantid:[" + merchantid + "]");
 			traces.writeInFileTransaction(folder, file, "exportToExcel 500 exception" + e);
 			e.printStackTrace();
 		}
-		
+
 		traces.writeInFileTransaction(folder, file, "*********** Fin exportToExcel ***********");
 		System.out.println("*********** Fin exportToExcel ***********");
 	}
@@ -4280,7 +4274,7 @@ public class APIController {
 		jso.put("linkacs", "");
 		jso.put("url", "");
 		jso.put("idDemande", "");
-		
+
 		traces.writeInFileTransaction(folder, file, "json : " + jso.toString());
 		System.out.println("json : " + jso.toString());
 
@@ -4288,7 +4282,7 @@ public class APIController {
 		System.out.println("*********** Fin getMsgError() ************** ");
 		return jso.toString();
 	}
-	
+
 	private boolean is_reccuring_check(String recurring) {
 		if (recurring.equalsIgnoreCase("Y"))
 			return true;

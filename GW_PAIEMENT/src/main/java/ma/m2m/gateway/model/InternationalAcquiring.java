@@ -51,6 +51,16 @@ public class InternationalAcquiring implements Serializable {
 		this.numCommercant = numCommercant;
 		this.isIntAcquiringActive = isIntAcquiringActive;
 	}
+
+	public InternationalAcquiring() {
+		super();
+	}
+
+	@Override
+	public String toString() {
+		return "InternationalAcquiring [numCommercant=" + numCommercant + ", isIntAcquiringActive="
+				+ isIntAcquiringActive + "]";
+	}
 	
 
 }

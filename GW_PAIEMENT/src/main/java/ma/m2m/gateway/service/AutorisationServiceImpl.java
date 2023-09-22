@@ -165,6 +165,10 @@ public class AutorisationServiceImpl implements AutorisationService {
 			traces.writeInFileTransaction(folder, file, "typeCarte 1 => Visa ");
 			System.out.println("typeCarte 1 => Visa ");
 			authInitRequest.setUrlThreeDSS(urlThreeDSS_V);
+		} else {
+			traces.writeInFileTransaction(folder, file, "typeCarte ni 1 ni 2 => on donne par defaut Master Card ");
+			System.out.println("typeCarte ni 1 ni 2 => on donne par defaut Master Card ");
+			authInitRequest.setUrlThreeDSS(urlThreeDSS_M);
 		}
 		
 		authInitRequest.setPan(demandeDto.getDem_pan());

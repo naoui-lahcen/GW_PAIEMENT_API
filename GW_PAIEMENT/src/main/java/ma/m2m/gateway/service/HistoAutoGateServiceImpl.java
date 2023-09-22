@@ -1,5 +1,6 @@
 package ma.m2m.gateway.service;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,7 +9,9 @@ import ma.m2m.gateway.repository.HistoAutoGateDao;
 import ma.m2m.gateway.dto.HistoAutoGateDto;
 import ma.m2m.gateway.mappers.HistoAutoGateMapper;
 import ma.m2m.gateway.model.HistoAutoGate;
-
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 /*
 * @author  LAHCEN NAOUI
 * @version 1.0
@@ -62,6 +65,25 @@ public class HistoAutoGateServiceImpl implements HistoAutoGateService {
 	@Override
 	public List<HistoAutoGateDto> findByHatNumcmr(String numCmr) {
 		return histoAutoGateMapper.modelList2VOList(histoAutoGateDao.findByHatNumcmr(numCmr));
+	}
+
+	@Override
+	public Double getCommercantGlobalFlowPerDay(String numCmr) {
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		String dateSysStr = dateFormat.format(new Date());
+		System.out.println("getCommercantGlobalFlowPerDay dateSysStr : " + dateSysStr);
+		dateSysStr = dateSysStr+"%";
+		Double montant = histoAutoGateDao.getCommercantGlobalFlowPerDay(numCmr, dateSysStr);
+		return montant;
+	}
+
+	@Override
+	public List<HistoAutoGateDto> getPorteurMerchantFlowPerDay(String numCmr, String cardnumber) {
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		String dateSysStr = dateFormat.format(new Date());
+		System.out.println("getPorteurMerchantFlowPerDay dateSysStr : " + dateSysStr);
+		dateSysStr = dateSysStr+"%";
+		return histoAutoGateMapper.modelList2VOList(histoAutoGateDao.getPorteurMerchantFlowPerDay(numCmr, cardnumber, dateSysStr));
 	}
 
 }

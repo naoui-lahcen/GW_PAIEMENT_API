@@ -25,4 +25,8 @@ public interface HistoAutoGateService {
 	List<HistoAutoGateDto> findAll();
 	
 	Integer getMAX_ID();
+	
+	Double getCommercantGlobalFlowPerDay(String numCmr);
+	
+	List<HistoAutoGateDto> getPorteurMerchantFlowPerDay(String numCmr, String cardnumber);
 }

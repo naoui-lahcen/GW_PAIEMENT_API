@@ -11,6 +11,10 @@ public class StringUtils {
     private StringUtils() {
     }
 
+    public static boolean isNullOrEmpty(String param) {
+		return param == null || param.trim().length() == 0;
+	}
+    
     public static boolean isEmpty(String in) {
           if (in == null || "".equals(in)) {
                  return true;

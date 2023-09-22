@@ -21,6 +21,7 @@ import java.util.Properties;
 import java.util.SplittableRandom;
 import java.util.UUID;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONException;
@@ -47,6 +48,7 @@ import ma.m2m.gateway.Utils.Traces;
 import ma.m2m.gateway.Utils.Util;
 import ma.m2m.gateway.config.JwtTokenUtil;
 import ma.m2m.gateway.dto.CommercantDto;
+import ma.m2m.gateway.dto.ControlRiskCmrDto;
 import ma.m2m.gateway.dto.DemandePaiementDto;
 import ma.m2m.gateway.dto.MonthDto;
 import ma.m2m.gateway.dto.GalerieDto;
@@ -57,9 +59,12 @@ import ma.m2m.gateway.dto.TransactionDto;
 import ma.m2m.gateway.dto.UserDto;
 import ma.m2m.gateway.dto.responseDto;
 import ma.m2m.gateway.encryption.RSACrypto;
+import ma.m2m.gateway.model.ControlRiskCmr;
 import ma.m2m.gateway.reporting.GenerateExcel;
+import ma.m2m.gateway.risk.GWRiskAnalysis;
 import ma.m2m.gateway.service.AutorisationService;
 import ma.m2m.gateway.service.CommercantService;
+import ma.m2m.gateway.service.ControlRiskCmrService;
 import ma.m2m.gateway.service.DemandePaiementService;
 import ma.m2m.gateway.service.GalerieService;
 import ma.m2m.gateway.service.HistoAutoGateService;
@@ -126,6 +131,9 @@ public class GWPaiementController {
 
 	@Autowired
 	TelecollecteService telecollecteService;
+	
+	@Autowired
+	private ControlRiskCmrService controlRiskCmrService;
 
 	private Traces traces = new Traces();
 	private LocalDateTime date;
@@ -472,7 +480,8 @@ public class GWPaiementController {
 	}
 
 	@PostMapping("/payer")
-	public String payer(Model model, @ModelAttribute("demandeDto") DemandePaiementDto demandeDto) {
+	public String payer(Model model, @ModelAttribute("demandeDto") DemandePaiementDto demandeDto,
+			HttpServletRequest request, HttpServletResponse response) {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		file = "GW_PAYE_" + randomWithSplittableRandom;
 		// create file log
@@ -595,7 +604,6 @@ public class GWPaiementController {
 					"payer 500 InfoCommercant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]" + e);
 
-			// response.sendRedirect("GW-AUTO-INVALIDE-DEM");
 			demandeDto.setMsgRefus("InfoCommercant misconfigured in DB or not existing");
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
@@ -607,7 +615,6 @@ public class GWPaiementController {
 					"payer 500 InfoCommercantDto misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]");
 
-			// response.sendRedirect("GW-AUTO-INVALIDE-DEM");
 			demandeDto.setMsgRefus("InfoCommercantDto misconfigured in DB or not existing");
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
@@ -666,6 +673,34 @@ public class GWPaiementController {
 			return page;
 		}
 
+		
+		// for test control risk
+		GWRiskAnalysis riskAnalysis = new GWRiskAnalysis(folder, file);
+		try {
+			ControlRiskCmrDto controlRiskCmr = controlRiskCmrService.findByNumCommercant(demandeDto.getComid());
+			List<HistoAutoGateDto> porteurFlowPerDay = histoAutoGateService.getPorteurMerchantFlowPerDay(demandeDto.getComid(),
+													demandeDto.getDem_pan());
+			String msg = riskAnalysis.executeRiskControls(demandeDto.getComid(), demandeDto.getMontant(),
+					demandeDto.getDem_pan(), controlRiskCmr, porteurFlowPerDay);
+			if(!msg.equalsIgnoreCase("OK")) {
+				traces.writeInFileTransaction(folder, file, "payer 500 Error " + msg);
+				demandeDto = new DemandePaiementDto();
+				demandeDto.setMsgRefus(msg);
+				model.addAttribute("demandeDto", demandeDto);
+				page = "result";
+				return page;
+			}
+			// fin control risk
+		} catch (Exception e) {
+			traces.writeInFileTransaction(folder, file,
+					"payer 500 ControlRiskCmr misconfigured in DB or not existing merchantid:[" + demandeDto.getComid() + e);
+			demandeDto = new DemandePaiementDto();
+			demandeDto.setMsgRefus("Error 500 ");
+			model.addAttribute("demandeDto", demandeDto);
+			page = "result";
+			return page;
+		}
+		
 		try {
 
 			formatheure = new SimpleDateFormat("HHmmss");
@@ -813,35 +848,6 @@ public class GWPaiementController {
 
 			dmd.setDem_xid(threeDSServerTransID);
 			demandePaiementService.save(dmd);
-
-//			try {
-//				mm = new String[2];
-//				montanttrame = "";
-//
-//				mm = amount.split("\\.");
-//				if (mm[0].length() == 1) {
-//					montanttrame = amount + "0";
-//				} else {
-//					montanttrame = amount + "";
-//				}
-//
-//				m = new String[2];
-//				m = montanttrame.split("\\.");
-//				if (m[0].equals("0")) {
-//					montanttrame = montanttrame.replace(".", "0");
-//				} else
-//					montanttrame = montanttrame.replace(".", "");
-//				montanttrame = Util.formatageCHamps(montanttrame, 12);
-//
-//			} catch (Exception err3) {
-//				traces.writeInFileTransaction(folder, file,
-//						"payer 500 Error during  amount formatting for given orderid:[" + orderid
-//								+ "] and merchantid:[" + merchantid + "]" + err3);
-//				demandeDto.setMsgRefus("Error during  amount formatting");
-//				model.addAttribute("demandeDto", demandeDto);
-//				page = "result";
-//				return page;
-//			}
 			
 			try {
 				montanttrame = "";
@@ -960,7 +966,7 @@ public class GWPaiementController {
 				try {
 
 					/*
-					 * old old sans cavv et xid
+					 * old sans cavv et xid
 					 * tlv = new TLVEncoder().withField(Tags.tag0,
 					 * mesg_type).withField(Tags.tag1, cardnumber) .withField(Tags.tag3,
 					 * processing_code).withField(Tags.tag22, transaction_condition)
@@ -1604,9 +1610,17 @@ public class GWPaiementController {
 
 			try {
 
-				String data_noncrypt = "orderid=" + orderid + "&fname=" + fname + "&lname=" + lname + "&email=" + email
-						+ "&amount=" + amount + "&coderep=" + coderep + "&authnumber=" + authnumber + "&cardnumber="
-						+ Util.formatCard(cardnumber) + "&transactionid=" + transactionid + "&paymentid=" + paymentid;
+				/*
+				 * String data_noncrypt = "orderid=" + orderid + "&fname=" + fname + "&lname=" +
+				 * lname + "&email=" + email + "&amount=" + amount + "&coderep=" + coderep +
+				 * "&authnumber=" + authnumber + "&cardnumber=" + Util.formatCard(cardnumber) +
+				 * "&transactionid=" + transactionid + "&paymentid=" + paymentid;
+				 */
+				
+				String data_noncrypt = "id_commande=" + orderid + "&nomprenom=" + fname + "&email=" + email
+						+ "&montant=" + amount + "&frais=" + "" + "&repauto=" + coderep + "&numAuto="
+						+ authnumber + "&numCarte=" + Util.formatCard(cardnumber) + "&typecarte="
+						+ dmd.getType_carte() + "&numTrans=" + transactionid;
 
 				traces.writeInFileTransaction(folder, file, "data_noncrypt : " + data_noncrypt);
 				System.out.println("data_noncrypt : " + data_noncrypt);
@@ -1626,8 +1640,7 @@ public class GWPaiementController {
 					traces.writeInFileTransaction(folder, file,
 							"coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
 					System.out.println("coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
-					// response.sendRedirect(dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" +
-					// merchantid);
+					response.sendRedirect(dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" + merchantid);
 					page = "index";
 					return page;
 				} else {
