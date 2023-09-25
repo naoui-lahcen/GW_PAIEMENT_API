@@ -302,12 +302,24 @@
             if (this.value.length > maxLength) {
                 this.value = this.value.slice(0, maxLength);
             }
+            // Change this to your desired min
+            if (this.value < 0) {
+		        this.value = 0;
+		    }
+		    // Supprimez tous les caractères non numériques et non valides (y compris "e")
+    		this.value = this.value.replace(/[^0-9.-]/g, "");
         });
          document.getElementById('num').addEventListener('input', function() {
             var maxLength = 19; // Change this to your desired maximum length
             if (this.value.length > maxLength) {
                 this.value = this.value.slice(0, maxLength);
             }
+            // Change this to your desired min
+            if (this.value < 0) {
+		        this.value = 0;
+		    }
+		    // Supprimez tous les caractères non numériques et non valides (y compris "e")
+    		this.value = this.value.replace(/[^0-9.-]/g, "");
         });
       </script>
    </body>
