@@ -187,18 +187,6 @@ public class ACSController {
 				String errmpi = "";
 				String idDemande = "";
 				String expiry = ""; // YYMM
-				String trameRepMPI = "";
-				String idCommercant = "";
-				String merchantName = "";
-				String montantStr = "";
-
-				String expirationCarte = "";
-				String merchantEmail = "";
-				String id_client = "";
-				String idCommande = "";
-
-				String paResSyntaxOK = "";
-				String paResVerified = "";
 
 				/*
 				 * ------------ DEBUT COF INSTANCES ------------
@@ -532,21 +520,6 @@ public class ACSController {
 								"not reccuring , normal cvv_present && !is_reccuring");
 						try {
 
-							/*
-							 * old sans cavv et xid tlv = new TLVEncoder().withField(Tags.tag0,
-							 * mesg_type).withField(Tags.tag1, cardnumber) .withField(Tags.tag3,
-							 * processing_code).withField(Tags.tag22, transaction_condition)
-							 * .withField(Tags.tag49, acq_type).withField(Tags.tag14, montanttrame)
-							 * .withField(Tags.tag15, currency).withField(Tags.tag23, reason_code)
-							 * .withField(Tags.tag18, "761454").withField(Tags.tag42, expirydate)
-							 * .withField(Tags.tag16, date).withField(Tags.tag17, heure)
-							 * .withField(Tags.tag10, merc_codeactivite).withField(Tags.tag8, "0" +
-							 * merchantid) .withField(Tags.tag9, merchantid).withField(Tags.tag66, rrn)
-							 * .withField(Tags.tag67, cvv).withField(Tags.tag11, merchant_name)
-							 * .withField(Tags.tag12, merchant_city).withField(Tags.tag90,
-							 * acqcode).encode();
-							 */
-
 							tlv = new TLVEncoder().withField(Tags.tag0, mesg_type).withField(Tags.tag1, cardnumber)
 									.withField(Tags.tag3, processing_code).withField(Tags.tag22, transaction_condition)
 									.withField(Tags.tag49, acq_type).withField(Tags.tag14, montanttrame)
@@ -591,28 +564,6 @@ public class ACSController {
 						}
 
 						traces.writeInFileTransaction(folder, file, "Switch TLV Request :[" + tlv + "]");
-
-						// commented
-						/*
-						 * try {
-						 * 
-						 * String tlv2 = new TLVEncoder().withField(Tags.tag0, mesg_type)
-						 * .withField(Tags.tag1, cardnumber).withField(Tags.tag3, processing_code)
-						 * .withField(Tags.tag22, transaction_condition).withField(Tags.tag49, acq_type)
-						 * .withField(Tags.tag14, montanttrame).withField(Tags.tag15, currency)
-						 * .withField(Tags.tag23, reason_code).withField(Tags.tag18, "761454")
-						 * .withField(Tags.tag42, expirydate).withField(Tags.tag16, "****")
-						 * .withField(Tags.tag17, heure).withField(Tags.tag10, merc_codeactivite)
-						 * .withField(Tags.tag8, "0" + merchantid).withField(Tags.tag9, merchantid)
-						 * .withField(Tags.tag66, rrn).withField(Tags.tag67, "***")
-						 * .withField(Tags.tag11, merchant_name).withField(Tags.tag12, merchant_city)
-						 * .withField(Tags.tag90, acqcode).encode();
-						 * 
-						 * traces.writeInFileTransaction(folder, file, "tlv2 : " + tlv2);
-						 * 
-						 * } catch (Exception e) { traces.writeInFileTransaction(folder, file,
-						 * "Switch TLV Request ecncoding error " + e); e.printStackTrace(); }
-						 */
 						
 					}
 
@@ -1191,15 +1142,11 @@ public class ACSController {
 						System.out.println("data encrypt : " + data);
 
 						if (coderep.equals("00")) {
-							// String succ =
-							// "http://192.10.2.118/srv-test/API_PHP_4T//confirmation/confirmpaie.php";
 							traces.writeInFileTransaction(folder, file,
 									"coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
 							System.out.println("coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
 							response.sendRedirect(dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" + merchantid);
 						} else {
-							// String fail =
-							// "http://192.10.2.118/srv-test/API_PHP_4T//confirmation/confirmpaie.php";
 							traces.writeInFileTransaction(folder, file,
 									"coderep !=00 => Redirect to failURL : " + dmd.getFailURL());
 							System.out.println("coderep !=00 => Redirect to failURL : " + dmd.getFailURL());
