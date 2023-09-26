@@ -187,7 +187,7 @@ public class APIController {
 		}
 
 		catch (JSONException jserr) {
-			traces.writeInFileTransaction(folder, file, "authorization 500 malformed json expression" + auths + jserr);
+			traces.writeInFileTransaction(folder, file, "authorization 500 malformed json expression " + auths + jserr);
 			return getMsgError(null, "authorization 500 malformed json expression", null);
 		}
 
@@ -227,7 +227,7 @@ public class APIController {
 
 			else {
 				traces.writeInFileTransaction(folder, file, "authorization 500 malformed header" + head_err);
-				return getMsgError(null, "authorization 500 malformed header", null);
+				return getMsgError(null, "authorization 500 malformed header " + head_err.getMessage(), null);
 			}
 
 		}
@@ -236,10 +236,10 @@ public class APIController {
 				merchantname, websiteName, websiteid, callbackUrl, cardnumber, token, expirydate, holdername, cvv,
 				fname, lname, email, country, phone, city, state, zipcode, address, mesg_type, merc_codeactivite,
 				acqcode, merchant_name, merchant_city, acq_type, processing_code, reason_code, transaction_condition,
-				transactiondate, transactiontime, date, rrn, heure, montanttrame, num_trs = "", successURL, failURL,
-				transactiontype, etataut;
-		// JSDONRequest
-		// Transaction info
+				transactiondate, transactiontime, date, rrn, heure, montanttrame, num_trs = "", securtoken24, mac_value,
+				successURL, failURL, transactiontype, etataut;
+		
+		
 		DemandePaiementDto dmd = null;
 		DemandePaiementDto dmdSaved = null;
 		SimpleDateFormat formatter_1, formatter_2, formatheure, formatdate = null;
@@ -247,8 +247,12 @@ public class APIController {
 		Integer Idmd_id = null;
 		String[] mm;
 		String[] m;
-
+		
 		try {
+			// Transaction info
+			//securtoken24 = (String) jsonOrequest.get("securtoken24");
+			//mac_value = (String) jsonOrequest.get("mac_value");
+			
 			capture = (String) jsonOrequest.get("capture");
 			currency = (String) jsonOrequest.get("currency");
 			orderid = (String) jsonOrequest.get("orderid");
@@ -286,8 +290,8 @@ public class APIController {
 			address = (String) jsonOrequest.get("address");
 
 		} catch (Exception jerr) {
-			traces.writeInFileTransaction(folder, file, "authorization 500 malformed json expression" + jerr);
-			return getMsgError(null, "authorization 500 malformed json expression", null);
+			traces.writeInFileTransaction(folder, file, "authorization 500 malformed json expression " + jerr);
+			return getMsgError(null, "authorization 500 malformed json expression " + jerr.getMessage(), null);
 		}
 		// get cardnumber by token
 		if (!token.equals("") && token != null) {
@@ -1486,7 +1490,7 @@ public class APIController {
 		}
 
 		catch (JSONException jserr) {
-			traces.writeInFileTransaction(folder, file, "getLink 500 malformed json expression" + linkP + jserr);
+			traces.writeInFileTransaction(folder, file, "getLink 500 malformed json expression " + linkP + jserr);
 			return getMsgError(null, "getLink 500 malformed json expression", null);
 		}
 
@@ -1525,7 +1529,7 @@ public class APIController {
 				return getMsgError(null, "getLink 500 malformed header", null);
 			} else {
 				traces.writeInFileTransaction(folder, file, "getLink 500 malformed header" + head_err);
-				return getMsgError(null, "getLink 500 malformed header", null);
+				return getMsgError(null, "getLink 500 malformed header " + head_err.getMessage(), null);
 			}
 		}
 
@@ -1537,12 +1541,14 @@ public class APIController {
 
 		String orderid, amount, merchantid, merchantname, websiteName, websiteid, recurring, country, phone, city,
 				state, zipcode, address, expirydate, transactiondate, transactiontime, callbackUrl, fname, lname,
-				email = "", successURL, failURL, idDemande;
+				email = "", securtoken24, mac_value, successURL, failURL, idDemande;
 		try {
 			// Transaction info
 			orderid = (String) jsonOrequest.get("orderid");
 			amount = (String) jsonOrequest.get("amount");
 			recurring = (String) jsonOrequest.get("recurring");
+			//securtoken24 = (String) jsonOrequest.get("securtoken24");
+			//mac_value = (String) jsonOrequest.get("mac_value");
 
 			// Merchnat info
 			merchantid = (String) jsonOrequest.get("merchantid");
@@ -1566,7 +1572,7 @@ public class APIController {
 
 		} catch (Exception jerr) {
 			traces.writeInFileTransaction(folder, file, "getLink 500 malformed json expression " + linkP + jerr);
-			return getMsgError(null, "getLink 500 malformed json expression", null);
+			return getMsgError(null, "getLink 500 malformed json expression " + jerr.getMessage(), null);
 		}
 
 		CommercantDto current_merchant = null;
@@ -1757,7 +1763,7 @@ public class APIController {
 		try {
 			jsonOrequest = new JSONObject(token24);
 		} catch (JSONException jserr) {
-			traces.writeInFileTransaction(folder, file, "token24 500 malformed json expression" + token24 + jserr);
+			traces.writeInFileTransaction(folder, file, "token24 500 malformed json expression " + token24 + jserr);
 			return getMsgError(null, "token24 500 malformed json expression", null);
 		}
 
@@ -1798,7 +1804,7 @@ public class APIController {
 				return getMsgError(null, "token24 500 malformed header", null);
 			} else {
 				traces.writeInFileTransaction(folder, file, "token24 500 malformed header" + head_err);
-				return getMsgError(null, "token24 500 malformed header", null);
+				return getMsgError(null, "token24 500 malformed header " + head_err.getMessage(), null);
 			}
 		}
 
@@ -1811,8 +1817,8 @@ public class APIController {
 			mac_value = (String) jsonOrequest.get("mac_value");
 
 		} catch (Exception jerr) {
-			traces.writeInFileTransaction(folder, file, "token24 500 malformed json expression" + token24 + jerr);
-			return getMsgError(null, "token24 500 malformed json expression", null);
+			traces.writeInFileTransaction(folder, file, "token24 500 malformed json expression " + token24 + jerr);
+			return getMsgError(null, "token24 500 malformed json expression " + jerr.getMessage(), null);
 		}
 
 		// pour tester la generation du tocken
@@ -1959,7 +1965,7 @@ public class APIController {
 		try {
 			jsonOrequest = new JSONObject(status);
 		} catch (JSONException jserr) {
-			traces.writeInFileTransaction(folder, file, "status 500 malformed json expression" + status + jserr);
+			traces.writeInFileTransaction(folder, file, "status 500 malformed json expression " + status + jserr);
 			return getMsgError(null, "status 500 malformed json expression", null);
 		}
 
@@ -2000,11 +2006,11 @@ public class APIController {
 				return getMsgError(null, "status 500 malformed header", null);
 			} else {
 				traces.writeInFileTransaction(folder, file, "status 500 malformed header" + head_err);
-				return getMsgError(null, "status 500 malformed header", null);
+				return getMsgError(null, "status 500 malformed header " + head_err.getMessage(), null);
 			}
 		}
 
-		String orderid, authnumber, paymentid, amount, transactionid, merchantid = "";
+		String orderid, authnumber, paymentid, amount, transactionid, merchantid = "", securtoken24, mac_value;
 		try {
 			// Transaction info
 			orderid = (String) jsonOrequest.get("orderid");
@@ -2012,12 +2018,15 @@ public class APIController {
 			paymentid = (String) jsonOrequest.get("paymentid");
 			amount = (String) jsonOrequest.get("amount");
 			transactionid = (String) jsonOrequest.get("transactionid");
+			//securtoken24 = (String) jsonOrequest.get("securtoken24");
+			//mac_value = (String) jsonOrequest.get("mac_value");
+			
 			// Merchant info
 			merchantid = (String) jsonOrequest.get("merchantid");
 
 		} catch (Exception jerr) {
 			traces.writeInFileTransaction(folder, file, "status 500 malformed json expression " + status + jerr);
-			return getMsgError(null, "status 500 malformed json expression", null);
+			return getMsgError(null, "status 500 malformed json expression " + jerr.getMessage(), null);
 		}
 
 		String timeStamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
@@ -2351,7 +2360,7 @@ public class APIController {
 		}
 
 		catch (JSONException jserr) {
-			traces.writeInFileTransaction(folder, file, "capture 500 malformed json expression" + capture + jserr);
+			traces.writeInFileTransaction(folder, file, "capture 500 malformed json expression " + capture + jserr);
 			return getMsgError(null, "capture 500 malformed json expression", null);
 		}
 
@@ -2390,21 +2399,22 @@ public class APIController {
 				return getMsgError(null, "capture 500 malformed header", null);
 			} else {
 				traces.writeInFileTransaction(folder, file, "capture 500 malformed header " + head_err);
-				return getMsgError(null, "capture 500 malformed header", null);
+				return getMsgError(null, "capture 500 malformed header " + head_err.getMessage(), null);
 			}
 		}
 
-		// String sheader = header.toString();
-		// Transaction info
-
 		String orderid, paymentid, amount, authnumber, transactionid, merchantid, merchantname, websiteName, websiteid,
-				callbackUrl, cardnumber, fname, lname, email = "";
+				callbackUrl, cardnumber, fname, lname, email = "", securtoken24, mac_value;
+		
 		try {
+			// Transaction info
 			orderid = (String) jsonOrequest.get("orderid");
 			paymentid = (String) jsonOrequest.get("paymentid");
 			amount = (String) jsonOrequest.get("amount");
 			authnumber = (String) jsonOrequest.get("authnumber");
-			transactionid = (String) jsonOrequest.get("transactionid");
+			transactionid = (String) jsonOrequest.get("transactionid");			
+			//securtoken24 = (String) jsonOrequest.get("securtoken24");
+			//mac_value = (String) jsonOrequest.get("mac_value");
 
 			// Merchant info
 			merchantid = (String) jsonOrequest.get("merchantid");
@@ -2423,7 +2433,7 @@ public class APIController {
 
 		} catch (Exception jerr) {
 			traces.writeInFileTransaction(folder, file, "capture 500 malformed json expression " + capture + jerr);
-			return getMsgError(null, "capture 500 malformed json expression", null);
+			return getMsgError(null, "capture 500 malformed json expression " + jerr.getMessage(), null);
 		}
 		String timeStamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
 
@@ -2728,7 +2738,7 @@ public class APIController {
 		}
 
 		catch (JSONException jserr) {
-			traces.writeInFileTransaction(folder, file, "refund 500 malformed json expression" + refund + jserr);
+			traces.writeInFileTransaction(folder, file, "refund 500 malformed json expression " + refund + jserr);
 			return getMsgError(null, "refund 500 malformed json expression", null);
 		}
 
@@ -2764,15 +2774,15 @@ public class APIController {
 			if (header.toString() != null) {
 				traces.writeInFileTransaction(folder, file,
 						"refund 500 malformed header" + header.toString() + head_err);
-				return getMsgError(null, "refund 500 malformed header", null);
+				return getMsgError(null, "refund 500 malformed header" + head_err.getMessage(), null);
 			} else {
 				traces.writeInFileTransaction(folder, file, "refund 500 malformed header" + head_err);
-				return getMsgError(null, "refund 500 malformed header", null);
+				return getMsgError(null, "refund 500 malformed header " + head_err.getMessage(), null);
 			}
 		}
 
 		String orderid, authnumber, paymentid, amount, transactionid, merchantid, merchantname, websiteName, websiteid,
-				callbackUrl, cardnumber, fname, lname, email = "";
+				callbackUrl, cardnumber, fname, lname, email = "", securtoken24, mac_value;
 		try {
 			// Transaction info
 			orderid = (String) jsonOrequest.get("orderid");
@@ -2780,6 +2790,8 @@ public class APIController {
 			paymentid = (String) jsonOrequest.get("paymentid");
 			amount = (String) jsonOrequest.get("amount");
 			transactionid = (String) jsonOrequest.get("transactionid");
+			//securtoken24 = (String) jsonOrequest.get("securtoken24");
+			//mac_value = (String) jsonOrequest.get("mac_value");
 
 			// Merchant info
 			merchantid = (String) jsonOrequest.get("merchantid");
@@ -2798,7 +2810,7 @@ public class APIController {
 
 		} catch (Exception jerr) {
 			traces.writeInFileTransaction(folder, file, "refund 500 malformed json expression " + refund + jerr);
-			return getMsgError(null, "refund 500 malformed json expression", null);
+			return getMsgError(null, "refund 500 malformed json expression " + jerr.getMessage(), null);
 		}
 
 		String timeStamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
@@ -3225,7 +3237,7 @@ public class APIController {
 		}
 
 		catch (JSONException jserr) {
-			traces.writeInFileTransaction(folder, file, "reversal 500 malformed json expression" + reversal + jserr);
+			traces.writeInFileTransaction(folder, file, "reversal 500 malformed json expression " + reversal + jserr);
 			return getMsgError(null, "reversal 500 malformed json expression", null);
 		}
 
@@ -3260,14 +3272,14 @@ public class APIController {
 
 			if (header.toString() != null) {
 				traces.writeInFileTransaction(folder, file, "500 malformed header" + header.toString() + head_err);
-				return getMsgError(null, "reversal 500 malformed header", null);
+				return getMsgError(null, "reversal 500 malformed header " + head_err.getMessage(), null);
 			} else {
 				traces.writeInFileTransaction(folder, file, "reversal 500 malformed header" + head_err);
 			}
 		}
 
 		String orderid, authnumber, paymentid, amount, transactionid, merchantid, merchantname, websiteName, websiteid,
-				callbackUrl, cardnumber, fname, lname, email = "";
+				callbackUrl, cardnumber, fname, lname, email = "", securtoken24, mac_value;
 
 		try {
 			// Reversal info
@@ -3276,6 +3288,8 @@ public class APIController {
 			paymentid = (String) jsonOrequest.get("paymentid");
 			amount = (String) jsonOrequest.get("amount");
 			transactionid = (String) jsonOrequest.get("transactionid");
+			//securtoken24 = (String) jsonOrequest.get("securtoken24");
+			//mac_value = (String) jsonOrequest.get("mac_value");
 
 			// Merchant info
 			merchantid = (String) jsonOrequest.get("merchantid");
@@ -3294,7 +3308,7 @@ public class APIController {
 
 		} catch (Exception jerr) {
 			traces.writeInFileTransaction(folder, file, "reversal 500 malformed json expression " + reversal + jerr);
-			return getMsgError(null, "reversal 500 malformed json expression", null);
+			return getMsgError(null, "reversal 500 malformed json expression " + jerr.getMessage(), null);
 		}
 		String timeStamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
 
@@ -3802,7 +3816,7 @@ public class APIController {
 		}
 
 		catch (JSONException jserr) {
-			traces.writeInFileTransaction(folder, file, "cardtoken 500 malformed json expression" + cardtoken + jserr);
+			traces.writeInFileTransaction(folder, file, "cardtoken 500 malformed json expression " + cardtoken + jserr);
 			return getMsgError(null, "cardtoken 500 malformed json expression", null);
 		}
 
@@ -3837,14 +3851,14 @@ public class APIController {
 
 			if (header.toString() != null) {
 				traces.writeInFileTransaction(folder, file, "500 malformed header" + header.toString() + head_err);
-				return getMsgError(null, "cardtoken 500 malformed header", null);
+				return getMsgError(null, "cardtoken 500 malformed header " + head_err.getMessage(), null);
 			} else {
 				traces.writeInFileTransaction(folder, file, "cardtoken 500 malformed header" + head_err);
 			}
 		}
 
-		String merchantid, merchantname, websiteName, websiteid, cardnumber, expirydate, holdername, cvv, fname, lname,
-				email = "";
+		String merchantid, merchantname, websiteName, websiteid, cardnumber, expirydate, holdername, fname, lname,
+				email = "", securtoken24, mac_value;
 
 		try {
 			// Merchnat info
@@ -3857,15 +3871,19 @@ public class APIController {
 			cardnumber = (String) jsonOrequest.get("cardnumber");
 			expirydate = (String) jsonOrequest.get("expirydate");
 			holdername = (String) jsonOrequest.get("holdername");
-			cvv = (String) jsonOrequest.get("cvv");
 
 			// Client info
 			fname = (String) jsonOrequest.get("fname");
 			lname = (String) jsonOrequest.get("lname");
 			email = (String) jsonOrequest.get("email");
+			
+			// Transaction info
+			//securtoken24 = (String) jsonOrequest.get("securtoken24");
+			//mac_value = (String) jsonOrequest.get("mac_value");
+
 		} catch (Exception jerr) {
 			traces.writeInFileTransaction(folder, file, "cardtoken 500 malformed json expression " + cardtoken + jerr);
-			return getMsgError(null, "cardtoken 500 malformed json expression", null);
+			return getMsgError(null, "cardtoken 500 malformed json expression " + jerr.getMessage(), null);
 		}
 
 		JSONObject jso = new JSONObject();
@@ -3988,7 +4006,7 @@ public class APIController {
 
 			if (header.toString() != null) {
 				traces.writeInFileTransaction(folder, file, "500 malformed header" + header.toString() + head_err);
-				return getMsgError(null, "deleteCardTken 500 malformed header", null);
+				return getMsgError(null, "deleteCardTken 500 malformed header "  + head_err.getMessage(), null);
 			} else {
 				traces.writeInFileTransaction(folder, file, "deleteCardTken 500 malformed header" + head_err);
 			}
@@ -4006,8 +4024,8 @@ public class APIController {
 			// Client info
 		} catch (JSONException jserr) {
 			traces.writeInFileTransaction(folder, file,
-					"deleteCardTken 500 malformed json expression" + cardtoken + jserr);
-			return getMsgError(null, "deleteCardTken 500 malformed json expression", null);
+					"deleteCardTken 500 malformed json expression " + cardtoken + jserr);
+			return getMsgError(null, "deleteCardTken 500 malformed json expression " + jserr.getMessage(), null);
 		}
 
 		JSONObject jso = new JSONObject();
@@ -4080,7 +4098,7 @@ public class APIController {
 			dateDem = (String) jsonOrequest.get("dateDem");
 
 		} catch (JSONException jserr) {
-			traces.writeInFileTransaction(folder, file, "exportToExcel 500 malformed json expression" + req + jserr);
+			traces.writeInFileTransaction(folder, file, "exportToExcel 500 malformed json expression " + req + jserr);
 		}
 
 		try {
@@ -4141,7 +4159,7 @@ public class APIController {
 		}
 
 		catch (JSONException jserr) {
-			traces.writeInFileTransaction(folder, file, "testapi 500 malformed json expression" + req + jserr);
+			traces.writeInFileTransaction(folder, file, "testapi 500 malformed json expression " + req + jserr);
 			return getMsgError(null, "testapi 500 malformed json expression", null);
 		}
 
