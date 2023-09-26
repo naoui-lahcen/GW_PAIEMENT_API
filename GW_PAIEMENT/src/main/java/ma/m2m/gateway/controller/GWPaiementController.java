@@ -115,6 +115,9 @@ public class GWPaiementController {
 	@Value("${key.SWITCH_PORT}")
 	private String portSwitch;
 
+	@Value("${key.JWT_TOKEN_VALIDITY}")
+	private long jwt_token_validity; 
+	
 	@Autowired
 	CommercantService commercantService;
 
@@ -204,6 +207,16 @@ public class GWPaiementController {
 			System.out.println("token is expired : " + condition);
 			traces.writeInFileTransaction(folder, file, "token is expired : " + condition);
 			msg = "le token est généré avec succès";
+			
+			// test par jwt_token_validity configuree
+			String token1 = jwtTokenUtil.generateToken(usernameToken, secret, jwt_token_validity);
+			
+			String userFromToken1 = jwtTokenUtil.getUsernameFromToken(token, secret);
+			System.out.println("userFromToken1 generated : " + userFromToken);
+			Date dateExpiration1 = jwtTokenUtil.getExpirationDateFromToken(token, secret);
+			System.out.println("dateExpiration1 : " + dateExpiration1);
+			
+			
 		} catch (Exception ex) {
 			msg = "echec lors de la génération du token";
 		}

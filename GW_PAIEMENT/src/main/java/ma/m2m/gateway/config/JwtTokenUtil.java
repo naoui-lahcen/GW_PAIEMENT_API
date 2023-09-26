@@ -50,7 +50,26 @@ public class JwtTokenUtil implements Serializable {
                 .signWith(SignatureAlgorithm.HS512, secret)
                 .compact();
     }
- // Récupère le nom d'utilisateur à partir du jeton
+    
+ // Génère un jeton pour l'utilisateur spécifié, jwt_token_validity configured not fixed
+    public String generateToken(String username, String secret, long jwt_token_validity) {
+        Date now = new Date();
+        
+        System.out.println("JWT_TOKEN_VALIDITY : " + jwt_token_validity/60000 + " min");
+        
+        Date expiryDate = new Date(now.getTime() + jwt_token_validity);
+        
+        secretKey = secret;
+        
+        return Jwts.builder()
+                .setSubject(username)
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
+                .signWith(SignatureAlgorithm.HS512, secret)
+                .compact();
+    }
+    
+    // Récupère le nom d'utilisateur à partir du jeton
     public String getUsernameFromToken(String token) {
         Claims claims = Jwts.parser()
                 .setSigningKey(secretKey)
@@ -69,12 +88,6 @@ public class JwtTokenUtil implements Serializable {
         }
     }
 
-    // Génère un jeton pour l'utilisateur spécifié
-    //public String generateToken(UserDetails userDetails) {
-      //  Map<String, Object> claims = new HashMap<>();
-        //return doGenerateToken(claims, userDetails.getUsername());
-    //}
-
     // Récupère la date d'expiration à partir du jeton
     public Date getExpirationDateFromToken(String token) {
         return getClaimFromToken(token, Claims::getExpiration);
@@ -90,10 +103,45 @@ public class JwtTokenUtil implements Serializable {
     public Claims getAllClaimsFromToken(String token) {
         return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody();
     }
+    
+    // ---------------------- avec secretkey param -----------------------------------
+    
+    // Récupère le nom d'utilisateur à partir du jeton et secretKey
+    public String getUsernameFromToken(String token, String secretKey) {
+        Claims claims = Jwts.parser()
+                .setSigningKey(secretKey)
+                .parseClaimsJws(token)
+                .getBody();
 
+        return claims.getSubject();
+    }
+    
+    // Récupère la date d'expiration à partir du jeton et secretKey
+    public Date getExpirationDateFromToken(String token, String secretKey) {
+        return getClaimFromToken(token, Claims::getExpiration, secretKey);
+    }
+    
+    // Fonction générique pour récupérer les informations du jeton (claim) et secretKey
+    public <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver, String secretKey) {
+        final Claims claims = getAllClaimsFromToken(token, secretKey);
+        return claimsResolver.apply(claims);
+    }
+
+    // Récupère toutes les informations du jeton et secretKey
+    public Claims getAllClaimsFromToken(String token, String secretKey) {
+        return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody();
+    }
     // Vérifie si le jeton a expiré
     public Boolean isTokenExpired(String token) {
         final Date expiration = getExpirationDateFromToken(token);
+        return expiration.before(new Date());
+    }
+
+    // ---------------------- avec secretkey param -----------------------------------
+    
+    // Vérifie si le jeton a expiré, et secretKey
+    public Boolean isTokenExpired(String token, String secretKey) {
+        final Date expiration = getExpirationDateFromToken(token, secretKey);
         return expiration.before(new Date());
     }
 
@@ -105,10 +153,6 @@ public class JwtTokenUtil implements Serializable {
         return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(createdDate)
                 .setExpiration(expirationDate).signWith(SignatureAlgorithm.HS512, secretKey).compact();
     }
-    // Récupère le nom d'utilisateur à partir du jeton
-    //public String getUsernameFromToken(String token) {
-      //return getClaimFromToken(token, Claims::getSubject);
-	//}
     
     // Valide le jeton pour l'utilisateur spécifié
     public Boolean validateToken() {

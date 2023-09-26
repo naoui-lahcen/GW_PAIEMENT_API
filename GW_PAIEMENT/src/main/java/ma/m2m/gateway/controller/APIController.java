@@ -120,6 +120,9 @@ public class APIController {
 
 	@Value("${key.USER_TOKEN}")
 	private String usernameToken;
+	
+	@Value("${key.JWT_TOKEN_VALIDITY}")
+	private long jwt_token_validity; 
 
 	@Autowired
 	AutorisationService autorisationService;
@@ -1827,11 +1830,18 @@ public class APIController {
 		JSONObject jso = new JSONObject();
 		String token = "";
 		try {
-			// token = jwtTokenUtil.generateToken(usernameToken, secret);
-			token = jwtTokenUtil.generateToken(cx_user, cx_password);
-			String userFromToken = jwtTokenUtil.getUsernameFromToken(token);
-			Date dateExpiration = jwtTokenUtil.getExpirationDateFromToken(token);
-			Boolean isTokenExpired = jwtTokenUtil.isTokenExpired(token);
+
+			// generate by user and secretkey shared with client
+			//token = jwtTokenUtil.generateToken(cx_user, cx_password);
+			//String userFromToken = jwtTokenUtil.getUsernameFromToken(token);
+			//Date dateExpiration = jwtTokenUtil.getExpirationDateFromToken(token);
+			//Boolean isTokenExpired = jwtTokenUtil.isTokenExpired(token);
+
+			// generate by user , secretkey and jwt_token_validity configured in app properties
+			token = jwtTokenUtil.generateToken(usernameToken, secret, jwt_token_validity);
+			String userFromToken = jwtTokenUtil.getUsernameFromToken(token, secret);
+			Date dateExpiration = jwtTokenUtil.getExpirationDateFromToken(token, secret);
+			Boolean isTokenExpired = jwtTokenUtil.isTokenExpired(token, secret);
 
 			System.out.println("token generated : " + token);
 			traces.writeInFileTransaction(folder, file, "userFromToken generated : " + userFromToken);
