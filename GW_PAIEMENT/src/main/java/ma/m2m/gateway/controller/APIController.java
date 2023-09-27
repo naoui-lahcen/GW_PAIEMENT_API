@@ -298,12 +298,16 @@ public class APIController {
 			return getMsgError(null, "authorization 500 malformed json expression " + jerr.getMessage(), null);
 		}
 		// get cardnumber by token
-		if (!token.equals("") && token != null) {
+		if (!token.equals("") && token != null && !token.equals("null")) {
 			try {
 				CardtokenDto card = cardtokenService.findByIdMerchantAndToken(merchantid, token);
 				if (card != null) {
 					if (card.getCardNumber() != null) {
 						cardnumber = card.getCardNumber();
+						if(expirydate.equals("")) {
+							String dateExStr = dateFormat.format(card.getExprDate());
+							expirydate = dateExStr.substring(2,4)+dateExStr.substring(5,7);
+						}
 					}
 				}
 			} catch (Exception jerr) {
