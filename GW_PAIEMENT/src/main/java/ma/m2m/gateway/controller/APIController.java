@@ -152,7 +152,8 @@ public class APIController {
 	private ControlRiskCmrService controlRiskCmrService;
 
 	DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
+	DateFormat dateFormatSimple = new SimpleDateFormat("yyyy-MM-dd");
+	
 	public APIController() {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		file = "API_" + randomWithSplittableRandom;
@@ -3904,27 +3905,33 @@ public class APIController {
 			String tokencard = Util.generateCardToken(merchantid);
 
 			cardtokenDto.setToken(tokencard);
-			System.out.println("cardtokenDto token : " + cardtokenDto.getToken());
 			traces.writeInFileTransaction(folder, file, "cardtokenDto token : " + cardtokenDto.getToken());
+			
+			String tokenid = UUID.randomUUID().toString();
+			cardtokenDto.setIdToken(tokenid);
 
 			Calendar dateCalendar = Calendar.getInstance();
 			Date dateToken = dateCalendar.getTime();
 			String dateTokenStr = dateFormat.format(dateToken);
-			System.out.println("cardtokenDto dateTokenStr : " + dateTokenStr);
-			traces.writeInFileTransaction(folder, file, "cardtokenDto dateTokenStr : " + dateTokenStr);
 			Date dateTokenFormated = dateFormat.parse(dateTokenStr);
-			System.out.println("cardtokenDto dateTokenFormated : " + dateTokenFormated);
-			traces.writeInFileTransaction(folder, file, "cardtokenDto dateTokenFormated : " + dateTokenFormated);
 			cardtokenDto.setTokenDate(dateTokenFormated);
 			cardtokenDto.setCardNumber(cardnumber);
 			cardtokenDto.setIdMerchant(merchantid);
+			cardtokenDto.setIdMerchantClient(merchantid);
 			cardtokenDto.setFirst_name(fname);
 			cardtokenDto.setLast_name(lname);
-
+			traces.writeInFileTransaction(folder, file, "cardtokenDto expirydate input : " + expirydate);
+			String anne = String.valueOf(dateCalendar.get(Calendar.YEAR));
+			// get year from date
+			String xx = anne.substring(0,2)+expirydate.substring(0,2);
+			String mm = expirydate.substring(2,expirydate.length());
+			// format date to "yyyy-MM-dd"
+			expirydate = xx+"-"+mm+"-"+"01";
 			System.out.println("cardtokenDto expirydate : " + expirydate);
-			traces.writeInFileTransaction(folder, file, "Insert into table CARDTOKEN OK");
+			traces.writeInFileTransaction(folder, file, "cardtokenDto expirydate formated : " + expirydate);
+			Date dateExp = dateFormatSimple.parse(expirydate);
 
-			cardtokenDto.setExprDate(expirydate);
+			cardtokenDto.setExprDate(dateExp);
 			cardtokenDto.setHolderName(holdername);
 			cardtokenDto.setMcc(merchantid);
 

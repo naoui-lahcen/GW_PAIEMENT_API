@@ -70,7 +70,7 @@ public class Cardtoken implements Serializable {
 	private String last_name;
 	
 	@Column(name="EXPR_DATE")
-	private String exprDate;
+	private Date exprDate;
 	
 	@Column(name="ACQBANQ")
 	private String acqbanq;
@@ -195,11 +195,11 @@ public class Cardtoken implements Serializable {
 		this.last_name = last_name;
 	}
 
-	public String getExprDate() {
+	public Date getExprDate() {
 		return exprDate;
 	}
 
-	public void setExprDate(String exprDate) {
+	public void setExprDate(Date exprDate) {
 		this.exprDate = exprDate;
 	}
 
@@ -221,7 +221,7 @@ public class Cardtoken implements Serializable {
 
 	public Cardtoken(Integer id, String idToken, String idMerchant, String mcc, String idMerchantClient,
 			String idClientuuid, String token, Date tokenDate, String typeCarte, String cardNumber, String cardMask,
-			String holderName, String first_name, String last_name, String exprDate, String acqbanq,
+			String holderName, String first_name, String last_name, Date exprDate, String acqbanq,
 			long idProfiletoken) {
 		super();
 		this.id = id;

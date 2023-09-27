@@ -23,7 +23,7 @@ public class CardtokenDto {
 	private String holderName;
 	private String first_name;
 	private String last_name;
-	private String exprDate;
+	private Date exprDate;
 	private String acqbanq;
 	private long idProfiletoken;
 
@@ -143,11 +143,11 @@ public class CardtokenDto {
 		this.last_name = last_name;
 	}
 
-	public String getExprDate() {
+	public Date getExprDate() {
 		return exprDate;
 	}
 
-	public void setExprDate(String exprDate) {
+	public void setExprDate(Date exprDate) {
 		this.exprDate = exprDate;
 	}
 
@@ -169,7 +169,7 @@ public class CardtokenDto {
 
 	public CardtokenDto(Integer id, String idToken, String idMerchant, String mcc, String idMerchantClient,
 			String idClientuuid, String token, Date tokenDate, String typeCarte, String cardNumber, String cardMask,
-			String holderName, String first_name, String last_name, String exprDate, String acqbanq,
+			String holderName, String first_name, String last_name, Date exprDate, String acqbanq,
 			long idProfiletoken) {
 		super();
 		this.id = id;
