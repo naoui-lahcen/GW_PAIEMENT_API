@@ -196,47 +196,77 @@ public class GWPaiementController {
 		// pour tester la generation du tocken
 		JwtTokenUtil jwtTokenUtil = new JwtTokenUtil();
 		String msg = "";
+		JSONObject jso = new JSONObject();
 		try {
-			String token = jwtTokenUtil.generateToken(usernameToken, secret);
-			String userFromToken = jwtTokenUtil.getUsernameFromToken(token);
-			Date dateExpiration = jwtTokenUtil.getExpirationDateFromToken(token);
-			Boolean isTokenExpired = jwtTokenUtil.isTokenExpired(token);
-
-			System.out.println("token generated : " + token);
-			traces.writeInFileTransaction(folder, file, "userFromToken generated : " + userFromToken);
-			System.out.println("userFromToken generated : " + userFromToken);
-			String dateSysStr = dateFormat.format(new Date());
-			System.out.println("dateSysStr : " + dateSysStr);
-			traces.writeInFileTransaction(folder, file, "dateSysStr : " + dateSysStr);
-			System.out.println("dateExpiration : " + dateExpiration);
-			traces.writeInFileTransaction(folder, file, "dateExpiration : " + dateExpiration);
-			String dateExpirationStr = dateFormat.format(dateExpiration);
-			System.out.println("dateExpirationStr : " + dateExpirationStr);
-			traces.writeInFileTransaction(folder, file, "dateExpirationStr : " + dateExpirationStr);
-			String condition = isTokenExpired == false ? "Non" : "OUI";
-			System.out.println("token is expired : " + condition);
-			traces.writeInFileTransaction(folder, file, "token is expired : " + condition);
-			msg = "le token est généré avec succès";
-			
 			// test par jwt_token_validity configuree
-			String token1 = jwtTokenUtil.generateToken(usernameToken, secret, jwt_token_validity);
-			
-			String userFromToken1 = jwtTokenUtil.getUsernameFromToken(token, secret);
-			System.out.println("userFromToken1 generated : " + userFromToken);
-			Date dateExpiration1 = jwtTokenUtil.getExpirationDateFromToken(token, secret);
-			System.out.println("dateExpiration1 : " + dateExpiration1);
-			
+			String token = jwtTokenUtil.generateToken(usernameToken, secret, jwt_token_validity);
+
+			// verification expiration token
+			jso = verifieToken(token);
+
+			if(jso != null && !jso.get("statuscode").equals("00")) {
+				traces.writeInFileTransaction(folder, file, "jsoVerified : " + jso.toString());
+				System.out.println("jsoVerified : " + jso.toString());
+				msg = "echec lors de la génération du token";
+				traces.writeInFileTransaction(folder, file, "*********** Fin generateToken() ************** ");
+				System.out.println("*********** Fin generateToken() ************** ");
+			} else {
+				msg = "the token successfully generated";
+			}			
 			
 		} catch (Exception ex) {
-			msg = "echec lors de la génération du token";
+			msg = "the token generation failed";
 		}
 
 		// fin
+		traces.writeInFileTransaction(folder, file, "*********** Fin generateToken() ************** ");
 		System.out.println("*********** Fin generateToken() ************** ");
 
 		return ResponseEntity.ok().body(msg);
 	}
+	
+	public JSONObject verifieToken(String securtoken24) {
+		JSONObject jso = new JSONObject();
+		
+		if(!securtoken24.equals("")) {
+			JwtTokenUtil jwtTokenUtil = new JwtTokenUtil();
+			String token = securtoken24;
+			try {
+				String userFromToken = jwtTokenUtil.getUsernameFromToken(token, secret);
+				Date dateExpiration = jwtTokenUtil.getExpirationDateFromToken(token, secret);
+				Boolean isTokenExpired = jwtTokenUtil.isTokenExpired(token, secret);
 
+				traces.writeInFileTransaction(folder, file, "userFromToken generated : " + userFromToken);
+				String dateSysStr = dateFormat.format(new Date());
+				traces.writeInFileTransaction(folder, file, "dateSysStr : " + dateSysStr);
+				traces.writeInFileTransaction(folder, file, "dateExpiration : " + dateExpiration);
+				String dateExpirationStr = dateFormat.format(dateExpiration);
+				traces.writeInFileTransaction(folder, file, "dateExpirationStr : " + dateExpirationStr);
+				String condition = isTokenExpired == false ? "NO" : "YES";
+				traces.writeInFileTransaction(folder, file, "token is expired : " + condition);
+				if(condition.equalsIgnoreCase("YES")) {
+					traces.writeInFileTransaction(folder, file, "Error 500 securtoken24 is expired");
+
+					// Transaction info
+					jso.put("statuscode", "17");
+					jso.put("status", "Error 500 securtoken24 is expired");
+					
+					return jso;
+				} else {
+					jso.put("statuscode", "00");
+				}
+			} catch (Exception ex) {
+				// Transaction info
+				jso.put("statuscode", "17");
+				jso.put("status", "Error 500 securtoken24 " + ex.getMessage());
+				System.out.println(jso.get("status"));
+				
+				return jso;
+			}
+		}
+		return jso;
+	}
+	
 	@RequestMapping(path = "/napspayment/generateexcel")
 	@ResponseBody
 	public String generateExcel() {
