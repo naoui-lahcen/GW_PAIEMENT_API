@@ -1,5 +1,8 @@
 package ma.m2m.gateway.controller;
 
+import static ma.m2m.gateway.Utils.StringUtils.isNullOrEmpty;
+import static ma.m2m.gateway.config.FlagActivation.ACTIVE;
+
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.SocketTimeoutException;
@@ -51,6 +54,7 @@ import ma.m2m.gateway.config.JwtTokenUtil;
 import ma.m2m.gateway.dto.CommercantDto;
 import ma.m2m.gateway.dto.ControlRiskCmrDto;
 import ma.m2m.gateway.dto.DemandePaiementDto;
+import ma.m2m.gateway.dto.EmetteurDto;
 import ma.m2m.gateway.dto.MonthDto;
 import ma.m2m.gateway.dto.GalerieDto;
 import ma.m2m.gateway.dto.HistoAutoGateDto;
@@ -63,10 +67,12 @@ import ma.m2m.gateway.encryption.RSACrypto;
 import ma.m2m.gateway.model.ControlRiskCmr;
 import ma.m2m.gateway.reporting.GenerateExcel;
 import ma.m2m.gateway.risk.GWRiskAnalysis;
+import ma.m2m.gateway.risk.GWRiskAnalysisMsgs;
 import ma.m2m.gateway.service.AutorisationService;
 import ma.m2m.gateway.service.CommercantService;
 import ma.m2m.gateway.service.ControlRiskCmrService;
 import ma.m2m.gateway.service.DemandePaiementService;
+import ma.m2m.gateway.service.EmetteurService;
 import ma.m2m.gateway.service.GalerieService;
 import ma.m2m.gateway.service.HistoAutoGateService;
 import ma.m2m.gateway.service.InfoCommercantService;
@@ -138,6 +144,9 @@ public class GWPaiementController {
 	
 	@Autowired
 	private ControlRiskCmrService controlRiskCmrService;
+	
+	@Autowired
+	private EmetteurService emetteurService;
 
 	private Traces traces = new Traces();
 	private LocalDateTime date;
@@ -168,7 +177,8 @@ public class GWPaiementController {
 
 		String msg = "Bienvenue dans la plateforme de paiement NAPS !!!";
 
-		System.out.println("*********** Fin home() ************** ");
+		traces.writeInFileTransaction(folder, file, "*********** Fin home () ************** ");
+		System.out.println("*********** Fin home () ************** ");
 
 		return msg;
 	}
@@ -512,8 +522,8 @@ public class GWPaiementController {
 		file = "GW_PAYE_" + randomWithSplittableRandom;
 		// create file log
 		traces.creatFileTransaction(file);
-		traces.writeInFileTransaction(folder, file, "Start payer ()");
-		System.out.println("Start payer ()");
+		traces.writeInFileTransaction(folder, file, "*********** Start payer () ************** ");
+		System.out.println("*********** Start payer () ************** ");
 		System.out.println("demandeDto commande : " + demandeDto.getCommande());
 		System.out.println("demandeDto montant : " + demandeDto.getMontant());
 
@@ -704,10 +714,36 @@ public class GWPaiementController {
 		GWRiskAnalysis riskAnalysis = new GWRiskAnalysis(folder, file);
 		try {
 			ControlRiskCmrDto controlRiskCmr = controlRiskCmrService.findByNumCommercant(demandeDto.getComid());
-			List<HistoAutoGateDto> porteurFlowPerDay = histoAutoGateService.getPorteurMerchantFlowPerDay(demandeDto.getComid(),
-													demandeDto.getDem_pan());
+			List<HistoAutoGateDto> porteurFlowPerDay = null;
+			
+			Double globalFlowPerDay = 0.00;
+			List<EmetteurDto> listBin = null;
+
+			if (controlRiskCmr != null) {
+				/* --------------------------------- Controle des cartes internationales -----------------------------------------*/
+				if(isNullOrEmpty(controlRiskCmr.getAcceptInternational()) || (controlRiskCmr.getAcceptInternational() != null
+					&& !ACTIVE.getFlag().equalsIgnoreCase(controlRiskCmr.getAcceptInternational().trim()))) {
+					String binDebutCarte = cardnumber.substring(0, 6);
+					binDebutCarte = binDebutCarte+"000";
+					traces.writeInFileTransaction(folder, file, "controlRiskCmr ici 1");
+					listBin = emetteurService.findByBindebut(binDebutCarte);
+				}		
+				// --------------------------------- Controle de flux journalier autorisé par commerçant  ----------------------------------
+				if(!isNullOrEmpty(controlRiskCmr.getIsGlobalFlowControlActive()) && ACTIVE.getFlag().equalsIgnoreCase(controlRiskCmr.getIsGlobalFlowControlActive())) {
+					traces.writeInFileTransaction(folder, file, "controlRiskCmr ici 2");
+					globalFlowPerDay = histoAutoGateService.getCommercantGlobalFlowPerDay(merchantid);
+			 	}
+				// ------------------------- Controle de flux journalier autorisé par client (porteur de carte) ----------------------------
+				if((controlRiskCmr.getFlowCardPerDay() != null && controlRiskCmr.getFlowCardPerDay() > 0) 
+						|| (controlRiskCmr.getNumberOfTransactionCardPerDay() != null && controlRiskCmr.getNumberOfTransactionCardPerDay() > 0)) {
+					traces.writeInFileTransaction(folder, file, "controlRiskCmr ici 3");
+					porteurFlowPerDay = histoAutoGateService.getPorteurMerchantFlowPerDay(demandeDto.getComid(),
+							demandeDto.getDem_pan());
+				}
+			}
 			String msg = riskAnalysis.executeRiskControls(demandeDto.getComid(), demandeDto.getMontant(),
-					demandeDto.getDem_pan(), controlRiskCmr, porteurFlowPerDay);
+					demandeDto.getDem_pan(), controlRiskCmr, globalFlowPerDay, porteurFlowPerDay, listBin);
+			
 			if(!msg.equalsIgnoreCase("OK")) {
 				traces.writeInFileTransaction(folder, file, "payer 500 Error " + msg);
 				demandeDto = new DemandePaiementDto();
@@ -721,7 +757,7 @@ public class GWPaiementController {
 			traces.writeInFileTransaction(folder, file,
 					"payer 500 ControlRiskCmr misconfigured in DB or not existing merchantid:[" + demandeDto.getComid() + e);
 			demandeDto = new DemandePaiementDto();
-			demandeDto.setMsgRefus("Error 500 ");
+			demandeDto.setMsgRefus("Error 500 Opération rejetée: Contrôle risque");
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
 			return page;
@@ -1748,6 +1784,9 @@ public class GWPaiementController {
 
 		System.out.println("demandeDto htmlCreq : " + demandeDto.getCreq());
 		System.out.println("return page : " + page);
+		
+		traces.writeInFileTransaction(folder, file, "*********** Fin payer () ************** ");
+		System.out.println("*********** Start Fin () ************** ");
 
 		return page;
 	}
@@ -1760,6 +1799,8 @@ public class GWPaiementController {
 		traces.creatFileTransaction(file);
 		DemandePaiementDto dem = new DemandePaiementDto();
 		System.out.println("Start chalenge ()");
+		traces.writeInFileTransaction(folder, file, "*********** Start chalenge () ************** ");
+		System.out.println("*********** Start chalenge () ************** ");
 
 		String htmlCreq = "<form action='https://acs.naps.ma:443/lacs2' method='post' enctype='application/x-www-form-urlencoded'>"
 				+ "<input type='hidden' name='creq' value='ewogICJtZXNzYWdlVmVyc2lvbiI6ICIyLjEuMCIsCiAgInRocmVlRFNTZXJ2ZXJUcmFuc0lEIjogIjQxZDQ0ZTViLTBjOTYtNGVhNC05NjkxLTM1OWVmOGQ5NTdjMyIsCiAgImFjc1RyYW5zSUQiOiAiOTI3NTQyOGEtYzkzYi00ZWUzLTk3NDEtNDA4NzAzNDlmYzM2IiwKICAiY2hhbGxlbmdlV2luZG93U2l6ZSI6ICIwNSIsCiAgIm1lc3NhZ2VUeXBlIjogIkNSZXEiCn0=' />"
@@ -1772,7 +1813,10 @@ public class GWPaiementController {
 
 		model.addAttribute("demandeDto", dem);
 		System.out.println("return to chalenge.html");
-
+		
+		traces.writeInFileTransaction(folder, file, "*********** Fin chalenge () ************** ");
+		System.out.println("*********** Fin chalenge () ************** ");
+		
 		return "chalenge";
 	}
 
@@ -1833,8 +1877,14 @@ public class GWPaiementController {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		file = "GW_" + randomWithSplittableRandom;
 		traces.creatFileTransaction(file);
+		traces.writeInFileTransaction(folder, file, "*********** Start index2 () ************** ");
+		System.out.println("*********** Start index2 () ************** ");
+		
 		traces.writeInFileTransaction(folder, file, "return to index2.html");
 		System.out.println("return to index2.html");
+		
+		traces.writeInFileTransaction(folder, file, "*********** Fin index2 () ************** ");
+		System.out.println("*********** Fin index2 () ************** ");
 
 		return "index2";
 	}
@@ -1844,8 +1894,15 @@ public class GWPaiementController {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		file = "GW_" + randomWithSplittableRandom;
 		traces.creatFileTransaction(file);
+		
+		traces.writeInFileTransaction(folder, file, "*********** Start result () ************** ");
+		System.out.println("*********** Start result () ************** ");
+		
 		traces.writeInFileTransaction(folder, file, "return to result.html");
 		System.out.println("return to result.html");
+		
+		traces.writeInFileTransaction(folder, file, "*********** Fin result () ************** ");
+		System.out.println("*********** Start Fin () ************** ");
 
 		return "result";
 	}

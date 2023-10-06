@@ -1,5 +1,8 @@
 package ma.m2m.gateway.controller;
 
+import static ma.m2m.gateway.Utils.StringUtils.isNullOrEmpty;
+import static ma.m2m.gateway.config.FlagActivation.ACTIVE;
+
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.SocketTimeoutException;
@@ -43,6 +46,7 @@ import ma.m2m.gateway.dto.CardtokenDto;
 import ma.m2m.gateway.dto.CommercantDto;
 import ma.m2m.gateway.dto.ControlRiskCmrDto;
 import ma.m2m.gateway.dto.DemandePaiementDto;
+import ma.m2m.gateway.dto.EmetteurDto;
 import ma.m2m.gateway.dto.HistoAutoGateDto;
 import ma.m2m.gateway.dto.RequestDto;
 import ma.m2m.gateway.dto.SWHistoAutoDto;
@@ -57,6 +61,7 @@ import ma.m2m.gateway.service.CardtokenService;
 import ma.m2m.gateway.service.CommercantService;
 import ma.m2m.gateway.service.ControlRiskCmrService;
 import ma.m2m.gateway.service.DemandePaiementService;
+import ma.m2m.gateway.service.EmetteurService;
 import ma.m2m.gateway.service.HistoAutoGateService;
 import ma.m2m.gateway.service.TelecollecteService;
 import ma.m2m.gateway.service.TransactionService;
@@ -150,6 +155,9 @@ public class APIController {
 
 	@Autowired
 	private ControlRiskCmrService controlRiskCmrService;
+	
+	@Autowired
+	private EmetteurService emetteurService;
 
 	DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	DateFormat dateFormatSimple = new SimpleDateFormat("yyyy-MM-dd");
@@ -465,12 +473,37 @@ public class APIController {
 		GWRiskAnalysis riskAnalysis = new GWRiskAnalysis(folder, file);
 		try {
 			ControlRiskCmrDto controlRiskCmr = controlRiskCmrService.findByNumCommercant(dmdSaved.getComid());
-			List<HistoAutoGateDto> porteurFlowPerDay = histoAutoGateService
-					.getPorteurMerchantFlowPerDay(dmdSaved.getComid(), dmdSaved.getDem_pan());
+			List<HistoAutoGateDto> porteurFlowPerDay = null;
+			
+			Double globalFlowPerDay = 0.00;
+			List<EmetteurDto> listBin = null;
+
+			if (controlRiskCmr != null) {
+				/* --------------------------------- Controle des cartes internationales -----------------------------------------*/
+				if(isNullOrEmpty(controlRiskCmr.getAcceptInternational()) || (controlRiskCmr.getAcceptInternational() != null
+					&& !ACTIVE.getFlag().equalsIgnoreCase(controlRiskCmr.getAcceptInternational().trim()))) {
+					String binDebutCarte = cardnumber.substring(0, 6);
+					binDebutCarte = binDebutCarte+"000";
+					traces.writeInFileTransaction(folder, file, "controlRiskCmr ici 1");
+					listBin = emetteurService.findByBindebut(binDebutCarte);
+				}		
+				// --------------------------------- Controle de flux journalier autorisé par commerçant  ----------------------------------
+				if(!isNullOrEmpty(controlRiskCmr.getIsGlobalFlowControlActive()) && ACTIVE.getFlag().equalsIgnoreCase(controlRiskCmr.getIsGlobalFlowControlActive())) {
+					traces.writeInFileTransaction(folder, file, "controlRiskCmr ici 2");
+					globalFlowPerDay = histoAutoGateService.getCommercantGlobalFlowPerDay(merchantid);
+			 	}
+				// ------------------------- Controle de flux journalier autorisé par client (porteur de carte) ----------------------------
+				if((controlRiskCmr.getFlowCardPerDay() != null && controlRiskCmr.getFlowCardPerDay() > 0) 
+						|| (controlRiskCmr.getNumberOfTransactionCardPerDay() != null && controlRiskCmr.getNumberOfTransactionCardPerDay() > 0)) {
+					traces.writeInFileTransaction(folder, file, "controlRiskCmr ici 3");
+					porteurFlowPerDay = histoAutoGateService.getPorteurMerchantFlowPerDay(dmdSaved.getComid(), dmdSaved.getDem_pan());
+				}
+			}
 			String msg = riskAnalysis.executeRiskControls(dmdSaved.getComid(), dmdSaved.getMontant(),
-					dmdSaved.getDem_pan(), controlRiskCmr, porteurFlowPerDay);
+					dmdSaved.getDem_pan(), controlRiskCmr, globalFlowPerDay, porteurFlowPerDay, listBin);
+			
 			if (!msg.equalsIgnoreCase("OK")) {
-				traces.writeInFileTransaction(folder, file, "authorization 500" + msg);
+				traces.writeInFileTransaction(folder, file, "authorization 500 " + msg);
 				return getMsgError(jsonOrequest, "authorization 500 " + msg, null);
 			}
 			// fin control risk
@@ -478,7 +511,7 @@ public class APIController {
 			traces.writeInFileTransaction(folder, file,
 					"authorization 500 ControlRiskCmr misconfigured in DB or not existing merchantid:[" + dmdSaved.getComid()
 							+ e);
-			return getMsgError(jsonOrequest, "authorization 500 Error ControlRiskCmr", null);
+			return getMsgError(jsonOrequest, "authorization 500 Error Opération rejetée: Contrôle risque", null);
 		}
 		
 		try {
@@ -1816,13 +1849,14 @@ public class APIController {
 			}
 		}
 
-		String cx_user, cx_password, cx_reason, error_msg, error_code, mac_value = "";
+		String cx_user, cx_password, institution_id, cx_reason, error_msg, error_code, mac_value = "";
 		try {
 			// Merchant info
 			cx_user = (String) jsonOrequest.get("cx_user");
 			cx_password = (String) jsonOrequest.get("cx_password");
 			cx_reason = (String) jsonOrequest.get("cx_reason");
 			mac_value = (String) jsonOrequest.get("mac_value");
+			institution_id = (String) jsonOrequest.get("institution_id");
 
 		} catch (Exception jerr) {
 			traces.writeInFileTransaction(folder, file, "token24 500 malformed json expression " + token24 + jerr);
@@ -1833,57 +1867,122 @@ public class APIController {
 		JwtTokenUtil jwtTokenUtil = new JwtTokenUtil();
 		error_code = "";
 		JSONObject jso = new JSONObject();
+		JSONObject jsoVerified = new JSONObject();
 		String token = "";
+		
+		if(mac_value.equals("")) {
+			traces.writeInFileTransaction(folder, file, "the token generation failed, mac_value is empty");
+			
+			jsoVerified.put("error_msg", "the token generation failed, mac_value is empty");
+			jsoVerified.put("error_code", "17");
+			jsoVerified.put("securtoken_24", "");
+			jsoVerified.put("cx_user", cx_user);
+			jsoVerified.put("mac_value", "");
+			jsoVerified.put("institution_id", institution_id);
+			traces.writeInFileTransaction(folder, file, "jsoVerified : " + jsoVerified.toString());
+			System.out.println("jsoVerified : " + jsoVerified.toString());
+			
+			traces.writeInFileTransaction(folder, file, "*********** Fin generateToken() ************** ");
+			
+			return jsoVerified.toString();
+		}
+		if(cx_user.equals("")) {
+			traces.writeInFileTransaction(folder, file, "the token generation failed, cx_user is empty");
+			
+			jsoVerified.put("error_msg", "the token generation failed, cx_user is empty");
+			jsoVerified.put("error_code", "17");
+			jsoVerified.put("securtoken_24", "");
+			jsoVerified.put("cx_user", cx_user);
+			jsoVerified.put("mac_value", "");
+			jsoVerified.put("institution_id", institution_id);
+			traces.writeInFileTransaction(folder, file, "jsoVerified : " + jsoVerified.toString());
+			System.out.println("jsoVerified : " + jsoVerified.toString());
+			
+			traces.writeInFileTransaction(folder, file, "*********** Fin generateToken() ************** ");
+			
+			return jsoVerified.toString();
+		}
+		if(cx_password.equals("")) {
+			traces.writeInFileTransaction(folder, file, "the token generation failed, cx_password is empty");
+			
+			jsoVerified.put("error_msg", "the token generation failed, cx_password is empty");
+			jsoVerified.put("error_code", "17");
+			jsoVerified.put("securtoken_24", "");
+			jsoVerified.put("cx_user", cx_user);
+			jsoVerified.put("mac_value", "");
+			jsoVerified.put("institution_id", institution_id);
+			traces.writeInFileTransaction(folder, file, "jsoVerified : " + jsoVerified.toString());
+			System.out.println("jsoVerified : " + jsoVerified.toString());
+			
+			traces.writeInFileTransaction(folder, file, "*********** Fin generateToken() ************** ");
+			
+			return jsoVerified.toString();
+		}
+		if(institution_id.equals("")) {
+			traces.writeInFileTransaction(folder, file, "the token generation failed, institution_id is empty");
+			
+			jsoVerified.put("error_msg", "the token generation failed, institution_id is empty");
+			jsoVerified.put("error_code", "17");
+			jsoVerified.put("securtoken_24", "");
+			jsoVerified.put("cx_user", cx_user);
+			jsoVerified.put("mac_value", "");
+			jsoVerified.put("institution_id", institution_id);
+			traces.writeInFileTransaction(folder, file, "jsoVerified : " + jsoVerified.toString());
+			System.out.println("jsoVerified : " + jsoVerified.toString());
+			
+			traces.writeInFileTransaction(folder, file, "*********** Fin generateToken() ************** ");
+			
+			return jsoVerified.toString();
+		}
+		
 		try {
 
 			// generate by user and secretkey shared with client
 			//token = jwtTokenUtil.generateToken(cx_user, cx_password);
-			//String userFromToken = jwtTokenUtil.getUsernameFromToken(token);
-			//Date dateExpiration = jwtTokenUtil.getExpirationDateFromToken(token);
-			//Boolean isTokenExpired = jwtTokenUtil.isTokenExpired(token);
 
 			// generate by user , secretkey and jwt_token_validity configured in app properties
 			token = jwtTokenUtil.generateToken(usernameToken, secret, jwt_token_validity);
-			String userFromToken = jwtTokenUtil.getUsernameFromToken(token, secret);
-			Date dateExpiration = jwtTokenUtil.getExpirationDateFromToken(token, secret);
-			Boolean isTokenExpired = jwtTokenUtil.isTokenExpired(token, secret);
 
-			System.out.println("token generated : " + token);
-			traces.writeInFileTransaction(folder, file, "userFromToken generated : " + userFromToken);
-			System.out.println("userFromToken generated : " + userFromToken);
-			String dateSysStr = dateFormat.format(new Date());
-			System.out.println("dateSysStr : " + dateSysStr);
-			traces.writeInFileTransaction(folder, file, "dateSysStr : " + dateSysStr);
-			System.out.println("dateExpiration : " + dateExpiration);
-			traces.writeInFileTransaction(folder, file, "dateExpiration : " + dateExpiration);
-			String dateExpirationStr = dateFormat.format(dateExpiration);
-			System.out.println("dateExpirationStr : " + dateExpirationStr);
-			traces.writeInFileTransaction(folder, file, "dateExpirationStr : " + dateExpirationStr);
-			String condition = isTokenExpired == false ? "Non" : "OUI";
-			System.out.println("token is expired : " + condition);
-			traces.writeInFileTransaction(folder, file, "token is expired : " + condition);
-			error_msg = "le token est généré avec succès";
-			error_code = "00";
+			// verification expiration token
+			jso = verifieToken(token);
+
+			if(jso != null && !jso.get("statuscode").equals("00")) {
+				jsoVerified.put("error_msg", "the token generation failed");
+				jsoVerified.put("error_code", jso.get("statuscode"));
+				jsoVerified.put("securtoken_24", "");
+				jsoVerified.put("cx_user", cx_user);
+				jsoVerified.put("mac_value", mac_value);
+				jsoVerified.put("institution_id", institution_id);
+				traces.writeInFileTransaction(folder, file, "jsoVerified : " + jsoVerified.toString());
+				System.out.println("jsoVerified : " + jsoVerified.toString());
+				traces.writeInFileTransaction(folder, file, "*********** Fin generateToken() ************** ");
+				System.out.println("*********** Fin generateToken() ************** ");
+				return jsoVerified.toString();
+			} else {
+				error_msg = "the token successfully generated";
+				error_code = "00";
+			}
+			
 		} catch (Exception ex) {
-			traces.writeInFileTransaction(folder, file, "echec lors de la génération du token");
-			error_msg = "echec lors de la génération du token";
+			traces.writeInFileTransaction(folder, file, "the token generation failed");
+			error_msg = "the token generation failed";
 			error_code = "17";
 		}
 
-		jso.put("error_msg", error_msg);
-		jso.put("error_code", error_code);
-		jso.put("securtoken_24", token);
-		jso.put("cx_user", cx_user);
-		jso.put("mac_value", mac_value);
+		jsoVerified.put("error_msg", error_msg);
+		jsoVerified.put("error_code", error_code);
+		jsoVerified.put("securtoken_24", token);
+		jsoVerified.put("cx_user", cx_user);
+		jsoVerified.put("mac_value", mac_value);
 
-		System.out.println("response : " + jso.toString());
-		traces.writeInFileTransaction(folder, file, "response : " + jso.toString());
+		System.out.println("response : " + jsoVerified.toString());
+		traces.writeInFileTransaction(folder, file, "response : " + jsoVerified.toString());
 
 		// fin
 		System.out.println("*********** Fin generateToken() ************** ");
 		traces.writeInFileTransaction(folder, file, "*********** Fin generateToken() ************** ");
 
-		return jso.toString();
+		return jsoVerified.toString();
 	}
 
 	@RequestMapping(value = "/napspayment/chalenge/token/{token}", method = RequestMethod.GET)
@@ -2033,8 +2132,8 @@ public class APIController {
 			paymentid = (String) jsonOrequest.get("paymentid");
 			amount = (String) jsonOrequest.get("amount");
 			transactionid = (String) jsonOrequest.get("transactionid");
-			//securtoken24 = (String) jsonOrequest.get("securtoken24");
-			//mac_value = (String) jsonOrequest.get("mac_value");
+			securtoken24 = (String) jsonOrequest.get("securtoken24");
+			mac_value = (String) jsonOrequest.get("mac_value");
 			
 			// Merchant info
 			merchantid = (String) jsonOrequest.get("merchantid");
@@ -2057,6 +2156,17 @@ public class APIController {
 		SimpleDateFormat sfdt, sftm = null;
 		Date datdem, datetlc = null;
 		Character E = '\0';
+		
+		JSONObject jso = new JSONObject();
+		// verification expiration token
+		jso = verifieToken(securtoken24);
+		if(!jso.get("statuscode").equals("00")) {
+			traces.writeInFileTransaction(folder, file, "jso : " + jso.toString());
+			System.out.println("jso : " + jso.toString());
+			traces.writeInFileTransaction(folder, file, "*********** Fin status() ************** ");
+			System.out.println("*********** Fin status() ************** ");
+			return jso.toString();
+		}
 
 		try {
 			current_dmd = demandePaiementService.findByCommandeAndComid(orderid, merchantid);
@@ -2147,7 +2257,6 @@ public class APIController {
 			return getMsgError(jsonOrequest, "status 500 Error during status processing", null);
 		}
 
-		JSONObject jso = new JSONObject();
 		String sdt = "", stm = "", sdt1 = "", stm1 = "", sdt0 = "", stm0 = "";
 
 		String rep_auto = "";
@@ -2428,8 +2537,8 @@ public class APIController {
 			amount = (String) jsonOrequest.get("amount");
 			authnumber = (String) jsonOrequest.get("authnumber");
 			transactionid = (String) jsonOrequest.get("transactionid");			
-			//securtoken24 = (String) jsonOrequest.get("securtoken24");
-			//mac_value = (String) jsonOrequest.get("mac_value");
+			securtoken24 = (String) jsonOrequest.get("securtoken24");
+			mac_value = (String) jsonOrequest.get("mac_value");
 
 			// Merchant info
 			merchantid = (String) jsonOrequest.get("merchantid");
@@ -2450,6 +2559,18 @@ public class APIController {
 			traces.writeInFileTransaction(folder, file, "capture 500 malformed json expression " + capture + jerr);
 			return getMsgError(null, "capture 500 malformed json expression " + jerr.getMessage(), null);
 		}
+		
+		JSONObject jso = new JSONObject();
+		// verification expiration token
+		jso = verifieToken(securtoken24);
+		if(!jso.get("statuscode").equals("00")) {
+			traces.writeInFileTransaction(folder, file, "jso : " + jso.toString());
+			System.out.println("jso : " + jso.toString());
+			traces.writeInFileTransaction(folder, file, "*********** Fin capture() ************** ");
+			System.out.println("*********** Fin capture() ************** ");
+			return jso.toString();
+		}
+		
 		String timeStamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
 
 		traces.writeInFileTransaction(folder, file, "capture_" + orderid + timeStamp);
@@ -2694,8 +2815,6 @@ public class APIController {
 			return getMsgError(jsonOrequest, "capture 500 Error during jso data preparation", null);
 		}
 
-		JSONObject jso = new JSONObject();
-
 		try {
 			jso.put("orderid", orderid);
 			jso.put("amount", amount);
@@ -2805,8 +2924,8 @@ public class APIController {
 			paymentid = (String) jsonOrequest.get("paymentid");
 			amount = (String) jsonOrequest.get("amount");
 			transactionid = (String) jsonOrequest.get("transactionid");
-			//securtoken24 = (String) jsonOrequest.get("securtoken24");
-			//mac_value = (String) jsonOrequest.get("mac_value");
+			securtoken24 = (String) jsonOrequest.get("securtoken24");
+			mac_value = (String) jsonOrequest.get("mac_value");
 
 			// Merchant info
 			merchantid = (String) jsonOrequest.get("merchantid");
@@ -2826,6 +2945,17 @@ public class APIController {
 		} catch (Exception jerr) {
 			traces.writeInFileTransaction(folder, file, "refund 500 malformed json expression " + refund + jerr);
 			return getMsgError(null, "refund 500 malformed json expression " + jerr.getMessage(), null);
+		}
+		
+		JSONObject jso = new JSONObject();
+		// verification expiration token
+		jso = verifieToken(securtoken24);
+		if(!jso.get("statuscode").equals("00")) {
+			traces.writeInFileTransaction(folder, file, "jso : " + jso.toString());
+			System.out.println("jso : " + jso.toString());
+			traces.writeInFileTransaction(folder, file, "*********** Fin refund() ************** ");
+			System.out.println("*********** Fin refund() ************** ");
+			return jso.toString();
 		}
 
 		String timeStamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
@@ -3175,8 +3305,6 @@ public class APIController {
 			 * }
 			 */
 
-		JSONObject jso = new JSONObject();
-
 		String refund_id = "";
 
 		try {
@@ -3303,8 +3431,8 @@ public class APIController {
 			paymentid = (String) jsonOrequest.get("paymentid");
 			amount = (String) jsonOrequest.get("amount");
 			transactionid = (String) jsonOrequest.get("transactionid");
-			//securtoken24 = (String) jsonOrequest.get("securtoken24");
-			//mac_value = (String) jsonOrequest.get("mac_value");
+			securtoken24 = (String) jsonOrequest.get("securtoken24");
+			mac_value = (String) jsonOrequest.get("mac_value");
 
 			// Merchant info
 			merchantid = (String) jsonOrequest.get("merchantid");
@@ -3325,6 +3453,18 @@ public class APIController {
 			traces.writeInFileTransaction(folder, file, "reversal 500 malformed json expression " + reversal + jerr);
 			return getMsgError(null, "reversal 500 malformed json expression " + jerr.getMessage(), null);
 		}
+		
+		JSONObject jso = new JSONObject();
+		// verification expiration token
+		jso = verifieToken(securtoken24);
+		if(!jso.get("statuscode").equals("00")) {
+			traces.writeInFileTransaction(folder, file, "jso : " + jso.toString());
+			System.out.println("jso : " + jso.toString());
+			traces.writeInFileTransaction(folder, file, "*********** Fin reversal() ************** ");
+			System.out.println("*********** Fin reversal() ************** ");
+			return jso.toString();
+		}
+		
 		String timeStamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
 
 		traces.writeInFileTransaction(folder, file, "reversal_" + orderid + timeStamp);
@@ -3753,8 +3893,6 @@ public class APIController {
 
 		traces.writeInFileTransaction(folder, file, "Switch status : [" + s_status + "]");
 
-		JSONObject jso = new JSONObject();
-
 		traces.writeInFileTransaction(folder, file, "Generating reversalid");
 
 		String uuid_reversalid, reversalid = "";
@@ -3893,16 +4031,97 @@ public class APIController {
 			email = (String) jsonOrequest.get("email");
 			
 			// Transaction info
-			//securtoken24 = (String) jsonOrequest.get("securtoken24");
-			//mac_value = (String) jsonOrequest.get("mac_value");
+			securtoken24 = (String) jsonOrequest.get("securtoken24");
+			mac_value = (String) jsonOrequest.get("mac_value");
 
 		} catch (Exception jerr) {
 			traces.writeInFileTransaction(folder, file, "cardtoken 500 malformed json expression " + cardtoken + jerr);
+			traces.writeInFileTransaction(folder, file, "*********** Fin getCardTken() ************** ");
+			System.out.println("*********** Fin getCardTken() ************** ");
 			return getMsgError(null, "cardtoken 500 malformed json expression " + jerr.getMessage(), null);
 		}
 
 		JSONObject jso = new JSONObject();
 		try {
+			if(cardnumber.equals("")) {
+				traces.writeInFileTransaction(folder, file, "cardnumber is empty");
+				// Card info
+				jso.put("token", "");
+
+				// Transaction info
+				jso.put("statuscode", "17");
+				jso.put("status", "saving token failed, cardnumber is empty");
+				
+				traces.writeInFileTransaction(folder, file, "*********** Fin getCardTken() ************** ");
+				
+				return jso.toString();
+			} 
+			if(mac_value.equals("")) {
+				traces.writeInFileTransaction(folder, file, "mac_value is empty");
+				// Card info
+				jso.put("token", "");
+
+				// Transaction info
+				jso.put("statuscode", "17");
+				jso.put("status", "saving token failed, mac_value is empty");
+				
+				traces.writeInFileTransaction(folder, file, "*********** Fin getCardTken() ************** ");
+				
+				return jso.toString();
+			}
+			if(securtoken24.equals("")) {
+				traces.writeInFileTransaction(folder, file, "securtoken24 is empty");
+				// Card info
+				jso.put("token", "");
+
+				// Transaction info
+				jso.put("statuscode", "17");
+				jso.put("status", "saving token failed, securtoken24 is empty");
+				
+				traces.writeInFileTransaction(folder, file, "*********** Fin getCardTken() ************** ");
+				
+				return jso.toString();
+			}
+			int i_card_valid = Util.isCardValid(cardnumber);
+
+			if (i_card_valid == 1) {
+				traces.writeInFileTransaction(folder, file, "Error 500 Card number length is incorrect");
+				// Card info
+				jso.put("token", "");
+
+				// Transaction info
+				jso.put("statuscode", "17");
+				jso.put("status", "Error 500 Card number length is incorrect");
+				
+				traces.writeInFileTransaction(folder, file, "*********** Fin getCardTken() ************** ");
+				return jso.toString();
+			}
+
+			if (i_card_valid == 2) {
+				traces.writeInFileTransaction(folder, file,"Error 500 Card number  is not valid incorrect luhn check");
+				// Card info
+				jso.put("token", "");
+
+				// Transaction info
+				jso.put("statuscode", "17");
+				jso.put("status", "Error 500 Card number  is not valid incorrect luhn check");
+						
+				traces.writeInFileTransaction(folder, file, "*********** Fin getCardTken() ************** ");
+				return jso.toString();
+			}
+			// verification expiration token
+			jso = verifieToken(securtoken24);
+			if(!jso.get("statuscode").equals("00")) {
+				// Card info
+				jso.put("token", "");
+				traces.writeInFileTransaction(folder, file, "jso : " + jso.toString());
+				System.out.println("jso : " + jso.toString());
+				traces.writeInFileTransaction(folder, file, "*********** Fin getCardTken() ************** ");
+				System.out.println("*********** Fin getCardTken() ************** ");
+				return jso.toString();
+			}
+			int dateint = Integer.valueOf(expirydate);
+
 			// insert new cardToken
 			CardtokenDto cardtokenDto = new CardtokenDto();
 
@@ -3916,14 +4135,7 @@ public class APIController {
 
 			Calendar dateCalendar = Calendar.getInstance();
 			Date dateToken = dateCalendar.getTime();
-			String dateTokenStr = dateFormat.format(dateToken);
-			Date dateTokenFormated = dateFormat.parse(dateTokenStr);
-			cardtokenDto.setTokenDate(dateTokenFormated);
-			cardtokenDto.setCardNumber(cardnumber);
-			cardtokenDto.setIdMerchant(merchantid);
-			cardtokenDto.setIdMerchantClient(merchantid);
-			cardtokenDto.setFirst_name(fname);
-			cardtokenDto.setLast_name(lname);
+			
 			traces.writeInFileTransaction(folder, file, "cardtokenDto expirydate input : " + expirydate);
 			String anne = String.valueOf(dateCalendar.get(Calendar.YEAR));
 			// get year from date
@@ -3934,8 +4146,32 @@ public class APIController {
 			System.out.println("cardtokenDto expirydate : " + expirydate);
 			traces.writeInFileTransaction(folder, file, "cardtokenDto expirydate formated : " + expirydate);
 			Date dateExp = dateFormatSimple.parse(expirydate);
+			
+			if(dateExp.before(dateToken)) {
+				// Card info
+				jso.put("token", "");
+
+				// Transaction info
+				jso.put("statuscode", "17");
+				jso.put("status", "saving token failed, invalid expiry date (expiry date must be greater than system date)");
+				traces.writeInFileTransaction(folder, file, "jso : " + jso.toString());
+				System.out.println("jso : " + jso.toString());
+				traces.writeInFileTransaction(folder, file, "*********** Fin getCardTken() ************** ");
+				System.out.println("*********** Fin getCardTken() ************** ");
+				return jso.toString();
+			}
 
 			cardtokenDto.setExprDate(dateExp);
+			
+			String dateTokenStr = dateFormat.format(dateToken);
+			Date dateTokenFormated = dateFormat.parse(dateTokenStr);
+			cardtokenDto.setTokenDate(dateTokenFormated);
+			cardtokenDto.setCardNumber(cardnumber);
+			cardtokenDto.setIdMerchant(merchantid);
+			cardtokenDto.setIdMerchantClient(merchantid);
+			cardtokenDto.setFirst_name(fname);
+			cardtokenDto.setLast_name(lname);
+
 			cardtokenDto.setHolderName(holdername);
 			cardtokenDto.setMcc(merchantid);
 
@@ -3951,13 +4187,19 @@ public class APIController {
 			traces.writeInFileTransaction(folder, file, "Insert into table CARDTOKEN OK");
 
 		} catch (Exception ex) {
-			traces.writeInFileTransaction(folder, file, "Error during CARDTOKEN Saving : " + ex);
+			traces.writeInFileTransaction(folder, file, "cardtoken 500 Error during CARDTOKEN Saving : " + ex.getMessage());
 			// Card info
 			jso.put("token", "");
 
 			// Transaction info
 			jso.put("statuscode", "17");
 			jso.put("status", "saving token failed ");
+			
+			
+			traces.writeInFileTransaction(folder, file, "*********** Fin getCardTken() ************** ");
+			System.out.println("*********** Fin getCardTken() ************** ");
+			
+			return jso.toString();
 		}
 
 		traces.writeInFileTransaction(folder, file, "*********** Fin getCardTken() ************** ");
@@ -3965,7 +4207,7 @@ public class APIController {
 
 		return jso.toString();
 	}
-
+	
 	@PostMapping(value = "/napspayment/deleteCardtoken", consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public String deleteCardTken(@RequestHeader MultiValueMap<String, String> header, @RequestBody String cardtoken,
@@ -4051,6 +4293,72 @@ public class APIController {
 
 		JSONObject jso = new JSONObject();
 		try {
+			if(merchantid.equals("")) {
+				traces.writeInFileTransaction(folder, file, "merchantid is empty");
+				// Card info
+				jso.put("token", token);
+
+				// Transaction info
+				jso.put("statuscode", "17");
+				jso.put("status", "delete token failed, merchantid is empty");
+				
+				traces.writeInFileTransaction(folder, file, "*********** Fin deleteCardTken() ************** ");
+				
+				return jso.toString();
+			}
+			if(token.equals("")) {
+				traces.writeInFileTransaction(folder, file, "token is empty");
+				// Card info
+				jso.put("token", "");
+
+				// Transaction info
+				jso.put("statuscode", "17");
+				jso.put("status", "delete token failed, token is empty");
+				
+				traces.writeInFileTransaction(folder, file, "*********** Fin deleteCardTken() ************** ");
+				
+				return jso.toString();
+			}
+			if(cardnumber.equals("")) {
+				traces.writeInFileTransaction(folder, file, "cardnumber is empty");
+				// Card info
+				jso.put("token", token);
+
+				// Transaction info
+				jso.put("statuscode", "17");
+				jso.put("status", "delete token failed, cardnumber is empty");
+				
+				traces.writeInFileTransaction(folder, file, "*********** Fin deleteCardTken() ************** ");
+				
+				return jso.toString();
+			}
+			int i_card_valid = Util.isCardValid(cardnumber);
+
+			if (i_card_valid == 1) {
+				traces.writeInFileTransaction(folder, file, "Error 500 Card number length is incorrect");
+				// Card info
+				jso.put("token", token);
+
+				// Transaction info
+				jso.put("statuscode", "17");
+				jso.put("status", "Error 500 Card number length is incorrect");
+				
+				traces.writeInFileTransaction(folder, file, "*********** Fin deleteCardTken() ************** ");
+				return jso.toString();
+			}
+
+			if (i_card_valid == 2) {
+				traces.writeInFileTransaction(folder, file,"Error 500 Card number is not valid incorrect luhn check");
+				// Card info
+				jso.put("token", token);
+
+				// Transaction info
+				jso.put("statuscode", "17");
+				jso.put("status", "Error 500 Card number is not valid incorrect luhn check");
+						
+				traces.writeInFileTransaction(folder, file, "*********** Fin deleteCardTken() ************** ");
+				return jso.toString();
+			}
 			// delete cardToken
 
 			CardtokenDto cardTokenTodelete = cardtokenService.findByIdMerchantAndToken(merchantid, cardnumber);
@@ -4237,7 +4545,49 @@ public class APIController {
 		System.out.println("*********** Fin testapi ************** ");
 		return jso.toString();
 	}
+	
+	public JSONObject verifieToken(String securtoken24) {
+		JSONObject jso = new JSONObject();
+		
+		if(!securtoken24.equals("")) {
+			JwtTokenUtil jwtTokenUtil = new JwtTokenUtil();
+			String token = securtoken24;
+			try {
+				String userFromToken = jwtTokenUtil.getUsernameFromToken(token, secret);
+				Date dateExpiration = jwtTokenUtil.getExpirationDateFromToken(token, secret);
+				Boolean isTokenExpired = jwtTokenUtil.isTokenExpired(token, secret);
 
+				traces.writeInFileTransaction(folder, file, "userFromToken generated : " + userFromToken);
+				String dateSysStr = dateFormat.format(new Date());
+				traces.writeInFileTransaction(folder, file, "dateSysStr : " + dateSysStr);
+				traces.writeInFileTransaction(folder, file, "dateExpiration : " + dateExpiration);
+				String dateExpirationStr = dateFormat.format(dateExpiration);
+				traces.writeInFileTransaction(folder, file, "dateExpirationStr : " + dateExpirationStr);
+				String condition = isTokenExpired == false ? "NO" : "YES";
+				traces.writeInFileTransaction(folder, file, "token is expired : " + condition);
+				if(condition.equalsIgnoreCase("YES")) {
+					traces.writeInFileTransaction(folder, file, "Error 500 securtoken24 is expired");
+
+					// Transaction info
+					jso.put("statuscode", "17");
+					jso.put("status", "Error 500 securtoken24 is expired");
+					
+					return jso;
+				} else {
+					jso.put("statuscode", "00");
+				}
+			} catch (Exception ex) {
+				// Transaction info
+				jso.put("statuscode", "17");
+				jso.put("status", "Error 500 securtoken24 " + ex.getMessage());
+				System.out.println(jso.get("status"));
+				
+				return jso;
+			}
+		}
+		return jso;
+	}
+	
 	public String getMsgError(JSONObject jsonOrequest, String msg, String coderep) {
 		traces.writeInFileTransaction(folder, file, "*********** Start getMsgError() ************** ");
 		System.out.println("*********** Start getMsgError() ************** ");

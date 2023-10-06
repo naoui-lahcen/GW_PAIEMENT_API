@@ -24,7 +24,6 @@ public class Traces {
 
 		LocalDateTime date = LocalDateTime.now(ZoneId.systemDefault());
 		String folder = date.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
-
 		String path = "D:/GW_LOGS/" + folder;
 
 		File myObj = new File(path);
@@ -50,6 +49,10 @@ public class Traces {
 	public void writeInFileTransaction(String folder, String file, String input) {
 		LocalDateTime date = LocalDateTime.now(ZoneId.systemDefault());
 		String dateTr = date.format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS"));
+		// 2023-10-06 
+		// traces vide dans le fichier d'aujourdh'ui dans le dossier ddMMyyyy et par contre il trace dans le dossier (dd-1MMyyyy) correctement
+		// corerection initiation du dossier dans chaque trace
+		folder = date.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
 		try {
 
 			FileWriter myWriter = new FileWriter("D:/GW_LOGS/" + folder + "/" + file + ".trc", true);

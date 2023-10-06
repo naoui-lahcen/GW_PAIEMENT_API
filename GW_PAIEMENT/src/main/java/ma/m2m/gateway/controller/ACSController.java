@@ -1194,8 +1194,16 @@ public class ACSController {
 						jso.put("lname", lname);
 						jso.put("email", email);
 
+						// Link ACS chalenge info
+						jso.put("linkacs", link_chalenge + dmd.getTokencommande());
+
+						// insertion htmlCreq dans la demandePaiement
+						dmd.setCreq(threeDsecureResponse.getHtmlCreq());
 						dmd.setDem_xid(threeDSServerTransID);
 						demandePaiementService.save(dmd);
+						
+						System.out.println("link_chalenge " + link_chalenge + dmd.getTokencommande());
+						traces.writeInFileTransaction(folder, file, "link_chalenge " + link_chalenge + dmd.getTokencommande());
 
 						System.out.println("autorization api response chalenge :  [" + jso.toString() + "]");
 						traces.writeInFileTransaction(folder, file,

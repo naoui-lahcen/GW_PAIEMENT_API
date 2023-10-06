@@ -3,20 +3,12 @@ package ma.m2m.gateway.risk;
 import static ma.m2m.gateway.config.FlagActivation.ACTIVE;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-
 import org.springframework.beans.factory.annotation.Autowired;
-
 import ma.m2m.gateway.Utils.Util;
 import ma.m2m.gateway.dto.ControlRiskCmrDto;
+import ma.m2m.gateway.dto.EmetteurDto;
 import ma.m2m.gateway.dto.HistoAutoGateDto;
-import ma.m2m.gateway.model.ControlRiskCmr;
-import ma.m2m.gateway.repository.ControlRiskCmrDao;
-import ma.m2m.gateway.repository.HistoAutoGateDao;
 import ma.m2m.gateway.service.ControlRiskCmrService;
-import ma.m2m.gateway.service.HistoAutoGateService;
-
 import static ma.m2m.gateway.Utils.StringUtils.isNullOrEmpty;
 
 
@@ -30,11 +22,8 @@ public class GWRiskAnalysis {
 
 	/* ------------------------ DAO INSTANCES ------------------------- */
 	@Autowired
-	private ControlRiskCmrDao controlRiskCmrDAO;
-	@Autowired
 	private ControlRiskCmrService controlRiskCmrService;
-	@Autowired
-	private HistoAutoGateService histoAutoGateService;
+
 	
 	/* --- LOG INSTANCES --- */
 	private String logFolder;
@@ -46,40 +35,59 @@ public class GWRiskAnalysis {
 	}
 
 	public String executeRiskControls(String numCmr, double montant, String cardnumber,
-			ControlRiskCmrDto controlRiskCmr,List<HistoAutoGateDto> porteurFlowPerDay) throws GWRiskAnalysisException {
-		//ControlRiskCmrDto controlRiskCmr = controlRiskCmrService.findByNumCommercant(numCmr);
+			ControlRiskCmrDto controlRiskCmr, Double globalFlowPerDay, List<HistoAutoGateDto> porteurFlowPerDay,List<EmetteurDto> listBin) throws GWRiskAnalysisException {
+		
 		if (controlRiskCmr == null) {
-			return "500 ControlRiskCmr misconfigured in DB or not existing ";
+			return "ControlRiskCmr misconfigured in DB or not existing ";
 		}
 
 		Util.writeInFileTransaction(logFolder, logFile, "COMMERCANT RISK PARAMS : " + controlRiskCmr.toString());
 		
 		/* ------------------------- Controle de montant max autorisé par transaction ----------------------------*/
 		if(controlRiskCmr.getTransactionMaxAmount() != null && controlRiskCmr.getTransactionMaxAmount() > 0) {
+			Util.writeInFileTransaction(logFolder, logFile, "Controle de montant max autorisé par transaction");
+			Util.writeInFileTransaction(logFolder, logFile, "montant / TransactionMaxAmount : " + montant +"/" + controlRiskCmr.getTransactionMaxAmount());
+			
 			if(montant > controlRiskCmr.getTransactionMaxAmount()) {
 				Util.writeInFileTransaction(logFolder, logFile, "[ERROR_RISK_GW_CONTROLS] : " + GWRiskAnalysisMsgs.TRANSACTION_MAX_AMOUNT.toString());
-				//throw new GWRiskAnalysisException(GWRiskAnalysisMsgs.TRANSACTION_MAX_AMOUNT.getValueFR());
 				return GWRiskAnalysisMsgs.TRANSACTION_MAX_AMOUNT.getValueFR();
 			}
 		}	
 		/* --------------------------------------------------------------------------------------------------------*/
 		
 		/* --------------------------------- Controle des cartes internationales -----------------------------------------*/
-		if (isNullOrEmpty(controlRiskCmr.getAcceptInternational()) && (controlRiskCmr.getAcceptInternational() != null)
-						&& !ACTIVE.getFlag().equalsIgnoreCase(controlRiskCmr.getAcceptInternational().trim())) {
-			Util.writeInFileTransaction(logFolder, logFile, "[ERROR_RISK_GW_CONTROLS] : " + GWRiskAnalysisMsgs.INTERNATIONAL_CARD_NOT_PERMITTED_FOR_MERCAHNT.toString());
-			//throw new GWRiskAnalysisException(GWRiskAnalysisMsgs.INTERNATIONAL_CARD_NOT_PERMITTED_FOR_MERCAHNT.getValueFR());
-			return GWRiskAnalysisMsgs.INTERNATIONAL_CARD_NOT_PERMITTED_FOR_MERCAHNT.getValueFR();
+		if (isNullOrEmpty(controlRiskCmr.getAcceptInternational()) || (controlRiskCmr.getAcceptInternational() != null
+						&& !ACTIVE.getFlag().equalsIgnoreCase(controlRiskCmr.getAcceptInternational().trim()))) {
+			
+			Util.writeInFileTransaction(logFolder, logFile, "Controle des cartes internationales");
+
+			if(listBin.size() == 0) {
+				Util.writeInFileTransaction(logFolder, logFile, "Le cmr n'accepte pas les trs I et cette carte est I car son bin n'est pas paramétré dans la table EMETTEIR");
+
+				Util.writeInFileTransaction(logFolder, logFile, "[ERROR_RISK_GW_CONTROLS] : " + GWRiskAnalysisMsgs.INTERNATIONAL_CARD_NOT_PERMITTED_FOR_MERCAHNT.toString());
+				return GWRiskAnalysisMsgs.INTERNATIONAL_CARD_NOT_PERMITTED_FOR_MERCAHNT.getValueFR();
+			} else {
+				Util.writeInFileTransaction(logFolder, logFile, "Carte National N ");
+			}
 		}
 		/* ----------------------------------------------------------------------------------------------------------------*/
 		
 		/* --------------------------------- Controle de flux journalier autorisé par commerçant  ----------------------------------*/
 		if(!isNullOrEmpty(controlRiskCmr.getIsGlobalFlowControlActive()) && ACTIVE.getFlag().equalsIgnoreCase(controlRiskCmr.getIsGlobalFlowControlActive())) {
-			double globalFlowPerDay = histoAutoGateService.getCommercantGlobalFlowPerDay(numCmr);
 			
-			if(controlRiskCmr.getGlobalFlowPerDay() != null && globalFlowPerDay > controlRiskCmr.getGlobalFlowPerDay()) {
+			Util.writeInFileTransaction(logFolder, logFile, "Controle de flux journalier autorisé par commerçant");
+
+			if(globalFlowPerDay == null) {
+				globalFlowPerDay = 0.00;
+			}
+			Util.writeInFileTransaction(logFolder, logFile, "globalFlowPerDay / controlRiskCmrGlobalFlowPerDay : " + globalFlowPerDay +"/" + controlRiskCmr.getGlobalFlowPerDay());
+			
+			Double globalFlowPerDayWithCurrentAmount=globalFlowPerDay + montant;
+			
+			Util.writeInFileTransaction(logFolder, logFile, "globalFlowPerDayWithCurrentAmount / controlRiskCmrGlobalFlowPerDay : " + globalFlowPerDayWithCurrentAmount +"/" + globalFlowPerDay);
+			
+			if(controlRiskCmr.getGlobalFlowPerDay() != null && globalFlowPerDayWithCurrentAmount > controlRiskCmr.getGlobalFlowPerDay()) {
 				Util.writeInFileTransaction(logFolder, logFile, "[ERROR_RISK_GW_CONTROLS] : " + GWRiskAnalysisMsgs.DAILY_QUOTA_AUTHORIZATIONS_EXCEEDED_FOR_MERCAHNT.toString());
-				//throw new GWRiskAnalysisException(GWRiskAnalysisMsgs.DAILY_QUOTA_AUTHORIZATIONS_EXCEEDED_FOR_MERCAHNT.getValueFR());
 				return GWRiskAnalysisMsgs.DAILY_QUOTA_AUTHORIZATIONS_EXCEEDED_FOR_MERCAHNT.getValueFR();
 			}
 		}
@@ -89,19 +97,31 @@ public class GWRiskAnalysis {
 		if((controlRiskCmr.getFlowCardPerDay() != null && controlRiskCmr.getFlowCardPerDay() > 0) 
 				|| (controlRiskCmr.getNumberOfTransactionCardPerDay() != null && controlRiskCmr.getNumberOfTransactionCardPerDay() > 0)) {
 			
+			Util.writeInFileTransaction(logFolder, logFile, "Controle de flux journalier autorisé par client (porteur de carte)");
+
 			Double flowCardPerDay = 0.0;
 			int nbrTrxCardPerDay = porteurFlowPerDay.size();
+			Util.writeInFileTransaction(logFolder, logFile, "nbrTrxCardPerDay : " + nbrTrxCardPerDay);
+			
 			for(HistoAutoGateDto hist : porteurFlowPerDay) {
 				flowCardPerDay += hist.getHatMontant();
 			}
+			
+			Util.writeInFileTransaction(logFolder, logFile, "controlRiskCmrFlowCardPerDay /  flowCardPerDay: " + controlRiskCmr.getFlowCardPerDay() +"/" + flowCardPerDay);
+			
+			Double flowCardPerDayWithCurrentAmount=flowCardPerDay + montant;
+			
+			Util.writeInFileTransaction(logFolder, logFile, "controlRiskCmrFlowCardPerDay / flowCardPerDayWithCurrentAmount : " + controlRiskCmr.getFlowCardPerDay() +"/" + flowCardPerDayWithCurrentAmount);
+			
 			if(flowCardPerDay >= controlRiskCmr.getFlowCardPerDay()) {
 				Util.writeInFileTransaction(logFolder, logFile, "[ERROR_RISK_GW_CONTROLS] : " + GWRiskAnalysisMsgs.DAILY_QUOTA_AUTHORIZATIONS_EXCEEDED_FOR_CARTE.toString());
-				//throw new GWRiskAnalysisException(GWRiskAnalysisMsgs.DAILY_QUOTA_AUTHORIZATIONS_EXCEEDED_FOR_CARTE.getValueFR());
 				return GWRiskAnalysisMsgs.DAILY_QUOTA_AUTHORIZATIONS_EXCEEDED_FOR_CARTE.getValueFR();
 			}
+			
+			Util.writeInFileTransaction(logFolder, logFile, "nbrTrxCardPerDay / NumberOfTransactionCardPerDay : " + nbrTrxCardPerDay +"/" + controlRiskCmr.getNumberOfTransactionCardPerDay());
+			
 			if(nbrTrxCardPerDay >= controlRiskCmr.getNumberOfTransactionCardPerDay()) {
 				Util.writeInFileTransaction(logFolder, logFile, "[ERROR_RISK_GW_CONTROLS] : " + GWRiskAnalysisMsgs.DAILY_NBR_TRANSACTIONS_EXCEEDED_FOR_CARTE.toString());
-				//throw new GWRiskAnalysisException(GWRiskAnalysisMsgs.DAILY_NBR_TRANSACTIONS_EXCEEDED_FOR_CARTE.getValueFR());
 				return GWRiskAnalysisMsgs.DAILY_NBR_TRANSACTIONS_EXCEEDED_FOR_CARTE.getValueFR();
 			}
 		}
@@ -112,7 +132,7 @@ public class GWRiskAnalysis {
 	
 	public String executeControlInternationalCarte(String numCmr) throws GWRiskAnalysisException {
 		
-		ControlRiskCmr controlRiskCmr = controlRiskCmrDAO.findByNumCommercant(numCmr);
+		ControlRiskCmrDto controlRiskCmr = controlRiskCmrService.findByNumCommercant(numCmr);
 		if (controlRiskCmr == null) 
 			return "KO";
 		Util.writeInFileTransaction(logFolder, logFile, "COMMERCANT RISK PARAMS : " + controlRiskCmr.toString());
