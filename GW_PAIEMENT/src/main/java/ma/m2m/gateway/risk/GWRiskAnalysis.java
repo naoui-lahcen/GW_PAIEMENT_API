@@ -84,7 +84,7 @@ public class GWRiskAnalysis {
 			
 			Double globalFlowPerDayWithCurrentAmount=globalFlowPerDay + montant;
 			
-			Util.writeInFileTransaction(logFolder, logFile, "globalFlowPerDayWithCurrentAmount / controlRiskCmrGlobalFlowPerDay : " + globalFlowPerDayWithCurrentAmount +"/" + globalFlowPerDay);
+			Util.writeInFileTransaction(logFolder, logFile, "globalFlowPerDayWithCurrentAmount / controlRiskCmrGlobalFlowPerDay : " + globalFlowPerDayWithCurrentAmount +"/" + controlRiskCmr.getGlobalFlowPerDay());
 			
 			if(controlRiskCmr.getGlobalFlowPerDay() != null && globalFlowPerDayWithCurrentAmount > controlRiskCmr.getGlobalFlowPerDay()) {
 				Util.writeInFileTransaction(logFolder, logFile, "[ERROR_RISK_GW_CONTROLS] : " + GWRiskAnalysisMsgs.DAILY_QUOTA_AUTHORIZATIONS_EXCEEDED_FOR_MERCAHNT.toString());
@@ -113,7 +113,7 @@ public class GWRiskAnalysis {
 			
 			Util.writeInFileTransaction(logFolder, logFile, "controlRiskCmrFlowCardPerDay / flowCardPerDayWithCurrentAmount : " + controlRiskCmr.getFlowCardPerDay() +"/" + flowCardPerDayWithCurrentAmount);
 			
-			if(flowCardPerDay >= controlRiskCmr.getFlowCardPerDay()) {
+			if(flowCardPerDayWithCurrentAmount >= controlRiskCmr.getFlowCardPerDay()) {
 				Util.writeInFileTransaction(logFolder, logFile, "[ERROR_RISK_GW_CONTROLS] : " + GWRiskAnalysisMsgs.DAILY_QUOTA_AUTHORIZATIONS_EXCEEDED_FOR_CARTE.toString());
 				return GWRiskAnalysisMsgs.DAILY_QUOTA_AUTHORIZATIONS_EXCEEDED_FOR_CARTE.getValueFR();
 			}
