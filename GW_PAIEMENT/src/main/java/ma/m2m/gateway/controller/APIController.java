@@ -503,11 +503,15 @@ public class APIController {
 					dmdSaved.getDem_pan(), controlRiskCmr, globalFlowPerDay, porteurFlowPerDay, listBin);
 			
 			if (!msg.equalsIgnoreCase("OK")) {
+				dmdSaved.setEtat_demande("REJET_RISK_CTRL");
+				demandePaiementService.save(dmdSaved);
 				traces.writeInFileTransaction(folder, file, "authorization 500 " + msg);
 				return getMsgError(jsonOrequest, "authorization 500 " + msg, null);
 			}
 			// fin control risk
 		} catch (Exception e) {
+			dmdSaved.setEtat_demande("REJET_RISK_CTRL");
+			demandePaiementService.save(dmdSaved);
 			traces.writeInFileTransaction(folder, file,
 					"authorization 500 ControlRiskCmr misconfigured in DB or not existing merchantid:[" + dmdSaved.getComid()
 							+ e);
@@ -1408,6 +1412,7 @@ public class APIController {
 				// insertion htmlCreq dans la demandePaiement
 				dmd.setCreq(threeDsecureResponse.getHtmlCreq());
 				dmd.setDem_xid(threeDSServerTransID);
+				dmd.setEtat_demande("SND_TO_ACS");
 				demandePaiementService.save(dmd);
 
 				System.out.println("link_chalenge " + link_chalenge + dmd.getTokencommande());

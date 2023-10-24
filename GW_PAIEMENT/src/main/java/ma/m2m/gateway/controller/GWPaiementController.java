@@ -775,6 +775,8 @@ public class GWPaiementController {
 					demandeDto.getDem_pan(), controlRiskCmr, globalFlowPerDay, porteurFlowPerDay, listBin);
 			
 			if(!msg.equalsIgnoreCase("OK")) {
+				demandeDto.setEtat_demande("REJET_RISK_CTRL");
+				demandePaiementService.save(demandeDto);
 				traces.writeInFileTransaction(folder, file, "payer 500 Error " + msg);
 				demandeDto = new DemandePaiementDto();
 				demandeDto.setMsgRefus(msg);
@@ -784,6 +786,8 @@ public class GWPaiementController {
 			}
 			// fin control risk
 		} catch (Exception e) {
+			demandeDto.setEtat_demande("REJET_RISK_CTRL");
+			demandePaiementService.save(demandeDto);
 			traces.writeInFileTransaction(folder, file,
 					"payer 500 ControlRiskCmr misconfigured in DB or not existing merchantid:[" + demandeDto.getComid() + e);
 			demandeDto = new DemandePaiementDto();
@@ -1723,6 +1727,7 @@ public class GWPaiementController {
 				//		"<form  action='https://acs2.sgmaroc.com:443/lacs2' method='post' enctype='application/x-www-form-urlencoded'><input type='hidden' name='creq' value='ewogICJtZXNzYWdlVmVyc2lvbiI6ICIyLjEuMCIsCiAgInRocmVlRFNTZXJ2ZXJUcmFuc0lEIjogIjBlYmU1ODEwLTlhMDMtNGYzZi05MDgzLTJlZWNhNjhiMjY2YSIsCiAgImFjc1RyYW5zSUQiOiAiMmM5MjAxNDgtNjhiOC00ZjA0LWJhODQtY2RiYTFlOTM5MDM3IiwKICAiY2hhbGxlbmdlV2luZG93U2l6ZSI6ICIwNSIsCiAgIm1lc3NhZ2VUeXBlIjogIkNSZXEiCn0=' /></form>");
 				dmd.setCreq(threeDsecureResponse.getHtmlCreq());
 				dmd.setDem_xid(threeDSServerTransID);
+				dmd.setEtat_demande("SND_TO_ACS");
 				demandeDto = demandePaiementService.save(dmd);
 				demandeDto = dmd;
 				model.addAttribute("demandeDto", demandeDto);

@@ -428,6 +428,7 @@ public class ACSController {
 							"********************* responseMPI equal Y *********************");
 
 					dmd.setDem_xid(threeDSServerTransID);
+					dmd.setEtat_demande("RETOUR_ACS_AUTH_OK");
 					demandePaiementService.save(dmd);
 					
 					try {
@@ -1274,6 +1275,10 @@ public class ACSController {
 				demandeP = demandePaiementService.findByDem_xid(cleanCres.getThreeDSServerTransID());
 
 				if (demandeP != null) {
+					
+					demandeP.setEtat_demande("RETOUR_ACS_NON_AUTH");
+					demandePaiementService.save(demandeP);
+					
 					msgRefus = "La transaction en cours n’a pas abouti (TransStatus = N), votre compte ne sera pas débité, merci de réessayer .";
 					String data_noncrypt = "id_commande=" + demandeP.getCommande() + "&nomprenom="
 							+ demandeP.getPrenom() + "&email=" + demandeP.getEmail() + "&montant="
