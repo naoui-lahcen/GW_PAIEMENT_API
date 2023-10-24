@@ -473,6 +473,13 @@ public class GWPaiementController {
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
 		}
+		
+		if(page.equals("napspayment")) {
+			demandeDto.setEtat_demande("P_CHRG_OK");
+			demandePaiementService.save(demandeDto);
+			System.out.println("update Demandepaiement status to P_CHRG_OK");
+			traces.writeInFileTransaction(folder, file, "update Demandepaiement status to P_CHRG_OK");
+		}
 
 		traces.writeInFileTransaction(folder, file, "*********** Fin affichage page ************** ");
 		System.out.println("*********** Fin affichage page ************** ");
