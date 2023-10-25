@@ -562,7 +562,6 @@ public class GWPaiementController {
 		traces.writeInFileTransaction(folder, file, "*********** Start payer () ************** ");
 		System.out.println("*********** Start payer () ************** ");
 		System.out.println("demandeDto commande : " + demandeDto.getCommande());
-		System.out.println("demandeDto montant : " + demandeDto.getMontant());
 
 		String capture, currency, orderid, recurring, amount, promoCode, transactionid, capture_id, merchantid,
 				merchantname, websiteName, websiteid, callbackUrl, cardnumber, token, expirydate, holdername, cvv,
@@ -582,6 +581,9 @@ public class GWPaiementController {
 		try {
 			// Transaction info
 			orderid = demandeDto.getCommande();
+			if(demandeDto.getMontant() == null) {
+				demandeDto.setMontant(0.00);
+			}
 			amount = String.valueOf(demandeDto.getMontant());
 			capture = "";
 			currency = "504";
@@ -619,7 +621,7 @@ public class GWPaiementController {
 
 		} catch (Exception jerr) {
 			traces.writeInFileTransaction(folder, file, "payer 500 malformed json expression" + jerr);
-			demandeDto.setMsgRefus("malformed json expression");
+			demandeDto.setMsgRefus("données mal formées");
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
 			return page;
@@ -632,7 +634,7 @@ public class GWPaiementController {
 			traces.writeInFileTransaction(folder, file,
 					"payer 500 Merchant misconfigured in DB or not existing orderid:[" + orderid + "] and merchantid:["
 							+ merchantid + "]" + e);
-			demandeDto.setMsgRefus("Merchant misconfigured in DB or not existing");
+			demandeDto.setMsgRefus("Commerçant mal configuré dans la base de données ou inexistant");
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
 			return page;
@@ -642,7 +644,7 @@ public class GWPaiementController {
 			traces.writeInFileTransaction(folder, file,
 					"payer 500 Merchant misconfigured in DB or not existing orderid:[" + orderid + "] and merchantid:["
 							+ merchantid + "]");
-			demandeDto.setMsgRefus("Merchant misconfigured in DB or not existing");
+			demandeDto.setMsgRefus("Commerçant mal configuré dans la base de données ou inexistant");
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
 			return page;
@@ -652,7 +654,7 @@ public class GWPaiementController {
 			traces.writeInFileTransaction(folder, file,
 					"payer 500 Merchant misconfigured in DB or not existing orderid:[" + orderid + "] and merchantid:["
 							+ merchantid + "]");
-			demandeDto.setMsgRefus("Merchant misconfigured in DB or not existing");
+			demandeDto.setMsgRefus("Commerçant mal configuré dans la base de données ou inexistant");
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
 			return page;
@@ -662,7 +664,7 @@ public class GWPaiementController {
 			traces.writeInFileTransaction(folder, file,
 					"payer 500 Merchant misconfigured in DB or not existing orderid:[" + orderid + "] and merchantid:["
 							+ merchantid + "]");
-			demandeDto.setMsgRefus("Merchant misconfigured in DB or not existing");
+			demandeDto.setMsgRefus("Commerçant mal configuré dans la base de données ou inexistant");
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
 			return page;
@@ -677,7 +679,7 @@ public class GWPaiementController {
 					"payer 500 InfoCommercant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]" + e);
 
-			demandeDto.setMsgRefus("InfoCommercant misconfigured in DB or not existing");
+			demandeDto.setMsgRefus("InfoCommercant mal configuré dans la base de données ou inexistant");
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
 			return page;
@@ -688,7 +690,7 @@ public class GWPaiementController {
 					"payer 500 InfoCommercantDto misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]");
 
-			demandeDto.setMsgRefus("InfoCommercantDto misconfigured in DB or not existing");
+			demandeDto.setMsgRefus("InfoCommercant mal configuré dans la base de données ou inexistant");
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
 			return page;
@@ -699,7 +701,7 @@ public class GWPaiementController {
 		if (i_card_valid == 1) {
 			traces.writeInFileTransaction(folder, file, "payer 500 Card number length is incorrect orderid:[" + orderid
 					+ "] and merchantid:[" + merchantid + "]");
-			demandeDto.setMsgRefus("Card number length is incorrect");
+			demandeDto.setMsgRefus("La longueur du numéro de la carte est incorrecte");
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
 			return page;
@@ -709,7 +711,7 @@ public class GWPaiementController {
 			traces.writeInFileTransaction(folder, file,
 					"payer 500 Card number  is not valid incorrect luhn check orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]");
-			demandeDto.setMsgRefus("Card number  is not valid");
+			demandeDto.setMsgRefus("Le numéro de la carte est invalide");
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
 			return page;
@@ -740,7 +742,7 @@ public class GWPaiementController {
 			traces.writeInFileTransaction(folder, file,
 					"payer 500 Error during DEMANDE_PAIEMENT insertion for given orderid:[" + orderid + "]"
 							+ err1);
-			demandeDto.setMsgRefus("Error during DEMANDE_PAIEMENT insertion");
+			demandeDto.setMsgRefus("Erreur lors de l'insertion DEMANDE_PAIEMENT");
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
 			return page;
@@ -815,7 +817,7 @@ public class GWPaiementController {
 			traces.writeInFileTransaction(folder, file,
 					"payer 500 Error during  date formatting for given orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]" + err2);
-			demandeDto.setMsgRefus("Error during  date formatting");
+			demandeDto.setMsgRefus("Erreur lors du formatage de la date");
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
 			return page;
@@ -912,7 +914,7 @@ public class GWPaiementController {
 					"demandePaiement not found !!!! demandePaiement = null  / received idDemande from MPI => "
 							+ idDemande);
 			demandeDto.setMsgRefus(
-					"La transaction en cours n’a pas abouti (demandePaiement not found), votre compte ne sera pas débité, merci de réessayer .");
+					"La transaction en cours n’a pas abouti (DemandePaiement introuvable), votre compte ne sera pas débité, merci de réessayer .");
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
 			return page;
@@ -978,7 +980,7 @@ public class GWPaiementController {
 				traces.writeInFileTransaction(folder, file,
 						"payer 500 Error during  amount formatting for given orderid:[" + orderid
 								+ "] and merchantid:[" + merchantid + "]" + err3);
-				demandeDto.setMsgRefus("Error during  amount formatting");
+				demandeDto.setMsgRefus("Erreur lors du formatage du montant");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 				return page;
@@ -1044,7 +1046,7 @@ public class GWPaiementController {
 						"payer 500 cvv not set , reccuring flag set to N, cvv must be present in normal transaction");
 
 				demandeDto.setMsgRefus(
-						"La transaction en cours n’a pas abouti (cvv must be present in normal transaction), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti (cvv doit être présent dans la transaction normale), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 				return page;
@@ -1095,7 +1097,7 @@ public class GWPaiementController {
 							"payer 500 Error during switch tlv buildup for given orderid:[" + orderid
 									+ "] and merchantid:[" + merchantid + "]" + err4);
 					demandeDto.setMsgRefus(
-							"La transaction en cours n’a pas abouti (Error during switch tlv buildup), votre compte ne sera pas débité, merci de réessayer .");
+							"La transaction en cours n’a pas abouti (Erreur lors de la création du switch tlv), votre compte ne sera pas débité, merci de réessayer .");
 					model.addAttribute("demandeDto", demandeDto);
 					page = "result";
 					return page;
@@ -1133,8 +1135,12 @@ public class GWPaiementController {
 				if (!s_conn) {
 					traces.writeInFileTransaction(folder, file, "Switch  malfunction cannot connect!!!");
 
-					return "payer 500 Error Switch communication s_conn false" + "switch ip:[" + sw_s
-							+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]";
+					traces.writeInFileTransaction(folder, file, "payer 500 Error Switch communication s_conn false switch ip:[" + sw_s
+							+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
+					demandeDto.setMsgRefus("Un dysfonctionnement du switch ne peut pas se connecter !!!");
+					model.addAttribute("demandeDto", demandeDto);
+					page = "result";
+					return page;
 				}
 
 				if (s_conn) {
@@ -1157,7 +1163,7 @@ public class GWPaiementController {
 				traces.writeInFileTransaction(folder, file, "Switch  malfunction ConnectException !!!" + e);
 				switch_ko = 1;
 				demandeDto.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Switch  malfunction ConnectException), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti (Un dysfonctionnement du switch), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 				return page;
@@ -1171,7 +1177,7 @@ public class GWPaiementController {
 						"payer 500 Error Switch communication SocketTimeoutException" + "switch ip:[" + sw_s
 								+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
 				demandeDto.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Error Switch communication SocketTimeoutException), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti (Erreur de communication du switch SocketTimeoutException), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 				return page;
@@ -1184,7 +1190,7 @@ public class GWPaiementController {
 				traces.writeInFileTransaction(folder, file, "payer 500 Error Switch communication IOException"
 						+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
 				demandeDto.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Error Switch communication IOException), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti (Erreur de communication du switch IOException), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 				return page;
@@ -1195,7 +1201,7 @@ public class GWPaiementController {
 				switch_ko = 1;
 				e.printStackTrace();
 				demandeDto.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Switch  malfunction Exception), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti (Dysfonctionnement du switch Exception), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 				return page;
@@ -1209,7 +1215,7 @@ public class GWPaiementController {
 				traces.writeInFileTransaction(folder, file, "payer 500 Error Switch null response" + "switch ip:["
 						+ sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
 				demandeDto.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Switch  malfunction resp null), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti (Dysfonctionnement du switch resp null), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 				return page;
@@ -1221,6 +1227,11 @@ public class GWPaiementController {
 				traces.writeInFileTransaction(folder, file, "Switch  malfunction resp < 3 !!!");
 				traces.writeInFileTransaction(folder, file, "payer 500 Error Switch short response length() < 3 "
 						+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
+				demandeDto.setMsgRefus(
+						"La transaction en cours n’a pas abouti (Dysfonctionnement du switch resp < 3 !!!), votre compte ne sera pas débité, merci de réessayer .");
+				model.addAttribute("demandeDto", demandeDto);
+				page = "result";
+				return page;
 			}
 
 			traces.writeInFileTransaction(folder, file, "Switch TLV Respnose :[" + resp + "]");
@@ -1609,7 +1620,7 @@ public class GWPaiementController {
 							"payer 500 Error during  DemandePaiement update RE for given orderid:[" + orderid + "]"
 									+ e);
 					demandeDto.setMsgRefus(
-							"La transaction en cours n’a pas abouti (Error during  DemandePaiement update SW_REJET), votre compte ne sera pas débité, merci de réessayer .");
+							"La transaction en cours n’a pas abouti (Erreur lors de la mise à jour de DemandePaiement SW_REJET), votre compte ne sera pas débité, merci de réessayer .");
 					model.addAttribute("demandeDto", demandeDto);
 					page = "result";
 					return page;
@@ -1628,7 +1639,7 @@ public class GWPaiementController {
 				traces.writeInFileTransaction(folder, file,
 						"payer 500 Error during  paymentid generation for given orderid:[" + orderid + "]" + e);
 				demandeDto.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Error during  paymentid generation), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti (Erreur lors de la génération de l'ID de paiement), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 				return page;
@@ -1653,7 +1664,7 @@ public class GWPaiementController {
 				traces.writeInFileTransaction(folder, file,
 						"payer 500 Error during authdata preparation orderid:[" + orderid + "]" + e);
 				demandeDto.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Error during authdata preparation), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti (Erreur lors de la préparation des données d'authentification), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 				return page;
@@ -1714,7 +1725,7 @@ public class GWPaiementController {
 				traces.writeInFileTransaction(folder, file,
 						"payer 500 Error during jso out processing given authnumber:[" + authnumber + "]" + jsouterr);
 				demandeDto.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Error during jso out processing), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti (Erreur lors du traitement de sortie JSON), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 				return page;
@@ -1747,7 +1758,7 @@ public class GWPaiementController {
 			} catch (Exception ex) {
 				traces.writeInFileTransaction(folder, file, "payer 500 Error during jso out processing " + ex);
 				demandeDto.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Error during jso out processing), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti (Erreur lors du traitement de sortie JSON), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 				return page;
@@ -1828,7 +1839,7 @@ public class GWPaiementController {
 		System.out.println("return page : " + page);
 		
 		traces.writeInFileTransaction(folder, file, "*********** Fin payer () ************** ");
-		System.out.println("*********** Start Fin () ************** ");
+		System.out.println("*********** Fin payer () ************** ");
 
 		return page;
 	}
