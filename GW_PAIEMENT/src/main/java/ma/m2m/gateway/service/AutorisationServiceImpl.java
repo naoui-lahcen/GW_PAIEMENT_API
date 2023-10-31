@@ -30,6 +30,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import ma.m2m.gateway.Utils.Traces;
+import ma.m2m.gateway.Utils.Util;
 import ma.m2m.gateway.dto.DemandePaiementDto;
 import ma.m2m.gateway.dto.InfoCommercantDto;
 import ma.m2m.gateway.model.Commercant;
@@ -142,8 +143,8 @@ public class AutorisationServiceImpl implements AutorisationService {
 
 	@Override
 	public ThreeDSecureResponse preparerReqThree3DSS(DemandePaiementDto demandeDto,String folder,String file) {
-		//traces.creatFileTransaction(file);
-		traces.writeInFileTransaction(folder, file, "Debut preparerReqThree3DSS()");
+		//Util.creatFileTransaction(file);
+		Util.writeInFileTransaction(folder, file, "Debut preparerReqThree3DSS()");
 		System.out.println("Start preparerReqThree3DSS()");
 
 		typeCarte = demandeDto.getType_carte();
@@ -158,15 +159,15 @@ public class AutorisationServiceImpl implements AutorisationService {
 		infoCommercantDto = infoCommercantService.findByCmrCode(demandeDto.getComid());
 		
 		if(typeCarte.equals("2")) {
-			traces.writeInFileTransaction(folder, file, "typeCarte 2 => Master Card ");
+			Util.writeInFileTransaction(folder, file, "typeCarte 2 => Master Card ");
 			System.out.println("typeCarte 2 => Master Card ");
 			authInitRequest.setUrlThreeDSS(urlThreeDSS_M);		
 		} else if(typeCarte.equals("1")) {
-			traces.writeInFileTransaction(folder, file, "typeCarte 1 => Visa ");
+			Util.writeInFileTransaction(folder, file, "typeCarte 1 => Visa ");
 			System.out.println("typeCarte 1 => Visa ");
 			authInitRequest.setUrlThreeDSS(urlThreeDSS_V);
 		} else {
-			traces.writeInFileTransaction(folder, file, "typeCarte ni 1 ni 2 => on donne par defaut Master Card ");
+			Util.writeInFileTransaction(folder, file, "typeCarte ni 1 ni 2 => on donne par defaut Master Card ");
 			System.out.println("typeCarte ni 1 ni 2 => on donne par defaut Master Card ");
 			authInitRequest.setUrlThreeDSS(urlThreeDSS_M);
 		}
@@ -190,11 +191,11 @@ public class AutorisationServiceImpl implements AutorisationService {
 		authInitRequest.setNomCommercant(infoCommercantDto.getCmrNom());	
 		authInitRequest.setNotificationURL(notificationACS);
 		
-		traces.writeInFileTransaction(folder, file,"" + authInitRequest);
+		Util.writeInFileTransaction(folder, file,"" + authInitRequest);
 		
 		threeDSecureRequestor.threeDSecureRequest(authInitRequest);
 		
-		//traces.writeInFileTransaction(folder, file,"Debut appel ThreeDSecure ");
+		//Util.writeInFileTransaction(folder, file,"Debut appel ThreeDSecure ");
 		
 		try {
 			threeDsecureResponse = threeDSecureRequestor.initAuth(folder, file);
@@ -203,7 +204,7 @@ public class AutorisationServiceImpl implements AutorisationService {
 			e.printStackTrace();
 		}
 		
-		traces.writeInFileTransaction(folder, file,"fin preparerReqThree3DSS ");
+		Util.writeInFileTransaction(folder, file,"fin preparerReqThree3DSS ");
 
 		
 		return threeDsecureResponse;
@@ -213,17 +214,17 @@ public class AutorisationServiceImpl implements AutorisationService {
 	public ThreeDSecureResponse callThree3DSSAfterACS(String decodedCres, String folder, String file) {
 		ThreeDSecureResponse threeDsecureResponse = new ThreeDSecureResponse();
 		
-		traces.writeInFileTransaction(folder, file, "*********** DEBUT callThree3DSSAfterACS ***********");
+		Util.writeInFileTransaction(folder, file, "*********** DEBUT callThree3DSSAfterACS ***********");
 		
 		// soit visa soit mastercard il a aucun impact apres auth
-		traces.writeInFileTransaction(folder, file, "UrlThreeDSS : " + urlThreeDSS_M);
+		Util.writeInFileTransaction(folder, file, "UrlThreeDSS : " + urlThreeDSS_M);
 		
 		System.out.println("UrlThreeDSS : " + urlThreeDSS_M);
 		HttpClient httpClient = HttpClientBuilder.create().build();
 		try {
 			httpClient = getAllSSLClient();
 		} catch (KeyManagementException | KeyStoreException | NoSuchAlgorithmException e1) {
-			traces.writeInFileTransaction(folder, file, "[GW-EXCEPTION-KeyManagementException] " + e1);
+			Util.writeInFileTransaction(folder, file, "[GW-EXCEPTION-KeyManagementException] " + e1);
 		}
 
 		HttpPost httpPost = new HttpPost(urlThreeDSS_M);
@@ -238,22 +239,22 @@ public class AutorisationServiceImpl implements AutorisationService {
 			HttpResponse responseTheeDs = httpClient.execute(httpPost);
 			//HttpResponse responseTheeDs=null;
 			StatusLine responseStatusLine = responseTheeDs.getStatusLine();
-			traces.writeInFileTransaction(folder, file, "Response StatusCode : " + responseStatusLine.getStatusCode());
+			Util.writeInFileTransaction(folder, file, "Response StatusCode : " + responseStatusLine.getStatusCode());
 			
 			String responseStr = EntityUtils.toString(responseTheeDs.getEntity());
 
-			traces.writeInFileTransaction(folder, file, "Rreq String : " + responseStr);
+			Util.writeInFileTransaction(folder, file, "Rreq String : " + responseStr);
 			System.out.println("Response String : " + responseStr);
 
 			threeDsecureResponse = gson.fromJson(responseStr, ThreeDSecureResponse.class);
 
-			traces.writeInFileTransaction(folder, file,"" + threeDsecureResponse);
+			Util.writeInFileTransaction(folder, file,"" + threeDsecureResponse);
 
 		} catch (Exception e) {
-			traces.writeInFileTransaction(folder, file, "[GW-EXCEPTION-ClientProtocolException] " + e);
+			Util.writeInFileTransaction(folder, file, "[GW-EXCEPTION-ClientProtocolException] " + e);
 		}
 
-		traces.writeInFileTransaction(folder, file, "*********** FIN callThree3DSSAfterACS ***********");
+		Util.writeInFileTransaction(folder, file, "*********** FIN callThree3DSSAfterACS ***********");
 		return threeDsecureResponse;
 	}
 	

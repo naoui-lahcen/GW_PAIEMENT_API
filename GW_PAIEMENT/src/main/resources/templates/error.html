@@ -36,7 +36,7 @@
             <aside class="col-sm-12">
             <article class="card">
                <div class="card-body p-5">
-				   <p class="alert alert-danger text-center" th:if="${demandeDto == null}">Une erreur est survenue, merci de réessayer plus tard </p>
+				   <p class="alert alert-danger text-center">Une erreur est survenue, merci de réessayer plus tard </p>
                    <p class="alert alert-danger text-center" th:if="${demandeDto != null and demandeDto.getMsgRefus != null}" th:utext="${demandeDto.getMsgRefus}"></p>
                    <button type="submit" style="color: #FFF;background: #DF6537;
                            border-radius: 10px;

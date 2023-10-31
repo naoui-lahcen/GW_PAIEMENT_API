@@ -485,4 +485,24 @@ public class Util {
 		return strMD5Hash;
 	}
 
+	public enum CODEREP {
+		OK("00"),
+		KO("96");
+
+		 public final String label;
+
+		private CODEREP(String label) {
+		        this.label = label;
+		}
+		
+		 public static CODEREP findCODEREPByCode(String label) {
+		        for (CODEREP code : CODEREP.values()) {
+		            if (code.label.equals(label)) {
+		                return code;
+		            }
+		        }
+		        return null;
+		    }
+
+	}
 }

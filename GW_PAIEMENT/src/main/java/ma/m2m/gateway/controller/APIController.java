@@ -90,7 +90,7 @@ public class APIController {
 
 	private static Logger logger = LogManager.getLogger(APIController.class);
 
-	private Traces traces = new Traces();
+	//private Traces traces = new Traces();
 	private LocalDateTime dateF;
 	private String folder;
 	private String file;
@@ -163,8 +163,9 @@ public class APIController {
 	DateFormat dateFormatSimple = new SimpleDateFormat("yyyy-MM-dd");
 	
 	public APIController() {
+		Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		file = "API_" + randomWithSplittableRandom;
+		String file = "API_" + randomWithSplittableRandom;
 		// date of folder logs
 		dateF = LocalDateTime.now(ZoneId.systemDefault());
 		folder = dateF.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
@@ -175,11 +176,12 @@ public class APIController {
 	@ResponseBody
 	public String authorization(@RequestHeader MultiValueMap<String, String> header, @RequestBody String auths,
 			HttpServletResponse response) {
+		Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		file = "API_AUTH_" + randomWithSplittableRandom;
+		String file = "API_AUTH_" + randomWithSplittableRandom;
 		// create file log
-		traces.creatFileTransaction(file);
-		traces.writeInFileTransaction(folder, file, "*********** Start authorization() ************** ");
+		Util.creatFileTransaction(file);
+		Util.writeInFileTransaction(folder, file, "*********** Start authorization() ************** ");
 		System.out.println("*********** Start authorization() ************** ");
 
 		String api_key = "";
@@ -189,9 +191,9 @@ public class APIController {
 
 		logger.info("authorization api call start ...");
 
-		traces.writeInFileTransaction(folder, file, "authorization api call start ...");
+		Util.writeInFileTransaction(folder, file, "authorization api call start ...");
 
-		traces.writeInFileTransaction(folder, file, "authorization : [" + auths + "]");
+		Util.writeInFileTransaction(folder, file, "authorization : [" + auths + "]");
 
 		JSONObject jsonOrequest = null;
 		try {
@@ -199,14 +201,14 @@ public class APIController {
 		}
 
 		catch (JSONException jserr) {
-			traces.writeInFileTransaction(folder, file, "authorization 500 malformed json expression " + auths + jserr);
+			Util.writeInFileTransaction(folder, file, "authorization 500 malformed json expression " + auths + jserr);
 			return getMsgError(null, "authorization 500 malformed json expression", null);
 		}
 
 		if (header != null)
-			traces.writeInFileTransaction(folder, file, "header : [" + header.toString() + "]");
+			Util.writeInFileTransaction(folder, file, "header : [" + header.toString() + "]");
 		else
-			traces.writeInFileTransaction(folder, file, "error header is null !");
+			Util.writeInFileTransaction(folder, file, "error header is null !");
 
 		try {
 
@@ -232,13 +234,13 @@ public class APIController {
 
 		} catch (Exception head_err) {
 			if (header.toString() != null) {
-				traces.writeInFileTransaction(folder, file,
+				Util.writeInFileTransaction(folder, file,
 						"authorization 500 malformed header" + header.toString() + head_err);
 				return getMsgError(null, "authorization 500 malformed header", null);
 			}
 
 			else {
-				traces.writeInFileTransaction(folder, file, "authorization 500 malformed header" + head_err);
+				Util.writeInFileTransaction(folder, file, "authorization 500 malformed header" + head_err);
 				return getMsgError(null, "authorization 500 malformed header " + head_err.getMessage(), null);
 			}
 
@@ -302,7 +304,7 @@ public class APIController {
 			address = (String) jsonOrequest.get("address");
 
 		} catch (Exception jerr) {
-			traces.writeInFileTransaction(folder, file, "authorization 500 malformed json expression " + jerr);
+			Util.writeInFileTransaction(folder, file, "authorization 500 malformed json expression " + jerr);
 			return getMsgError(null, "authorization 500 malformed json expression " + jerr.getMessage(), null);
 		}
 		// get cardnumber by token
@@ -319,20 +321,20 @@ public class APIController {
 					}
 				}
 			} catch (Exception jerr) {
-				traces.writeInFileTransaction(folder, file, "authorization 500 token nout found" + jerr);
+				Util.writeInFileTransaction(folder, file, "authorization 500 token nout found" + jerr);
 				return getMsgError(jsonOrequest, "authorization 500 token not found", null);
 			}
 		}
 
 		String timeStamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
 
-		traces.writeInFileTransaction(folder, file, "authorization_" + orderid + timeStamp);
+		Util.writeInFileTransaction(folder, file, "authorization_" + orderid + timeStamp);
 
 		CommercantDto current_merchant = null;
 		try {
 			current_merchant = commercantService.findByCmrNumcmr(merchantid);
 		} catch (Exception e) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]");
 
@@ -340,7 +342,7 @@ public class APIController {
 		}
 
 		if (current_merchant == null) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]");
 
@@ -348,7 +350,7 @@ public class APIController {
 		}
 
 		if (current_merchant.getCmrCodactivite() == null) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]");
 
@@ -356,7 +358,7 @@ public class APIController {
 		}
 
 		if (current_merchant.getCmrCodbqe() == null) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]");
 
@@ -371,14 +373,14 @@ public class APIController {
 			check_dmd = demandePaiementService.findByCommandeAndComid(orderid, merchantid);
 
 		} catch (Exception err1) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"authorization 500 Error during PaiementRequest findByCommandeAndComid orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]" + err1);
 
 			return getMsgError(jsonOrequest, "authorization 500 Error during PaiementRequest", null);
 		}
 		if (check_dmd != null) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"authorization 500 Error Already exist in PaiementRequest findByCommandeAndComid orderid:["
 							+ orderid + "] and merchantid:[" + merchantid + "]");
 
@@ -388,14 +390,14 @@ public class APIController {
 		int i_card_valid = Util.isCardValid(cardnumber);
 
 		if (i_card_valid == 1) {
-			traces.writeInFileTransaction(folder, file, "authorization 500 Card number length is incorrect orderid:["
+			Util.writeInFileTransaction(folder, file, "authorization 500 Card number length is incorrect orderid:["
 					+ orderid + "] and merchantid:[" + merchantid + "]");
 
 			return getMsgError(jsonOrequest, "authorization 500 Card number length is incorrect", null);
 		}
 
 		if (i_card_valid == 2) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"authorization 500 Card number  is not valid incorrect luhn check orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]");
 
@@ -462,7 +464,7 @@ public class APIController {
 			dmdSaved = demandePaiementService.save(dmd);
 
 		} catch (Exception err1) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"authorization 500 Error during DEMANDE_PAIEMENT insertion for given orderid:[" + orderid + "]"
 							+ err1);
 
@@ -484,18 +486,18 @@ public class APIController {
 					&& !ACTIVE.getFlag().equalsIgnoreCase(controlRiskCmr.getAcceptInternational().trim()))) {
 					String binDebutCarte = cardnumber.substring(0, 6);
 					binDebutCarte = binDebutCarte+"000";
-					traces.writeInFileTransaction(folder, file, "controlRiskCmr ici 1");
+					Util.writeInFileTransaction(folder, file, "controlRiskCmr ici 1");
 					listBin = emetteurService.findByBindebut(binDebutCarte);
 				}		
 				// --------------------------------- Controle de flux journalier autorisé par commerçant  ----------------------------------
 				if(!isNullOrEmpty(controlRiskCmr.getIsGlobalFlowControlActive()) && ACTIVE.getFlag().equalsIgnoreCase(controlRiskCmr.getIsGlobalFlowControlActive())) {
-					traces.writeInFileTransaction(folder, file, "controlRiskCmr ici 2");
+					Util.writeInFileTransaction(folder, file, "controlRiskCmr ici 2");
 					globalFlowPerDay = histoAutoGateService.getCommercantGlobalFlowPerDay(merchantid);
 			 	}
 				// ------------------------- Controle de flux journalier autorisé par client (porteur de carte) ----------------------------
 				if((controlRiskCmr.getFlowCardPerDay() != null && controlRiskCmr.getFlowCardPerDay() > 0) 
 						|| (controlRiskCmr.getNumberOfTransactionCardPerDay() != null && controlRiskCmr.getNumberOfTransactionCardPerDay() > 0)) {
-					traces.writeInFileTransaction(folder, file, "controlRiskCmr ici 3");
+					Util.writeInFileTransaction(folder, file, "controlRiskCmr ici 3");
 					porteurFlowPerDay = histoAutoGateService.getPorteurMerchantFlowPerDay(dmdSaved.getComid(), dmdSaved.getDem_pan());
 				}
 			}
@@ -505,14 +507,14 @@ public class APIController {
 			if (!msg.equalsIgnoreCase("OK")) {
 				dmdSaved.setEtat_demande("REJET_RISK_CTRL");
 				demandePaiementService.save(dmdSaved);
-				traces.writeInFileTransaction(folder, file, "authorization 500 " + msg);
+				Util.writeInFileTransaction(folder, file, "authorization 500 " + msg);
 				return getMsgError(jsonOrequest, "authorization 500 " + msg, null);
 			}
 			// fin control risk
 		} catch (Exception e) {
 			dmdSaved.setEtat_demande("REJET_RISK_CTRL");
 			demandePaiementService.save(dmdSaved);
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"authorization 500 ControlRiskCmr misconfigured in DB or not existing merchantid:[" + dmdSaved.getComid()
 							+ e);
 			return getMsgError(jsonOrequest, "authorization 500 Error Opération rejetée: Contrôle risque", null);
@@ -526,7 +528,7 @@ public class APIController {
 			rrn = Util.getGeneratedRRN();
 
 		} catch (Exception err2) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"authorization 500 Error during  date formatting for given orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]" + err2);
 
@@ -605,10 +607,10 @@ public class APIController {
 		}
 
 		if (idDemande == null || idDemande.equals("")) {
-			traces.writeInFileTransaction(folder, file, "received idDemande from MPI is Null or Empty");
+			Util.writeInFileTransaction(folder, file, "received idDemande from MPI is Null or Empty");
 			dmdSaved.setEtat_demande("MPI_KO");
 			demandePaiementService.save(dmdSaved);
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"demandePaiement after update MPI_KO idDemande null : " + dmdSaved.toString());
 			return getMsgError(jsonOrequest, "AUTO INVALIDE DEMANDE MPI_KO", "96");
 		}
@@ -630,8 +632,8 @@ public class APIController {
 			Util.writeInFileTransaction(folder, file, "Response 3DS is null");
 			return getMsgError(jsonOrequest, "Response 3DS is null", "96");
 		}
-		// for test
-		// reponseMPI = "D";
+		// jsute pour Coca les test sans 3DSS reponseMPI="Y"
+		reponseMPI = "Y";
 		// String htmlCreq = "<form action='https://acs2.bankofafrica.ma:443/lacs2'
 		// method='post'enctype='application/x-www-form-urlencoded'><input
 		// type='hidden'name='creq'value='ewogICJtZXNzYWdlVmVyc2lvbiI6ICIyLjEuMCIsCiAgInRocmVlRFNTZXJ2ZXJUcmFuc0lEIjogIjllZjUwNjk3LWRiMTctNGZmMy04MDYzLTc0ZTAwMTk0N2I4YiIsCiAgImFjc1RyYW5zSUQiOiAiZjM2ZDA3ZWQtZGJhOS00ZTkzLWE2OGMtMzNmYjAyMDgxZDVmIiwKICAiY2hhbGxlbmdlV2luZG93U2l6ZSI6ICIwNSIsCiAgIm1lc3NhZ2VUeXBlIjogIkNSZXEiCn0='
@@ -640,7 +642,7 @@ public class APIController {
 		// fin
 		if (reponseMPI.equals("Y")) {
 			// ********************* Frictionless responseMPI equal Y *********************
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"********************* Cas frictionless responseMPI equal Y *********************");
 
 			dmd.setDem_xid(threeDSServerTransID);
@@ -651,7 +653,7 @@ public class APIController {
 
 				mm = new String[2];
 				System.out.println("montant v0 : " + amount);
-				traces.writeInFileTransaction(folder, file, "montant v0 : " + amount);
+				Util.writeInFileTransaction(folder, file, "montant v0 : " + amount);
 
 				if (amount.contains(",")) {
 					amount = amount.replace(",", ".");
@@ -660,7 +662,7 @@ public class APIController {
 					amount = amount + "." + "00";
 				}
 				System.out.println("montant v1 : " + amount);
-				traces.writeInFileTransaction(folder, file, "montant v1 : " + amount);
+				Util.writeInFileTransaction(folder, file, "montant v1 : " + amount);
 
 				String montantt = amount + "";
 
@@ -679,9 +681,9 @@ public class APIController {
 					montanttrame = montanttrame.replace(".", "");
 				montanttrame = Util.formatageCHamps(montanttrame, 12);
 				System.out.println("montanttrame : " + montanttrame);
-				traces.writeInFileTransaction(folder, file, "montanttrame : " + montanttrame);
+				Util.writeInFileTransaction(folder, file, "montanttrame : " + montanttrame);
 			} catch (Exception err3) {
-				traces.writeInFileTransaction(folder, file,
+				Util.writeInFileTransaction(folder, file,
 						"authorization 500 Error during  amount formatting for given orderid:[" + orderid
 								+ "] and merchantid:[" + merchantid + "]" + err3);
 
@@ -691,10 +693,10 @@ public class APIController {
 			merc_codeactivite = current_merchant.getCmrCodactivite();
 			acqcode = current_merchant.getCmrCodbqe();
 			merchant_name = Util.pad_merchant(merchantname, 19, ' ');
-			traces.writeInFileTransaction(folder, file, "merchant_name : [" + merchant_name + "]");
+			Util.writeInFileTransaction(folder, file, "merchant_name : [" + merchant_name + "]");
 
 			merchant_city = "MOROCCO        ";
-			traces.writeInFileTransaction(folder, file, "merchant_city : [" + merchant_city + "]");
+			Util.writeInFileTransaction(folder, file, "merchant_city : [" + merchant_city + "]");
 
 			acq_type = "0000";
 			reason_code = "H";
@@ -715,13 +717,13 @@ public class APIController {
 			xid = threeDSServerTransID;
 			if (cavv == null || eci == null) {
 				champ_cavv = null;
-				traces.writeInFileTransaction(folder, file, "cavv == null || eci == null");
+				Util.writeInFileTransaction(folder, file, "cavv == null || eci == null");
 			} else if (cavv != null && eci != null) {
 				champ_cavv = cavv + eci;
-				traces.writeInFileTransaction(folder, file, "cavv != null && eci != null");
-				traces.writeInFileTransaction(folder, file, "champ_cavv : [" + champ_cavv + "]");
+				Util.writeInFileTransaction(folder, file, "cavv != null && eci != null");
+				Util.writeInFileTransaction(folder, file, "champ_cavv : [" + champ_cavv + "]");
 			} else {
-				traces.writeInFileTransaction(folder, file, "champ_cavv = null");
+				Util.writeInFileTransaction(folder, file, "champ_cavv = null");
 				champ_cavv = null;
 			}
 
@@ -733,13 +735,13 @@ public class APIController {
 			long lrec_serie = 0;
 
 			// controls
-			traces.writeInFileTransaction(folder, file, "Switch processing start ...");
+			Util.writeInFileTransaction(folder, file, "Switch processing start ...");
 
 			String tlv = "";
-			traces.writeInFileTransaction(folder, file, "Preparing Switch TLV Request start ...");
+			Util.writeInFileTransaction(folder, file, "Preparing Switch TLV Request start ...");
 
 			if (!cvv_present && !is_reccuring) {
-				traces.writeInFileTransaction(folder, file,
+				Util.writeInFileTransaction(folder, file,
 						"authorization 500 cvv not set , reccuring flag set to N, cvv must be present in normal transaction");
 
 				return getMsgError(jsonOrequest,
@@ -749,7 +751,7 @@ public class APIController {
 
 			// not reccuring , normal
 			if (cvv_present && !is_reccuring) {
-				traces.writeInFileTransaction(folder, file, "not reccuring , normal cvv_present && !is_reccuring");
+				Util.writeInFileTransaction(folder, file, "not reccuring , normal cvv_present && !is_reccuring");
 				try {
 
 					tlv = new TLVEncoder().withField(Tags.tag0, mesg_type).withField(Tags.tag1, cardnumber)
@@ -764,47 +766,47 @@ public class APIController {
 							.withField(Tags.tag90, acqcode).withField(Tags.tag167, champ_cavv)
 							.withField(Tags.tag168, xid).encode();
 
-					traces.writeInFileTransaction(folder, file, "tag0_request : [" + mesg_type + "]");
-					traces.writeInFileTransaction(folder, file, "tag1_request : [" + cardnumber + "]");
-					traces.writeInFileTransaction(folder, file, "tag3_request : [" + processing_code + "]");
-					traces.writeInFileTransaction(folder, file, "tag22_request : [" + transaction_condition + "]");
-					traces.writeInFileTransaction(folder, file, "tag49_request : [" + acq_type + "]");
-					traces.writeInFileTransaction(folder, file, "tag14_request : [" + montanttrame + "]");
-					traces.writeInFileTransaction(folder, file, "tag15_request : [" + currency + "]");
-					traces.writeInFileTransaction(folder, file, "tag23_request : [" + reason_code + "]");
-					traces.writeInFileTransaction(folder, file, "tag18_request : [761454]");
-					traces.writeInFileTransaction(folder, file, "tag42_request : [" + expirydate + "]");
-					traces.writeInFileTransaction(folder, file, "tag16_request : [" + date + "]");
-					traces.writeInFileTransaction(folder, file, "tag17_request : [" + heure + "]");
-					traces.writeInFileTransaction(folder, file, "tag10_request : [" + merc_codeactivite + "]");
-					traces.writeInFileTransaction(folder, file, "tag8_request : [0" + merchantid + "]");
-					traces.writeInFileTransaction(folder, file, "tag9_request : [" + merchantid + "]");
-					traces.writeInFileTransaction(folder, file, "tag66_request : [" + rrn + "]");
-					traces.writeInFileTransaction(folder, file, "tag67_request : [" + cvv + "]");
-					traces.writeInFileTransaction(folder, file, "tag11_request : [" + merchant_name + "]");
-					traces.writeInFileTransaction(folder, file, "tag12_request : [" + merchant_city + "]");
-					traces.writeInFileTransaction(folder, file, "tag90_request : [" + acqcode + "]");
-					traces.writeInFileTransaction(folder, file, "tag167_request : [" + champ_cavv + "]");
-					traces.writeInFileTransaction(folder, file, "tag168_request : [" + xid + "]");
+					Util.writeInFileTransaction(folder, file, "tag0_request : [" + mesg_type + "]");
+					Util.writeInFileTransaction(folder, file, "tag1_request : [" + cardnumber + "]");
+					Util.writeInFileTransaction(folder, file, "tag3_request : [" + processing_code + "]");
+					Util.writeInFileTransaction(folder, file, "tag22_request : [" + transaction_condition + "]");
+					Util.writeInFileTransaction(folder, file, "tag49_request : [" + acq_type + "]");
+					Util.writeInFileTransaction(folder, file, "tag14_request : [" + montanttrame + "]");
+					Util.writeInFileTransaction(folder, file, "tag15_request : [" + currency + "]");
+					Util.writeInFileTransaction(folder, file, "tag23_request : [" + reason_code + "]");
+					Util.writeInFileTransaction(folder, file, "tag18_request : [761454]");
+					Util.writeInFileTransaction(folder, file, "tag42_request : [" + expirydate + "]");
+					Util.writeInFileTransaction(folder, file, "tag16_request : [" + date + "]");
+					Util.writeInFileTransaction(folder, file, "tag17_request : [" + heure + "]");
+					Util.writeInFileTransaction(folder, file, "tag10_request : [" + merc_codeactivite + "]");
+					Util.writeInFileTransaction(folder, file, "tag8_request : [0" + merchantid + "]");
+					Util.writeInFileTransaction(folder, file, "tag9_request : [" + merchantid + "]");
+					Util.writeInFileTransaction(folder, file, "tag66_request : [" + rrn + "]");
+					Util.writeInFileTransaction(folder, file, "tag67_request : [" + cvv + "]");
+					Util.writeInFileTransaction(folder, file, "tag11_request : [" + merchant_name + "]");
+					Util.writeInFileTransaction(folder, file, "tag12_request : [" + merchant_city + "]");
+					Util.writeInFileTransaction(folder, file, "tag90_request : [" + acqcode + "]");
+					Util.writeInFileTransaction(folder, file, "tag167_request : [" + champ_cavv + "]");
+					Util.writeInFileTransaction(folder, file, "tag168_request : [" + xid + "]");
 
 				} catch (Exception err4) {
-					traces.writeInFileTransaction(folder, file,
+					Util.writeInFileTransaction(folder, file,
 							"authorization 500 Error during switch tlv buildup for given orderid:[" + orderid
 									+ "] and merchantid:[" + merchantid + "]" + err4);
 
 					return getMsgError(jsonOrequest, "authorization 500 Error during switch tlv buildup", "96");
 				}
 
-				traces.writeInFileTransaction(folder, file, "Switch TLV Request :[" + tlv + "]");
+				Util.writeInFileTransaction(folder, file, "Switch TLV Request :[" + tlv + "]");
 
 			}
 
 			// reccuring
 			if (is_reccuring) {
-				traces.writeInFileTransaction(folder, file, "reccuring");
+				Util.writeInFileTransaction(folder, file, "reccuring");
 			}
 
-			traces.writeInFileTransaction(folder, file, "Preparing Switch TLV Request end.");
+			Util.writeInFileTransaction(folder, file, "Preparing Switch TLV Request end.");
 
 			String resp_tlv = "";
 //			SwitchTCPClient sw = SwitchTCPClient.getInstance();
@@ -818,61 +820,61 @@ public class APIController {
 
 				port = Integer.parseInt(s_port);
 
-				traces.writeInFileTransaction(folder, file, "Switch TCP client V2 Connecting ...");
+				Util.writeInFileTransaction(folder, file, "Switch TCP client V2 Connecting ...");
 
 				SwitchTCPClientV2 switchTCPClient = new SwitchTCPClientV2(sw_s, port);
 
 				boolean s_conn = switchTCPClient.isConnected();
 
 				if (!s_conn) {
-					traces.writeInFileTransaction(folder, file, "Switch  malfunction cannot connect!!!");
+					Util.writeInFileTransaction(folder, file, "Switch  malfunction cannot connect!!!");
 
 					return getMsgError(jsonOrequest, "authorization 500 Error Switch communication s_conn false", "96");
 				}
 
 				if (s_conn) {
-					traces.writeInFileTransaction(folder, file, "Switch Connected.");
-					traces.writeInFileTransaction(folder, file, "Switch Sending TLV Request ...");
+					Util.writeInFileTransaction(folder, file, "Switch Connected.");
+					Util.writeInFileTransaction(folder, file, "Switch Sending TLV Request ...");
 
 					resp_tlv = switchTCPClient.sendMessage(tlv);
 
-					traces.writeInFileTransaction(folder, file, "Switch TLV Request end.");
+					Util.writeInFileTransaction(folder, file, "Switch TLV Request end.");
 					switchTCPClient.shutdown();
 				}
 
 			} catch (UnknownHostException e) {
-				traces.writeInFileTransaction(folder, file, "Switch  malfunction UnknownHostException !!!" + e);
+				Util.writeInFileTransaction(folder, file, "Switch  malfunction UnknownHostException !!!" + e);
 
 				return getMsgError(jsonOrequest, "authorization 500 Error Switch communication UnknownHostException",
 						"96");
 
 			} catch (java.net.ConnectException e) {
-				traces.writeInFileTransaction(folder, file, "Switch  malfunction ConnectException !!!" + e);
+				Util.writeInFileTransaction(folder, file, "Switch  malfunction ConnectException !!!" + e);
 				switch_ko = 1;
 				return getMsgError(jsonOrequest, "authorization 500 Error Switch communication ConnectException", "96");
 			}
 
 			catch (SocketTimeoutException e) {
-				traces.writeInFileTransaction(folder, file, "Switch  malfunction  SocketTimeoutException !!!" + e);
+				Util.writeInFileTransaction(folder, file, "Switch  malfunction  SocketTimeoutException !!!" + e);
 				switch_ko = 1;
 				e.printStackTrace();
-				traces.writeInFileTransaction(folder, file,
+				Util.writeInFileTransaction(folder, file,
 						"authorization 500 Error Switch communication SocketTimeoutException" + "switch ip:[" + sw_s
 								+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
 				return getMsgError(jsonOrequest, "Switch  malfunction  SocketTimeoutException !!!", "96");
 			}
 
 			catch (IOException e) {
-				traces.writeInFileTransaction(folder, file, "Switch  malfunction IOException !!!" + e);
+				Util.writeInFileTransaction(folder, file, "Switch  malfunction IOException !!!" + e);
 				switch_ko = 1;
 				e.printStackTrace();
-				traces.writeInFileTransaction(folder, file, "authorization 500 Error Switch communication IOException"
+				Util.writeInFileTransaction(folder, file, "authorization 500 Error Switch communication IOException"
 						+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
 				return getMsgError(jsonOrequest, "Switch  malfunction  IOException !!!", "96");
 			}
 
 			catch (Exception e) {
-				traces.writeInFileTransaction(folder, file, "Switch  malfunction Exception!!!" + e);
+				Util.writeInFileTransaction(folder, file, "Switch  malfunction Exception!!!" + e);
 				switch_ko = 1;
 				e.printStackTrace();
 				return getMsgError(jsonOrequest, "authorization 500 Error Switch communication General Exception",
@@ -882,9 +884,9 @@ public class APIController {
 			String resp = resp_tlv;
 
 			if (switch_ko == 0 && resp == null) {
-				traces.writeInFileTransaction(folder, file, "Switch  malfunction resp null!!!");
+				Util.writeInFileTransaction(folder, file, "Switch  malfunction resp null!!!");
 				switch_ko = 1;
-				traces.writeInFileTransaction(folder, file, "authorization 500 Error Switch null response"
+				Util.writeInFileTransaction(folder, file, "authorization 500 Error Switch null response"
 						+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
 				return getMsgError(jsonOrequest, "Switch  malfunction resp null!!!", "96");
 			}
@@ -892,15 +894,15 @@ public class APIController {
 			if (switch_ko == 0 && resp.length() < 3) {
 				switch_ko = 1;
 
-				traces.writeInFileTransaction(folder, file, "Switch  malfunction resp < 3 !!!");
-				traces.writeInFileTransaction(folder, file,
+				Util.writeInFileTransaction(folder, file, "Switch  malfunction resp < 3 !!!");
+				Util.writeInFileTransaction(folder, file,
 						"authorization 500 Error Switch short response length() < 3 " + "switch ip:[" + sw_s
 								+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
 			}
 
-			traces.writeInFileTransaction(folder, file, "Switch TLV Respnose :[" + resp + "]");
+			Util.writeInFileTransaction(folder, file, "Switch TLV Respnose :[" + resp + "]");
 
-			traces.writeInFileTransaction(folder, file, "Processing Switch TLV Respnose ...");
+			Util.writeInFileTransaction(folder, file, "Processing Switch TLV Respnose ...");
 
 			TLVParser tlvp = null;
 
@@ -933,62 +935,62 @@ public class APIController {
 					tag98_resp = tlvp.getTag(Tags.tag98);
 
 				} catch (Exception e) {
-					traces.writeInFileTransaction(folder, file, "Switch  malfunction tlv parsing !!!" + e);
+					Util.writeInFileTransaction(folder, file, "Switch  malfunction tlv parsing !!!" + e);
 					switch_ko = 1;
-					traces.writeInFileTransaction(folder, file,
+					Util.writeInFileTransaction(folder, file,
 							"authorization 500 Error during tlv Switch response parse" + "switch ip:[" + sw_s
 									+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
 				}
 
 				// controle switch
 				if (tag1_resp == null) {
-					traces.writeInFileTransaction(folder, file, "Switch  malfunction !!! tag1_resp == null");
+					Util.writeInFileTransaction(folder, file, "Switch  malfunction !!! tag1_resp == null");
 					switch_ko = 1;
-					traces.writeInFileTransaction(folder, file,
+					Util.writeInFileTransaction(folder, file,
 							"authorization 500 Error during tlv Switch response parse tag1_resp tag null"
 									+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv
 									+ "]");
 				}
 
 				if (tag1_resp != null && tag1_resp.length() < 3) {
-					traces.writeInFileTransaction(folder, file, "Switch  malfunction !!! tag1_resp == null");
+					Util.writeInFileTransaction(folder, file, "Switch  malfunction !!! tag1_resp == null");
 					switch_ko = 1;
-					traces.writeInFileTransaction(folder, file,
+					Util.writeInFileTransaction(folder, file,
 							"authorization 500 Error during tlv Switch response parse tag1_resp length tag  < 3"
 									+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv
 									+ "]");
 				}
 
 				if (tag20_resp == null) {
-					traces.writeInFileTransaction(folder, file, "Switch  malfunction !!! tag20_resp == null");
+					Util.writeInFileTransaction(folder, file, "Switch  malfunction !!! tag20_resp == null");
 					switch_ko = 1;
-					traces.writeInFileTransaction(folder, file,
+					Util.writeInFileTransaction(folder, file,
 							"authorization 500 Error during tlv Switch response parse tag1_resp tag null"
 									+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv
 									+ "]");
 				}
 			}
-			traces.writeInFileTransaction(folder, file, "Switch TLV Respnose Processed");
-			traces.writeInFileTransaction(folder, file, "Switch TLV Respnose :[" + resp + "]");
+			Util.writeInFileTransaction(folder, file, "Switch TLV Respnose Processed");
+			Util.writeInFileTransaction(folder, file, "Switch TLV Respnose :[" + resp + "]");
 
-			traces.writeInFileTransaction(folder, file, "tag0_resp : [" + tag0_resp + "]");
-			traces.writeInFileTransaction(folder, file, "tag1_resp : [" + tag1_resp + "]");
-			traces.writeInFileTransaction(folder, file, "tag3_resp : [" + tag3_resp + "]");
-			traces.writeInFileTransaction(folder, file, "tag8_resp : [" + tag8_resp + "]");
-			traces.writeInFileTransaction(folder, file, "tag9_resp : [" + tag9_resp + "]");
-			traces.writeInFileTransaction(folder, file, "tag14_resp : [" + tag14_resp + "]");
-			traces.writeInFileTransaction(folder, file, "tag15_resp : [" + tag15_resp + "]");
-			traces.writeInFileTransaction(folder, file, "tag16_resp : [" + tag16_resp + "]");
-			traces.writeInFileTransaction(folder, file, "tag17_resp : [" + tag17_resp + "]");
-			traces.writeInFileTransaction(folder, file, "tag66_resp : [" + tag66_resp + "]");
-			traces.writeInFileTransaction(folder, file, "tag18_resp : [" + tag18_resp + "]");
-			traces.writeInFileTransaction(folder, file, "tag19_resp : [" + tag19_resp + "]");
-			traces.writeInFileTransaction(folder, file, "tag23_resp : [" + tag23_resp + "]");
-			traces.writeInFileTransaction(folder, file, "tag20_resp : [" + tag20_resp + "]");
-			traces.writeInFileTransaction(folder, file, "tag21_resp : [" + tag21_resp + "]");
-			traces.writeInFileTransaction(folder, file, "tag22_resp : [" + tag22_resp + "]");
-			traces.writeInFileTransaction(folder, file, "tag80_resp : [" + tag80_resp + "]");
-			traces.writeInFileTransaction(folder, file, "tag98_resp : [" + tag98_resp + "]");
+			Util.writeInFileTransaction(folder, file, "tag0_resp : [" + tag0_resp + "]");
+			Util.writeInFileTransaction(folder, file, "tag1_resp : [" + tag1_resp + "]");
+			Util.writeInFileTransaction(folder, file, "tag3_resp : [" + tag3_resp + "]");
+			Util.writeInFileTransaction(folder, file, "tag8_resp : [" + tag8_resp + "]");
+			Util.writeInFileTransaction(folder, file, "tag9_resp : [" + tag9_resp + "]");
+			Util.writeInFileTransaction(folder, file, "tag14_resp : [" + tag14_resp + "]");
+			Util.writeInFileTransaction(folder, file, "tag15_resp : [" + tag15_resp + "]");
+			Util.writeInFileTransaction(folder, file, "tag16_resp : [" + tag16_resp + "]");
+			Util.writeInFileTransaction(folder, file, "tag17_resp : [" + tag17_resp + "]");
+			Util.writeInFileTransaction(folder, file, "tag66_resp : [" + tag66_resp + "]");
+			Util.writeInFileTransaction(folder, file, "tag18_resp : [" + tag18_resp + "]");
+			Util.writeInFileTransaction(folder, file, "tag19_resp : [" + tag19_resp + "]");
+			Util.writeInFileTransaction(folder, file, "tag23_resp : [" + tag23_resp + "]");
+			Util.writeInFileTransaction(folder, file, "tag20_resp : [" + tag20_resp + "]");
+			Util.writeInFileTransaction(folder, file, "tag21_resp : [" + tag21_resp + "]");
+			Util.writeInFileTransaction(folder, file, "tag22_resp : [" + tag22_resp + "]");
+			Util.writeInFileTransaction(folder, file, "tag80_resp : [" + tag80_resp + "]");
+			Util.writeInFileTransaction(folder, file, "tag98_resp : [" + tag98_resp + "]");
 
 			String tag20_resp_verified = "";
 			String tag19_res_verified = "";
@@ -1002,14 +1004,14 @@ public class APIController {
 
 			if (switch_ko == 1) {
 				pan_auto = Util.formatagePan(cardnumber);
-				traces.writeInFileTransaction(folder, file, "getSWHistoAuto pan_auto/rrn/amount/date/merchantid : "
+				Util.writeInFileTransaction(folder, file, "getSWHistoAuto pan_auto/rrn/amount/date/merchantid : "
 						+ pan_auto + "/" + rrn + "/" + amount + "/" + date + "/" + merchantid);
 			}
 
 			HistoAutoGateDto hist = null;
 			Integer Ihist_id = null;
 
-			traces.writeInFileTransaction(folder, file, "Insert into Histogate...");
+			Util.writeInFileTransaction(folder, file, "Insert into Histogate...");
 
 			try {
 
@@ -1017,29 +1019,29 @@ public class APIController {
 				Date curren_date_hist = new Date();
 				int numTransaction = Util.generateNumTransaction(folder, file, curren_date_hist);
 
-				traces.writeInFileTransaction(folder, file, "get status ...");
+				Util.writeInFileTransaction(folder, file, "get status ...");
 
 				// s_status = histservice.getLib("RPC_LIBELLE", "CODEREPONSE", "RPC_CODE='" +
 				// tag20_resp + "'");
 				// if (s_status == null)
 				s_status = "";
-				traces.writeInFileTransaction(folder, file, "get status Switch status : [" + s_status + "]");
+				Util.writeInFileTransaction(folder, file, "get status Switch status : [" + s_status + "]");
 
-				traces.writeInFileTransaction(folder, file, "get max id ...");
+				Util.writeInFileTransaction(folder, file, "get max id ...");
 
 				// Ihist_id = hist.getMAX_ID("HISTOAUTO_GATE", "HAT_ID");
 				// Ihist_id = histoAutoGateService.getMAX_ID();
 				// long currentid = Ihist_id.longValue() + 1;
 				// hist.setId(currentid);
 
-				traces.writeInFileTransaction(folder, file, "max id : [" + Ihist_id + "]");
+				Util.writeInFileTransaction(folder, file, "max id : [" + Ihist_id + "]");
 
-				traces.writeInFileTransaction(folder, file, "formatting pan...");
+				Util.writeInFileTransaction(folder, file, "formatting pan...");
 
 				pan_auto = Util.formatagePan(cardnumber);
-				traces.writeInFileTransaction(folder, file, "formatting pan Ok pan_auto :[" + pan_auto + "]");
+				Util.writeInFileTransaction(folder, file, "formatting pan Ok pan_auto :[" + pan_auto + "]");
 
-				traces.writeInFileTransaction(folder, file, "HistoAutoGate data filling start ...");
+				Util.writeInFileTransaction(folder, file, "HistoAutoGate data filling start ...");
 
 				Date current_date_1 = getDateWithoutTime(curren_date_hist);
 				hist.setHatDatdem(current_date_1);
@@ -1094,18 +1096,18 @@ public class APIController {
 				if (recurring.equalsIgnoreCase("N"))
 					hist.setIs_cof("N");
 
-				traces.writeInFileTransaction(folder, file, "HistoAutoGate data filling end ...");
+				Util.writeInFileTransaction(folder, file, "HistoAutoGate data filling end ...");
 
-				traces.writeInFileTransaction(folder, file, "HistoAutoGate Saving ...");
+				Util.writeInFileTransaction(folder, file, "HistoAutoGate Saving ...");
 
 				histoAutoGateService.save(hist);
 
 			} catch (Exception e) {
-				traces.writeInFileTransaction(folder, file, "authorization 500"
+				Util.writeInFileTransaction(folder, file, "authorization 500"
 						+ "Error during  insert in histoautogate for given orderid:[" + orderid + "]" + e);
 			}
 
-			traces.writeInFileTransaction(folder, file, "HistoAutoGate OK.");
+			Util.writeInFileTransaction(folder, file, "HistoAutoGate OK.");
 
 			if (tag20_resp == null) {
 				tag20_resp = "";
@@ -1114,19 +1116,19 @@ public class APIController {
 			if (tag20_resp.equalsIgnoreCase("00"))
 
 			{
-				traces.writeInFileTransaction(folder, file, "SWITCH RESONSE CODE :[00]");
+				Util.writeInFileTransaction(folder, file, "SWITCH RESONSE CODE :[00]");
 				try {
-					traces.writeInFileTransaction(folder, file, "udapate etat demande : SW_PAYE ...");
+					Util.writeInFileTransaction(folder, file, "udapate etat demande : SW_PAYE ...");
 
 					dmd.setEtat_demande("SW_PAYE");
 					demandePaiementService.save(dmd);
 				} catch (Exception e) {
-					traces.writeInFileTransaction(folder, file,
+					Util.writeInFileTransaction(folder, file,
 							"authorization 500 Error during DEMANDE_PAIEMENT update etat demande for given orderid:["
 									+ orderid + "]" + e);
 				}
 
-				traces.writeInFileTransaction(folder, file, "udapate etat demande : SW_PAYE OK");
+				Util.writeInFileTransaction(folder, file, "udapate etat demande : SW_PAYE OK");
 
 				String capture_status = "N";
 				int exp_flag = 0;
@@ -1135,30 +1137,30 @@ public class APIController {
 
 					Date current_date = null;
 					current_date = new Date();
-					traces.writeInFileTransaction(folder, file, "Automatic capture start...");
+					Util.writeInFileTransaction(folder, file, "Automatic capture start...");
 
-					traces.writeInFileTransaction(folder, file, "Getting authnumber");
+					Util.writeInFileTransaction(folder, file, "Getting authnumber");
 
 					String authnumber = hist.getHatNautemt();
-					traces.writeInFileTransaction(folder, file, "authnumber : [" + authnumber + "]");
+					Util.writeInFileTransaction(folder, file, "authnumber : [" + authnumber + "]");
 
-					traces.writeInFileTransaction(folder, file, "Getting authnumber");
+					Util.writeInFileTransaction(folder, file, "Getting authnumber");
 					TransactionDto trs_check = null;
 
 					try {
 						trs_check = transactionService.findByTrsnumautAndTrsnumcmr(authnumber, merchantid);
 					} catch (Exception ee) {
 
-						traces.writeInFileTransaction(folder, file,
+						Util.writeInFileTransaction(folder, file,
 								"trs_check trs_check exception e : [" + ee.toString() + "]");
 					}
 
 					if (trs_check != null) {
 						// do nothing
-						traces.writeInFileTransaction(folder, file, "trs_check != null do nothing for now ...");
+						Util.writeInFileTransaction(folder, file, "trs_check != null do nothing for now ...");
 					} else {
 
-						traces.writeInFileTransaction(folder, file, "inserting into telec start ...");
+						Util.writeInFileTransaction(folder, file, "inserting into telec start ...");
 						try {
 
 							// insert into telec
@@ -1198,7 +1200,7 @@ public class APIController {
 								telecollecteService.save(tlc);
 
 							} else {
-								traces.writeInFileTransaction(folder, file, "n_tlc !null ");
+								Util.writeInFileTransaction(folder, file, "n_tlc !null ");
 
 								lidtelc = n_tlc.getTlc_numtlcolcte();
 								double nbr_trs = n_tlc.getTlc_nbrtrans();
@@ -1256,46 +1258,46 @@ public class APIController {
 							String tmpattern = "HH:mm:ss";
 							SimpleDateFormat sftm = new SimpleDateFormat(tmpattern);
 							String stm = sftm.format(dt);
-							traces.writeInFileTransaction(folder, file, "inserting into telec ok");
+							Util.writeInFileTransaction(folder, file, "inserting into telec ok");
 							capture_status = "Y";
 
 						} catch (Exception e) {
 							exp_flag = 1;
-							traces.writeInFileTransaction(folder, file, "inserting into telec ko..do nothing" + e);
+							Util.writeInFileTransaction(folder, file, "inserting into telec ko..do nothing" + e);
 						}
 					}
 					if (capture_status.equalsIgnoreCase("Y") && exp_flag == 1)
 						capture_status.equalsIgnoreCase("N");
 
-					traces.writeInFileTransaction(folder, file, "Automatic capture end.");
+					Util.writeInFileTransaction(folder, file, "Automatic capture end.");
 				}
 
 			} else {
 
-				traces.writeInFileTransaction(folder, file, "transaction declined !!! ");
-				traces.writeInFileTransaction(folder, file, "SWITCH RESONSE CODE :[" + tag20_resp + "]");
+				Util.writeInFileTransaction(folder, file, "transaction declined !!! ");
+				Util.writeInFileTransaction(folder, file, "SWITCH RESONSE CODE :[" + tag20_resp + "]");
 
 				try {
 
-					traces.writeInFileTransaction(folder, file,
+					Util.writeInFileTransaction(folder, file,
 							"transaction declinded ==> update Demandepaiement status to SW_REJET ...");
 
 					dmd.setEtat_demande("SW_REJET");
 					demandePaiementService.save(dmd);
 
 				} catch (Exception e) {
-					traces.writeInFileTransaction(folder, file, "authorization 500"
+					Util.writeInFileTransaction(folder, file, "authorization 500"
 							+ "Error during  DemandePaiement update SW_REJET for given orderid:[" + orderid + "]" + e);
 
 					return getMsgError(jsonOrequest, "authorization 500 Error during  DemandePaiement update SW_REJET",
 							tag20_resp);
 				}
 
-				traces.writeInFileTransaction(folder, file, "update Demandepaiement status to SW_REJET OK.");
+				Util.writeInFileTransaction(folder, file, "update Demandepaiement status to SW_REJET OK.");
 
 			}
 
-			traces.writeInFileTransaction(folder, file, "Generating paymentid...");
+			Util.writeInFileTransaction(folder, file, "Generating paymentid...");
 
 			String uuid_paymentid, paymentid = "";
 			try {
@@ -1303,17 +1305,17 @@ public class APIController {
 						new BigInteger(UUID.randomUUID().toString().replace("-", ""), 22));
 				paymentid = uuid_paymentid.substring(uuid_paymentid.length() - 22);
 			} catch (Exception e) {
-				traces.writeInFileTransaction(folder, file,
+				Util.writeInFileTransaction(folder, file,
 						"authorization 500 Error during  paymentid generation for given orderid:[" + orderid + "]" + e);
 				return getMsgError(jsonOrequest, "authorization 500 Error during  paymentid generation", tag20_resp);
 			}
 
-			traces.writeInFileTransaction(folder, file, "Generating paymentid OK");
-			traces.writeInFileTransaction(folder, file, "paymentid :[" + paymentid + "]");
+			Util.writeInFileTransaction(folder, file, "Generating paymentid OK");
+			Util.writeInFileTransaction(folder, file, "paymentid :[" + paymentid + "]");
 
 			// JSONObject jso = new JSONObject();
 
-			traces.writeInFileTransaction(folder, file, "Preparing autorization api response");
+			Util.writeInFileTransaction(folder, file, "Preparing autorization api response");
 
 			String authnumber, coderep, motif, merchnatidauth, dtdem = "";
 
@@ -1324,7 +1326,7 @@ public class APIController {
 				merchnatidauth = hist.getHatNumcmr();
 				dtdem = dmd.getDem_pan();
 			} catch (Exception e) {
-				traces.writeInFileTransaction(folder, file,
+				Util.writeInFileTransaction(folder, file,
 						"authorization 500 Error during authdata preparation orderid:[" + orderid + "]" + e);
 
 				return getMsgError(jsonOrequest, "authorization 500 Error during authdata preparation", tag20_resp);
@@ -1363,21 +1365,21 @@ public class APIController {
 				jso.put("email", email);
 
 			} catch (Exception jsouterr) {
-				traces.writeInFileTransaction(folder, file,
+				Util.writeInFileTransaction(folder, file,
 						"authorization 500 Error during jso out processing given authnumber:[" + authnumber + "]"
 								+ jsouterr);
 				return getMsgError(jsonOrequest, "authorization 500 Error during jso out processing", tag20_resp);
 			}
 
 			System.out.println("autorization api response frictionless :  [" + jso.toString() + "]");
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"autorization api response frictionless :  [" + jso.toString() + "]");
 			// fin
 			// *******************************************************************************************************************
 		} else if (reponseMPI.equals("C") || reponseMPI.equals("D")) {
 			// ********************* Cas chalenge responseMPI equal C ou D
 			// *********************
-			traces.writeInFileTransaction(folder, file, "****** Cas chalenge responseMPI equal C ou D ******");
+			Util.writeInFileTransaction(folder, file, "****** Cas chalenge responseMPI equal C ou D ******");
 			try {
 
 				// Transaction info
@@ -1416,21 +1418,21 @@ public class APIController {
 				demandePaiementService.save(dmd);
 
 				System.out.println("link_chalenge " + link_chalenge + dmd.getTokencommande());
-				traces.writeInFileTransaction(folder, file, "link_chalenge " + link_chalenge + dmd.getTokencommande());
+				Util.writeInFileTransaction(folder, file, "link_chalenge " + link_chalenge + dmd.getTokencommande());
 
 				System.out.println("autorization api response chalenge :  [" + jso.toString() + "]");
-				traces.writeInFileTransaction(folder, file,
+				Util.writeInFileTransaction(folder, file,
 						"autorization api response chalenge :  [" + jso.toString() + "]");
 			} catch (Exception ex) {
-				traces.writeInFileTransaction(folder, file, "authorization 500 Error during jso out processing " + ex);
+				Util.writeInFileTransaction(folder, file, "authorization 500 Error during jso out processing " + ex);
 
 				return getMsgError(jsonOrequest, "authorization 500 Error during jso out processing ", null);
 			}
 		} else if (reponseMPI.equals("E")) {
 			// ********************* Cas responseMPI equal E
 			// *********************
-			traces.writeInFileTransaction(folder, file, "****** Cas responseMPI equal E ******");
-			traces.writeInFileTransaction(folder, file, "errmpi/idDemande : " + errmpi + "/" + idDemande);
+			Util.writeInFileTransaction(folder, file, "****** Cas responseMPI equal E ******");
+			Util.writeInFileTransaction(folder, file, "errmpi/idDemande : " + errmpi + "/" + idDemande);
 			dmd.setEtat_demande("MPI_DS_ERR");
 			dmd.setDem_xid(threeDSServerTransID);
 			demandePaiementService.save(dmd);
@@ -1464,15 +1466,15 @@ public class APIController {
 			jso.put("linkacs", "");
 
 			// System.out.println("link_fail " + link_fail + dmd.getTokencommande());
-			// traces.writeInFileTransaction(folder, file, "link_fail " + link_fail +
+			// Util.writeInFileTransaction(folder, file, "link_fail " + link_fail +
 			// dmd.getTokencommande());
 
 			System.out.println("autorization api response fail :  [" + jso.toString() + "]");
-			traces.writeInFileTransaction(folder, file, "autorization api response fail :  [" + jso.toString() + "]");
+			Util.writeInFileTransaction(folder, file, "autorization api response fail :  [" + jso.toString() + "]");
 		} else {
 			switch (errmpi) {
 			case "COMMERCANT NON PARAMETRE":
-				traces.writeInFileTransaction(folder, file, "COMMERCANT NON PARAMETRE : " + idDemande);
+				Util.writeInFileTransaction(folder, file, "COMMERCANT NON PARAMETRE : " + idDemande);
 				dmd.setDem_xid(threeDSServerTransID);
 				dmd.setEtat_demande("MPI_CMR_INEX");
 				demandePaiementService.save(dmd);
@@ -1480,32 +1482,32 @@ public class APIController {
 				// NON PARAMETRE"));
 				return getMsgError(jsonOrequest, "COMMERCANT NON PARAMETRE", "15");
 			case "BIN NON PARAMETRE":
-				traces.writeInFileTransaction(folder, file, "BIN NON PARAMETRE : " + idDemande);
+				Util.writeInFileTransaction(folder, file, "BIN NON PARAMETRE : " + idDemande);
 				dmd.setEtat_demande("MPI_BIN_NON_PAR");
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				return getMsgError(jsonOrequest, "BIN NON PARAMETREE", "96");
 			case "DIRECTORY SERVER":
-				traces.writeInFileTransaction(folder, file, "DIRECTORY SERVER : " + idDemande);
+				Util.writeInFileTransaction(folder, file, "DIRECTORY SERVER : " + idDemande);
 				dmd.setEtat_demande("MPI_DS_ERR");
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				return getMsgError(jsonOrequest, "MPI_DS_ERR", "96");
 			case "CARTE ERRONEE":
-				traces.writeInFileTransaction(folder, file, "CARTE ERRONEE : " + idDemande);
+				Util.writeInFileTransaction(folder, file, "CARTE ERRONEE : " + idDemande);
 				dmd.setEtat_demande("MPI_CART_ERROR");
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				return getMsgError(jsonOrequest, "CARTE ERRONEE", "96");
 			case "CARTE NON ENROLEE":
-				traces.writeInFileTransaction(folder, file, "CARTE NON ENROLEE : " + idDemande);
+				Util.writeInFileTransaction(folder, file, "CARTE NON ENROLEE : " + idDemande);
 				dmd.setEtat_demande("MPI_CART_NON_ENR");
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				return getMsgError(jsonOrequest, "CARTE NON ENROLLE", "96");
 			}
 		}
-		traces.writeInFileTransaction(folder, file, "*********** Fin authorization() ************** ");
+		Util.writeInFileTransaction(folder, file, "*********** Fin authorization() ************** ");
 		System.out.println("*********** Fin authorization() ************** ");
 		return jso.toString();
 
@@ -1515,11 +1517,12 @@ public class APIController {
 	@ResponseBody
 	public String getLink(@RequestHeader MultiValueMap<String, String> header, @RequestBody String linkP,
 			HttpServletResponse response) {
+		Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		file = "API_LINK_" + randomWithSplittableRandom;
+		String file = "API_LINK_" + randomWithSplittableRandom;
 		// create file log
-		traces.creatFileTransaction(file);
-		traces.writeInFileTransaction(folder, file, "*********** Start getLink() ************** ");
+		Util.creatFileTransaction(file);
+		Util.writeInFileTransaction(folder, file, "*********** Start getLink() ************** ");
 		System.out.println("*********** Start getLink() ************** ");
 
 		String api_key = "";
@@ -1527,8 +1530,8 @@ public class APIController {
 		String api_version = "";
 		String api_user_agent = "";
 
-		traces.writeInFileTransaction(folder, file, "getLink api call start ...");
-		traces.writeInFileTransaction(folder, file, "getLink : [" + linkP + "]");
+		Util.writeInFileTransaction(folder, file, "getLink api call start ...");
+		Util.writeInFileTransaction(folder, file, "getLink : [" + linkP + "]");
 
 		JSONObject jsonOrequest = null;
 		try {
@@ -1536,14 +1539,14 @@ public class APIController {
 		}
 
 		catch (JSONException jserr) {
-			traces.writeInFileTransaction(folder, file, "getLink 500 malformed json expression " + linkP + jserr);
+			Util.writeInFileTransaction(folder, file, "getLink 500 malformed json expression " + linkP + jserr);
 			return getMsgError(null, "getLink 500 malformed json expression", null);
 		}
 
 		if (header != null)
-			traces.writeInFileTransaction(folder, file, "header : [" + header.toString() + "]");
+			Util.writeInFileTransaction(folder, file, "header : [" + header.toString() + "]");
 		else
-			traces.writeInFileTransaction(folder, file, "error header is null !");
+			Util.writeInFileTransaction(folder, file, "error header is null !");
 
 		try {
 
@@ -1570,11 +1573,11 @@ public class APIController {
 		} catch (Exception head_err) {
 
 			if (header.toString() != null) {
-				traces.writeInFileTransaction(folder, file,
+				Util.writeInFileTransaction(folder, file,
 						"getLink 500 malformed header" + header.toString() + head_err);
 				return getMsgError(null, "getLink 500 malformed header", null);
 			} else {
-				traces.writeInFileTransaction(folder, file, "getLink 500 malformed header" + head_err);
+				Util.writeInFileTransaction(folder, file, "getLink 500 malformed header" + head_err);
 				return getMsgError(null, "getLink 500 malformed header " + head_err.getMessage(), null);
 			}
 		}
@@ -1617,7 +1620,7 @@ public class APIController {
 			address = (String) jsonOrequest.get("address");
 
 		} catch (Exception jerr) {
-			traces.writeInFileTransaction(folder, file, "getLink 500 malformed json expression " + linkP + jerr);
+			Util.writeInFileTransaction(folder, file, "getLink 500 malformed json expression " + linkP + jerr);
 			return getMsgError(null, "getLink 500 malformed json expression " + jerr.getMessage(), null);
 		}
 
@@ -1625,7 +1628,7 @@ public class APIController {
 		try {
 			current_merchant = commercantService.findByCmrNumcmr(merchantid);
 		} catch (Exception e) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]" + e);
 
@@ -1633,7 +1636,7 @@ public class APIController {
 		}
 
 		if (current_merchant == null) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"getLink 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]");
 
@@ -1641,7 +1644,7 @@ public class APIController {
 		}
 
 		if (current_merchant.getCmrCodactivite() == null) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"getLink 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]");
 
@@ -1649,7 +1652,7 @@ public class APIController {
 		}
 
 		if (current_merchant.getCmrCodbqe() == null) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"getLink 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]");
 
@@ -1670,14 +1673,14 @@ public class APIController {
 			check_dmd = demandePaiementService.findByCommandeAndComid(orderid, merchantid);
 
 		} catch (Exception err1) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"getLink 500 Error during PaiementRequest findByCommandeAndComid orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]" + err1);
 
 			return getMsgError(jsonOrequest, "getLink 500 Error during PaiementRequest", null);
 		}
-		if (check_dmd != null) {
-			traces.writeInFileTransaction(folder, file,
+		if (check_dmd != null && check_dmd.getEtat_demande().equals("SW_PAYE")) {
+			Util.writeInFileTransaction(folder, file,
 					"getLink 500 Error Already exist in PaiementRequest findByCommandeAndComid orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]");
 
@@ -1687,68 +1690,78 @@ public class APIController {
 		String url = "", status = "", statuscode = "";
 
 		try {
+			String tokencommande = "";
+			if(check_dmd != null) {
+				// generer token
+				tokencommande = Util.genTokenCom(check_dmd.getCommande(), check_dmd.getComid());
+				url = link_success + check_dmd.getTokencommande();
+				statuscode = "00";
+				status = "OK";
+				idDemande = String.valueOf(check_dmd.getIddemande());
+			} else {
+				dmd = new DemandePaiementDto();
 
-			dmd = new DemandePaiementDto();
+				dmd.setComid(merchantid);
+				dmd.setCommande(orderid);
+				dmd.setGalid(websiteid);
+				dmd.setSuccessURL(successURL);
+				dmd.setFailURL(failURL);
+				if (amount.equals("") || amount == null) {
+					amount = "0";
+				}
+				if (amount.contains(",")) {
+					amount = amount.replace(",", ".");
+				}
+				dmd.setMontant(Double.parseDouble(amount));
+				dmd.setNom(lname);
+				dmd.setPrenom(fname);
+				dmd.setEmail(email);
+				dmd.setTel(phone);
+				dmd.setAddress(address);
+				dmd.setCity(city);
+				dmd.setCountry(country);
+				dmd.setState(state);
+				dmd.setPostcode(zipcode);
+				dmd.setLangue("E");
+				dmd.setEtat_demande("INIT");
 
-			dmd.setComid(merchantid);
-			dmd.setCommande(orderid);
-			dmd.setGalid(websiteid);
-			dmd.setSuccessURL(successURL);
-			dmd.setFailURL(failURL);
-			if (amount.equals("") || amount == null) {
-				amount = "0";
+				formatter_1 = new SimpleDateFormat("yyyy-MM-dd");
+				formatter_2 = new SimpleDateFormat("HH:mm:ss");
+				trsdate = new Date();
+				transactiondate = formatter_1.format(trsdate);
+				transactiontime = formatter_2.format(trsdate);
+				// dmd.setDem_date_time(transactiondate + transactiontime);
+				dmd.setDem_date_time(dateFormat.format(new Date()));
+
+				if (recurring.equalsIgnoreCase("Y"))
+					dmd.setIs_cof("Y");
+				if (recurring.equalsIgnoreCase("N"))
+					dmd.setIs_cof("N");
+
+				dmd.setIs_addcard("N");
+				dmd.setIs_tokenized("N");
+				dmd.setIs_whitelist("N");
+				dmd.setIs_withsave("N");
+
+				// generer token
+				tokencommande = Util.genTokenCom(dmd.getCommande(), dmd.getComid());
+				dmd.setTokencommande(tokencommande);
+
+				dmdSaved = demandePaiementService.save(dmd);
+
+				url = link_success + dmdSaved.getTokencommande();
+				statuscode = "00";
+				status = "OK";
+				idDemande = String.valueOf(dmdSaved.getIddemande());
 			}
-			if (amount.contains(",")) {
-				amount = amount.replace(",", ".");
-			}
-			dmd.setMontant(Double.parseDouble(amount));
-			dmd.setNom(lname);
-			dmd.setPrenom(fname);
-			dmd.setEmail(email);
-			dmd.setTel(phone);
-			dmd.setAddress(address);
-			dmd.setCity(city);
-			dmd.setCountry(country);
-			dmd.setState(state);
-			dmd.setPostcode(zipcode);
-			dmd.setLangue("E");
-			dmd.setEtat_demande("INIT");
 
-			formatter_1 = new SimpleDateFormat("yyyy-MM-dd");
-			formatter_2 = new SimpleDateFormat("HH:mm:ss");
-			trsdate = new Date();
-			transactiondate = formatter_1.format(trsdate);
-			transactiontime = formatter_2.format(trsdate);
-			// dmd.setDem_date_time(transactiondate + transactiontime);
-			dmd.setDem_date_time(dateFormat.format(new Date()));
-
-			if (recurring.equalsIgnoreCase("Y"))
-				dmd.setIs_cof("Y");
-			if (recurring.equalsIgnoreCase("N"))
-				dmd.setIs_cof("N");
-
-			dmd.setIs_addcard("N");
-			dmd.setIs_tokenized("N");
-			dmd.setIs_whitelist("N");
-			dmd.setIs_withsave("N");
-
-			// generer token
-			String tokencommande = Util.genTokenCom(dmd.getCommande(), dmd.getComid());
-			dmd.setTokencommande(tokencommande);
-
-			dmdSaved = demandePaiementService.save(dmd);
-
-			url = link_success + dmdSaved.getTokencommande();
-			statuscode = "00";
-			status = "OK";
-			idDemande = String.valueOf(dmdSaved.getIddemande());
 
 		} catch (Exception err1) {
 			url = "";
 			statuscode = "";
 			status = "KO";
 			idDemande = "";
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"getLink 500 Error during DEMANDE_PAIEMENT insertion for given orderid:[" + orderid + "]" + err1);
 
 			return getMsgError(jsonOrequest, "getLink 500 Error during DEMANDE_PAIEMENT insertion", null);
@@ -1768,17 +1781,17 @@ public class APIController {
 			// Merchant info
 			jso.put("merchantid", merchantid);
 
-			traces.writeInFileTransaction(folder, file, "json : " + jso.toString());
+			Util.writeInFileTransaction(folder, file, "json : " + jso.toString());
 			System.out.println("json : " + jso.toString());
 
 		} catch (Exception err8) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"getLink 500 Error during jso out processing given orderid:[" + orderid + "]" + err8);
 
 			return getMsgError(jsonOrequest, "getLink 500 Error during jso out processing", null);
 		}
 
-		traces.writeInFileTransaction(folder, file, "*********** Fin getLink() ************** ");
+		Util.writeInFileTransaction(folder, file, "*********** Fin getLink() ************** ");
 		System.out.println("*********** Fin getLink() ************** ");
 
 		return jso.toString();
@@ -1789,11 +1802,12 @@ public class APIController {
 	@ResponseBody
 	public String generateToken(@RequestHeader MultiValueMap<String, String> header, @RequestBody String token24,
 			HttpServletResponse response) {
+		Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		file = "API_" + randomWithSplittableRandom;
+		String file = "API_" + randomWithSplittableRandom;
 		// create file log
-		traces.creatFileTransaction(file);
-		traces.writeInFileTransaction(folder, file, "*********** Start generateToken() ************** ");
+		Util.creatFileTransaction(file);
+		Util.writeInFileTransaction(folder, file, "*********** Start generateToken() ************** ");
 		System.out.println("*********** Start generateToken() ************** ");
 
 		String api_key = "";
@@ -1802,26 +1816,26 @@ public class APIController {
 		String api_user_agent = "";
 
 		// BasicConfigurator.configure();
-		traces.writeInFileTransaction(folder, file, "token24 api call start ...");
-		traces.writeInFileTransaction(folder, file, "token24 : [" + token24 + "]");
+		Util.writeInFileTransaction(folder, file, "token24 api call start ...");
+		Util.writeInFileTransaction(folder, file, "token24 : [" + token24 + "]");
 
 		JSONObject jsonOrequest = null;
 		try {
 			jsonOrequest = new JSONObject(token24);
 		} catch (JSONException jserr) {
-			traces.writeInFileTransaction(folder, file, "token24 500 malformed json expression " + token24 + jserr);
+			Util.writeInFileTransaction(folder, file, "token24 500 malformed json expression " + token24 + jserr);
 			return getMsgError(null, "token24 500 malformed json expression", null);
 		}
 
 		if (header != null)
-			traces.writeInFileTransaction(folder, file, "header : [" + header + "]");
+			Util.writeInFileTransaction(folder, file, "header : [" + header + "]");
 		else
-			traces.writeInFileTransaction(folder, file, "error header is null !");
+			Util.writeInFileTransaction(folder, file, "error header is null !");
 
 		// check the header
 		try {
 
-			traces.writeInFileTransaction(folder, file, "token24 api header check ...");
+			Util.writeInFileTransaction(folder, file, "token24 api header check ...");
 
 			if (header != null) {
 
@@ -1846,10 +1860,10 @@ public class APIController {
 		} catch (Exception head_err) {
 
 			if (header.toString() != null) {
-				traces.writeInFileTransaction(folder, file, "500 malformed header" + header.toString() + head_err);
+				Util.writeInFileTransaction(folder, file, "500 malformed header" + header.toString() + head_err);
 				return getMsgError(null, "token24 500 malformed header", null);
 			} else {
-				traces.writeInFileTransaction(folder, file, "token24 500 malformed header" + head_err);
+				Util.writeInFileTransaction(folder, file, "token24 500 malformed header" + head_err);
 				return getMsgError(null, "token24 500 malformed header " + head_err.getMessage(), null);
 			}
 		}
@@ -1864,7 +1878,7 @@ public class APIController {
 			institution_id = (String) jsonOrequest.get("institution_id");
 
 		} catch (Exception jerr) {
-			traces.writeInFileTransaction(folder, file, "token24 500 malformed json expression " + token24 + jerr);
+			Util.writeInFileTransaction(folder, file, "token24 500 malformed json expression " + token24 + jerr);
 			return getMsgError(null, "token24 500 malformed json expression " + jerr.getMessage(), null);
 		}
 
@@ -1876,7 +1890,7 @@ public class APIController {
 		String token = "";
 		
 		if(mac_value.equals("")) {
-			traces.writeInFileTransaction(folder, file, "the token generation failed, mac_value is empty");
+			Util.writeInFileTransaction(folder, file, "the token generation failed, mac_value is empty");
 			
 			jsoVerified.put("error_msg", "the token generation failed, mac_value is empty");
 			jsoVerified.put("error_code", "17");
@@ -1884,15 +1898,15 @@ public class APIController {
 			jsoVerified.put("cx_user", cx_user);
 			jsoVerified.put("mac_value", "");
 			jsoVerified.put("institution_id", institution_id);
-			traces.writeInFileTransaction(folder, file, "jsoVerified : " + jsoVerified.toString());
+			Util.writeInFileTransaction(folder, file, "jsoVerified : " + jsoVerified.toString());
 			System.out.println("jsoVerified : " + jsoVerified.toString());
 			
-			traces.writeInFileTransaction(folder, file, "*********** Fin generateToken() ************** ");
+			Util.writeInFileTransaction(folder, file, "*********** Fin generateToken() ************** ");
 			
 			return jsoVerified.toString();
 		}
 		if(cx_user.equals("")) {
-			traces.writeInFileTransaction(folder, file, "the token generation failed, cx_user is empty");
+			Util.writeInFileTransaction(folder, file, "the token generation failed, cx_user is empty");
 			
 			jsoVerified.put("error_msg", "the token generation failed, cx_user is empty");
 			jsoVerified.put("error_code", "17");
@@ -1900,15 +1914,15 @@ public class APIController {
 			jsoVerified.put("cx_user", cx_user);
 			jsoVerified.put("mac_value", "");
 			jsoVerified.put("institution_id", institution_id);
-			traces.writeInFileTransaction(folder, file, "jsoVerified : " + jsoVerified.toString());
+			Util.writeInFileTransaction(folder, file, "jsoVerified : " + jsoVerified.toString());
 			System.out.println("jsoVerified : " + jsoVerified.toString());
 			
-			traces.writeInFileTransaction(folder, file, "*********** Fin generateToken() ************** ");
+			Util.writeInFileTransaction(folder, file, "*********** Fin generateToken() ************** ");
 			
 			return jsoVerified.toString();
 		}
 		if(cx_password.equals("")) {
-			traces.writeInFileTransaction(folder, file, "the token generation failed, cx_password is empty");
+			Util.writeInFileTransaction(folder, file, "the token generation failed, cx_password is empty");
 			
 			jsoVerified.put("error_msg", "the token generation failed, cx_password is empty");
 			jsoVerified.put("error_code", "17");
@@ -1916,15 +1930,15 @@ public class APIController {
 			jsoVerified.put("cx_user", cx_user);
 			jsoVerified.put("mac_value", "");
 			jsoVerified.put("institution_id", institution_id);
-			traces.writeInFileTransaction(folder, file, "jsoVerified : " + jsoVerified.toString());
+			Util.writeInFileTransaction(folder, file, "jsoVerified : " + jsoVerified.toString());
 			System.out.println("jsoVerified : " + jsoVerified.toString());
 			
-			traces.writeInFileTransaction(folder, file, "*********** Fin generateToken() ************** ");
+			Util.writeInFileTransaction(folder, file, "*********** Fin generateToken() ************** ");
 			
 			return jsoVerified.toString();
 		}
 		if(institution_id.equals("")) {
-			traces.writeInFileTransaction(folder, file, "the token generation failed, institution_id is empty");
+			Util.writeInFileTransaction(folder, file, "the token generation failed, institution_id is empty");
 			
 			jsoVerified.put("error_msg", "the token generation failed, institution_id is empty");
 			jsoVerified.put("error_code", "17");
@@ -1932,10 +1946,10 @@ public class APIController {
 			jsoVerified.put("cx_user", cx_user);
 			jsoVerified.put("mac_value", "");
 			jsoVerified.put("institution_id", institution_id);
-			traces.writeInFileTransaction(folder, file, "jsoVerified : " + jsoVerified.toString());
+			Util.writeInFileTransaction(folder, file, "jsoVerified : " + jsoVerified.toString());
 			System.out.println("jsoVerified : " + jsoVerified.toString());
 			
-			traces.writeInFileTransaction(folder, file, "*********** Fin generateToken() ************** ");
+			Util.writeInFileTransaction(folder, file, "*********** Fin generateToken() ************** ");
 			
 			return jsoVerified.toString();
 		}
@@ -1958,9 +1972,9 @@ public class APIController {
 				jsoVerified.put("cx_user", cx_user);
 				jsoVerified.put("mac_value", mac_value);
 				jsoVerified.put("institution_id", institution_id);
-				traces.writeInFileTransaction(folder, file, "jsoVerified : " + jsoVerified.toString());
+				Util.writeInFileTransaction(folder, file, "jsoVerified : " + jsoVerified.toString());
 				System.out.println("jsoVerified : " + jsoVerified.toString());
-				traces.writeInFileTransaction(folder, file, "*********** Fin generateToken() ************** ");
+				Util.writeInFileTransaction(folder, file, "*********** Fin generateToken() ************** ");
 				System.out.println("*********** Fin generateToken() ************** ");
 				return jsoVerified.toString();
 			} else {
@@ -1969,7 +1983,7 @@ public class APIController {
 			}
 			
 		} catch (Exception ex) {
-			traces.writeInFileTransaction(folder, file, "the token generation failed");
+			Util.writeInFileTransaction(folder, file, "the token generation failed");
 			error_msg = "the token generation failed";
 			error_code = "17";
 		}
@@ -1981,34 +1995,35 @@ public class APIController {
 		jsoVerified.put("mac_value", mac_value);
 
 		System.out.println("response : " + jsoVerified.toString());
-		traces.writeInFileTransaction(folder, file, "response : " + jsoVerified.toString());
+		Util.writeInFileTransaction(folder, file, "response : " + jsoVerified.toString());
 
 		// fin
 		System.out.println("*********** Fin generateToken() ************** ");
-		traces.writeInFileTransaction(folder, file, "*********** Fin generateToken() ************** ");
+		Util.writeInFileTransaction(folder, file, "*********** Fin generateToken() ************** ");
 
 		return jsoVerified.toString();
 	}
 
 	@RequestMapping(value = "/napspayment/chalenge/token/{token}", method = RequestMethod.GET)
 	public String chalengeapi(@PathVariable(value = "token") String token, Model model) {
+		Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		file = "API_" + randomWithSplittableRandom;
+		String file = "API_" + randomWithSplittableRandom;
 		// create file log
-		traces.creatFileTransaction(file);
-		traces.writeInFileTransaction(folder, file, "*********** Start chalengeapi ************** ");
+		Util.creatFileTransaction(file);
+		Util.writeInFileTransaction(folder, file, "*********** Start chalengeapi ************** ");
 		System.out.println("*********** Start chalengeapi ************** ");
 
 		String page = "chalenge";
 
-		traces.writeInFileTransaction(folder, file, "findByTokencommande token : " + token);
+		Util.writeInFileTransaction(folder, file, "findByTokencommande token : " + token);
 		System.out.println("findByTokencommande token : " + token);
 
 		DemandePaiementDto current_dem = demandePaiementService.findByTokencommande(token);
 		String msgRefus = "Une erreur est survenue, merci de réessayer plus tard";
 
 		if (current_dem != null) {
-			traces.writeInFileTransaction(folder, file, "current_dem is exist OK");
+			Util.writeInFileTransaction(folder, file, "current_dem is exist OK");
 			System.out.println("current_dem is exist OK");
 			if (current_dem.getEtat_demande().equals("SW_PAYE") || current_dem.getEtat_demande().equals("PAYE")) {
 				msgRefus = "La transaction en cours n’a pas abouti (Opération déjà effectuée), votre compte ne sera pas débité, merci de réessayer .";
@@ -2030,13 +2045,13 @@ public class APIController {
 				if (current_dem.getCreq().equals("")) {
 					msgRefus = "La transaction en cours n’a pas abouti (Le lien de chalence acs est null), votre compte ne sera pas débité, merci de réessayer .";
 					current_dem.setMsgRefus(msgRefus);
-					traces.writeInFileTransaction(folder, file, "Le lien de chalence acs est null !!!");
+					Util.writeInFileTransaction(folder, file, "Le lien de chalence acs est null !!!");
 
 					model.addAttribute("demandeDto", current_dem);
 					page = "error";
 				} else {
 					System.out.println("current_dem htmlCreq : " + current_dem.getCreq());
-					traces.writeInFileTransaction(folder, file, "current_dem htmlCreq : " + current_dem.getCreq());
+					Util.writeInFileTransaction(folder, file, "current_dem htmlCreq : " + current_dem.getCreq());
 
 					model.addAttribute("demandeDto", current_dem);
 				}
@@ -2047,14 +2062,14 @@ public class APIController {
 			msgRefus = "Votre commande est introuvable ";
 			demande.setMsgRefus(msgRefus);
 			model.addAttribute("demandeDto", demande);
-			traces.writeInFileTransaction(folder, file, "current_dem not found ");
+			Util.writeInFileTransaction(folder, file, "current_dem not found ");
 			System.out.println("current_dem null ");
 			page = "error";
 		}
 
 		System.out.println("return to " + page + ".html");
 
-		traces.writeInFileTransaction(folder, file, "*********** Fin chalengeapi ************** ");
+		Util.writeInFileTransaction(folder, file, "*********** Fin chalengeapi ************** ");
 		System.out.println("*********** Fin chalengeapi ************** ");
 
 		return page;
@@ -2064,11 +2079,12 @@ public class APIController {
 	@ResponseBody
 	public String status(@RequestHeader MultiValueMap<String, String> header, @RequestBody String status,
 			HttpServletResponse response) {
+		Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		file = "API_" + randomWithSplittableRandom;
+		String file = "API_" + randomWithSplittableRandom;
 		// create file log
-		traces.creatFileTransaction(file);
-		traces.writeInFileTransaction(folder, file, "*********** Start status() ************** ");
+		Util.creatFileTransaction(file);
+		Util.writeInFileTransaction(folder, file, "*********** Start status() ************** ");
 		System.out.println("*********** Start status() ************** ");
 
 		String api_key = "";
@@ -2077,26 +2093,26 @@ public class APIController {
 		String api_user_agent = "";
 
 		// BasicConfigurator.configure();
-		traces.writeInFileTransaction(folder, file, "status api call start ...");
-		traces.writeInFileTransaction(folder, file, "status : [" + status + "]");
+		Util.writeInFileTransaction(folder, file, "status api call start ...");
+		Util.writeInFileTransaction(folder, file, "status : [" + status + "]");
 
 		JSONObject jsonOrequest = null;
 		try {
 			jsonOrequest = new JSONObject(status);
 		} catch (JSONException jserr) {
-			traces.writeInFileTransaction(folder, file, "status 500 malformed json expression " + status + jserr);
+			Util.writeInFileTransaction(folder, file, "status 500 malformed json expression " + status + jserr);
 			return getMsgError(null, "status 500 malformed json expression", null);
 		}
 
 		if (header != null)
-			traces.writeInFileTransaction(folder, file, "header : [" + header + "]");
+			Util.writeInFileTransaction(folder, file, "header : [" + header + "]");
 		else
-			traces.writeInFileTransaction(folder, file, "error header is null !");
+			Util.writeInFileTransaction(folder, file, "error header is null !");
 
 		// check the header
 		try {
 
-			traces.writeInFileTransaction(folder, file, "status api header check ...");
+			Util.writeInFileTransaction(folder, file, "status api header check ...");
 
 			if (header != null) {
 
@@ -2121,10 +2137,10 @@ public class APIController {
 		} catch (Exception head_err) {
 
 			if (header.toString() != null) {
-				traces.writeInFileTransaction(folder, file, "500 malformed header " + header.toString() + head_err);
+				Util.writeInFileTransaction(folder, file, "500 malformed header " + header.toString() + head_err);
 				return getMsgError(null, "status 500 malformed header", null);
 			} else {
-				traces.writeInFileTransaction(folder, file, "status 500 malformed header" + head_err);
+				Util.writeInFileTransaction(folder, file, "status 500 malformed header" + head_err);
 				return getMsgError(null, "status 500 malformed header " + head_err.getMessage(), null);
 			}
 		}
@@ -2144,13 +2160,13 @@ public class APIController {
 			merchantid = (String) jsonOrequest.get("merchantid");
 
 		} catch (Exception jerr) {
-			traces.writeInFileTransaction(folder, file, "status 500 malformed json expression " + status + jerr);
+			Util.writeInFileTransaction(folder, file, "status 500 malformed json expression " + status + jerr);
 			return getMsgError(null, "status 500 malformed json expression " + jerr.getMessage(), null);
 		}
 
 		String timeStamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
 
-		traces.writeInFileTransaction(folder, file, "status_" + orderid + timeStamp);
+		Util.writeInFileTransaction(folder, file, "status_" + orderid + timeStamp);
 
 		String status_ = "Uknown";
 		String statuscode_ = "06";
@@ -2166,9 +2182,9 @@ public class APIController {
 		// verification expiration token
 		jso = verifieToken(securtoken24);
 		if(!jso.get("statuscode").equals("00")) {
-			traces.writeInFileTransaction(folder, file, "jso : " + jso.toString());
+			Util.writeInFileTransaction(folder, file, "jso : " + jso.toString());
 			System.out.println("jso : " + jso.toString());
-			traces.writeInFileTransaction(folder, file, "*********** Fin status() ************** ");
+			Util.writeInFileTransaction(folder, file, "*********** Fin status() ************** ");
 			System.out.println("*********** Fin status() ************** ");
 			return jso.toString();
 		}
@@ -2177,14 +2193,14 @@ public class APIController {
 			current_dmd = demandePaiementService.findByCommandeAndComid(orderid, merchantid);
 
 		} catch (Exception err1) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"status 500 Error during PaiementRequest findByCommandeAndComid orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]" + err1);
 			return getMsgError(jsonOrequest, "status 500 Error during PaiementRequest", null);
 		}
 
 		if (current_dmd == null) {
-			traces.writeInFileTransaction(folder, file, "status 500 PaiementRequest not found orderidderid:[" + orderid
+			Util.writeInFileTransaction(folder, file, "status 500 PaiementRequest not found orderidderid:[" + orderid
 					+ "] and merchantid:[" + merchantid + "]");
 			return getMsgError(jsonOrequest, "status 500 PaiementRequest not found", null);
 		}
@@ -2198,7 +2214,7 @@ public class APIController {
 				current_hist = histoAutoGateService.findByHatNumCommandeAndHatNumcmr(orderid, merchantid);
 
 			} catch (Exception err2) {
-				traces.writeInFileTransaction(folder, file,
+				Util.writeInFileTransaction(folder, file,
 						"status 500 Error during HistoAutoGate findByNumAuthAndNumCommercant orderid:[" + orderid
 								+ "] and merchantid:[" + merchantid + "]" + err2);
 				return getMsgError(jsonOrequest, "status 500 Error during find HistoAutoGate", null);
@@ -2211,7 +2227,7 @@ public class APIController {
 						merchantid);
 
 			} catch (Exception err2) {
-				traces.writeInFileTransaction(folder, file,
+				Util.writeInFileTransaction(folder, file,
 						"Error during HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmr orderid:[" + orderid
 								+ "] + and authnumber:[" + authnumber + "]" + "and merchantid:[" + merchantid + "]"
 								+ err2);
@@ -2225,7 +2241,7 @@ public class APIController {
 				dmd_etat = current_dmd.getEtat_demande();
 			}
 			if (dmd_etat.equalsIgnoreCase("PAYE")) {
-				traces.writeInFileTransaction(folder, file,
+				Util.writeInFileTransaction(folder, file,
 						"Inconsitence HistoAutoGate not found for authnumber and DemandePaiement is PAYE status"
 								+ "HistoAutoGate not found for authnumber:[" + authnumber + "] and merchantid:["
 								+ merchantid + "]");
@@ -2256,7 +2272,7 @@ public class APIController {
 			// respcode + "'");
 			s_respcode = "";
 		} catch (Exception err2) {
-			traces.writeInFileTransaction(folder, file, "status 500 Error during status processing for given authnumber"
+			Util.writeInFileTransaction(folder, file, "status 500 Error during status processing for given authnumber"
 					+ " :[" + authnumber + "] and merchantid:[" + merchantid + "]" + err2);
 
 			return getMsgError(jsonOrequest, "status 500 Error during status processing", null);
@@ -2316,7 +2332,7 @@ public class APIController {
 				trs_check = transactionService.findByTrsnumautAndTrsnumcmr(authnumber, merchantid);
 
 			} catch (Exception err4) {
-				traces.writeInFileTransaction(folder, file,
+				Util.writeInFileTransaction(folder, file,
 						"status 500 Error during Transaction findByTrsnumautAndTrsnumcmr for given authnumber" + " :["
 								+ authnumber + "] and merchantid:[" + merchantid + "]" + err4);
 
@@ -2451,14 +2467,14 @@ public class APIController {
 
 		} catch (Exception err3) {
 			err3.printStackTrace();
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"status 500 Error during jso out processing for given authnumber " + " :[" + authnumber
 							+ "] and merchantid:[" + merchantid + "]" + err3);
 
 			return getMsgError(jsonOrequest, "status 500 Error during jso out processing", null);
 		}
 
-		traces.writeInFileTransaction(folder, file, "*********** Fin status() ************** ");
+		Util.writeInFileTransaction(folder, file, "*********** Fin status() ************** ");
 		System.out.println("*********** Fin status() ************** ");
 
 		return jso.toString();
@@ -2468,11 +2484,12 @@ public class APIController {
 	@ResponseBody
 	public String capture(@RequestHeader MultiValueMap<String, String> header, @RequestBody String capture,
 			HttpServletResponse response) {
+		Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		file = "API_" + randomWithSplittableRandom;
+		String file = "API_" + randomWithSplittableRandom;
 		// create file log
-		traces.creatFileTransaction(file);
-		traces.writeInFileTransaction(folder, file, "*********** Start capture() ************** ");
+		Util.creatFileTransaction(file);
+		Util.writeInFileTransaction(folder, file, "*********** Start capture() ************** ");
 		System.out.println("*********** Start capture() ************** ");
 
 		String api_key = "";
@@ -2480,8 +2497,8 @@ public class APIController {
 		String api_version = "";
 		String api_user_agent = "";
 
-		traces.writeInFileTransaction(folder, file, "capture api call start ...");
-		traces.writeInFileTransaction(folder, file, "capture : [" + capture + "]");
+		Util.writeInFileTransaction(folder, file, "capture api call start ...");
+		Util.writeInFileTransaction(folder, file, "capture : [" + capture + "]");
 
 		JSONObject jsonOrequest = null;
 		try {
@@ -2489,14 +2506,14 @@ public class APIController {
 		}
 
 		catch (JSONException jserr) {
-			traces.writeInFileTransaction(folder, file, "capture 500 malformed json expression " + capture + jserr);
+			Util.writeInFileTransaction(folder, file, "capture 500 malformed json expression " + capture + jserr);
 			return getMsgError(null, "capture 500 malformed json expression", null);
 		}
 
 		if (header != null)
-			traces.writeInFileTransaction(folder, file, "header : [" + header.toString() + "]");
+			Util.writeInFileTransaction(folder, file, "header : [" + header.toString() + "]");
 		else
-			traces.writeInFileTransaction(folder, file, "error header is null !");
+			Util.writeInFileTransaction(folder, file, "error header is null !");
 
 		try {
 
@@ -2523,11 +2540,11 @@ public class APIController {
 		} catch (Exception head_err) {
 
 			if (header.toString() != null) {
-				traces.writeInFileTransaction(folder, file,
+				Util.writeInFileTransaction(folder, file,
 						"capture 500 malformed header" + header.toString() + head_err);
 				return getMsgError(null, "capture 500 malformed header", null);
 			} else {
-				traces.writeInFileTransaction(folder, file, "capture 500 malformed header " + head_err);
+				Util.writeInFileTransaction(folder, file, "capture 500 malformed header " + head_err);
 				return getMsgError(null, "capture 500 malformed header " + head_err.getMessage(), null);
 			}
 		}
@@ -2561,7 +2578,7 @@ public class APIController {
 			email = (String) jsonOrequest.get("email");
 
 		} catch (Exception jerr) {
-			traces.writeInFileTransaction(folder, file, "capture 500 malformed json expression " + capture + jerr);
+			Util.writeInFileTransaction(folder, file, "capture 500 malformed json expression " + capture + jerr);
 			return getMsgError(null, "capture 500 malformed json expression " + jerr.getMessage(), null);
 		}
 		
@@ -2569,16 +2586,16 @@ public class APIController {
 		// verification expiration token
 		jso = verifieToken(securtoken24);
 		if(!jso.get("statuscode").equals("00")) {
-			traces.writeInFileTransaction(folder, file, "jso : " + jso.toString());
+			Util.writeInFileTransaction(folder, file, "jso : " + jso.toString());
 			System.out.println("jso : " + jso.toString());
-			traces.writeInFileTransaction(folder, file, "*********** Fin capture() ************** ");
+			Util.writeInFileTransaction(folder, file, "*********** Fin capture() ************** ");
 			System.out.println("*********** Fin capture() ************** ");
 			return jso.toString();
 		}
 		
 		String timeStamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
 
-		traces.writeInFileTransaction(folder, file, "capture_" + orderid + timeStamp);
+		Util.writeInFileTransaction(folder, file, "capture_" + orderid + timeStamp);
 		// get demandepaiement id , check if exist
 
 		DemandePaiementDto current_dmd = null;
@@ -2587,14 +2604,14 @@ public class APIController {
 			current_dmd = demandePaiementService.findByCommandeAndComid(orderid, merchantid);
 
 		} catch (Exception err1) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"capture 500 Error during PaiementRequest findByCommandeAndComid orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]" + err1);
 			return getMsgError(jsonOrequest, "capture 500 Error during PaiementRequest", null);
 		}
 
 		if (current_dmd == null) {
-			traces.writeInFileTransaction(folder, file, "captue 500 PaiementRequest not found for orderid:[" + orderid
+			Util.writeInFileTransaction(folder, file, "captue 500 PaiementRequest not found for orderid:[" + orderid
 					+ "] and merchantid:[" + merchantid + "]");
 			return getMsgError(jsonOrequest, "captue 500 PaiementRequest not found", null);
 		}
@@ -2610,14 +2627,14 @@ public class APIController {
 					merchantid);
 
 		} catch (Exception err2) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"capture 500 Error during HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmr orderid:["
 							+ orderid + "] and merchantid:[" + merchantid + "]" + err2);
 			return getMsgError(jsonOrequest, "capture 500 Error during HistoAutoGate", null);
 		}
 
 		if (current_hist == null) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"capture 500 Inconsitence HistoAutoGate not found for authnumber and DemandePaiement is PAYE status"
 							+ "HistoAutoGate not found for authnumber:[" + authnumber + "] and merchantid:["
 							+ merchantid + "]");
@@ -2629,7 +2646,7 @@ public class APIController {
 		try {
 			current_merchant = commercantService.findByCmrNumcmr(merchantid);
 		} catch (Exception e) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"capture 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]" + e);
 
@@ -2637,7 +2654,7 @@ public class APIController {
 		}
 
 		if (current_merchant.getCmrCodactivite() == null) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"capture 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]");
 
@@ -2645,7 +2662,7 @@ public class APIController {
 		}
 
 		if (current_merchant.getCmrCodbqe() == null) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"capture 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]");
 
@@ -2664,7 +2681,7 @@ public class APIController {
 			trs_check = transactionService.findByTrsnumautAndTrsnumcmr(authnumber, merchantid);
 
 		} catch (Exception err4) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"capture 500 Error during Transaction findByTrsnumautAndTrsnumcmr for given authnumber:["
 							+ authnumber + "] and merchantid:[" + merchantid + "]" + err4);
 
@@ -2672,7 +2689,7 @@ public class APIController {
 		}
 
 		if (trs_check != null) {
-			traces.writeInFileTransaction(folder, file, "capture 500 Transaction already captured  for given "
+			Util.writeInFileTransaction(folder, file, "capture 500 Transaction already captured  for given "
 					+ "authnumber:[" + authnumber + "] and merchantid:[" + merchantid + "]");
 
 			return getMsgError(jsonOrequest, "500 Transaction already captured", null);
@@ -2716,7 +2733,7 @@ public class APIController {
 				telecollecteService.save(tlc);
 
 			} catch (Exception err5) {
-				traces.writeInFileTransaction(folder, file,
+				Util.writeInFileTransaction(folder, file,
 						"capture 500 Error during insert into telec for given authnumber:[" + authnumber
 								+ "] and merchantid:[" + merchantid + "]" + err5);
 
@@ -2735,7 +2752,7 @@ public class APIController {
 
 				telecollecteService.save(n_tlc);
 			} catch (Exception err55) {
-				traces.writeInFileTransaction(folder, file,
+				Util.writeInFileTransaction(folder, file,
 						"capture 500 Error during update telec for given authnumber:[" + authnumber
 								+ "] and merchantid:[" + merchantid + "]" + err55);
 
@@ -2775,7 +2792,7 @@ public class APIController {
 			transactionService.save(trs);
 
 		} catch (Exception err6) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"capture 500 Error during insert into transaction for given authnumber:[" + authnumber
 							+ "] and merchantid:[" + merchantid + "]" + err6);
 
@@ -2789,7 +2806,7 @@ public class APIController {
 			histoAutoGateService.save(current_hist);
 
 		} catch (Exception err7) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"capture 500 Error during histoauto_gate update for given authnumber:[" + authnumber
 							+ "] and merchantid:[" + merchantid + "]" + err7);
 
@@ -2813,7 +2830,7 @@ public class APIController {
 			stm = sftm.format(dt);
 
 		} catch (Exception err8) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"capture 500 Error during jso data preparationfor given authnumber:[" + authnumber
 							+ "] and merchantid:[" + merchantid + "]" + err8);
 
@@ -2839,13 +2856,13 @@ public class APIController {
 			jso.put("lname", lname);
 			jso.put("email", email);
 		} catch (Exception err9) {
-			traces.writeInFileTransaction(folder, file, "capture 500 Error during jso out processing given "
+			Util.writeInFileTransaction(folder, file, "capture 500 Error during jso out processing given "
 					+ "authnumber:[" + authnumber + "] and merchantid:[" + merchantid + "]" + err9);
 
 			return getMsgError(jsonOrequest, "capture 500 Error during jso out processing", null);
 		}
 
-		traces.writeInFileTransaction(folder, file, "*********** Fin capture() ************** ");
+		Util.writeInFileTransaction(folder, file, "*********** Fin capture() ************** ");
 		System.out.println("*********** Fin capture() ************** ");
 
 		return jso.toString();
@@ -2856,11 +2873,12 @@ public class APIController {
 	@ResponseBody
 	public String refund(@RequestHeader MultiValueMap<String, String> header, @RequestBody String refund,
 			HttpServletResponse response) {
+		Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		file = "API_" + randomWithSplittableRandom;
+		String file = "API_" + randomWithSplittableRandom;
 		// create file log
-		traces.creatFileTransaction(file);
-		traces.writeInFileTransaction(folder, file, "*********** Start refund() ************** ");
+		Util.creatFileTransaction(file);
+		Util.writeInFileTransaction(folder, file, "*********** Start refund() ************** ");
 		System.out.println("*********** Start refund() ************** ");
 
 		String api_key = "";
@@ -2868,8 +2886,8 @@ public class APIController {
 		String api_version = "";
 		String api_user_agent = "";
 
-		traces.writeInFileTransaction(folder, file, "refund api call start ...");
-		traces.writeInFileTransaction(folder, file, "refund : [" + refund + "]");
+		Util.writeInFileTransaction(folder, file, "refund api call start ...");
+		Util.writeInFileTransaction(folder, file, "refund : [" + refund + "]");
 
 		JSONObject jsonOrequest = null;
 		try {
@@ -2877,14 +2895,14 @@ public class APIController {
 		}
 
 		catch (JSONException jserr) {
-			traces.writeInFileTransaction(folder, file, "refund 500 malformed json expression " + refund + jserr);
+			Util.writeInFileTransaction(folder, file, "refund 500 malformed json expression " + refund + jserr);
 			return getMsgError(null, "refund 500 malformed json expression", null);
 		}
 
 		if (header != null)
-			traces.writeInFileTransaction(folder, file, "header : [" + header.toString() + "]");
+			Util.writeInFileTransaction(folder, file, "header : [" + header.toString() + "]");
 		else
-			traces.writeInFileTransaction(folder, file, "error header is null !");
+			Util.writeInFileTransaction(folder, file, "error header is null !");
 
 		try {
 
@@ -2911,11 +2929,11 @@ public class APIController {
 		} catch (Exception head_err) {
 
 			if (header.toString() != null) {
-				traces.writeInFileTransaction(folder, file,
+				Util.writeInFileTransaction(folder, file,
 						"refund 500 malformed header" + header.toString() + head_err);
 				return getMsgError(null, "refund 500 malformed header" + head_err.getMessage(), null);
 			} else {
-				traces.writeInFileTransaction(folder, file, "refund 500 malformed header" + head_err);
+				Util.writeInFileTransaction(folder, file, "refund 500 malformed header" + head_err);
 				return getMsgError(null, "refund 500 malformed header " + head_err.getMessage(), null);
 			}
 		}
@@ -2948,7 +2966,7 @@ public class APIController {
 			email = (String) jsonOrequest.get("email");
 
 		} catch (Exception jerr) {
-			traces.writeInFileTransaction(folder, file, "refund 500 malformed json expression " + refund + jerr);
+			Util.writeInFileTransaction(folder, file, "refund 500 malformed json expression " + refund + jerr);
 			return getMsgError(null, "refund 500 malformed json expression " + jerr.getMessage(), null);
 		}
 		
@@ -2956,16 +2974,16 @@ public class APIController {
 		// verification expiration token
 		jso = verifieToken(securtoken24);
 		if(!jso.get("statuscode").equals("00")) {
-			traces.writeInFileTransaction(folder, file, "jso : " + jso.toString());
+			Util.writeInFileTransaction(folder, file, "jso : " + jso.toString());
 			System.out.println("jso : " + jso.toString());
-			traces.writeInFileTransaction(folder, file, "*********** Fin refund() ************** ");
+			Util.writeInFileTransaction(folder, file, "*********** Fin refund() ************** ");
 			System.out.println("*********** Fin refund() ************** ");
 			return jso.toString();
 		}
 
 		String timeStamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
 
-		traces.writeInFileTransaction(folder, file, "refund_" + orderid + timeStamp);
+		Util.writeInFileTransaction(folder, file, "refund_" + orderid + timeStamp);
 
 		DemandePaiementDto current_dmd = null;
 
@@ -2973,13 +2991,13 @@ public class APIController {
 			current_dmd = demandePaiementService.findByCommandeAndComid(orderid, merchantid);
 
 		} catch (Exception err1) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"refund 500 Error during PaiementRequest findByCommandeAndComid orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]" + err1);
 			return getMsgError(jsonOrequest, "refund 500 Error during PaiementRequest", null);
 		}
 		if (current_dmd == null) {
-			traces.writeInFileTransaction(folder, file, "refund 500 PaiementRequest not found for given orderid"
+			Util.writeInFileTransaction(folder, file, "refund 500 PaiementRequest not found for given orderid"
 					+ orderid + "] and merchantid:[" + merchantid + "]");
 
 			return getMsgError(jsonOrequest, "refund 500 PaiementRequest not found", null);
@@ -2993,7 +3011,7 @@ public class APIController {
 					merchantid);
 
 		} catch (Exception err2) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"refund 500 Error during HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmr orderid:["
 							+ orderid + "] and merchantid:[" + merchantid + "]" + err2);
 
@@ -3001,7 +3019,7 @@ public class APIController {
 		}
 
 		if (current_hist == null) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"refund 500 Inconsitence HistoAutoGate not found for authnumber and DemandePaiement is PAYE status"
 							+ "HistoAutoGate not found for authnumber:[" + authnumber + "] and merchantid:["
 							+ merchantid + "]");
@@ -3016,7 +3034,7 @@ public class APIController {
 			trs_check = transactionService.findByTrsnumautAndTrsnumcmr(authnumber, merchantid);
 
 		} catch (Exception err4) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"refund 500 Error during Transaction findByTrsnumautAndTrsnumcmr for given authnumber:["
 							+ authnumber + "] and merchantid:[" + merchantid + "]" + err4);
 
@@ -3024,7 +3042,7 @@ public class APIController {
 		}
 
 		if (trs_check == null) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"refund 500 Inconsitence Captured Transaction not found for authnumber and DemandePaiement is PAYE status"
 							+ "Captured Transaction not found for authnumber:[" + authnumber + "] and merchantid:["
 							+ merchantid + "]");
@@ -3036,7 +3054,7 @@ public class APIController {
 		String trs_state = trs_check.getTrs_etat();
 
 		if (trs_procod == null) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"refund 500 Inconsitence Captured Transaction trs_procod null for authnumber and DemandePaiement is PAYE status"
 							+ "Captured Transaction trs_procod null  for authnumber:[" + authnumber
 							+ "] and merchantid:[" + merchantid + "]");
@@ -3045,7 +3063,7 @@ public class APIController {
 		}
 
 		if (trs_state == null) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"refund 500 Inconsitence Captured Transaction trs_procod null for authnumber and DemandePaiement is PAYE status"
 							+ "Captured Transaction trs_state null for authnumber:[" + authnumber + "] and merchantid:["
 							+ merchantid + "]");
@@ -3054,7 +3072,7 @@ public class APIController {
 		}
 
 		if (!trs_procod.equalsIgnoreCase("0")) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"refund 500 Inconsitence Captured Transaction trs_procod <> 0 for authnumber and DemandePaiement is PAYE status"
 							+ "Captured Transaction trs_procod <> 0   for authnumber:[" + authnumber
 							+ "] and merchantid:[" + merchantid + "]");
@@ -3063,7 +3081,7 @@ public class APIController {
 		}
 
 		if (!trs_state.equalsIgnoreCase("E")) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"refund 500 Inconsitence Captured Transaction trs_state <> E for authnumber and DemandePaiement is PAYE status"
 							+ "Captured Transaction  trs_state <> E  for authnumber:[" + authnumber
 							+ "] and merchantid:[" + merchantid + "]");
@@ -3082,7 +3100,7 @@ public class APIController {
 			jul = Util.convertToJulian(new Date()) + "";
 
 		} catch (Exception err3) {
-			traces.writeInFileTransaction(folder, file, "refund 500 Error during date formatting for given orderid:["
+			Util.writeInFileTransaction(folder, file, "refund 500 Error during date formatting for given orderid:["
 					+ orderid + "] and merchantid:[" + merchantid + "]" + err3);
 
 			return getMsgError(jsonOrequest, "refund 500 Error during date formatting", null);
@@ -3098,7 +3116,7 @@ public class APIController {
 			mm = new String[2];
 
 			System.out.println("montant v0 : " + amount);
-			traces.writeInFileTransaction(folder, file, "montant v0 : " + amount);
+			Util.writeInFileTransaction(folder, file, "montant v0 : " + amount);
 
 			if (amount.contains(",")) {
 				amount = amount.replace(",", ".");
@@ -3107,7 +3125,7 @@ public class APIController {
 				amount = amount + "." + "00";
 			}
 			System.out.println("montant v1 : " + amount);
-			traces.writeInFileTransaction(folder, file, "montant v1 : " + amount);
+			Util.writeInFileTransaction(folder, file, "montant v1 : " + amount);
 
 			String montantt = amount + "";
 
@@ -3126,24 +3144,24 @@ public class APIController {
 				montanttrame = montanttrame.replace(".", "");
 			montanttrame = Util.formatageCHamps(montanttrame, 12);
 			System.out.println("montanttrame : " + montanttrame);
-			traces.writeInFileTransaction(folder, file, "montanttrame : " + montanttrame);
+			Util.writeInFileTransaction(folder, file, "montanttrame : " + montanttrame);
 		} catch (Exception err4) {
-			traces.writeInFileTransaction(folder, file, "refund 500 Error during amount formatting for given orderid:["
+			Util.writeInFileTransaction(folder, file, "refund 500 Error during amount formatting for given orderid:["
 					+ orderid + "] and merchantid:[" + merchantid + "]" + err4);
 
 			return getMsgError(jsonOrequest, "refund 500 Error during amount formatting", null);
 		}
 
-		traces.writeInFileTransaction(folder, file, "Switch processing start ...");
+		Util.writeInFileTransaction(folder, file, "Switch processing start ...");
 
 		String tlv = "";
-		traces.writeInFileTransaction(folder, file, "Preparing Switch TLV Request start ...");
+		Util.writeInFileTransaction(folder, file, "Preparing Switch TLV Request start ...");
 
 		CommercantDto current_merchant = null;
 		try {
 			current_merchant = commercantService.findByCmrNumcmr(merchantid);
 		} catch (Exception e) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"refund 500 Merchant misconfigured in DB or not existing orderid:[" + orderid + "] and merchantid:["
 							+ merchantid + "]" + e);
 
@@ -3151,7 +3169,7 @@ public class APIController {
 		}
 
 		if (current_merchant == null) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"refund 500 Merchant misconfigured in DB or not existing orderid:[" + orderid + "] and merchantid:["
 							+ merchantid + "]");
 
@@ -3159,7 +3177,7 @@ public class APIController {
 		}
 
 		if (current_merchant.getCmrCodactivite() == null) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"refund 500 Merchant misconfigured in DB or not existing orderid:[" + orderid + "] and merchantid:["
 							+ merchantid + "]");
 
@@ -3167,7 +3185,7 @@ public class APIController {
 		}
 
 		if (current_merchant.getCmrCodbqe() == null) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"refund 500 Merchant misconfigured in DB or not existing orderid:[" + orderid + "] and merchantid:["
 							+ merchantid + "]");
 
@@ -3179,30 +3197,30 @@ public class APIController {
 		String tag20_resp = "00"; // Accept all refund offline mode
 		String s_status = "Refunded offline";
 
-		traces.writeInFileTransaction(folder, file, "Switch status : [" + s_status + "]");
+		Util.writeInFileTransaction(folder, file, "Switch status : [" + s_status + "]");
 
 		if (tag20_resp.equalsIgnoreCase("00"))
 
 		{
-			traces.writeInFileTransaction(folder, file, "Switch CODE REP : [00]");
+			Util.writeInFileTransaction(folder, file, "Switch CODE REP : [00]");
 
-			traces.writeInFileTransaction(folder, file, "Transaction refunded.");
+			Util.writeInFileTransaction(folder, file, "Transaction refunded.");
 
 			try {
-				traces.writeInFileTransaction(folder, file, "Setting DemandePaiement status A ...");
+				Util.writeInFileTransaction(folder, file, "Setting DemandePaiement status A ...");
 
 				current_dmd.setEtat_demande("R");
 				demandePaiementService.save(current_dmd);
 			} catch (Exception e) {
-				traces.writeInFileTransaction(folder, file,
+				Util.writeInFileTransaction(folder, file,
 						"refund 500 Error during  demandepaiement update  A for given  orderid:[" + orderid + "]" + e);
 
 				return getMsgError(jsonOrequest, "refund 500 Error during  demandepaiement update A", null);
 			}
 
-			traces.writeInFileTransaction(folder, file, "Setting DemandePaiement status OK.");
+			Util.writeInFileTransaction(folder, file, "Setting DemandePaiement status OK.");
 
-			traces.writeInFileTransaction(folder, file, "inserting HistoAutoGate   ...");
+			Util.writeInFileTransaction(folder, file, "inserting HistoAutoGate   ...");
 
 			try {
 
@@ -3294,7 +3312,7 @@ public class APIController {
 				transactionService.save(trs);
 
 			} catch (Exception e) {
-				traces.writeInFileTransaction(folder, file,
+				Util.writeInFileTransaction(folder, file,
 						"refund 500 Error during  HistoAutoGate insertion or Transaction insertion A for given orderid:["
 								+ orderid + "]" + e);
 
@@ -3302,7 +3320,7 @@ public class APIController {
 						"refund 500 Error during  HistoAutoGate insertion or Transaction insertion A", null);
 			}
 
-			traces.writeInFileTransaction(folder, file, "inserting HistoAutoGate  OK.");
+			Util.writeInFileTransaction(folder, file, "inserting HistoAutoGate  OK.");
 
 		} /*
 			 * else { //offline processing
@@ -3316,7 +3334,7 @@ public class APIController {
 			refund_id = String.format("%040d", new BigInteger(UUID.randomUUID().toString().replace("-", ""), 36));
 
 		} catch (Exception e) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"refund 500 Error during  refund_id generation for given orderid:[" + orderid + "]" + e);
 
 			return getMsgError(jsonOrequest, "refund 500 Error during  refund_id generation", null);
@@ -3347,13 +3365,13 @@ public class APIController {
 			jso.put("email", email);
 
 		} catch (Exception err8) {
-			traces.writeInFileTransaction(folder, file, "refund 500 Error during jso out processing given authnumber"
+			Util.writeInFileTransaction(folder, file, "refund 500 Error during jso out processing given authnumber"
 					+ "authnumber:[" + authnumber + "]" + err8);
 
 			return getMsgError(jsonOrequest, "refund 500 Error during jso out processing", null);
 		}
 
-		traces.writeInFileTransaction(folder, file, "*********** Fin refund() ************** ");
+		Util.writeInFileTransaction(folder, file, "*********** Fin refund() ************** ");
 		System.out.println("*********** Fin refund() ************** ");
 
 		return jso.toString();
@@ -3364,11 +3382,12 @@ public class APIController {
 	@ResponseBody
 	public String reversal(@RequestHeader MultiValueMap<String, String> header, @RequestBody String reversal,
 			HttpServletResponse response) {
+		Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		file = "API_" + randomWithSplittableRandom;
+		String file = "API_" + randomWithSplittableRandom;
 		// create file log
-		traces.creatFileTransaction(file);
-		traces.writeInFileTransaction(folder, file, "*********** Start reversal() ************** ");
+		Util.creatFileTransaction(file);
+		Util.writeInFileTransaction(folder, file, "*********** Start reversal() ************** ");
 		System.out.println("*********** Start reversal() ************** ");
 
 		String api_key = "";
@@ -3376,8 +3395,8 @@ public class APIController {
 		String api_version = "";
 		String api_user_agent = "";
 
-		traces.writeInFileTransaction(folder, file, "reversal api call start ...");
-		traces.writeInFileTransaction(folder, file, "reversal : [" + reversal + "]");
+		Util.writeInFileTransaction(folder, file, "reversal api call start ...");
+		Util.writeInFileTransaction(folder, file, "reversal : [" + reversal + "]");
 
 		JSONObject jsonOrequest = null;
 		try {
@@ -3385,14 +3404,14 @@ public class APIController {
 		}
 
 		catch (JSONException jserr) {
-			traces.writeInFileTransaction(folder, file, "reversal 500 malformed json expression " + reversal + jserr);
+			Util.writeInFileTransaction(folder, file, "reversal 500 malformed json expression " + reversal + jserr);
 			return getMsgError(null, "reversal 500 malformed json expression", null);
 		}
 
 		if (header != null)
-			traces.writeInFileTransaction(folder, file, "header : [" + header.toString() + "]");
+			Util.writeInFileTransaction(folder, file, "header : [" + header.toString() + "]");
 		else
-			traces.writeInFileTransaction(folder, file, "error header is null !");
+			Util.writeInFileTransaction(folder, file, "error header is null !");
 
 		try {
 
@@ -3419,10 +3438,10 @@ public class APIController {
 		} catch (Exception head_err) {
 
 			if (header.toString() != null) {
-				traces.writeInFileTransaction(folder, file, "500 malformed header" + header.toString() + head_err);
+				Util.writeInFileTransaction(folder, file, "500 malformed header" + header.toString() + head_err);
 				return getMsgError(null, "reversal 500 malformed header " + head_err.getMessage(), null);
 			} else {
-				traces.writeInFileTransaction(folder, file, "reversal 500 malformed header" + head_err);
+				Util.writeInFileTransaction(folder, file, "reversal 500 malformed header" + head_err);
 			}
 		}
 
@@ -3455,7 +3474,7 @@ public class APIController {
 			email = (String) jsonOrequest.get("email");
 
 		} catch (Exception jerr) {
-			traces.writeInFileTransaction(folder, file, "reversal 500 malformed json expression " + reversal + jerr);
+			Util.writeInFileTransaction(folder, file, "reversal 500 malformed json expression " + reversal + jerr);
 			return getMsgError(null, "reversal 500 malformed json expression " + jerr.getMessage(), null);
 		}
 		
@@ -3463,16 +3482,16 @@ public class APIController {
 		// verification expiration token
 		jso = verifieToken(securtoken24);
 		if(!jso.get("statuscode").equals("00")) {
-			traces.writeInFileTransaction(folder, file, "jso : " + jso.toString());
+			Util.writeInFileTransaction(folder, file, "jso : " + jso.toString());
 			System.out.println("jso : " + jso.toString());
-			traces.writeInFileTransaction(folder, file, "*********** Fin reversal() ************** ");
+			Util.writeInFileTransaction(folder, file, "*********** Fin reversal() ************** ");
 			System.out.println("*********** Fin reversal() ************** ");
 			return jso.toString();
 		}
 		
 		String timeStamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
 
-		traces.writeInFileTransaction(folder, file, "reversal_" + orderid + timeStamp);
+		Util.writeInFileTransaction(folder, file, "reversal_" + orderid + timeStamp);
 		// get demandepaiement id , check if exist
 
 		DemandePaiementDto current_dmd = null;
@@ -3481,7 +3500,7 @@ public class APIController {
 			current_dmd = demandePaiementService.findByCommandeAndComid(orderid, merchantid);
 
 		} catch (Exception err1) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"reversal 500 Error during PaiementRequest findByCommandeAndComid orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]" + err1);
 
@@ -3489,7 +3508,7 @@ public class APIController {
 
 		}
 		if (current_dmd == null) {
-			traces.writeInFileTransaction(folder, file, "reversal 500 PaiementRequest not found for given orderid:["
+			Util.writeInFileTransaction(folder, file, "reversal 500 PaiementRequest not found for given orderid:["
 					+ orderid + "] and merchantid:[" + merchantid + "]");
 
 			return getMsgError(jsonOrequest, "reversal 500 PaiementRequest not found", null);
@@ -3504,7 +3523,7 @@ public class APIController {
 					merchantid);
 
 		} catch (Exception err2) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"reversal 500 Error during HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmr orderid:["
 							+ orderid + "] and merchantid:[" + merchantid + "]" + err2);
 
@@ -3512,7 +3531,7 @@ public class APIController {
 		}
 
 		if (current_hist == null) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"reversal 500 Inconsitence HistoAutoGate not found for authnumber and DemandePaiement is PAYE status"
 							+ "HistoAutoGate not found for authnumber:[" + authnumber + "] and merchantid:["
 							+ merchantid + "]");
@@ -3531,7 +3550,7 @@ public class APIController {
 			jul = Util.convertToJulian(new Date()) + "";
 
 		} catch (Exception err3) {
-			traces.writeInFileTransaction(folder, file, "reversal 500 Error during date formatting for given orderid:["
+			Util.writeInFileTransaction(folder, file, "reversal 500 Error during date formatting for given orderid:["
 					+ orderid + "] and merchantid:[" + merchantid + "]" + err3);
 
 			return getMsgError(jsonOrequest, "reversal 500 Error during date formatting", null);
@@ -3546,7 +3565,7 @@ public class APIController {
 
 			mm = new String[2];
 			System.out.println("montant v0 : " + amount);
-			traces.writeInFileTransaction(folder, file, "montant v0 : " + amount);
+			Util.writeInFileTransaction(folder, file, "montant v0 : " + amount);
 
 			if (amount.contains(",")) {
 				amount = amount.replace(",", ".");
@@ -3555,7 +3574,7 @@ public class APIController {
 				amount = amount + "." + "00";
 			}
 			System.out.println("montant v1 : " + amount);
-			traces.writeInFileTransaction(folder, file, "montant v1 : " + amount);
+			Util.writeInFileTransaction(folder, file, "montant v1 : " + amount);
 
 			String montantt = amount + "";
 
@@ -3574,19 +3593,19 @@ public class APIController {
 				montanttrame = montanttrame.replace(".", "");
 			montanttrame = Util.formatageCHamps(montanttrame, 12);
 			System.out.println("montanttrame : " + montanttrame);
-			traces.writeInFileTransaction(folder, file, "montanttrame : " + montanttrame);
+			Util.writeInFileTransaction(folder, file, "montanttrame : " + montanttrame);
 		} catch (Exception err4) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"reversal 500 Error during amount formatting for given orderid:[" + orderid + "] and merchantid:["
 							+ merchantid + "]" + err4);
 
 			return getMsgError(jsonOrequest, "reversal 500 Error during amount formatting", null);
 		}
 
-		traces.writeInFileTransaction(folder, file, "Switch processing start ...");
+		Util.writeInFileTransaction(folder, file, "Switch processing start ...");
 
 		String tlv = "";
-		traces.writeInFileTransaction(folder, file, "Preparing Switch TLV Request start ...");
+		Util.writeInFileTransaction(folder, file, "Preparing Switch TLV Request start ...");
 
 		// controls
 		String mesg_type = "2";
@@ -3601,7 +3620,7 @@ public class APIController {
 		try {
 			current_merchant = commercantService.findByCmrNumcmr(merchantid);
 		} catch (Exception e) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"reversal 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]" + e);
 
@@ -3609,7 +3628,7 @@ public class APIController {
 		}
 
 		if (current_merchant == null) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"reversal 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]");
 
@@ -3617,7 +3636,7 @@ public class APIController {
 		}
 
 		if (current_merchant.getCmrCodactivite() == null) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"reversal 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]");
 
@@ -3625,7 +3644,7 @@ public class APIController {
 		}
 
 		if (current_merchant.getCmrCodbqe() == null) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"reversal 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]");
 
@@ -3658,41 +3677,41 @@ public class APIController {
 					.withField(Tags.tag23, reason_code).withField(Tags.tag90, acqcode).withField(Tags.tag19, authnumber)
 					.encode();
 
-			traces.writeInFileTransaction(folder, file, "tag0_request : [" + mesg_type + "]");
-			traces.writeInFileTransaction(folder, file, "tag1_request : [" + cardnumber + "]");
-			traces.writeInFileTransaction(folder, file, "tag3_request : [" + processing_code + "]");
-			traces.writeInFileTransaction(folder, file, "tag22_request : [" + transaction_condition + "]");
-			traces.writeInFileTransaction(folder, file, "tag49_request : [" + acq_type + "]");
-			traces.writeInFileTransaction(folder, file, "tag14_request : [" + montanttrame + "]");
-			traces.writeInFileTransaction(folder, file, "tag15_request : [" + currency + "]");
-			traces.writeInFileTransaction(folder, file, "tag23_request : [" + reason_code + "]");
-			traces.writeInFileTransaction(folder, file, "tag18_request : [761454]");
-			traces.writeInFileTransaction(folder, file, "tag42_request : [" + expirydate + "]");
-			traces.writeInFileTransaction(folder, file, "tag16_request : [" + date + "]");
-			traces.writeInFileTransaction(folder, file, "tag17_request : [" + heure + "]");
-			traces.writeInFileTransaction(folder, file, "tag10_request : [" + merc_codeactivite + "]");
-			traces.writeInFileTransaction(folder, file, "tag8_request : [0+" + merchantid + "]");
-			traces.writeInFileTransaction(folder, file, "tag9_request : [" + merchantid + "]");
-			traces.writeInFileTransaction(folder, file, "tag66_request : [" + transactionnumber + "]");
-			traces.writeInFileTransaction(folder, file, "tag11_request : [" + merchant_name + "]");
-			traces.writeInFileTransaction(folder, file, "tag12_request : [" + merchant_city + "]");
-			traces.writeInFileTransaction(folder, file, "tag13_request : [MAR]");
-			traces.writeInFileTransaction(folder, file, "tag90_request : [" + acqcode + "]");
-			traces.writeInFileTransaction(folder, file, "tag19_request : [" + authnumber + "]");
+			Util.writeInFileTransaction(folder, file, "tag0_request : [" + mesg_type + "]");
+			Util.writeInFileTransaction(folder, file, "tag1_request : [" + cardnumber + "]");
+			Util.writeInFileTransaction(folder, file, "tag3_request : [" + processing_code + "]");
+			Util.writeInFileTransaction(folder, file, "tag22_request : [" + transaction_condition + "]");
+			Util.writeInFileTransaction(folder, file, "tag49_request : [" + acq_type + "]");
+			Util.writeInFileTransaction(folder, file, "tag14_request : [" + montanttrame + "]");
+			Util.writeInFileTransaction(folder, file, "tag15_request : [" + currency + "]");
+			Util.writeInFileTransaction(folder, file, "tag23_request : [" + reason_code + "]");
+			Util.writeInFileTransaction(folder, file, "tag18_request : [761454]");
+			Util.writeInFileTransaction(folder, file, "tag42_request : [" + expirydate + "]");
+			Util.writeInFileTransaction(folder, file, "tag16_request : [" + date + "]");
+			Util.writeInFileTransaction(folder, file, "tag17_request : [" + heure + "]");
+			Util.writeInFileTransaction(folder, file, "tag10_request : [" + merc_codeactivite + "]");
+			Util.writeInFileTransaction(folder, file, "tag8_request : [0+" + merchantid + "]");
+			Util.writeInFileTransaction(folder, file, "tag9_request : [" + merchantid + "]");
+			Util.writeInFileTransaction(folder, file, "tag66_request : [" + transactionnumber + "]");
+			Util.writeInFileTransaction(folder, file, "tag11_request : [" + merchant_name + "]");
+			Util.writeInFileTransaction(folder, file, "tag12_request : [" + merchant_city + "]");
+			Util.writeInFileTransaction(folder, file, "tag13_request : [MAR]");
+			Util.writeInFileTransaction(folder, file, "tag90_request : [" + acqcode + "]");
+			Util.writeInFileTransaction(folder, file, "tag19_request : [" + authnumber + "]");
 
 		} catch (Exception err4) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"reversal 500 Error during switch tlv buildu for given orderid:[" + orderid + "] and merchantid:["
 							+ merchantid + "]" + err4);
 
 			return getMsgError(jsonOrequest, "reversa 500 Error during switch tlv buildu", "96");
 		}
 
-		traces.writeInFileTransaction(folder, file, "Switch TLV Request :[" + tlv + "]");
+		Util.writeInFileTransaction(folder, file, "Switch TLV Request :[" + tlv + "]");
 
-		traces.writeInFileTransaction(folder, file, "Preparing Switch TLV Request end.");
+		Util.writeInFileTransaction(folder, file, "Preparing Switch TLV Request end.");
 
-		traces.writeInFileTransaction(folder, file, "Switch Connecting ...");
+		Util.writeInFileTransaction(folder, file, "Switch Connecting ...");
 
 		String resp_tlv = "";
 		SwitchTCPClient sw = SwitchTCPClient.getInstance();
@@ -3704,52 +3723,52 @@ public class APIController {
 			s_port = portSwitch;
 			sw_s = ipSwitch;
 
-			traces.writeInFileTransaction(folder, file, "Switch IP / Switch PORT : " + sw_s + "/" + s_port);
+			Util.writeInFileTransaction(folder, file, "Switch IP / Switch PORT : " + sw_s + "/" + s_port);
 
 			port = Integer.parseInt(s_port);
 
 			boolean s_conn = sw.startConnection(sw_s, port);
-			traces.writeInFileTransaction(folder, file, "Switch Connecting ...");
+			Util.writeInFileTransaction(folder, file, "Switch Connecting ...");
 
 			if (s_conn) {
-				traces.writeInFileTransaction(folder, file, "Switch Connected.");
-				traces.writeInFileTransaction(folder, file, "Switch Sending TLV Request ...");
+				Util.writeInFileTransaction(folder, file, "Switch Connected.");
+				Util.writeInFileTransaction(folder, file, "Switch Sending TLV Request ...");
 
 				resp_tlv = sw.sendMessage(tlv);
 
-				traces.writeInFileTransaction(folder, file, "Switch TLV Request end.");
+				Util.writeInFileTransaction(folder, file, "Switch TLV Request end.");
 				sw.stopConnection();
 
 			} else {
 
-				traces.writeInFileTransaction(folder, file, "Switch  malfunction !!!");
+				Util.writeInFileTransaction(folder, file, "Switch  malfunction !!!");
 
 				return getMsgError(jsonOrequest, "reversal 500 Error Switch communication s_conn false", "96");
 			}
 
 		} catch (SocketTimeoutException e) {
-			traces.writeInFileTransaction(folder, file, "Switch  malfunction !!!");
+			Util.writeInFileTransaction(folder, file, "Switch  malfunction !!!");
 
 			return getMsgError(jsonOrequest, "reversal 500 Error Switch communication SocketTimeoutException", "96");
 		} catch (UnknownHostException e) {
-			traces.writeInFileTransaction(folder, file, "Switch  malfunction !!!");
+			Util.writeInFileTransaction(folder, file, "Switch  malfunction !!!");
 
 			return getMsgError(jsonOrequest, "reversal 500 Error Switch communication UnknownHostException", "96");
 		}
 
 		catch (IOException e) {
-			traces.writeInFileTransaction(folder, file, "Switch  malfunction !!!" + e);
+			Util.writeInFileTransaction(folder, file, "Switch  malfunction !!!" + e);
 
 			return getMsgError(jsonOrequest, "reversal 500 Error Switch communication IOException", "96");
 		} catch (Exception e) {
-			traces.writeInFileTransaction(folder, file, "Switch  malfunction !!!" + e);
+			Util.writeInFileTransaction(folder, file, "Switch  malfunction !!!" + e);
 
 			return getMsgError(jsonOrequest, "reversal 500 Error Switch communication General Exception switch", "96");
 		}
 
 		String resp = resp_tlv;
 		if (resp == null) {
-			traces.writeInFileTransaction(folder, file, "Switch  malfunction !!!");
+			Util.writeInFileTransaction(folder, file, "Switch  malfunction !!!");
 
 			return getMsgError(jsonOrequest, "reversal 500 Error Switch null response switch", "96");
 		}
@@ -3758,14 +3777,14 @@ public class APIController {
 
 		{
 
-			traces.writeInFileTransaction(folder, file, "Switch  malfunction !!!");
+			Util.writeInFileTransaction(folder, file, "Switch  malfunction !!!");
 
 			return getMsgError(jsonOrequest, "reversal 500 Error Switch short response length() < 3 switch", "96");
 		}
 
-		traces.writeInFileTransaction(folder, file, "Switch TLV Respnose :[" + resp + "]");
+		Util.writeInFileTransaction(folder, file, "Switch TLV Respnose :[" + resp + "]");
 
-		traces.writeInFileTransaction(folder, file, "Processing Switch TLV Respnose ...");
+		Util.writeInFileTransaction(folder, file, "Processing Switch TLV Respnose ...");
 
 		// resp debug =
 		// "000001300101652345658188287990030010008008011800920090071180092014012000000051557015003504016006200721017006152650066012120114619926018006143901019006797535023001H020002000210026108000621072009800299";
@@ -3802,47 +3821,47 @@ public class APIController {
 			tag98_resp = tlvp.getTag(Tags.tag98);
 
 		} catch (Exception e) {
-			traces.writeInFileTransaction(folder, file, "Switch  malfunction !!!" + e);
+			Util.writeInFileTransaction(folder, file, "Switch  malfunction !!!" + e);
 
 			return getMsgError(jsonOrequest, "reversal 500 Error during tlv Switch response parse switch", "96");
 		}
 
 		// controle switch
 		if (tag1_resp == null) {
-			traces.writeInFileTransaction(folder, file, "Switch  malfunction !!!");
+			Util.writeInFileTransaction(folder, file, "Switch  malfunction !!!");
 
 			return getMsgError(jsonOrequest, "reversal 500 Error during tlv Switch response parse tag1_resp tag null",
 					"96");
 		}
 
 		if (tag1_resp.length() < 3) {
-			traces.writeInFileTransaction(folder, file, "Switch  malfunction !!!");
+			Util.writeInFileTransaction(folder, file, "Switch  malfunction !!!");
 
 			return getMsgError(jsonOrequest,
 					"reversal 500 Error during tlv Switch response parse tag1_resp length tag  < 3 switch", "96");
 		}
 
-		traces.writeInFileTransaction(folder, file, "Switch TLV Respnose Processed");
-		traces.writeInFileTransaction(folder, file, "Switch TLV Respnose :[" + resp + "]");
+		Util.writeInFileTransaction(folder, file, "Switch TLV Respnose Processed");
+		Util.writeInFileTransaction(folder, file, "Switch TLV Respnose :[" + resp + "]");
 
-		traces.writeInFileTransaction(folder, file, "tag0_resp : [" + tag0_resp + "]");
-		traces.writeInFileTransaction(folder, file, "tag1_resp : [" + tag1_resp + "]");
-		traces.writeInFileTransaction(folder, file, "tag3_resp : [" + tag3_resp + "]");
-		traces.writeInFileTransaction(folder, file, "tag8_resp : [" + tag8_resp + "]");
-		traces.writeInFileTransaction(folder, file, "tag9_resp : [" + tag9_resp + "]");
-		traces.writeInFileTransaction(folder, file, "tag14_resp : [" + tag14_resp + "]");
-		traces.writeInFileTransaction(folder, file, "tag15_resp : [" + tag15_resp + "]");
-		traces.writeInFileTransaction(folder, file, "tag16_resp : [" + tag16_resp + "]");
-		traces.writeInFileTransaction(folder, file, "tag17_resp : [" + tag17_resp + "]");
-		traces.writeInFileTransaction(folder, file, "tag66_resp : [" + tag66_resp + "]");
-		traces.writeInFileTransaction(folder, file, "tag18_resp : [" + tag18_resp + "]");
-		traces.writeInFileTransaction(folder, file, "tag19_resp : [" + tag19_resp + "]");
-		traces.writeInFileTransaction(folder, file, "tag23_resp : [" + tag23_resp + "]");
-		traces.writeInFileTransaction(folder, file, "tag20_resp : [" + tag20_resp + "]");
-		traces.writeInFileTransaction(folder, file, "tag21_resp : [" + tag21_resp + "]");
-		traces.writeInFileTransaction(folder, file, "tag22_resp : [" + tag22_resp + "]");
-		traces.writeInFileTransaction(folder, file, "tag80_resp : [" + tag80_resp + "]");
-		traces.writeInFileTransaction(folder, file, "tag98_resp : [" + tag98_resp + "]");
+		Util.writeInFileTransaction(folder, file, "tag0_resp : [" + tag0_resp + "]");
+		Util.writeInFileTransaction(folder, file, "tag1_resp : [" + tag1_resp + "]");
+		Util.writeInFileTransaction(folder, file, "tag3_resp : [" + tag3_resp + "]");
+		Util.writeInFileTransaction(folder, file, "tag8_resp : [" + tag8_resp + "]");
+		Util.writeInFileTransaction(folder, file, "tag9_resp : [" + tag9_resp + "]");
+		Util.writeInFileTransaction(folder, file, "tag14_resp : [" + tag14_resp + "]");
+		Util.writeInFileTransaction(folder, file, "tag15_resp : [" + tag15_resp + "]");
+		Util.writeInFileTransaction(folder, file, "tag16_resp : [" + tag16_resp + "]");
+		Util.writeInFileTransaction(folder, file, "tag17_resp : [" + tag17_resp + "]");
+		Util.writeInFileTransaction(folder, file, "tag66_resp : [" + tag66_resp + "]");
+		Util.writeInFileTransaction(folder, file, "tag18_resp : [" + tag18_resp + "]");
+		Util.writeInFileTransaction(folder, file, "tag19_resp : [" + tag19_resp + "]");
+		Util.writeInFileTransaction(folder, file, "tag23_resp : [" + tag23_resp + "]");
+		Util.writeInFileTransaction(folder, file, "tag20_resp : [" + tag20_resp + "]");
+		Util.writeInFileTransaction(folder, file, "tag21_resp : [" + tag21_resp + "]");
+		Util.writeInFileTransaction(folder, file, "tag22_resp : [" + tag22_resp + "]");
+		Util.writeInFileTransaction(folder, file, "tag80_resp : [" + tag80_resp + "]");
+		Util.writeInFileTransaction(folder, file, "tag98_resp : [" + tag98_resp + "]");
 
 		if (tag20_resp == null) {
 			return getMsgError(jsonOrequest, "reversal 500 Switch malfunction response code not present", "96");
@@ -3854,25 +3873,25 @@ public class APIController {
 		if (tag20_resp.equalsIgnoreCase("00"))
 
 		{
-			traces.writeInFileTransaction(folder, file, "Switch CODE REP : [00]");
+			Util.writeInFileTransaction(folder, file, "Switch CODE REP : [00]");
 
-			traces.writeInFileTransaction(folder, file, "Transaction reversed.");
+			Util.writeInFileTransaction(folder, file, "Transaction reversed.");
 
 			try {
-				traces.writeInFileTransaction(folder, file, "Setting DemandePaiement status A ...");
+				Util.writeInFileTransaction(folder, file, "Setting DemandePaiement status A ...");
 
 				current_dmd.setEtat_demande("A");
 				demandePaiementService.save(current_dmd);
 			} catch (Exception e) {
-				traces.writeInFileTransaction(folder, file,
+				Util.writeInFileTransaction(folder, file,
 						"reversal 500 Error during  demandepaiement update  A for given orderid:[" + orderid + "]" + e);
 
 				return getMsgError(jsonOrequest, "reversal 500 Error during  demandepaiement update A", tag20_resp);
 			}
 
-			traces.writeInFileTransaction(folder, file, "Setting DemandePaiement status OK.");
+			Util.writeInFileTransaction(folder, file, "Setting DemandePaiement status OK.");
 
-			traces.writeInFileTransaction(folder, file, "Setting HistoAutoGate status A ...");
+			Util.writeInFileTransaction(folder, file, "Setting HistoAutoGate status A ...");
 
 			try {
 				current_hist.setHatEtat('A');
@@ -3880,25 +3899,25 @@ public class APIController {
 			} catch (Exception e) {
 
 				e.printStackTrace();
-				traces.writeInFileTransaction(folder, file,
+				Util.writeInFileTransaction(folder, file,
 						"reversal 500 Error during  HistoAutoGate update  A for given orderid:[" + orderid + "]" + e);
 
 				return getMsgError(jsonOrequest, "reversal 500 Error during  HistoAutoGate update A", tag20_resp);
 			}
 
-			traces.writeInFileTransaction(folder, file, "Setting HistoAutoGate status OK.");
+			Util.writeInFileTransaction(folder, file, "Setting HistoAutoGate status OK.");
 
 		} else {
 
-			traces.writeInFileTransaction(folder, file, "Transaction reversal declined.");
-			traces.writeInFileTransaction(folder, file, "Switch CODE REP : [" + tag20_resp + "]");
+			Util.writeInFileTransaction(folder, file, "Transaction reversal declined.");
+			Util.writeInFileTransaction(folder, file, "Switch CODE REP : [" + tag20_resp + "]");
 		}
 
 		String s_status = "";
 
-		traces.writeInFileTransaction(folder, file, "Switch status : [" + s_status + "]");
+		Util.writeInFileTransaction(folder, file, "Switch status : [" + s_status + "]");
 
-		traces.writeInFileTransaction(folder, file, "Generating reversalid");
+		Util.writeInFileTransaction(folder, file, "Generating reversalid");
 
 		String uuid_reversalid, reversalid = "";
 		try {
@@ -3907,7 +3926,7 @@ public class APIController {
 
 			reversalid = uuid_reversalid.substring(uuid_reversalid.length() - 22);
 		} catch (Exception e) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"reversal 500 Error during  reversalid generation for given orderid:[" + orderid + "]" + e);
 
 			return getMsgError(jsonOrequest, "reversal 500 Error during  reversalid generation", tag20_resp);
@@ -3937,12 +3956,12 @@ public class APIController {
 			jso.put("lname", lname);
 			jso.put("email", email);
 		} catch (Exception err8) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"reversal 500 Error during jso out processing given authnumber:[" + authnumber + "]" + err8);
 
 			return getMsgError(jsonOrequest, "reversal 500 Error during jso out processing", tag20_resp);
 		}
-		traces.writeInFileTransaction(folder, file, "*********** Fin reversal() ************** ");
+		Util.writeInFileTransaction(folder, file, "*********** Fin reversal() ************** ");
 		System.out.println("*********** Fin reversal() ************** ");
 
 		return jso.toString();
@@ -3953,11 +3972,12 @@ public class APIController {
 	@ResponseBody
 	public String getCardTken(@RequestHeader MultiValueMap<String, String> header, @RequestBody String cardtoken,
 			HttpServletResponse response) {
+		Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		file = "API_" + randomWithSplittableRandom;
+		String file = "API_" + randomWithSplittableRandom;
 		// create file log
-		traces.creatFileTransaction(file);
-		traces.writeInFileTransaction(folder, file, "*********** Start getCardTken() ************** ");
+		Util.creatFileTransaction(file);
+		Util.writeInFileTransaction(folder, file, "*********** Start getCardTken() ************** ");
 		System.out.println("*********** Start getCardTken() ************** ");
 
 		String api_key = "";
@@ -3965,8 +3985,8 @@ public class APIController {
 		String api_version = "";
 		String api_user_agent = "";
 
-		traces.writeInFileTransaction(folder, file, "cardtoken api call start ...");
-		traces.writeInFileTransaction(folder, file, "cardtoken : [" + cardtoken + "]");
+		Util.writeInFileTransaction(folder, file, "cardtoken api call start ...");
+		Util.writeInFileTransaction(folder, file, "cardtoken : [" + cardtoken + "]");
 
 		JSONObject jsonOrequest = null;
 		try {
@@ -3974,14 +3994,14 @@ public class APIController {
 		}
 
 		catch (JSONException jserr) {
-			traces.writeInFileTransaction(folder, file, "cardtoken 500 malformed json expression " + cardtoken + jserr);
+			Util.writeInFileTransaction(folder, file, "cardtoken 500 malformed json expression " + cardtoken + jserr);
 			return getMsgError(null, "cardtoken 500 malformed json expression", null);
 		}
 
 		if (header != null)
-			traces.writeInFileTransaction(folder, file, "header : [" + header.toString() + "]");
+			Util.writeInFileTransaction(folder, file, "header : [" + header.toString() + "]");
 		else
-			traces.writeInFileTransaction(folder, file, "error header is null !");
+			Util.writeInFileTransaction(folder, file, "error header is null !");
 
 		try {
 
@@ -4008,10 +4028,10 @@ public class APIController {
 		} catch (Exception head_err) {
 
 			if (header.toString() != null) {
-				traces.writeInFileTransaction(folder, file, "500 malformed header" + header.toString() + head_err);
+				Util.writeInFileTransaction(folder, file, "500 malformed header" + header.toString() + head_err);
 				return getMsgError(null, "cardtoken 500 malformed header " + head_err.getMessage(), null);
 			} else {
-				traces.writeInFileTransaction(folder, file, "cardtoken 500 malformed header" + head_err);
+				Util.writeInFileTransaction(folder, file, "cardtoken 500 malformed header" + head_err);
 			}
 		}
 
@@ -4040,8 +4060,8 @@ public class APIController {
 			mac_value = (String) jsonOrequest.get("mac_value");
 
 		} catch (Exception jerr) {
-			traces.writeInFileTransaction(folder, file, "cardtoken 500 malformed json expression " + cardtoken + jerr);
-			traces.writeInFileTransaction(folder, file, "*********** Fin getCardTken() ************** ");
+			Util.writeInFileTransaction(folder, file, "cardtoken 500 malformed json expression " + cardtoken + jerr);
+			Util.writeInFileTransaction(folder, file, "*********** Fin getCardTken() ************** ");
 			System.out.println("*********** Fin getCardTken() ************** ");
 			return getMsgError(null, "cardtoken 500 malformed json expression " + jerr.getMessage(), null);
 		}
@@ -4049,7 +4069,7 @@ public class APIController {
 		JSONObject jso = new JSONObject();
 		try {
 			if(cardnumber.equals("")) {
-				traces.writeInFileTransaction(folder, file, "cardnumber is empty");
+				Util.writeInFileTransaction(folder, file, "cardnumber is empty");
 				// Card info
 				jso.put("token", "");
 
@@ -4057,12 +4077,12 @@ public class APIController {
 				jso.put("statuscode", "17");
 				jso.put("status", "saving token failed, cardnumber is empty");
 				
-				traces.writeInFileTransaction(folder, file, "*********** Fin getCardTken() ************** ");
+				Util.writeInFileTransaction(folder, file, "*********** Fin getCardTken() ************** ");
 				
 				return jso.toString();
 			} 
 			if(mac_value.equals("")) {
-				traces.writeInFileTransaction(folder, file, "mac_value is empty");
+				Util.writeInFileTransaction(folder, file, "mac_value is empty");
 				// Card info
 				jso.put("token", "");
 
@@ -4070,12 +4090,12 @@ public class APIController {
 				jso.put("statuscode", "17");
 				jso.put("status", "saving token failed, mac_value is empty");
 				
-				traces.writeInFileTransaction(folder, file, "*********** Fin getCardTken() ************** ");
+				Util.writeInFileTransaction(folder, file, "*********** Fin getCardTken() ************** ");
 				
 				return jso.toString();
 			}
 			if(securtoken24.equals("")) {
-				traces.writeInFileTransaction(folder, file, "securtoken24 is empty");
+				Util.writeInFileTransaction(folder, file, "securtoken24 is empty");
 				// Card info
 				jso.put("token", "");
 
@@ -4083,14 +4103,14 @@ public class APIController {
 				jso.put("statuscode", "17");
 				jso.put("status", "saving token failed, securtoken24 is empty");
 				
-				traces.writeInFileTransaction(folder, file, "*********** Fin getCardTken() ************** ");
+				Util.writeInFileTransaction(folder, file, "*********** Fin getCardTken() ************** ");
 				
 				return jso.toString();
 			}
 			int i_card_valid = Util.isCardValid(cardnumber);
 
 			if (i_card_valid == 1) {
-				traces.writeInFileTransaction(folder, file, "Error 500 Card number length is incorrect");
+				Util.writeInFileTransaction(folder, file, "Error 500 Card number length is incorrect");
 				// Card info
 				jso.put("token", "");
 
@@ -4098,12 +4118,12 @@ public class APIController {
 				jso.put("statuscode", "17");
 				jso.put("status", "Error 500 Card number length is incorrect");
 				
-				traces.writeInFileTransaction(folder, file, "*********** Fin getCardTken() ************** ");
+				Util.writeInFileTransaction(folder, file, "*********** Fin getCardTken() ************** ");
 				return jso.toString();
 			}
 
 			if (i_card_valid == 2) {
-				traces.writeInFileTransaction(folder, file,"Error 500 Card number  is not valid incorrect luhn check");
+				Util.writeInFileTransaction(folder, file,"Error 500 Card number  is not valid incorrect luhn check");
 				// Card info
 				jso.put("token", "");
 
@@ -4111,7 +4131,7 @@ public class APIController {
 				jso.put("statuscode", "17");
 				jso.put("status", "Error 500 Card number  is not valid incorrect luhn check");
 						
-				traces.writeInFileTransaction(folder, file, "*********** Fin getCardTken() ************** ");
+				Util.writeInFileTransaction(folder, file, "*********** Fin getCardTken() ************** ");
 				return jso.toString();
 			}
 			// verification expiration token
@@ -4119,9 +4139,9 @@ public class APIController {
 			if(!jso.get("statuscode").equals("00")) {
 				// Card info
 				jso.put("token", "");
-				traces.writeInFileTransaction(folder, file, "jso : " + jso.toString());
+				Util.writeInFileTransaction(folder, file, "jso : " + jso.toString());
 				System.out.println("jso : " + jso.toString());
-				traces.writeInFileTransaction(folder, file, "*********** Fin getCardTken() ************** ");
+				Util.writeInFileTransaction(folder, file, "*********** Fin getCardTken() ************** ");
 				System.out.println("*********** Fin getCardTken() ************** ");
 				return jso.toString();
 			}
@@ -4133,7 +4153,7 @@ public class APIController {
 			String tokencard = Util.generateCardToken(merchantid);
 
 			cardtokenDto.setToken(tokencard);
-			traces.writeInFileTransaction(folder, file, "cardtokenDto token : " + cardtokenDto.getToken());
+			Util.writeInFileTransaction(folder, file, "cardtokenDto token : " + cardtokenDto.getToken());
 			
 			String tokenid = UUID.randomUUID().toString();
 			cardtokenDto.setIdToken(tokenid);
@@ -4141,7 +4161,7 @@ public class APIController {
 			Calendar dateCalendar = Calendar.getInstance();
 			Date dateToken = dateCalendar.getTime();
 			
-			traces.writeInFileTransaction(folder, file, "cardtokenDto expirydate input : " + expirydate);
+			Util.writeInFileTransaction(folder, file, "cardtokenDto expirydate input : " + expirydate);
 			String anne = String.valueOf(dateCalendar.get(Calendar.YEAR));
 			// get year from date
 			String xx = anne.substring(0,2)+expirydate.substring(0,2);
@@ -4149,7 +4169,7 @@ public class APIController {
 			// format date to "yyyy-MM-dd"
 			expirydate = xx+"-"+mm+"-"+"01";
 			System.out.println("cardtokenDto expirydate : " + expirydate);
-			traces.writeInFileTransaction(folder, file, "cardtokenDto expirydate formated : " + expirydate);
+			Util.writeInFileTransaction(folder, file, "cardtokenDto expirydate formated : " + expirydate);
 			Date dateExp = dateFormatSimple.parse(expirydate);
 			
 			if(dateExp.before(dateToken)) {
@@ -4159,9 +4179,9 @@ public class APIController {
 				// Transaction info
 				jso.put("statuscode", "17");
 				jso.put("status", "saving token failed, invalid expiry date (expiry date must be greater than system date)");
-				traces.writeInFileTransaction(folder, file, "jso : " + jso.toString());
+				Util.writeInFileTransaction(folder, file, "jso : " + jso.toString());
 				System.out.println("jso : " + jso.toString());
-				traces.writeInFileTransaction(folder, file, "*********** Fin getCardTken() ************** ");
+				Util.writeInFileTransaction(folder, file, "*********** Fin getCardTken() ************** ");
 				System.out.println("*********** Fin getCardTken() ************** ");
 				return jso.toString();
 			}
@@ -4189,10 +4209,10 @@ public class APIController {
 			jso.put("statuscode", "00");
 			jso.put("status", "saving token successfully");
 
-			traces.writeInFileTransaction(folder, file, "Insert into table CARDTOKEN OK");
+			Util.writeInFileTransaction(folder, file, "Insert into table CARDTOKEN OK");
 
 		} catch (Exception ex) {
-			traces.writeInFileTransaction(folder, file, "cardtoken 500 Error during CARDTOKEN Saving : " + ex.getMessage());
+			Util.writeInFileTransaction(folder, file, "cardtoken 500 Error during CARDTOKEN Saving : " + ex.getMessage());
 			// Card info
 			jso.put("token", "");
 
@@ -4201,13 +4221,13 @@ public class APIController {
 			jso.put("status", "saving token failed ");
 			
 			
-			traces.writeInFileTransaction(folder, file, "*********** Fin getCardTken() ************** ");
+			Util.writeInFileTransaction(folder, file, "*********** Fin getCardTken() ************** ");
 			System.out.println("*********** Fin getCardTken() ************** ");
 			
 			return jso.toString();
 		}
 
-		traces.writeInFileTransaction(folder, file, "*********** Fin getCardTken() ************** ");
+		Util.writeInFileTransaction(folder, file, "*********** Fin getCardTken() ************** ");
 		System.out.println("*********** Fin getCardTken() ************** ");
 
 		return jso.toString();
@@ -4217,11 +4237,12 @@ public class APIController {
 	@ResponseBody
 	public String deleteCardTken(@RequestHeader MultiValueMap<String, String> header, @RequestBody String cardtoken,
 			HttpServletResponse response) {
+		Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		file = "API_" + randomWithSplittableRandom;
+		String file = "API_" + randomWithSplittableRandom;
 		// create file log
-		traces.creatFileTransaction(file);
-		traces.writeInFileTransaction(folder, file, "*********** Start deleteCardTken() ************** ");
+		Util.creatFileTransaction(file);
+		Util.writeInFileTransaction(folder, file, "*********** Start deleteCardTken() ************** ");
 		System.out.println("*********** Start deleteCardTken() ************** ");
 
 		String api_key = "";
@@ -4229,8 +4250,8 @@ public class APIController {
 		String api_version = "";
 		String api_user_agent = "";
 
-		traces.writeInFileTransaction(folder, file, "deleteCardTken api call start ...");
-		traces.writeInFileTransaction(folder, file, "deleteCardTken : [" + cardtoken + "]");
+		Util.writeInFileTransaction(folder, file, "deleteCardTken api call start ...");
+		Util.writeInFileTransaction(folder, file, "deleteCardTken : [" + cardtoken + "]");
 
 		JSONObject jsonOrequest = null;
 		try {
@@ -4238,15 +4259,15 @@ public class APIController {
 		}
 
 		catch (JSONException jserr) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"deleteCardTken 500 malformed json expression " + cardtoken + jserr);
 			return getMsgError(null, "deleteCardTken 500 malformed json expression", null);
 		}
 
 		if (header != null)
-			traces.writeInFileTransaction(folder, file, "header : [" + header.toString() + "]");
+			Util.writeInFileTransaction(folder, file, "header : [" + header.toString() + "]");
 		else
-			traces.writeInFileTransaction(folder, file, "error header is null !");
+			Util.writeInFileTransaction(folder, file, "error header is null !");
 
 		try {
 
@@ -4273,10 +4294,10 @@ public class APIController {
 		} catch (Exception head_err) {
 
 			if (header.toString() != null) {
-				traces.writeInFileTransaction(folder, file, "500 malformed header" + header.toString() + head_err);
+				Util.writeInFileTransaction(folder, file, "500 malformed header" + header.toString() + head_err);
 				return getMsgError(null, "deleteCardTken 500 malformed header "  + head_err.getMessage(), null);
 			} else {
-				traces.writeInFileTransaction(folder, file, "deleteCardTken 500 malformed header" + head_err);
+				Util.writeInFileTransaction(folder, file, "deleteCardTken 500 malformed header" + head_err);
 			}
 		}
 
@@ -4286,12 +4307,12 @@ public class APIController {
 			merchantid = (String) jsonOrequest.get("merchantid");
 
 			// Card info
-			cardnumber = (String) jsonOrequest.get("cardnumber");
+			//cardnumber = (String) jsonOrequest.get("cardnumber");
 			token = (String) jsonOrequest.get("token");
 
 			// Client info
 		} catch (JSONException jserr) {
-			traces.writeInFileTransaction(folder, file,
+			Util.writeInFileTransaction(folder, file,
 					"deleteCardTken 500 malformed json expression " + cardtoken + jserr);
 			return getMsgError(null, "deleteCardTken 500 malformed json expression " + jserr.getMessage(), null);
 		}
@@ -4299,7 +4320,7 @@ public class APIController {
 		JSONObject jso = new JSONObject();
 		try {
 			if(merchantid.equals("")) {
-				traces.writeInFileTransaction(folder, file, "merchantid is empty");
+				Util.writeInFileTransaction(folder, file, "merchantid is empty");
 				// Card info
 				jso.put("token", token);
 
@@ -4307,12 +4328,12 @@ public class APIController {
 				jso.put("statuscode", "17");
 				jso.put("status", "delete token failed, merchantid is empty");
 				
-				traces.writeInFileTransaction(folder, file, "*********** Fin deleteCardTken() ************** ");
+				Util.writeInFileTransaction(folder, file, "*********** Fin deleteCardTken() ************** ");
 				
 				return jso.toString();
 			}
 			if(token.equals("")) {
-				traces.writeInFileTransaction(folder, file, "token is empty");
+				Util.writeInFileTransaction(folder, file, "token is empty");
 				// Card info
 				jso.put("token", "");
 
@@ -4320,12 +4341,12 @@ public class APIController {
 				jso.put("statuscode", "17");
 				jso.put("status", "delete token failed, token is empty");
 				
-				traces.writeInFileTransaction(folder, file, "*********** Fin deleteCardTken() ************** ");
+				Util.writeInFileTransaction(folder, file, "*********** Fin deleteCardTken() ************** ");
 				
 				return jso.toString();
 			}
-			if(cardnumber.equals("")) {
-				traces.writeInFileTransaction(folder, file, "cardnumber is empty");
+			/*if(cardnumber.equals("")) {
+				Util.writeInFileTransaction(folder, file, "cardnumber is empty");
 				// Card info
 				jso.put("token", token);
 
@@ -4333,14 +4354,14 @@ public class APIController {
 				jso.put("statuscode", "17");
 				jso.put("status", "delete token failed, cardnumber is empty");
 				
-				traces.writeInFileTransaction(folder, file, "*********** Fin deleteCardTken() ************** ");
+				Util.writeInFileTransaction(folder, file, "*********** Fin deleteCardTken() ************** ");
 				
 				return jso.toString();
 			}
 			int i_card_valid = Util.isCardValid(cardnumber);
 
 			if (i_card_valid == 1) {
-				traces.writeInFileTransaction(folder, file, "Error 500 Card number length is incorrect");
+				Util.writeInFileTransaction(folder, file, "Error 500 Card number length is incorrect");
 				// Card info
 				jso.put("token", token);
 
@@ -4348,12 +4369,12 @@ public class APIController {
 				jso.put("statuscode", "17");
 				jso.put("status", "Error 500 Card number length is incorrect");
 				
-				traces.writeInFileTransaction(folder, file, "*********** Fin deleteCardTken() ************** ");
+				Util.writeInFileTransaction(folder, file, "*********** Fin deleteCardTken() ************** ");
 				return jso.toString();
 			}
 
 			if (i_card_valid == 2) {
-				traces.writeInFileTransaction(folder, file,"Error 500 Card number is not valid incorrect luhn check");
+				Util.writeInFileTransaction(folder, file,"Error 500 Card number is not valid incorrect luhn check");
 				// Card info
 				jso.put("token", token);
 
@@ -4361,12 +4382,12 @@ public class APIController {
 				jso.put("statuscode", "17");
 				jso.put("status", "Error 500 Card number is not valid incorrect luhn check");
 						
-				traces.writeInFileTransaction(folder, file, "*********** Fin deleteCardTken() ************** ");
+				Util.writeInFileTransaction(folder, file, "*********** Fin deleteCardTken() ************** ");
 				return jso.toString();
-			}
+			}*/
 			// delete cardToken
 
-			CardtokenDto cardTokenTodelete = cardtokenService.findByIdMerchantAndToken(merchantid, cardnumber);
+			CardtokenDto cardTokenTodelete = cardtokenService.findByIdMerchantAndToken(merchantid, token);
 
 			cardtokenService.delete(cardTokenTodelete);
 
@@ -4377,10 +4398,10 @@ public class APIController {
 			jso.put("statuscode", "00");
 			jso.put("status", "delete token successfully ");
 
-			traces.writeInFileTransaction(folder, file, "Delete CARDTOKEN OK");
+			Util.writeInFileTransaction(folder, file, "Delete CARDTOKEN OK");
 
 		} catch (Exception ex) {
-			traces.writeInFileTransaction(folder, file, "Error during delete token : " + ex);
+			Util.writeInFileTransaction(folder, file, "Error during delete token : " + ex);
 			// Card info
 			jso.put("token", token);
 
@@ -4389,7 +4410,7 @@ public class APIController {
 			jso.put("status", "delete token failed");
 		}
 
-		traces.writeInFileTransaction(folder, file, "*********** Fin deleteCardTken() ************** ");
+		Util.writeInFileTransaction(folder, file, "*********** Fin deleteCardTken() ************** ");
 		System.out.println("*********** Fin deleteCardTken() ************** ");
 
 		return jso.toString();
@@ -4398,15 +4419,16 @@ public class APIController {
 	@PostMapping(value = "/napspayment/histo/exportexcel", consumes = "application/json", produces = "application/json")
 	public void exportToExcel(@RequestHeader MultiValueMap<String, String> header, @RequestBody String req,
 			HttpServletResponse response) throws IOException {
+		Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		file = "API_" + randomWithSplittableRandom;
+		String file = "API_" + randomWithSplittableRandom;
 		// create file log
-		traces.creatFileTransaction(file);
-		traces.writeInFileTransaction(folder, file, "*********** Start exportToExcel() ************** ");
+		Util.creatFileTransaction(file);
+		Util.writeInFileTransaction(folder, file, "*********** Start exportToExcel() ************** ");
 		System.out.println("*********** Start exportToExcel() ************** ");
 
-		traces.writeInFileTransaction(folder, file, "exportToExcel api call start ...");
-		traces.writeInFileTransaction(folder, file, "exportToExcel : [" + req + "]");
+		Util.writeInFileTransaction(folder, file, "exportToExcel api call start ...");
+		Util.writeInFileTransaction(folder, file, "exportToExcel : [" + req + "]");
 
 		response.setContentType("application/octet-stream");
 		DateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
@@ -4420,7 +4442,7 @@ public class APIController {
 			jsonOrequest = new JSONObject(req);
 
 		} catch (JSONException jserr) {
-			traces.writeInFileTransaction(folder, file, "exportToExcel 500 malformed json expression " + req + jserr);
+			Util.writeInFileTransaction(folder, file, "exportToExcel 500 malformed json expression " + req + jserr);
 		}
 
 		String merchantid = "", orderid = "", dateDem = "";
@@ -4432,7 +4454,7 @@ public class APIController {
 			dateDem = (String) jsonOrequest.get("dateDem");
 
 		} catch (JSONException jserr) {
-			traces.writeInFileTransaction(folder, file, "exportToExcel 500 malformed json expression " + req + jserr);
+			Util.writeInFileTransaction(folder, file, "exportToExcel 500 malformed json expression " + req + jserr);
 		}
 
 		try {
@@ -4445,22 +4467,23 @@ public class APIController {
 			excelExporter.export(response);
 
 		} catch (Exception e) {
-			traces.writeInFileTransaction(folder, file, "exportToExcel 500 merchantid:[" + merchantid + "]");
-			traces.writeInFileTransaction(folder, file, "exportToExcel 500 exception" + e);
+			Util.writeInFileTransaction(folder, file, "exportToExcel 500 merchantid:[" + merchantid + "]");
+			Util.writeInFileTransaction(folder, file, "exportToExcel 500 exception" + e);
 			e.printStackTrace();
 		}
 
-		traces.writeInFileTransaction(folder, file, "*********** Fin exportToExcel ***********");
+		Util.writeInFileTransaction(folder, file, "*********** Fin exportToExcel ***********");
 		System.out.println("*********** Fin exportToExcel ***********");
 	}
 
 	@RequestMapping(path = "/napspayment/cpautorisation", produces = "application/json; charset=UTF-8")
 	public ResponseEntity<responseDto> cpautorisation(@RequestBody RequestDto requestDto) {
+		Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		file = "API_" + randomWithSplittableRandom;
+		String file = "API_" + randomWithSplittableRandom;
 		// create file log
-		traces.creatFileTransaction(file);
-		traces.writeInFileTransaction(folder, file, "*********** Start cpautorisation() ************** ");
+		Util.creatFileTransaction(file);
+		Util.writeInFileTransaction(folder, file, "*********** Start cpautorisation() ************** ");
 		System.out.println("*********** Start cpautorisation() ************** ");
 
 		System.out.println("*********** Start cpautorisation ************** ");
@@ -4470,7 +4493,7 @@ public class APIController {
 
 		responseDto response = new responseDto();
 
-		traces.writeInFileTransaction(folder, file, "*********** Fin cpautorisation() ************** ");
+		Util.writeInFileTransaction(folder, file, "*********** Fin cpautorisation() ************** ");
 		System.out.println("*********** Fin cpautorisation() ************** ");
 
 		return ResponseEntity.ok().body(response);
@@ -4480,11 +4503,12 @@ public class APIController {
 	@ResponseBody
 	public String testapi(@RequestHeader MultiValueMap<String, String> header, @RequestBody String req,
 			HttpServletResponse response, Model model) throws IOException {
+		Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		file = "API_" + randomWithSplittableRandom;
+		String file = "API_" + randomWithSplittableRandom;
 		// create file log
-		traces.creatFileTransaction(file);
-		traces.writeInFileTransaction(folder, file, "*********** Start testapi ************** ");
+		Util.creatFileTransaction(file);
+		Util.writeInFileTransaction(folder, file, "*********** Start testapi ************** ");
 		System.out.println("*********** Start testapi ************** ");
 
 		JSONObject jsonOrequest = null;
@@ -4493,7 +4517,7 @@ public class APIController {
 		}
 
 		catch (JSONException jserr) {
-			traces.writeInFileTransaction(folder, file, "testapi 500 malformed json expression " + req + jserr);
+			Util.writeInFileTransaction(folder, file, "testapi 500 malformed json expression " + req + jserr);
 			return getMsgError(null, "testapi 500 malformed json expression", null);
 		}
 
@@ -4530,7 +4554,7 @@ public class APIController {
 			// Link ACS chalenge info
 			jso.put("linkacs", linkacs);
 
-			traces.writeInFileTransaction(folder, file, "testapi json : " + jso.toString());
+			Util.writeInFileTransaction(folder, file, "testapi json : " + jso.toString());
 			System.out.println("testapi json : " + jso.toString());
 
 			// response.sendRedirect(link_index);
@@ -4541,17 +4565,18 @@ public class APIController {
 			jso.put("statuscode", "17");
 			jso.put("status", "failed");
 			System.out.println("testapi error json : " + jso.toString());
-			traces.writeInFileTransaction(folder, file, "testapi error json : " + jso.toString());
-			traces.writeInFileTransaction(folder, file, "testapi exception : " + ex);
+			Util.writeInFileTransaction(folder, file, "testapi error json : " + jso.toString());
+			Util.writeInFileTransaction(folder, file, "testapi exception : " + ex);
 			System.out.println("testapi exception : " + ex);
 		}
 
-		traces.writeInFileTransaction(folder, file, "*********** Fin testapi ************** ");
+		Util.writeInFileTransaction(folder, file, "*********** Fin testapi ************** ");
 		System.out.println("*********** Fin testapi ************** ");
 		return jso.toString();
 	}
 	
 	public JSONObject verifieToken(String securtoken24) {
+		Traces traces = new Traces();
 		JSONObject jso = new JSONObject();
 		
 		if(!securtoken24.equals("")) {
@@ -4562,16 +4587,16 @@ public class APIController {
 				Date dateExpiration = jwtTokenUtil.getExpirationDateFromToken(token, secret);
 				Boolean isTokenExpired = jwtTokenUtil.isTokenExpired(token, secret);
 
-				traces.writeInFileTransaction(folder, file, "userFromToken generated : " + userFromToken);
+				Util.writeInFileTransaction(folder, file, "userFromToken generated : " + userFromToken);
 				String dateSysStr = dateFormat.format(new Date());
-				traces.writeInFileTransaction(folder, file, "dateSysStr : " + dateSysStr);
-				traces.writeInFileTransaction(folder, file, "dateExpiration : " + dateExpiration);
+				Util.writeInFileTransaction(folder, file, "dateSysStr : " + dateSysStr);
+				Util.writeInFileTransaction(folder, file, "dateExpiration : " + dateExpiration);
 				String dateExpirationStr = dateFormat.format(dateExpiration);
-				traces.writeInFileTransaction(folder, file, "dateExpirationStr : " + dateExpirationStr);
+				Util.writeInFileTransaction(folder, file, "dateExpirationStr : " + dateExpirationStr);
 				String condition = isTokenExpired == false ? "NO" : "YES";
-				traces.writeInFileTransaction(folder, file, "token is expired : " + condition);
+				Util.writeInFileTransaction(folder, file, "token is expired : " + condition);
 				if(condition.equalsIgnoreCase("YES")) {
-					traces.writeInFileTransaction(folder, file, "Error 500 securtoken24 is expired");
+					Util.writeInFileTransaction(folder, file, "Error 500 securtoken24 is expired");
 
 					// Transaction info
 					jso.put("statuscode", "17");
@@ -4594,7 +4619,8 @@ public class APIController {
 	}
 	
 	public String getMsgError(JSONObject jsonOrequest, String msg, String coderep) {
-		traces.writeInFileTransaction(folder, file, "*********** Start getMsgError() ************** ");
+		Traces traces = new Traces();
+		Util.writeInFileTransaction(folder, file, "*********** Start getMsgError() ************** ");
 		System.out.println("*********** Start getMsgError() ************** ");
 
 		JSONObject jso = new JSONObject();
@@ -4619,10 +4645,10 @@ public class APIController {
 		jso.put("url", "");
 		jso.put("idDemande", "");
 
-		traces.writeInFileTransaction(folder, file, "json : " + jso.toString());
+		Util.writeInFileTransaction(folder, file, "json : " + jso.toString());
 		System.out.println("json : " + jso.toString());
 
-		traces.writeInFileTransaction(folder, file, "*********** Fin getMsgError() ************** ");
+		Util.writeInFileTransaction(folder, file, "*********** Fin getMsgError() ************** ");
 		System.out.println("*********** Fin getMsgError() ************** ");
 		return jso.toString();
 	}

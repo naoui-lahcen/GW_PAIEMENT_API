@@ -2,6 +2,8 @@ package ma.m2m.gateway.Utils;
 
 import org.springframework.stereotype.Component;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -17,6 +19,7 @@ import java.time.format.DateTimeFormatter;
 
 
 @Component
+@Slf4j
 public class Traces {
 
 	// fonction de creation dossier de jour et le fichier trace par transaction

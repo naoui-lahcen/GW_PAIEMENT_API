@@ -18,7 +18,7 @@ import ma.m2m.gateway.model.Emetteur;
 public interface EmetteurDao extends JpaRepository<Emetteur, String>{
 
 	@Query(value = "select * from MXGATEWAY.EMETTEUR em where "
-			+"em.EMT_BINDEBUT = (?1) ", nativeQuery = true)
+			+"(?1) between em.EMT_BINDEBUT and em.EMT_BINFIN ", nativeQuery = true)
 	List<Emetteur> findByEmtbindebut(String binDebut);
 
 }
