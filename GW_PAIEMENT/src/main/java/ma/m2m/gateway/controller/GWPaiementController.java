@@ -1799,15 +1799,80 @@ public class GWPaiementController {
 		} else if (reponseMPI.equals("E")) {
 			// ********************* Cas responseMPI equal E
 			// *********************
-			Util.writeInFileTransaction(folder, file, "****** Cas responseMPI equal E ******");
-			Util.writeInFileTransaction(folder, file, "errmpi/idDemande : " + errmpi + "/" + idDemande);
-			dmd.setEtat_demande("MPI_DS_ERR");
-			demandePaiementService.save(dmd);
-			demandeDtoMsg.setMsgRefus(
-					"La transaction en cours n’a pas abouti (Error 3DSS), votre compte ne sera pas débité, merci de réessayer .");
-			model.addAttribute("demandeDto", demandeDtoMsg);
-			page = "result";
-			return page;
+			switch (errmpi) {
+			case "COMMERCANT NON PARAMETRE":
+				Util.writeInFileTransaction(folder, file, "COMMERCANT NON PARAMETRE : " + idDemande);
+				dmd.setDem_xid(threeDSServerTransID);
+				dmd.setEtat_demande("MPI_CMR_INEX");
+				demandePaiementService.save(dmd);
+				demandeDtoMsg.setMsgRefus(
+						"La transaction en cours n’a pas abouti (COMMERCANT NON PARAMETRE), votre compte ne sera pas débité, merci de réessayer .");
+				model.addAttribute("demandeDto", demandeDtoMsg);
+				page = "result";
+				Util.writeInFileTransaction(folder, file, "Fin processRequest ()");
+				System.out.println("Fin processRequest ()");
+				return page;
+			case "BIN NON PARAMETRE":
+				Util.writeInFileTransaction(folder, file, "BIN NON PARAMETRE : " + idDemande);
+				dmd.setEtat_demande("MPI_BIN_NON_PAR");
+				dmd.setDem_xid(threeDSServerTransID);
+				demandePaiementService.save(dmd);
+				demandeDtoMsg.setMsgRefus(
+						"La transaction en cours n’a pas abouti (BIN NON PARAMETREE), votre compte ne sera pas débité, merci de réessayer .");
+				model.addAttribute("demandeDto", demandeDtoMsg);
+				page = "result";
+				Util.writeInFileTransaction(folder, file, "Fin processRequest ()");
+				System.out.println("Fin processRequest ()");
+				return page;
+			case "DIRECTORY SERVER":
+				Util.writeInFileTransaction(folder, file, "DIRECTORY SERVER : " + idDemande);
+				dmd.setEtat_demande("MPI_DS_ERR");
+				dmd.setDem_xid(threeDSServerTransID);
+				demandePaiementService.save(dmd);
+				demandeDtoMsg.setMsgRefus(
+						"La transaction en cours n’a pas abouti (MPI_DS_ERR), votre compte ne sera pas débité, merci de réessayer .");
+				model.addAttribute("demandeDto", demandeDtoMsg);
+				page = "result";
+				Util.writeInFileTransaction(folder, file, "Fin processRequest ()");
+				System.out.println("Fin processRequest ()");
+				return page;
+			case "CARTE ERRONEE":
+				Util.writeInFileTransaction(folder, file, "CARTE ERRONEE : " + idDemande);
+				dmd.setEtat_demande("MPI_CART_ERROR");
+				dmd.setDem_xid(threeDSServerTransID);
+				demandePaiementService.save(dmd);
+				demandeDtoMsg.setMsgRefus(
+						"La transaction en cours n’a pas abouti (CARTE ERRONEE), votre compte ne sera pas débité, merci de réessayer .");
+				model.addAttribute("demandeDto", demandeDtoMsg);
+				page = "result";
+				Util.writeInFileTransaction(folder, file, "Fin processRequest ()");
+				System.out.println("Fin processRequest ()");
+				return page;
+			case "CARTE NON ENROLEE":
+				Util.writeInFileTransaction(folder, file, "CARTE NON ENROLEE : " + idDemande);
+				dmd.setEtat_demande("MPI_CART_NON_ENR");
+				dmd.setDem_xid(threeDSServerTransID);
+				demandePaiementService.save(dmd);
+				demandeDtoMsg.setMsgRefus(
+						"La transaction en cours n’a pas abouti (CARTE NON ENROLLE), votre compte ne sera pas débité, merci de réessayer .");
+				model.addAttribute("demandeDto", demandeDtoMsg);
+				page = "result";
+				Util.writeInFileTransaction(folder, file, "Fin processRequest ()");
+				System.out.println("Fin processRequest ()");
+				return page;
+			case "ERROR REPONSE ACS":
+				Util.writeInFileTransaction(folder, file, "ERROR REPONSE ACS : " + idDemande);
+				dmd.setEtat_demande("MPI_ERR_RS_ACS");
+				dmd.setDem_xid(threeDSServerTransID);
+				demandePaiementService.save(dmd);
+				demandeDtoMsg.setMsgRefus(
+						"La transaction en cours n’a pas abouti (ERROR REPONSE ACS), votre compte ne sera pas débité, merci de réessayer .");
+				model.addAttribute("demandeDto", demandeDtoMsg);
+				page = "result";
+				Util.writeInFileTransaction(folder, file, "Fin processRequest ()");
+				System.out.println("Fin processRequest ()");
+				return page;
+			}
 		} else {
 			switch (errmpi) {
 			case "COMMERCANT NON PARAMETRE":
@@ -1859,6 +1924,18 @@ public class GWPaiementController {
 						"La transaction en cours n’a pas abouti (CARTE NON ENROLLE), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
+				return page;
+			case "ERROR REPONSE ACS":
+				Util.writeInFileTransaction(folder, file, "ERROR REPONSE ACS : " + idDemande);
+				dmd.setEtat_demande("MPI_ERR_RS_ACS");
+				dmd.setDem_xid(threeDSServerTransID);
+				demandePaiementService.save(dmd);
+				demandeDtoMsg.setMsgRefus(
+						"La transaction en cours n’a pas abouti (ERROR REPONSE ACS), votre compte ne sera pas débité, merci de réessayer .");
+				model.addAttribute("demandeDto", demandeDtoMsg);
+				page = "result";
+				Util.writeInFileTransaction(folder, file, "Fin processRequest ()");
+				System.out.println("Fin processRequest ()");
 				return page;
 			}
 		}

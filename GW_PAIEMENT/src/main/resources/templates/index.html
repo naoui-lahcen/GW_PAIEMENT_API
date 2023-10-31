@@ -43,6 +43,49 @@
                   <p class="alert alert-success text-center">Votre paiement effectué avec succès
 				  </p>
                </div>
+               
+               <div class="card-body p-5" th:if="${responseDto != null}">
+                  	<table>
+						  <tr>
+						      <td><h4>Nom et prénom : </h4></td>
+						      <td><h4 th:text="${responseDto.lname}"></h4></td>
+						   </tr>
+						  <tr>
+						      <td><h4>Email : </h4></td>
+						      <td><h4 th:text="${responseDto.email}"></h4></td>
+						   </tr>
+						   <tr>
+						      <td><h4>Commande : </h4></td>
+						      <td><h4 th:text="${responseDto.orderid}"></h4></td>
+						   </tr>						  
+						   <tr>
+							   <td><h4>Commerçant : </h4></td>
+						      <td><h4 th:text="${responseDto.merchantid}"></h4></td>
+						   </tr>
+						   <tr>
+						      <td><h4>N° transaction : </h4></td>
+						      <td><h4 th:text="${responseDto.transactionid}"></h4></td>
+						   </tr>
+						   <tr>
+						      <td><h4>N° autorisation : </h4></td>
+						      <td><h4 th:text="${responseDto.authnumber}"></h4></td>
+						   </tr>
+						    <tr>
+						      <td><h4>Date et Heure transaction : </h4></td>
+						      <td><h4 th:text="${responseDto.transactiontime}"></h4></td>
+						   </tr>
+						    <tr>
+						      <td><h4>Numéro de carte : </h4></td>
+						      <td><h4 th:text="${responseDto.cardnumber}"></h4></td>
+						   </tr>
+						   <tr>
+						      <td><h4>Montant TTC : </h4></td>
+						      <td><h4 th:text="${responseDto.amount}">dh</h4></td>
+						   </tr>
+					</table>					
+               </div>
+               
+
                <!-- card-body.// -->
             </article>
             <!-- card.// -->

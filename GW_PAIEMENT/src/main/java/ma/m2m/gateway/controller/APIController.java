@@ -49,11 +49,9 @@ import ma.m2m.gateway.dto.DemandePaiementDto;
 import ma.m2m.gateway.dto.EmetteurDto;
 import ma.m2m.gateway.dto.HistoAutoGateDto;
 import ma.m2m.gateway.dto.RequestDto;
-import ma.m2m.gateway.dto.SWHistoAutoDto;
 import ma.m2m.gateway.dto.TelecollecteDto;
 import ma.m2m.gateway.dto.TransactionDto;
 import ma.m2m.gateway.dto.responseDto;
-import ma.m2m.gateway.model.SWHistoAuto;
 import ma.m2m.gateway.reporting.GenerateExcel;
 import ma.m2m.gateway.risk.GWRiskAnalysis;
 import ma.m2m.gateway.service.AutorisationService;
@@ -76,7 +74,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
-//import ma.m2m.gateway.service.SWHistoAutoService;
 
 /*
 * @author  LAHCEN NAOUI
@@ -146,9 +143,6 @@ public class APIController {
 
 	@Autowired
 	TelecollecteService telecollecteService;
-
-	// @Autowired
-	// SWHistoAutoService swHistoAutoService;
 
 	@Autowired
 	CardtokenService cardtokenService;
@@ -633,7 +627,7 @@ public class APIController {
 			return getMsgError(jsonOrequest, "Response 3DS is null", "96");
 		}
 		// jsute pour Coca les test sans 3DSS reponseMPI="Y"
-		reponseMPI = "Y";
+		//reponseMPI = "Y";
 		// String htmlCreq = "<form action='https://acs2.bankofafrica.ma:443/lacs2'
 		// method='post'enctype='application/x-www-form-urlencoded'><input
 		// type='hidden'name='creq'value='ewogICJtZXNzYWdlVmVyc2lvbiI6ICIyLjEuMCIsCiAgInRocmVlRFNTZXJ2ZXJUcmFuc0lEIjogIjllZjUwNjk3LWRiMTctNGZmMy04MDYzLTc0ZTAwMTk0N2I4YiIsCiAgImFjc1RyYW5zSUQiOiAiZjM2ZDA3ZWQtZGJhOS00ZTkzLWE2OGMtMzNmYjAyMDgxZDVmIiwKICAiY2hhbGxlbmdlV2luZG93U2l6ZSI6ICIwNSIsCiAgIm1lc3NhZ2VUeXBlIjogIkNSZXEiCn0='
