@@ -17,75 +17,15 @@
       <!------ Include the above in your HEAD tag ---------->
       <link rel="stylesheet"
          href="https://use.fontawesome.com/releases/v5.0.8/css/all.css">
-      <meta name="viewport" content="width=device-width, initial-scale=1">
-     <style>
-      .dialog {
-         display : none;
-     }
-    @media (max-width: 768px) {
-    
-    .card-body {
-      font-size: 14px;
-    }
-    .subscribe {
-		display: block;
-	    width: 100% !important;
-	    margin: 5px 0;
-	}
-	.tr1 {
-	color: #DF6537;
-    font-size: large !important;
-    font-weight: 760;
-	}
-	.tr2 {
-	color: #DF6537;
-    font-size: larger !important;
-    font-weight: 700;
-	}
-	.tr3 {
-	color: #DF6537;
-    font-size: larger !important;
-    font-weight: 700;
-	}
-   .mobile-hide {
-        display: none;
-    }
-  }
-
-  @media (max-width: 576px) {
-   
-    .card-body {
-      font-size: 12px;
-      }
-     .subscribe {
-		display: block;
-	    width: 100% !important;
-	    margin: 5px 0;
-	}
-	.tr1 {
-	color: #DF6537;
-    font-size: large !important;
-    font-weight: 760;
-	}
-	.tr2 {
-	color: #DF6537;
-    font-size: larger !important;
-    font-weight: 700;
-	}
-	.tr3 {
-	color: #DF6537;
-    font-size: larger !important;
-    font-weight: 700;
-	}
-	 .mobile-hide {
-        display: none;
-    }
-    }
-  </style>
    </head>
+   <style>
+      .dialog {
+      display : none;
+      }
+   </style>
    <body>
       <div class="container">
-         <br class="mobile-hide">
+         <br>
          <div class="row">
             <aside class="col-sm-12">
             <article class="card">
@@ -96,59 +36,88 @@
             </article>
             <!-- card.// -->
          </div>
-         <br class="mobile-hide">
+         <br>
          <div class="row">
             <aside class="col-sm-12">
             <article class="card">
                <div class="card-body p-5">
-                  <p class="text-center tr1" style="color: #DF6537; font-size: xx-large;font-weight: 760;">Espace de paiement
+                  <p class="text-center" style="color: #DF6537; font-size: xx-large;font-weight: 760;">Espace de paiement
                      en ligne
                   </p>
-                  <br class="mobile-hide">
-                  <br class="mobile-hide">
+                  <br>
+                  <br>
                   <div class="row">
-                     <p class="text-right tr2" style="color: #DF6537;font-size: x-large;font-weight: 700;">. Informations de votre paiement
+                     <p class="text-right" style="color: #DF6537;font-size: x-large;font-weight: 700;">. Informations de votre paiement
                      </p>
                   </div>
                   <div class="row">
                      <label for="commande" class="col-sm-6 col-form-label">Commande : 
-                     <span >2030405060</span>
+                     <span th:text="${demandeDto.commande}"></span>
                      </label>
                      <label for="comid" class="col-sm-6 col-form-label">Commerçant : 
-                     <span >123456</span>
+                     <span th:text="${demandeDto.commercantDto.cmrNom}"></span>
                      </label>
                      <label for="galid" class="col-sm-6 col-form-label">Site web commerçant : 
-                     <span >www.test.com</span>
+                     <span th:text="${demandeDto.galerieDto.urlGal}"></span>
                      </label>
                      <label for="montant" class="col-sm-6 col-form-label">Montant à payer : 
-                     <span style="color: #DF6537;font-weight: 700;">100</span> DH
+                     <span th:text="${demandeDto.montantStr}" style="color: #DF6537;font-weight: 700;"></span> DH
+				<!-- <span th:text="${demandeDto.montant}" style="color: #DF6537;font-weight: 700;"></span> DH  -->
+					<!-- pour afficher avec 2 chifres apres vergule  -->
                      </label>
                   </div>
+                  <!--						<table> -->
+                  <!--							<tr>  -->
+                  <!--							<td><h4>Commande : </h4></td>  -->
+                  <!--							<td><h4 th:text="${demandeDto.commande}"></h4></td>  -->
+                  <!--							</tr>  -->
+                  <!--							<tr>  -->
+                  <!--							<td><h4>Commerçant : </h4></td>  -->
+                  <!--							<td><h4 th:text="${demandeDto.comid}"></h4></td>  -->
+                  <!--							</tr>  -->
+                  <!--							<tr>  -->
+                  <!--							<td><h4>Galerie : </h4></td>  -->
+                  <!--							<td><h4 th:text="${demandeDto.galid}"></h4></td>  -->
+                  <!--							</tr> -->
+                  <!--							<tr>  -->
+                  <!--							<td><h4>Montant : </h4></td>  -->
+                  <!--							<td><h4 th:text="${demandeDto.montant}">dh</h4></td>  -->
+                  <!--							</tr>   -->
+                  <!--						</table> -->
                </div>
             </article>
             <!-- card.// -->
          </div>
-         <br class="mobile-hide">
+         <br>
          <div class="row">
             <aside class="col-sm-12">
             <article class="card">
             <div class="card-body p-5">
                <div class="row">
-                  <p class="text-left tr3" style="color: #DF6537;font-size: x-large;font-weight: 700;">. Informations de votre carte
+                  <p class="text-left" style="color: #DF6537;font-size: x-large;font-weight: 700;">. Informations de votre carte
                   </p>
                </div>
-               <form role="form" method="POST" th:action="@{/}">
+               <form role="form" method="POST" th:action="@{/payer}" th:object="${demandeDto}">
                   <div class="form-group row">
+                     <!--                        <label for="typeCarte" class="col-sm-3 col-form-label">TYPE-->
+                     <!--                        CARTE BANCAIRE</label>-->
+                     <!--                        <div class="col-sm-3">-->
+                     <!--                           <select class="form-control" th:field="*{type_carte}">-->
+                     <!--                              <option value="1">VISA</option>-->
+                     <!--                              <option value="2">MASTERCARD</option>-->
+                     <!--                              <option value="3">MAESTRO</option>-->
+                     <!--                           </select>-->
+                     <!--                        </div>-->
                      <label for="num" class="col-sm-3 col-form-label">N°
                      carte bancaire</label>
                      <div class="col-sm-3">
-                        <input type="number" class="form-control" id="num" required="required"
+                        <input type="number" th:field="*{dem_pan}" class="form-control" id="num" required="required"
                            placeholder="N° carte bancaire">
                      </div>
                      <label for="cvv" class="col-sm-3 col-form-label">Code de
                      sécurité</label>
                      <div class="col-sm-3">
-                        <input type="number" class="form-control" id="cvv" required="required"
+                        <input type="number" th:field="*{dem_cvv}" class="form-control" id="cvv" required="required"
                            placeholder="CVV">
                      </div>
                   </div>
@@ -156,43 +125,27 @@
                      <label for="xxx" class="col-sm-3 col-form-label">Date
                      d'expiration</label>
                      <div class="col-sm-3">
-                        <select class="form-control" required="required">
+                        <select class="form-control" th:field="*{annee}" required="required">
                            <option value="">YY</option>
-                           <option value="23">2023</option>
-                           <option value="24">2024</option>
-                           <option value="25">2025</option>
-                           <option value="26">2026</option>
-                           <option value="27">2027</option>
-                           <option value="28">2028</option>
-                           <option value="29">2029</option>
-                           <option value="30">2030</option>
-                           <option value="31">2031</option>
-                           <option value="32">2032</option>
-                           <option value="33">2033</option>
+                           <option th:each="item : ${demandeDto.years}" th:value="${item}" th:text="${item}"></option>
                         </select>
                      </div>
                      <label for="xxx" class="col-sm-3 col-form-label">Mois</label>
                      <div class="col-sm-3">
-                        <select class="form-control" required="required">
+                        <select class="form-control" th:field="*{mois}" required="required">
                            <option value="">MM</option>
-                           <option value="01">Janvier</option>
-                           <option value="02">Février</option>
-                           <option value="03">Mars</option>
-                           <option value="04">Avril</option>
-                           <option value="05">Mai</option>
-                           <option value="06">Juin</option>
-                           <option value="07">Juillet</option>
-                           <option value="08">Aout</option>
-                           <option value="09">Septembre</option>
-                           <option value="10">Octobre</option>
-                           <option value="11">Novembre</option>
-                           <option value="12">Décembre</option>
+                           <option th:each="item : ${demandeDto.months}" th:value="${item.value}" th:text="${item.month}"></option>
                         </select>
                      </div>
+                     <input type="hidden" th:field="*{commande}" class="form-control">
+                     <input type="hidden" th:field="*{comid}" class="form-control">
+                     <input type="hidden" th:field="*{galid}" class="form-control">
+                     <input type="hidden" th:field="*{montant}" class="form-control">
+                     <input type="hidden" th:field="*{iddemande}" class="form-control">
                   </div>
                   <div class="form-group row col-md-12">
                      <label>
-                     <input type="checkbox" required="required" /> J'ai lu et j'accepte
+                     <input type="checkbox" th:field="*{condition}" required="required" /> J'ai lu et j'accepte
                      </label>
                      <a id="openDialog" style="color: #0056b3;cursor: pointer;text-decoration: underline;">
                      les conditions générales d'utilisation</a>
@@ -202,10 +155,6 @@
 						<img th:src="@{/images/secureicon.png}" alt="Image" style="width: 20px;margin-right: 7px;" >
                         	Toutes vos données personnelles sont cryptées et sécurisées
                      </div>
-                  </div>
-                  <div class="form-group row col-md-12">
-<!--					 <div class="col-sm-5"></div>-->
-					 
                      <div class="col-sm-9 float-right">
                         <button type="submit" style="color: #FFF;background: #DF6537;
                            border-radius: 10px;
@@ -219,7 +168,6 @@
                            onclick="window.history.back();">Annuler
                         </button>
                      </div>
-                     
                      <div class="col-sm-3 float-right">
                         <button type="submit" style="color: #FFF;background: #DF6537;
                            border-radius: 10px;
@@ -230,7 +178,7 @@
                            border-bottom-right-radius: 10px;
                            font-size: 15px;"
                            class="subscribe btn btn-primary btn-block">Payer
-                        </button>
+                         </button>
                      </div>
                   </div>
                </form>
@@ -238,16 +186,6 @@
             <!-- card-body.// -->
          </div>
       </div>
-      <div class="container my-2" align="center">
-	         <footer class="bg-light text-center text-lg-start">
-	            <!-- Copyright -->
-	            <div class="text-center p-3" style="    border: 0.1px solid #d6d2d2;color: black;">
-	               Copyright © 2023 NAPS all rights reserved
-	               <a href="https://naps.ma/">naps.ma</a>
-	            </div>
-	            <!-- Copyright -->
-	         </footer>
-      		</div>
       </div>
       <!-- La div du dialogue -->
       <div id="dialog" class="dialog container my-2" align="center">
@@ -340,16 +278,25 @@
             <!-- card-body.// -->
          </article>
       </div>
-
+      <div class="container my-2" align="center">
+         <footer class="bg-light text-center text-lg-start">
+            <!-- Copyright -->
+            <div class="text-center p-3" style="    border: 0.1px solid #d6d2d2;color: black;">
+               Copyright © 2023 NAPS all rights reserved
+               <a href="https://naps.ma/">naps.ma</a>
+            </div>
+            <!-- Copyright -->
+         </footer>
+      </div>
       <script type="text/javascript">
          document.getElementById("openDialog").addEventListener("click", function () {
-           document.getElementById("dialog").style.display = "block";
+            document.getElementById("dialog").style.display = "block";
          });
          
          document.getElementById("closeDialog").addEventListener("click", function () {
             document.getElementById("dialog").style.display = "none";
          });
-         // Add an event listener to the input field
+                  // Add an event listener to the input field
         document.getElementById('cvv').addEventListener('input', function() {
             var maxLength = 3; // Change this to your desired maximum length
             if (this.value.length > maxLength) {
@@ -364,9 +311,9 @@
         });
          document.getElementById('num').addEventListener('input', function() {
             var maxLength = 19; // Change this to your desired maximum length
-			if (this.value.length > maxLength) {
+            if (this.value.length > maxLength) {
                 this.value = this.value.slice(0, maxLength);
-            } 
+            }
             // Change this to your desired min
             if (this.value < 0) {
 		        this.value = 0;

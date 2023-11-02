@@ -17,15 +17,75 @@
       <!------ Include the above in your HEAD tag ---------->
       <link rel="stylesheet"
          href="https://use.fontawesome.com/releases/v5.0.8/css/all.css">
-   </head>
-   <style>
+     <meta name="viewport" content="width=device-width, initial-scale=1">
+     <style>
       .dialog {
-      display : none;
+         display : none;
+     }
+    @media (max-width: 768px) {
+    
+    .card-body {
+      font-size: 14px;
+    }
+    .subscribe {
+		display: block;
+	    width: 100% !important;
+	    margin: 5px 0;
+	}
+	.tr1 {
+	color: #DF6537;
+    font-size: large !important;
+    font-weight: 760;
+	}
+	.tr2 {
+	color: #DF6537;
+    font-size: larger !important;
+    font-weight: 700;
+	}
+	.tr3 {
+	color: #DF6537;
+    font-size: larger !important;
+    font-weight: 700;
+	}
+   .mobile-hide {
+        display: none;
+    }
+  }
+
+  @media (max-width: 576px) {
+   
+    .card-body {
+      font-size: 12px;
       }
-   </style>
+     .subscribe {
+		display: block;
+	    width: 100% !important;
+	    margin: 5px 0;
+	}
+	.tr1 {
+	color: #DF6537;
+    font-size: large !important;
+    font-weight: 760;
+	}
+	.tr2 {
+	color: #DF6537;
+    font-size: larger !important;
+    font-weight: 700;
+	}
+	.tr3 {
+	color: #DF6537;
+    font-size: larger !important;
+    font-weight: 700;
+	}
+	 .mobile-hide {
+        display: none;
+    }
+    }
+  </style>
+   </head>
    <body>
       <div class="container">
-         <br>
+         <br class="mobile-hide">
          <div class="row">
             <aside class="col-sm-12">
             <article class="card">
@@ -36,18 +96,18 @@
             </article>
             <!-- card.// -->
          </div>
-         <br>
+         <br class="mobile-hide">
          <div class="row">
             <aside class="col-sm-12">
             <article class="card">
                <div class="card-body p-5">
-                  <p class="text-center" style="color: #DF6537; font-size: xx-large;font-weight: 760;">Espace de paiement
+                  <p class="text-center tr1" style="color: #DF6537; font-size: xx-large;font-weight: 760;">Espace de paiement
                      en ligne
                   </p>
-                  <br>
-                  <br>
+                  <br class="mobile-hide">
+                  <br class="mobile-hide">
                   <div class="row">
-                     <p class="text-right" style="color: #DF6537;font-size: x-large;font-weight: 700;">. Informations de votre paiement
+                     <p class="text-right tr2" style="color: #DF6537;font-size: x-large;font-weight: 700;">. Informations de votre paiement
                      </p>
                   </div>
                   <div class="row">
@@ -62,52 +122,23 @@
                      </label>
                      <label for="montant" class="col-sm-6 col-form-label">Montant à payer : 
                      <span th:text="${demandeDto.montantStr}" style="color: #DF6537;font-weight: 700;"></span> DH
-				<!-- <span th:text="${demandeDto.montant}" style="color: #DF6537;font-weight: 700;"></span> DH  -->
-					<!-- pour afficher avec 2 chifres apres vergule  -->
                      </label>
                   </div>
-                  <!--						<table> -->
-                  <!--							<tr>  -->
-                  <!--							<td><h4>Commande : </h4></td>  -->
-                  <!--							<td><h4 th:text="${demandeDto.commande}"></h4></td>  -->
-                  <!--							</tr>  -->
-                  <!--							<tr>  -->
-                  <!--							<td><h4>Commerçant : </h4></td>  -->
-                  <!--							<td><h4 th:text="${demandeDto.comid}"></h4></td>  -->
-                  <!--							</tr>  -->
-                  <!--							<tr>  -->
-                  <!--							<td><h4>Galerie : </h4></td>  -->
-                  <!--							<td><h4 th:text="${demandeDto.galid}"></h4></td>  -->
-                  <!--							</tr> -->
-                  <!--							<tr>  -->
-                  <!--							<td><h4>Montant : </h4></td>  -->
-                  <!--							<td><h4 th:text="${demandeDto.montant}">dh</h4></td>  -->
-                  <!--							</tr>   -->
-                  <!--						</table> -->
                </div>
             </article>
             <!-- card.// -->
          </div>
-         <br>
+         <br class="mobile-hide">
          <div class="row">
             <aside class="col-sm-12">
             <article class="card">
             <div class="card-body p-5">
                <div class="row">
-                  <p class="text-left" style="color: #DF6537;font-size: x-large;font-weight: 700;">. Informations de votre carte
+                  <p class="text-left tr3" style="color: #DF6537;font-size: x-large;font-weight: 700;">. Informations de votre carte
                   </p>
                </div>
                <form role="form" method="POST" th:action="@{/payer}" th:object="${demandeDto}">
                   <div class="form-group row">
-                     <!--                        <label for="typeCarte" class="col-sm-3 col-form-label">TYPE-->
-                     <!--                        CARTE BANCAIRE</label>-->
-                     <!--                        <div class="col-sm-3">-->
-                     <!--                           <select class="form-control" th:field="*{type_carte}">-->
-                     <!--                              <option value="1">VISA</option>-->
-                     <!--                              <option value="2">MASTERCARD</option>-->
-                     <!--                              <option value="3">MAESTRO</option>-->
-                     <!--                           </select>-->
-                     <!--                        </div>-->
                      <label for="num" class="col-sm-3 col-form-label">N°
                      carte bancaire</label>
                      <div class="col-sm-3">
