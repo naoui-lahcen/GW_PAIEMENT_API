@@ -2,7 +2,6 @@ package ma.m2m.gateway.controller;
 
 import static ma.m2m.gateway.Utils.StringUtils.isNullOrEmpty;
 import static ma.m2m.gateway.config.FlagActivation.ACTIVE;
-
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.SocketTimeoutException;
@@ -18,9 +17,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.SplittableRandom;
 import java.util.UUID;
-
 import javax.servlet.http.HttpServletResponse;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -35,11 +32,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
-import ma.m2m.gateway.Utils.Traces;
 import ma.m2m.gateway.Utils.Util;
 import ma.m2m.gateway.config.JwtTokenUtil;
 import ma.m2m.gateway.dto.CardtokenDto;
@@ -69,7 +63,6 @@ import ma.m2m.gateway.threedsecure.ThreeDSecureResponse;
 import ma.m2m.gateway.tlv.TLVEncoder;
 import ma.m2m.gateway.tlv.TLVParser;
 import ma.m2m.gateway.tlv.Tags;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
@@ -101,6 +94,9 @@ public class APIController {
 
 	@Value("${key.LINK_SUCCESS}")
 	private String link_success;
+	
+	@Value("${key.LINK_CCB}")
+	private String link_ccb;
 
 	@Value("${key.LINK_FAIL}")
 	private String link_fail;
@@ -157,7 +153,6 @@ public class APIController {
 	DateFormat dateFormatSimple = new SimpleDateFormat("yyyy-MM-dd");
 
 	public APIController() {
-		Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "API_" + randomWithSplittableRandom;
 		// date of folder logs
@@ -170,7 +165,7 @@ public class APIController {
 	@ResponseBody
 	public String authorization(@RequestHeader MultiValueMap<String, String> header, @RequestBody String auths,
 			HttpServletResponse response) {
-		Traces traces = new Traces();
+		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "API_AUTH_" + randomWithSplittableRandom;
 		// create file log
@@ -1523,7 +1518,7 @@ public class APIController {
 	@ResponseBody
 	public String getLink(@RequestHeader MultiValueMap<String, String> header, @RequestBody String linkP,
 			HttpServletResponse response) {
-		Traces traces = new Traces();
+		//Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "API_LINK_" + randomWithSplittableRandom;
 		// create file log
@@ -1668,14 +1663,6 @@ public class APIController {
 		DemandePaiementDto check_dmd = null;
 
 		try {
-			/*
-			 * get demandePaiement par datetime avec cette format DateFormat dateFormat =
-			 * new SimpleDateFormat("yyyy-MM-dd HH"); String dateSysStr =
-			 * dateFormat.format(new Date()); System.out.println("dateSysStr : " +
-			 * dateSysStr); dateSysStr = dateSysStr+"%"; check_dmd =
-			 * demandePaiementService.findByCommandeAndComidAndDate(orderid, merchantid,
-			 * dateSysStr);
-			 */
 			check_dmd = demandePaiementService.findByCommandeAndComid(orderid, merchantid);
 
 		} catch (Exception err1) {
@@ -1802,12 +1789,301 @@ public class APIController {
 		return jso.toString();
 
 	}
+	
+	public String getLinkCCB(@RequestHeader MultiValueMap<String, String> header, @RequestBody String linkP,
+			HttpServletResponse response) {
+		//Traces traces = new Traces();
+		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
+		String file = "API_LINK_CCB_" + randomWithSplittableRandom;
+		// create file log
+		Util.creatFileTransaction(file);
+		Util.writeInFileTransaction(folder, file, "*********** Start getLinkCCB() ************** ");
+		System.out.println("*********** Start getLinkCCB() ************** ");
+
+		String api_key = "";
+		String api_product = "";
+		String api_version = "";
+		String api_user_agent = "";
+
+		Util.writeInFileTransaction(folder, file, "getLinkCCB api call start ...");
+		Util.writeInFileTransaction(folder, file, "getLinkCCB : [" + linkP + "]");
+
+		JSONObject jsonOrequest = null;
+		try {
+			jsonOrequest = new JSONObject(linkP);
+		}
+
+		catch (JSONException jserr) {
+			Util.writeInFileTransaction(folder, file, "getLinkCCB 500 malformed json expression " + linkP + jserr);
+			return getMsgError(null, "getLinkCCB 500 malformed json expression", null);
+		}
+
+		if (header != null)
+			Util.writeInFileTransaction(folder, file, "header : [" + header.toString() + "]");
+		else
+			Util.writeInFileTransaction(folder, file, "error header is null !");
+
+		try {
+
+			if (header != null) {
+
+				if (header.get("x-api-key") != null)
+					api_key = (String) header.get("x-api-key").get(0);
+				else if (header.get("x-api-key") != null)
+					api_key = (String) header.get("x-api-key").get(0);
+				if (header.get("x-product") != null)
+					api_product = (String) header.get("x-product").get(0);
+				else if (header.get("X-PRODUCT") != null)
+					api_product = (String) header.get("X-PRODUCT").get(0);
+				if (header.get("x-version") != null)
+					api_version = (String) header.get("x-version").get(0);
+				else if (header.get("X-VERSION") != null)
+					api_version = (String) header.get("X-VERSION").get(0);
+				if (header.get("user-agent") != null)
+					api_user_agent = (String) header.get("user-agent").get(0);
+				else if (header.get("USER-AGENT") != null)
+					api_user_agent = (String) header.get("USER-AGENT").get(0);
+			}
+
+		} catch (Exception head_err) {
+
+			if (header.toString() != null) {
+				Util.writeInFileTransaction(folder, file,
+						"getLinkCCB 500 malformed header" + header.toString() + head_err);
+				return getMsgError(null, "getLinkCCB 500 malformed header", null);
+			} else {
+				Util.writeInFileTransaction(folder, file, "getLinkCCB 500 malformed header" + head_err);
+				return getMsgError(null, "getLinkCCB 500 malformed header " + head_err.getMessage(), null);
+			}
+		}
+
+		DemandePaiementDto dmd = null;
+		DemandePaiementDto dmdSaved = null;
+		SimpleDateFormat formatter_1, formatter_2, formatheure, formatdate = null;
+		Date trsdate = null;
+		Integer Idmd_id = null;
+
+		String orderid, amount, merchantid, merchantname, websiteName, websiteid, recurring, country, phone, city,
+				state, zipcode, address, expirydate, transactiondate, transactiontime, callbackUrl, fname, lname,
+				email = "", securtoken24, mac_value, successURL, failURL, idDemande,
+				id_client, token, cartenaps, dateexpnaps;
+		try {
+			// Transaction info
+			orderid = (String) jsonOrequest.get("orderid");
+			amount = (String) jsonOrequest.get("amount");
+			recurring = (String) jsonOrequest.get("recurring");
+			id_client = (String) jsonOrequest.get("id_client");
+			token = (String) jsonOrequest.get("token");
+			cartenaps = (String) jsonOrequest.get("cartenaps");
+			dateexpnaps = (String) jsonOrequest.get("dateexpnaps");
+			// securtoken24 = (String) jsonOrequest.get("securtoken24");
+			// mac_value = (String) jsonOrequest.get("mac_value");
+
+			// Merchnat info
+			merchantid = (String) jsonOrequest.get("merchantid");
+			merchantname = (String) jsonOrequest.get("merchantname");
+			// websiteName = (String) jsonOrequest.get("websitename");
+			websiteid = (String) jsonOrequest.get("websiteid");
+			callbackUrl = (String) jsonOrequest.get("callbackurl");
+			successURL = (String) jsonOrequest.get("successURL");
+			failURL = (String) jsonOrequest.get("failURL");
+
+			// Client info
+			fname = (String) jsonOrequest.get("fname");
+			lname = (String) jsonOrequest.get("lname");
+			email = (String) jsonOrequest.get("email");
+			country = (String) jsonOrequest.get("country");
+			phone = (String) jsonOrequest.get("phone");
+			city = (String) jsonOrequest.get("city");
+			state = (String) jsonOrequest.get("state");
+			zipcode = (String) jsonOrequest.get("zipcode");
+			address = (String) jsonOrequest.get("address");
+
+		} catch (Exception jerr) {
+			Util.writeInFileTransaction(folder, file, "getLinkCCB 500 malformed json expression " + linkP + jerr);
+			return getMsgError(null, "getLinkCCB 500 malformed json expression " + jerr.getMessage(), null);
+		}
+
+		CommercantDto current_merchant = null;
+		try {
+			current_merchant = commercantService.findByCmrNumcmr(merchantid);
+		} catch (Exception e) {
+			Util.writeInFileTransaction(folder, file,
+					"authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
+							+ "] and merchantid:[" + merchantid + "]" + e);
+
+			return getMsgError(jsonOrequest, "getLinkCCB 500 Merchant misconfigured in DB or not existing", "15");
+		}
+
+		if (current_merchant == null) {
+			Util.writeInFileTransaction(folder, file,
+					"getLinkCCB 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
+							+ "] and merchantid:[" + merchantid + "]");
+
+			return getMsgError(jsonOrequest, "getLinkCCB 500 Merchant misconfigured in DB or not existing", "15");
+		}
+
+		if (current_merchant.getCmrCodactivite() == null) {
+			Util.writeInFileTransaction(folder, file,
+					"getLinkCCB 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
+							+ "] and merchantid:[" + merchantid + "]");
+
+			return getMsgError(jsonOrequest, "getLinkCCB 500 Merchant misconfigured in DB or not existing", "15");
+		}
+
+		if (current_merchant.getCmrCodbqe() == null) {
+			Util.writeInFileTransaction(folder, file,
+					"getLinkCCB 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
+							+ "] and merchantid:[" + merchantid + "]");
+
+			return getMsgError(jsonOrequest, "getLinkCCB 500 Merchant misconfigured in DB or not existing", "15");
+		}
+
+		DemandePaiementDto check_dmd = null;
+
+		try {
+			check_dmd = demandePaiementService.findByCommandeAndComid(orderid, merchantid);
+
+		} catch (Exception err1) {
+			Util.writeInFileTransaction(folder, file,
+					"getLinkCCB 500 Error during PaiementRequest findByCommandeAndComid orderid:[" + orderid
+							+ "] and merchantid:[" + merchantid + "]" + err1);
+
+			return getMsgError(jsonOrequest, "getLinkCCB 500 Error during PaiementRequest", null);
+		}
+		if (check_dmd != null && check_dmd.getEtat_demande().equals("SW_PAYE")) {
+			Util.writeInFileTransaction(folder, file,
+					"getLinkCCB 500 Error Already exist in PaiementRequest findByCommandeAndComid orderid:[" + orderid
+							+ "] and merchantid:[" + merchantid + "]");
+
+			return getMsgError(jsonOrequest, "getLinkCCB 500 Error Already exist in PaiementRequest", "16");
+		}
+
+		String url = "", status = "", statuscode = "";
+
+		try {
+			String tokencommande = "";
+			if (check_dmd != null) {
+				// generer token
+				tokencommande = Util.genTokenCom(check_dmd.getCommande(), check_dmd.getComid());
+				url = link_ccb + check_dmd.getTokencommande();
+				statuscode = "00";
+				status = "OK";
+				idDemande = String.valueOf(check_dmd.getIddemande());
+			} else {
+				dmd = new DemandePaiementDto();
+
+				dmd.setComid(merchantid);
+				dmd.setCommande(orderid);
+				dmd.setId_client(id_client);
+				dmd.setToken(token);
+				dmd.setCartenaps(cartenaps);
+				dmd.setDateexpnaps(dateexpnaps);
+				dmd.setGalid(websiteid);
+				dmd.setSuccessURL(successURL);
+				dmd.setFailURL(failURL);
+				if (amount.equals("") || amount == null) {
+					amount = "0";
+				}
+				if (amount.contains(",")) {
+					amount = amount.replace(",", ".");
+				}
+				dmd.setMontant(Double.parseDouble(amount));
+				// calcule des frais de recharge
+				Double montantrecharge = (0 + (Double.parseDouble(amount) * 0.65) / 100);
+				String fraistr = String.format("%.2f", montantrecharge).replaceAll(",", ".");
+				
+				dmd.setFrais(Double.parseDouble(fraistr));
+				dmd.setNom(lname);
+				dmd.setPrenom(fname);
+				dmd.setEmail(email);
+				dmd.setTel(phone);
+				dmd.setAddress(address);
+				dmd.setCity(city);
+				dmd.setCountry(country);
+				dmd.setState(state);
+				dmd.setPostcode(zipcode);
+				dmd.setLangue("E");
+				dmd.setEtat_demande("INIT");
+
+				formatter_1 = new SimpleDateFormat("yyyy-MM-dd");
+				formatter_2 = new SimpleDateFormat("HH:mm:ss");
+				trsdate = new Date();
+				transactiondate = formatter_1.format(trsdate);
+				transactiontime = formatter_2.format(trsdate);
+				// dmd.setDem_date_time(transactiondate + transactiontime);
+				dmd.setDem_date_time(dateFormat.format(new Date()));
+
+				if (recurring.equalsIgnoreCase("Y"))
+					dmd.setIs_cof("Y");
+				if (recurring.equalsIgnoreCase("N"))
+					dmd.setIs_cof("N");
+
+				dmd.setIs_addcard("N");
+				dmd.setIs_tokenized("N");
+				dmd.setIs_whitelist("N");
+				dmd.setIs_withsave("N");
+
+				// generer token
+				tokencommande = Util.genTokenCom(dmd.getCommande(), dmd.getComid());
+				dmd.setTokencommande(tokencommande);
+
+				dmdSaved = demandePaiementService.save(dmd);
+
+				url = link_ccb + dmdSaved.getTokencommande();
+				statuscode = "00";
+				status = "OK";
+				idDemande = String.valueOf(dmdSaved.getIddemande());
+			}
+
+		} catch (Exception err1) {
+			url = "";
+			statuscode = "";
+			status = "KO";
+			idDemande = "";
+			Util.writeInFileTransaction(folder, file,
+					"getLinkCCB 500 Error during DEMANDE_PAIEMENT insertion for given orderid:[" + orderid + "]" + err1);
+
+			return getMsgError(jsonOrequest, "getLinkCCB 500 Error during DEMANDE_PAIEMENT insertion", null);
+		}
+
+		JSONObject jso = new JSONObject();
+
+		try {
+			// Transaction info
+			jso.put("statuscode", statuscode);
+			jso.put("status", status);
+			jso.put("orderid", orderid);
+			jso.put("amount", amount);
+			jso.put("idDemande", idDemande);
+			jso.put("url", url);
+
+			// Merchant info
+			jso.put("merchantid", merchantid);
+
+			Util.writeInFileTransaction(folder, file, "json : " + jso.toString());
+			System.out.println("json : " + jso.toString());
+
+		} catch (Exception err8) {
+			Util.writeInFileTransaction(folder, file,
+					"getLinkCCB 500 Error during jso out processing given orderid:[" + orderid + "]" + err8);
+
+			return getMsgError(jsonOrequest, "getLinkCCB 500 Error during jso out processing", null);
+		}
+
+		Util.writeInFileTransaction(folder, file, "*********** Fin getLinkCCB() ************** ");
+		System.out.println("*********** Fin getLinkCCB() ************** ");
+
+		return jso.toString();
+
+	}
+
 
 	@PostMapping(value = "/napspayment/createtocken24", consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public String generateToken(@RequestHeader MultiValueMap<String, String> header, @RequestBody String token24,
 			HttpServletResponse response) {
-		Traces traces = new Traces();
+		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "API_" + randomWithSplittableRandom;
 		// create file log
@@ -2012,7 +2288,7 @@ public class APIController {
 
 	@RequestMapping(value = "/napspayment/chalenge/token/{token}", method = RequestMethod.GET)
 	public String chalengeapi(@PathVariable(value = "token") String token, Model model) {
-		Traces traces = new Traces();
+		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "API_" + randomWithSplittableRandom;
 		// create file log
@@ -2085,7 +2361,7 @@ public class APIController {
 	@ResponseBody
 	public String status(@RequestHeader MultiValueMap<String, String> header, @RequestBody String status,
 			HttpServletResponse response) {
-		Traces traces = new Traces();
+		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "API_" + randomWithSplittableRandom;
 		// create file log
@@ -2489,7 +2765,7 @@ public class APIController {
 	@ResponseBody
 	public String capture(@RequestHeader MultiValueMap<String, String> header, @RequestBody String capture,
 			HttpServletResponse response) {
-		Traces traces = new Traces();
+		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "API_" + randomWithSplittableRandom;
 		// create file log
@@ -2877,7 +3153,7 @@ public class APIController {
 	@ResponseBody
 	public String refund(@RequestHeader MultiValueMap<String, String> header, @RequestBody String refund,
 			HttpServletResponse response) {
-		Traces traces = new Traces();
+		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "API_" + randomWithSplittableRandom;
 		// create file log
@@ -3385,7 +3661,7 @@ public class APIController {
 	@ResponseBody
 	public String reversal(@RequestHeader MultiValueMap<String, String> header, @RequestBody String reversal,
 			HttpServletResponse response) {
-		Traces traces = new Traces();
+		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "API_" + randomWithSplittableRandom;
 		// create file log
@@ -3973,7 +4249,7 @@ public class APIController {
 	@ResponseBody
 	public String getCardTken(@RequestHeader MultiValueMap<String, String> header, @RequestBody String cardtoken,
 			HttpServletResponse response) {
-		Traces traces = new Traces();
+		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "API_" + randomWithSplittableRandom;
 		// create file log
@@ -4239,7 +4515,7 @@ public class APIController {
 	@ResponseBody
 	public String deleteCardTken(@RequestHeader MultiValueMap<String, String> header, @RequestBody String cardtoken,
 			HttpServletResponse response) {
-		Traces traces = new Traces();
+		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "API_" + randomWithSplittableRandom;
 		// create file log
@@ -4413,7 +4689,7 @@ public class APIController {
 	@PostMapping(value = "/napspayment/histo/exportexcel", consumes = "application/json", produces = "application/json")
 	public void exportToExcel(@RequestHeader MultiValueMap<String, String> header, @RequestBody String req,
 			HttpServletResponse response) throws IOException {
-		Traces traces = new Traces();
+		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "API_" + randomWithSplittableRandom;
 		// create file log
@@ -4473,7 +4749,7 @@ public class APIController {
 	@RequestMapping(path = "/napspayment/cpautorisation", produces = "application/json; charset=UTF-8")
 	public String cpautorisation(@RequestHeader MultiValueMap<String, String> header, @RequestBody String cpauths,
 			HttpServletResponse response) {
-		Traces traces = new Traces();
+		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "API_" + randomWithSplittableRandom;
 		// create file log
@@ -4901,7 +5177,7 @@ public class APIController {
 
 	@RequestMapping(path = "/napspayment/cpautorisationTest", produces = "application/json; charset=UTF-8")
 	public ResponseEntity<responseDto> cpautorisation1(@RequestBody RequestDto requestDto) {
-		Traces traces = new Traces();
+		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "API_" + randomWithSplittableRandom;
 		// create file log
@@ -4926,7 +5202,7 @@ public class APIController {
 	@ResponseBody
 	public String testapi(@RequestHeader MultiValueMap<String, String> header, @RequestBody String req,
 			HttpServletResponse response, Model model) throws IOException {
-		Traces traces = new Traces();
+		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "API_" + randomWithSplittableRandom;
 		// create file log
@@ -4999,7 +5275,7 @@ public class APIController {
 	}
 
 	public JSONObject verifieToken(String securtoken24, String file) {
-		Traces traces = new Traces();
+		// Traces traces = new Traces();
 		JSONObject jso = new JSONObject();
 
 		if (!securtoken24.equals("")) {
@@ -5042,7 +5318,7 @@ public class APIController {
 	}
 
 	public String getMsgError(JSONObject jsonOrequest, String msg, String coderep) {
-		Traces traces = new Traces();
+		// Traces traces = new Traces();
 		Util.writeInFileTransaction(folder, file, "*********** Start getMsgError() ************** ");
 		System.out.println("*********** Start getMsgError() ************** ");
 

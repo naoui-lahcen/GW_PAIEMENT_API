@@ -12,10 +12,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.SplittableRandom;
 import java.util.UUID;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,11 +24,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
-import ma.m2m.gateway.Utils.Traces;
 import ma.m2m.gateway.Utils.Util;
 import ma.m2m.gateway.dto.CodeReponseDto;
 import ma.m2m.gateway.dto.CommercantDto;
@@ -134,7 +129,7 @@ public class ACSController {
 	public String processRequest(HttpServletRequest request, HttpServletResponse response, Model model)
 			throws IOException {
 
-		Traces traces = new Traces();
+		//Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "R_ACS_" + randomWithSplittableRandom;
 		// create file log
@@ -1609,7 +1604,6 @@ public class ACSController {
 						Util.writeInFileTransaction(folder, file,
 								"authorization 500 InfoCommercantDto misconfigured in DB or not existing orderid:["
 										+ demandeP.getCommande() + "] and merchantid:[" + demandeP.getComid() + "]");
-						response.sendRedirect(link_result);
 						demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti (InfoCommercant mal configuré dans la base de données ou inexistant), votre compte ne sera pas débité, merci de réessayer .");
 						model.addAttribute("demandeDto", demandeDtoMsg);
 						page = "result";
@@ -1651,7 +1645,6 @@ public class ACSController {
 		} catch (Exception ex) {
 			Util.writeInFileTransaction(folder, file, "ACSController RETOUR ACS =====> Exception " + ex);
 			System.out.println("ACSController RETOUR ACS =====> Exception " + ex);
-			response.sendRedirect(link_result);
 			demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti (TransStatus = N), votre compte ne sera pas débité, merci de réessayer .");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
@@ -1670,7 +1663,7 @@ public class ACSController {
 	@ResponseBody
 	public void processRequest1(HttpServletRequest request, HttpServletResponse response, Model model)
 			throws IOException {
-		Traces traces = new Traces();
+		
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "R_ACS_" + randomWithSplittableRandom;
 		// create file log
@@ -2879,7 +2872,7 @@ public class ACSController {
 
 	public String redirectFailURL(DemandePaiementDto demandePaiementDto, String folder, String file)
 			throws IOException {
-		Traces traces = new Traces();
+		
 		Util.writeInFileTransaction(folder, file,
 				"REDIRECT FAIL URL DEMANDE PAIEMENT {" + demandePaiementDto.getIddemande() + "} => " + "Commerçant: {"
 						+ demandePaiementDto.getComid() + "} Commande: {" + demandePaiementDto.getCommande() + "}");

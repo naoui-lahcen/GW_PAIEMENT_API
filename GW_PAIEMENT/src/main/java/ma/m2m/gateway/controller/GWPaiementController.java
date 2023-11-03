@@ -2,7 +2,6 @@ package ma.m2m.gateway.controller;
 
 import static ma.m2m.gateway.Utils.StringUtils.isNullOrEmpty;
 import static ma.m2m.gateway.config.FlagActivation.ACTIVE;
-
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.SocketTimeoutException;
@@ -18,17 +17,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 import java.util.SplittableRandom;
 import java.util.UUID;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,20 +29,15 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.ui.Model;
-import org.springframework.util.MultiValueMap;
-
 import ma.m2m.gateway.Utils.Objects;
-import ma.m2m.gateway.Utils.Traces;
 import ma.m2m.gateway.Utils.Util;
 import ma.m2m.gateway.config.JwtTokenUtil;
 import ma.m2m.gateway.dto.CodeReponseDto;
@@ -66,10 +54,8 @@ import ma.m2m.gateway.dto.TransactionDto;
 import ma.m2m.gateway.dto.UserDto;
 import ma.m2m.gateway.dto.responseDto;
 import ma.m2m.gateway.encryption.RSACrypto;
-import ma.m2m.gateway.model.ControlRiskCmr;
 import ma.m2m.gateway.reporting.GenerateExcel;
 import ma.m2m.gateway.risk.GWRiskAnalysis;
-import ma.m2m.gateway.risk.GWRiskAnalysisMsgs;
 import ma.m2m.gateway.service.AutorisationService;
 import ma.m2m.gateway.service.CodeReponseService;
 import ma.m2m.gateway.service.CommercantService;
@@ -174,7 +160,7 @@ public class GWPaiementController {
 	@RequestMapping(path = "/")
 	@ResponseBody
 	public String home() {
-		Traces traces = new Traces();
+		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "GW_" + randomWithSplittableRandom;
 		// create file log
@@ -193,7 +179,7 @@ public class GWPaiementController {
 	@RequestMapping(path = "/napspayment/generatetoken")
 	@ResponseBody
 	public ResponseEntity<String> generateToken() {
-		Traces traces = new Traces();
+		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "GW_" + randomWithSplittableRandom;
 		// create file log
@@ -234,7 +220,7 @@ public class GWPaiementController {
 	}
 	
 	public JSONObject verifieToken(String securtoken24) {
-		Traces traces = new Traces();
+		// Traces traces = new Traces();
 		JSONObject jso = new JSONObject();
 		
 		if(!securtoken24.equals("")) {
@@ -279,7 +265,7 @@ public class GWPaiementController {
 	@RequestMapping(path = "/napspayment/generateexcel")
 	@ResponseBody
 	public String generateExcel() {
-		Traces traces = new Traces();
+		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "GW_" + randomWithSplittableRandom;
 		// create file log
@@ -306,7 +292,7 @@ public class GWPaiementController {
 
 	@RequestMapping(value = "/napspayment/histo/exportexcel/{merchantid}", method = RequestMethod.GET)
 	public void exportToExcel(HttpServletResponse response,@PathVariable(value = "merchantid") String merchantid) throws IOException {
-		Traces traces = new Traces();
+		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "GW_" + randomWithSplittableRandom;
 		// create file log
@@ -345,7 +331,7 @@ public class GWPaiementController {
 
 	@RequestMapping("/napspayment/index")
 	public String index() {
-		Traces traces = new Traces();
+		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "GW_" + randomWithSplittableRandom;
 		// create file log
@@ -358,7 +344,7 @@ public class GWPaiementController {
 
 	@RequestMapping(value = "/napspayment/authorization/token/{token}", method = RequestMethod.GET)
 	public String showPagePayment(@PathVariable(value = "token") String token, Model model) {
-		Traces traces = new Traces();
+		//Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "GW_PAGE_" + randomWithSplittableRandom;
 		// create file log
@@ -502,7 +488,7 @@ public class GWPaiementController {
 
 	@RequestMapping(path = "/napspayment/linkpayment1", produces = "application/json; charset=UTF-8")
 	public ResponseEntity<responseDto> getLink1(@RequestBody DemandePaiementDto demandeDto) {
-		Traces traces = new Traces();
+		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "GW_" + randomWithSplittableRandom;
 
@@ -569,7 +555,7 @@ public class GWPaiementController {
 	@PostMapping("/payer")
 	public String payer(Model model, @ModelAttribute("demandeDto") DemandePaiementDto dto,
 			HttpServletRequest request, HttpServletResponse response) {
-		Traces traces = new Traces();
+		//Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "GW_PAYE_" + randomWithSplittableRandom;
 		// create file log
@@ -1951,7 +1937,7 @@ public class GWPaiementController {
 
 	@RequestMapping(value = "/chalenge", method = RequestMethod.GET)
 	public String chlenge(Model model) {
-		Traces traces = new Traces();
+		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "GW_" + randomWithSplittableRandom;
 		// create file log
@@ -1981,7 +1967,7 @@ public class GWPaiementController {
 
 	@RequestMapping(value = "/napspayment/error/token/{token}", method = RequestMethod.GET)
 	public String error(@PathVariable(value = "token") String token, Model model) {
-		Traces traces = new Traces();
+		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "GW_" + randomWithSplittableRandom;
 		// create file log
@@ -2034,7 +2020,7 @@ public class GWPaiementController {
 
 	@RequestMapping(value = "/napspayment/index2", method = RequestMethod.GET)
 	public String index2() {
-		Traces traces = new Traces();
+		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "GW_" + randomWithSplittableRandom;
 		Util.creatFileTransaction(file);
@@ -2052,7 +2038,7 @@ public class GWPaiementController {
 
 	@RequestMapping(value = "/napspayment/result", method = RequestMethod.GET)
 	public String result() {
-		Traces traces = new Traces();
+		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "GW_" + randomWithSplittableRandom;
 		Util.creatFileTransaction(file);

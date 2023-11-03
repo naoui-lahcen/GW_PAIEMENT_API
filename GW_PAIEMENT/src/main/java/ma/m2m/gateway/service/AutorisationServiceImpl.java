@@ -66,6 +66,9 @@ public class AutorisationServiceImpl implements AutorisationService {
 	@Value("${key.LIEN_NOTIFICATION_ACS}")
 	private String notificationACS;
 	
+	@Value("${key.LIEN_NOTIFICATION_CCB_ACS}")
+	private String notificationCCBACS;
+	
 	private String typeCarte;
 	
 	private Galerie galerie = new Galerie();
@@ -205,6 +208,75 @@ public class AutorisationServiceImpl implements AutorisationService {
 		}
 		
 		Util.writeInFileTransaction(folder, file,"fin preparerReqThree3DSS ");
+
+		
+		return threeDsecureResponse;
+	}
+	
+	@Override
+	public ThreeDSecureResponse preparerReqMobileThree3DSS(DemandePaiementDto demandeDto,String folder,String file) {
+		//Util.creatFileTransaction(file);
+		Util.writeInFileTransaction(folder, file, "Debut preparerReqMobileThree3DSS()");
+		System.out.println("Start preparerReqMobileThree3DSS()");
+
+		typeCarte = demandeDto.getType_carte();
+		
+		//demandeDto.setExpery(demandeDto.getAnnee().concat(demandeDto.getMois()));
+		demandeDto.setExpery(demandeDto.getDateexpnaps());
+
+		ThreeDSecureRequestor threeDSecureRequestor = new ThreeDSecureRequestor(folder,file);
+		AuthInitRequest authInitRequest= new AuthInitRequest();
+		ThreeDSecureResponse threeDsecureResponse = new ThreeDSecureResponse();
+
+		infoCommercantDto = infoCommercantService.findByCmrCode(demandeDto.getComid());
+		
+		if(typeCarte.equals("2")) {
+			Util.writeInFileTransaction(folder, file, "typeCarte 2 => Master Card ");
+			System.out.println("typeCarte 2 => Master Card ");
+			authInitRequest.setUrlThreeDSS(urlThreeDSS_M);		
+		} else if(typeCarte.equals("1")) {
+			Util.writeInFileTransaction(folder, file, "typeCarte 1 => Visa ");
+			System.out.println("typeCarte 1 => Visa ");
+			authInitRequest.setUrlThreeDSS(urlThreeDSS_V);
+		} else {
+			Util.writeInFileTransaction(folder, file, "typeCarte ni 1 ni 2 => on donne par defaut Master Card ");
+			System.out.println("typeCarte ni 1 ni 2 => on donne par defaut Master Card ");
+			authInitRequest.setUrlThreeDSS(urlThreeDSS_M);
+		}
+		
+		authInitRequest.setPan(demandeDto.getDem_pan());
+		authInitRequest.setAmount(demandeDto.getMontant());				
+		authInitRequest.setCurrency(infoCommercantDto.getCmrCurrency().trim());				
+		authInitRequest.setIdCommercant(demandeDto.getComid());
+		authInitRequest.setIdDemande(demandeDto.getIddemande());					
+		authInitRequest.setExpiry(demandeDto.getExpery());
+		//authInitRequest.setAcquirerBIN("11010");
+		authInitRequest.setBrowserAcceptHeader("test");
+		authInitRequest.setBrowserUserAgent("test");
+		if(demandeDto.getEmail() == null || demandeDto.getEmail().equals("")) {
+			authInitRequest.setEmail(infoCommercantDto.getCmrEmail());
+		} else {
+			authInitRequest.setEmail(demandeDto.getEmail());
+		}
+		authInitRequest.setMcc(commercant.getCmrCodactivite());
+		authInitRequest.setMerchantCountryCode(infoCommercantDto.getCmrCurrency().trim());
+		authInitRequest.setNomCommercant(infoCommercantDto.getCmrNom());	
+		authInitRequest.setNotificationURL(notificationCCBACS);
+		
+		Util.writeInFileTransaction(folder, file,"" + authInitRequest);
+		
+		threeDSecureRequestor.threeDSecureRequest(authInitRequest);
+		
+		//Util.writeInFileTransaction(folder, file,"Debut appel ThreeDSecure ");
+		
+		try {
+			threeDsecureResponse = threeDSecureRequestor.initAuth(folder, file);
+		} catch (ThreeDSecureRequestorException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		Util.writeInFileTransaction(folder, file,"fin preparerReqMobileThree3DSS ");
 
 		
 		return threeDsecureResponse;

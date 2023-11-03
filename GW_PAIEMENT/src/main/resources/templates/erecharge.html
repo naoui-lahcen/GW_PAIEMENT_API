@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+   <head>
+      <meta charset="ISO-8859-1">
+      <title>GATEWAY NAPS</title>
+      <link rel="stylesheet"
+         href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+         integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+         crossorigin="anonymous">
+      <link
+         href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+         rel="stylesheet" id="bootstrap-css">
+      <script
+         src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+      <script
+         src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+      <!------ Include the above in your HEAD tag ---------->
+      <link rel="stylesheet"
+         href="https://use.fontawesome.com/releases/v5.0.8/css/all.css">
+     <meta name="viewport" content="width=device-width, initial-scale=1">
+     <style>
+      .dialog {
+         display : none;
+     }
+    @media (max-width: 768px) {
+    
+    .card-body {
+      font-size: 14px;
+    }
+    .subscribe {
+		display: block;
+	    width: 100% !important;
+	    margin: 5px 0;
+	}
+	.tr1 {
+	color: #DF6537;
+    font-size: large !important;
+    font-weight: 760;
+	}
+	.tr2 {
+	color: #DF6537;
+    font-size: larger !important;
+    font-weight: 700;
+	}
+	.tr3 {
+	color: #DF6537;
+    font-size: larger !important;
+    font-weight: 700;
+	}
+   .mobile-hide {
+        display: none;
+    }
+  }
+
+  @media (max-width: 576px) {
+   
+    .card-body {
+      font-size: 12px;
+      }
+     .subscribe {
+		display: block;
+	    width: 100% !important;
+	    margin: 5px 0;
+	}
+	.tr1 {
+	color: #DF6537;
+    font-size: large !important;
+    font-weight: 760;
+	}
+	.tr2 {
+	color: #DF6537;
+    font-size: larger !important;
+    font-weight: 700;
+	}
+	.tr3 {
+	color: #DF6537;
+    font-size: larger !important;
+    font-weight: 700;
+	}
+	 .mobile-hide {
+        display: none;
+    }
+    }
+  </style>
+   </head>
+   <body>
+      <div class="container">
+         <br class="mobile-hide">
+         <div class="row">
+            <aside class="col-sm-12">
+            <article class="card">
+               <div class="card-body p-2">
+                  <img th:src="@{/images/powered_by_naps.png}" alt="Image" style="float:right;width:80px;margin-right:0px;" >
+               </div>
+               <!-- card-body.// -->
+            </article>
+            <!-- card.// -->
+         </div>
+         <br class="mobile-hide">
+         <div class="row">
+            <aside class="col-sm-12">
+            <article class="card">
+               <div class="card-body p-5">
+                  <p class="text-center tr1" style="color: #DF6537; font-size: xx-large;font-weight: 760;">Espace de paiement
+                     en ligne
+                  </p>
+                  <br class="mobile-hide">
+                  <br class="mobile-hide">
+                  <div class="row">
+                     <p class="text-right tr2" style="color: #DF6537;font-size: x-large;font-weight: 700;">. Informations de votre paiement
+                     </p>
+                  </div>
+                  <div class="row">
+                     <label for="commande" class="col-sm-6 col-form-label">Commande : 
+                     <span th:text="${demandeDto.commande}"></span>
+                     </label>
+                     <label for="comid" class="col-sm-6 col-form-label">Commerçant : 
+                     <span th:text="${demandeDto.commercantDto.cmrNom}"></span>
+                     </label>
+                     <label for="galid" class="col-sm-6 col-form-label">Site web commerçant : 
+                     <span th:text="${demandeDto.galerieDto.urlGal}"></span>
+                     </label>
+                     <label for="montant" class="col-sm-6 col-form-label">Montant à payer : 
+                     <span th:text="${demandeDto.montantStr}" style="color: #DF6537;font-weight: 700;"></span> DH
+                     </label>
+                  </div>
+               </div>
+            </article>
+            <!-- card.// -->
+         </div>
+         <br class="mobile-hide">
+         <div class="row">
+            <aside class="col-sm-12">
+            <article class="card">
+            <div class="card-body p-5">
+               <div class="row">
+                  <p class="text-left tr3" style="color: #DF6537;font-size: x-large;font-weight: 700;">. Informations de votre carte
+                  </p>
+               </div>
+               <form role="form" method="POST" th:action="@{/recharger}" th:object="${demandeDto}">
+                  <div class="form-group row">
+                     <label for="num" class="col-sm-3 col-form-label">N°
+                     carte bancaire</label>
+                     <div class="col-sm-3">
+                        <input type="number" th:field="*{dem_pan}" class="form-control" id="num" required="required"
+                           placeholder="N° carte bancaire">
+                     </div>
+                     <label for="cvv" class="col-sm-3 col-form-label">Code de
+                     sécurité</label>
+                     <div class="col-sm-3">
+                        <input type="number" th:field="*{dem_cvv}" class="form-control" id="cvv" required="required"
+                           placeholder="CVV">
+                     </div>
+                  </div>
+                  <div class="form-group row">
+                     <label for="xxx" class="col-sm-3 col-form-label">Date
+                     d'expiration</label>
+                     <div class="col-sm-3">
+                        <select class="form-control" th:field="*{annee}" required="required">
+                           <option value="">YY</option>
+                           <option th:each="item : ${demandeDto.years}" th:value="${item}" th:text="${item}"></option>
+                        </select>
+                     </div>
+                     <label for="xxx" class="col-sm-3 col-form-label">Mois</label>
+                     <div class="col-sm-3">
+                        <select class="form-control" th:field="*{mois}" required="required">
+                           <option value="">MM</option>
+                           <option th:each="item : ${demandeDto.months}" th:value="${item.value}" th:text="${item.month}"></option>
+                        </select>
+                     </div>
+                     <input type="hidden" th:field="*{commande}" class="form-control">
+                     <input type="hidden" th:field="*{comid}" class="form-control">
+                     <input type="hidden" th:field="*{galid}" class="form-control">
+                     <input type="hidden" th:field="*{montant}" class="form-control">
+                     <input type="hidden" th:field="*{iddemande}" class="form-control">
+                  </div>
+                  <div class="form-group row col-md-12">
+                     <label>
+                     <input type="checkbox" th:field="*{condition}" required="required" /> J'ai lu et j'accepte
+                     </label>
+                     <a id="openDialog" style="color: #0056b3;cursor: pointer;text-decoration: underline;">
+                     les conditions générales d'utilisation</a>
+                  </div>
+                  <div class="form-group row">
+					  <div class="col-sm-6">
+						<img th:src="@{/images/secureicon.png}" alt="Image" style="width: 20px;margin-right: 7px;" >
+                        	Toutes vos données personnelles sont cryptées et sécurisées
+                     </div>
+                     <div class="col-sm-9 float-right">
+                        <button type="submit" style="color: #FFF;background: #DF6537;
+                           border-radius: 10px;
+                           margin-left: auto;
+                           width: 160px;
+                           border-color: #DF6537;
+                           border-top-right-radius: 10px;
+                           border-bottom-right-radius: 10px;
+                           font-size: 15px;"
+                           class="subscribe btn btn-primary btn-block"
+                           onclick="window.history.back();">Annuler
+                        </button>
+                     </div>
+                     <div class="col-sm-3 float-right">
+                        <button type="submit" style="color: #FFF;background: #DF6537;
+                           border-radius: 10px;
+                           margin-left: auto;
+                           width: 160px;
+                           border-color: #DF6537;
+                           border-top-right-radius: 10px;
+                           border-bottom-right-radius: 10px;
+                           font-size: 15px;"
+                           class="subscribe btn btn-primary btn-block">Payer
+                         </button>
+                     </div>
+                  </div>
+               </form>
+            </div>
+            <!-- card-body.// -->
+         </div>
+      </div>
+      </div>
+      <!-- La div du dialogue -->
+      <div id="dialog" class="dialog container my-2" align="center">
+         <article class="card" style="max-height: 200px;overflow-y: auto;border: 1px solid #ccc;padding: 10px;">
+            <div class="card-body p-5" style="font-size: 15px;">
+               <p style="margin-left: 40px; font-weight: bold !important;">
+                  Conformément à la loi 09-08 sur la protection des personnes physiques à 
+                  l'égard du traitement des données à caractère personnel, il est porté à votre connaissance 
+                  qu'en utilisant le service de paiement en ligne pour payer un service ou un produit 
+                  commercialisé par un site marchand affilié à NAPS:
+               </p>
+               <ul>
+                  <li style="color: #f37122;"><span
+                     style="color: #000 !important;">
+                     Les destinataires des données concernant un payeur telles que le nom et prénom, courriel,
+                     adresse et numéro de téléphone, à l'exception des données bancaires confidentielles, 
+                     et qui sont soit transmises par le site Marchand à NAPS ou saisies par le payeur sur l'écran de paiement 
+                     mis à sa disposition par NAPS pour le compte de l'e-commerçant et sous son ordre, pourront être 
+                     utilisées par les collaborateurs de NAPS responsables du traitement, dont la finalité est le suivi
+                     de l'opération de paiement initiée par le payeur sur le site Marchand.</span>
+                  </li>
+                  <br />
+                  <li style="color: #f37122;"><span
+                     style="color: #000 !important;">
+                     Les destinataires des données bancaires qui sont saisies par le payeur sur l'écran de paiement mis à
+                     sa disposition par NAPS pour le compte de l'e-commerçant et sous son ordre, pourront être utilisées 
+                     par les systèmes d'information et monétiques de NAPS, ainsi que le système monétique de la banque
+                     marocaine ou internationale émettrice de la carte bancaire utilisée lors du paiement en ligne.
+                     Toutes ces entités sont responsables, chacune suivant ses attributions, du traitement dont la 
+                     finalité est le traitement de l'opération de paiement initiée par le payeur sur le site marchand</span>
+                  </li>
+                  <br />
+                  <li style="color: #f37122;"><span
+                     style="color: #000 !important;">
+                     Les données recueillies par NAPS ne peuvent être utilisées à des fins de prospection par ce dernier
+                     et sont la propriété de l'e-commerçant qui a délégué la gestion du paiement de son site marchand à NAPS.</span>
+                  </li>
+                  <br />
+                  <li style="color: #f37122;"><span
+                     style="color: #000 !important;">Vous disposez d'un droit 
+                     d'accès en consultation à vos données personnelles traitées par NAPS et qui figurent dans votre reçu de paiement,
+                     à l'exception des données bancaires, en contactant NAPS par courrier à l'adresse suivante : NAPS - 16, 
+                     rue Ibn Khalikane, Palmiers, Casablanca.</span>
+                  </li>
+                  <br />
+                  <li style="color: #f37122;"><span
+                     style="color: #000 !important;">
+                     Vous pouvez aussi accéder à ces données depuis le reçu de paiement ou de transaction 
+                     mis à votre disposition par courriel et en ligne par NAPS ou l'e-commerçant.</span>
+                  </li>
+                  <br />
+                  <li style="color: #f37122;"><span
+                     style="color: #000 !important;">
+                     Le clic de validation du paiement que vous effectuerez sur l'écran de paiement constitue la validation
+                     de votre demande de paiement auprès du site Marchand et vaudra acceptation irrévocable des présentes
+                     conditions générales d'utilisation du service de paiement en ligne de NAPS. De ce fait, vous ne 
+                     disposerez pas du droit de rectification de vos données personnelles ni de l'annulation de cette
+                     demande de paiement auprès de NAPS. Pour toute demande en ce sens, vous devez vous 
+                     adresser à l'e-commerçant.</span>
+                  </li>
+                  <br />
+                  <li style="color: #f37122;"><span
+                     style="color: #000 !important;">
+                     Pour exercer votre droit de consultation et de rectification de vos données communiquées à l'e-commerçant
+                     directement sur son site web, vous devez suivre les modalités précisées par l'e-commerçant et formulées
+                     sur son site marchand ou dans ses conditions générales de ventes. NAPS exige un engagement des 
+                     e-commerçants affiliés à son service de paiement en ligne de mettre à votre disposition ce droit.
+                     Toutefois, il ne saurait être tenu pour responsable si l'e-commerçant ne respecte pas ces engagements légaux.</span>
+                  </li>
+                  <br />
+                  <li style="color: #f37122;"><span
+                     style="color: #000 !important;">
+                     Les données enregistrées par NAPS sont archivées pendant une durée de 18 mois, car elles constituent
+                     une partie de la preuve de la transaction de paiement effectuée par le payeur pour le compte de 
+                     l'e-commerçant, et ce, en conformité avec les exigences réglementaires régissant l'activité de NAPS
+                     et les exigences contractuelles la liant à l'e-commerçant.</span>
+                  </li>
+               </ul>
+               <button type="submit" id="closeDialog" style="margin-top: 10px;color: #FFF;background: #DF6537;
+                  border-radius: 10px;
+                  margin-left: auto;
+                  width: 160px;
+                  border-color: #DF6537;
+                  border-top-right-radius: 10px;
+                  border-bottom-right-radius: 10px;
+                  font-size: 15px;"
+                  class="subscribe btn btn-primary btn-block">Fermer
+               </button>
+            </div>
+            <!-- card-body.// -->
+         </article>
+      </div>
+      <div class="container my-2" align="center">
+         <footer class="bg-light text-center text-lg-start">
+            <!-- Copyright -->
+            <div class="text-center p-3" style="    border: 0.1px solid #d6d2d2;color: black;">
+               Copyright © 2023 NAPS all rights reserved
+               <a href="https://naps.ma/">naps.ma</a>
+            </div>
+            <!-- Copyright -->
+         </footer>
+      </div>
+      <script type="text/javascript">
+         document.getElementById("openDialog").addEventListener("click", function () {
+            document.getElementById("dialog").style.display = "block";
+         });
+         
+         document.getElementById("closeDialog").addEventListener("click", function () {
+            document.getElementById("dialog").style.display = "none";
+         });
+                  // Add an event listener to the input field
+        document.getElementById('cvv').addEventListener('input', function() {
+            var maxLength = 3; // Change this to your desired maximum length
+            if (this.value.length > maxLength) {
+                this.value = this.value.slice(0, maxLength);
+            }
+            // Change this to your desired min
+            if (this.value < 0) {
+		        this.value = 0;
+		    }
+		    // Supprimez tous les caractères non numériques et non valides (y compris "e")
+    		this.value = this.value.replace(/[^0-9.-]/g, "");
+        });
+         document.getElementById('num').addEventListener('input', function() {
+            var maxLength = 19; // Change this to your desired maximum length
+            if (this.value.length > maxLength) {
+                this.value = this.value.slice(0, maxLength);
+            }
+            // Change this to your desired min
+            if (this.value < 0) {
+		        this.value = 0;
+		    }
+		    // Supprimez tous les caractères non numériques et non valides (y compris "e")
+    		this.value = this.value.replace(/[^0-9.-]/g, "");
+        });
+      </script>
+   </body>
+</html>
