@@ -38,6 +38,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import ma.m2m.gateway.Utils.Objects;
@@ -1710,6 +1712,8 @@ public class AppMobileController {
 		return page;
 	}
 	
+	@PostMapping(value = "/napspayment/linkCCB", consumes = "application/json", produces = "application/json")
+	@ResponseBody
 	public String getLinkCCB(@RequestHeader MultiValueMap<String, String> header, @RequestBody String linkP,
 			HttpServletResponse response) {
 		//Traces traces = new Traces();
