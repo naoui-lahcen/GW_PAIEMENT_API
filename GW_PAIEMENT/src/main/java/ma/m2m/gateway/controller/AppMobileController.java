@@ -307,6 +307,7 @@ public class AppMobileController {
 				String rrn = "";
 				String heure = "";
 				String montanttrame = "";
+				String montantRechgtrame = "",cartenaps = "",dateExnaps = "";
 				String num_trs = "";
 				String successURL = "";
 				String failURL;
@@ -480,6 +481,8 @@ public class AppMobileController {
 				expirydate = dmd.getDateexpnaps();
 				holdername = "";
 				cvv = dmd.getDem_cvv();
+				cartenaps = dmd.getCartenaps();
+				dateExnaps = dmd.getDateexpnaps();
 
 				// Client info
 				fname = dmd.getNom();
@@ -536,8 +539,9 @@ public class AppMobileController {
 					
 					try {
 						montanttrame = "";
-
 						mm = new String[2];
+						amount = calculMontantTotalOperation(dmd);
+						
 						System.out.println("montant v0 : " + amount);
 						Util.writeInFileTransaction(folder, file, "montant v0 : " + amount);
 						
@@ -577,6 +581,52 @@ public class AppMobileController {
 						page = "result";
 						Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
 						System.out.println("Fin processRequestMobile ()");
+						return page;
+					}
+					
+					try {
+						montantRechgtrame = "";
+
+						mm = new String[2];
+						String amount1 = calculMontantSansOperation(dmd);
+						
+						System.out.println("montant1 v0 : " + amount1);
+						Util.writeInFileTransaction(folder, file, "montant v0 : " + amount1);
+						
+						if(amount1.contains(",")) {
+							amount1 = amount1.replace(",", ".");
+						}
+						if(!amount1.contains(".") && !amount1.contains(",")) {
+							amount1 = amount1 +"."+"00";
+						}
+						System.out.println("montant1 v1 : " + amount);
+						Util.writeInFileTransaction(folder, file, "montant1 v1 : " + amount1);
+						
+						String montantt = amount1 + "";
+
+						mm = montantt.split("\\.");
+						if (mm[1].length() == 1) {
+							montantRechgtrame = amount1 + "0";
+						} else {
+							montantRechgtrame = amount1 + "";
+						}
+
+						m = new String[2];
+						m = montantRechgtrame.split("\\.");
+						if (m[1].equals("0")) {
+							montantRechgtrame = montantRechgtrame.replace(".", "0");
+						} else
+							montantRechgtrame = montantRechgtrame.replace(".", "");
+						montantRechgtrame = Util.formatageCHamps(montantRechgtrame, 12);
+						System.out.println("montantRechgtrame : " + montantRechgtrame);
+						Util.writeInFileTransaction(folder, file, "montantRechgtrame : " + montantRechgtrame);
+					} catch (Exception err3) {
+						Util.writeInFileTransaction(folder, file,
+								"recharger 500 Error during  amount formatting for given orderid:[" + orderid
+										+ "] and merchantid:[" + merchantid + "]" + err3);
+						demandeDtoMsg.setMsgRefus("Erreur lors du formatage du montant");
+						model.addAttribute("demandeDto", demandeDtoMsg);
+						page = "result";
 						return page;
 					}
 
@@ -634,7 +684,10 @@ public class AppMobileController {
 						Util.writeInFileTransaction(folder, file,
 								"not reccuring , normal cvv_present && !is_reccuring");
 						try {
-
+							// tag 046 tlv info carte naps
+							String tlvCCB = new TLVEncoder().withField(Tags.tag1, cartenaps)
+									.withField(Tags.tag14, montantRechgtrame).withField(Tags.tag42, dateExnaps).encode();
+							// tlv total ccb
 							tlv = new TLVEncoder().withField(Tags.tag0, mesg_type).withField(Tags.tag1, cardnumber)
 									.withField(Tags.tag3, processing_code).withField(Tags.tag22, transaction_condition)
 									.withField(Tags.tag49, acq_type).withField(Tags.tag14, montanttrame)
@@ -642,16 +695,15 @@ public class AppMobileController {
 									.withField(Tags.tag18, "761454").withField(Tags.tag42, expirydate)
 									.withField(Tags.tag16, date).withField(Tags.tag17, heure)
 									.withField(Tags.tag10, merc_codeactivite).withField(Tags.tag8, "0" + merchantid)
-									.withField(Tags.tag9, merchantid).withField(Tags.tag66, rrn)
-									.withField(Tags.tag67, cvv).withField(Tags.tag11, merchant_name)
-									.withField(Tags.tag12, merchant_city).withField(Tags.tag90, acqcode)
-									.withField(Tags.tag167, champ_cavv).withField(Tags.tag168, xid).encode();
-
+									.withField(Tags.tag9, merchantid).withField(Tags.tag66, rrn).withField(Tags.tag67, cvv)
+									.withField(Tags.tag11, merchant_name).withField(Tags.tag12, merchant_city)
+									.withField(Tags.tag90, acqcode).withField(Tags.tag167, champ_cavv)
+									.withField(Tags.tag168, xid).withField(Tags.tag46, tlvCCB).encode();
+							
 							Util.writeInFileTransaction(folder, file, "tag0_request : [" + mesg_type + "]");
 							Util.writeInFileTransaction(folder, file, "tag1_request : [" + cardnumber + "]");
 							Util.writeInFileTransaction(folder, file, "tag3_request : [" + processing_code + "]");
-							Util.writeInFileTransaction(folder, file,
-									"tag22_request : [" + transaction_condition + "]");
+							Util.writeInFileTransaction(folder, file, "tag22_request : [" + transaction_condition + "]");
 							Util.writeInFileTransaction(folder, file, "tag49_request : [" + acq_type + "]");
 							Util.writeInFileTransaction(folder, file, "tag14_request : [" + montanttrame + "]");
 							Util.writeInFileTransaction(folder, file, "tag15_request : [" + currency + "]");
@@ -670,6 +722,7 @@ public class AppMobileController {
 							Util.writeInFileTransaction(folder, file, "tag90_request : [" + acqcode + "]");
 							Util.writeInFileTransaction(folder, file, "tag167_request : [" + champ_cavv + "]");
 							Util.writeInFileTransaction(folder, file, "tag168_request : [" + xid + "]");
+							Util.writeInFileTransaction(folder, file, "tag46_request : [" + tlvCCB + "]");
 
 						} catch (Exception err4) {
 							Util.writeInFileTransaction(folder, file,
@@ -1052,6 +1105,13 @@ public class AppMobileController {
 						Util.writeInFileTransaction(folder, file,
 								"authorization 500 Error during  insert in histoautogate for given orderid:[" + orderid
 										+ "]" + e);
+						try {
+							Util.writeInFileTransaction(folder, file, "2eme tentative : HistoAutoGate Saving ... ");
+							histoAutoGateService.save(hist);
+						} catch (Exception ex) {
+							Util.writeInFileTransaction(folder, file,
+									"2eme tentative : authorization 500 Error during  insert in histoautogate for given orderid:[" + orderid + "]" + ex);
+						}
 					}
 
 					Util.writeInFileTransaction(folder, file, "HistoAutoGate OK.");
@@ -2146,7 +2206,17 @@ public class AppMobileController {
 
 		return page;
 	}
+	public String calculMontantTotalOperation(DemandePaiementDto dto) {
+		double mnttotalopp = dto.getMontant() + dto.getFrais();
+		String mntttopp = String.format("%.2f", mnttotalopp).replaceAll(",", ".");
+		return mntttopp;
+	}
 	
+	public String calculMontantSansOperation(DemandePaiementDto dto) {
+		double mnttotalopp = dto.getMontant();
+		String mntttopp = String.format("%.2f", mnttotalopp).replaceAll(",", ".");
+		return mntttopp;
+	}
 
 	@PostMapping("/recharger")
 	public String recharger(Model model, @ModelAttribute("demandeDto") DemandePaiementDto dto,
@@ -2163,7 +2233,7 @@ public class AppMobileController {
 				merchantname, websiteName, websiteid, callbackUrl, cardnumber, token, expirydate, holdername, cvv,
 				fname, lname, email, country, phone, city, state, zipcode, address, mesg_type, merc_codeactivite,
 				acqcode, merchant_name, merchant_city, acq_type, processing_code, reason_code, transaction_condition,
-				transactiondate, transactiontime, date, rrn, heure, montanttrame, num_trs = "", successURL, failURL,
+				transactiondate, transactiontime, date, rrn, heure, montanttrame, montantRechgtrame,cartenaps,dateExnaps, num_trs = "", successURL, failURL,
 				transactiontype;
 
 		DemandePaiementDto demandeDto = new DemandePaiementDto();
@@ -2327,7 +2397,7 @@ public class AppMobileController {
 			dmdToEdit.setDem_pan(cardnumber);
 			dmdToEdit.setDem_cvv(cvv);
 			dmdToEdit.setType_carte(i_card_type + "");
-			dmdToEdit.setDateexpnaps(expirydate);
+			//dmdToEdit.setDateexpnaps(expirydate);
 			dmdToEdit.setTransactiontype(transactiontype);
 
 			formatter_1 = new SimpleDateFormat("yyyy-MM-dd");
@@ -2520,7 +2590,7 @@ public class AppMobileController {
 			page = "result";
 			return page;
 		}
-
+		
 		if (reponseMPI.equals("") || reponseMPI == null) {
 			dmd.setEtat_demande("MPI_KO");
 			demandePaiementService.save(dmd);
@@ -2542,10 +2612,15 @@ public class AppMobileController {
 			dmd.setDem_xid(threeDSServerTransID);
 			demandePaiementService.save(dmd);
 			
+			cartenaps = dmd.getCartenaps();
+			dateExnaps = dmd.getDateexpnaps();
+			
 			try {
 				montanttrame = "";
 
 				mm = new String[2];
+				
+				amount = calculMontantTotalOperation(dmd);
 				
 				System.out.println("montant v0 : " + amount);
 				Util.writeInFileTransaction(folder, file, "montant v0 : " + amount);
@@ -2577,6 +2652,52 @@ public class AppMobileController {
 				montanttrame = Util.formatageCHamps(montanttrame, 12);
 				System.out.println("montanttrame : " + montanttrame);
 				Util.writeInFileTransaction(folder, file, "montanttrame : " + montanttrame);
+			} catch (Exception err3) {
+				Util.writeInFileTransaction(folder, file,
+						"recharger 500 Error during  amount formatting for given orderid:[" + orderid
+								+ "] and merchantid:[" + merchantid + "]" + err3);
+				demandeDtoMsg.setMsgRefus("Erreur lors du formatage du montant");
+				model.addAttribute("demandeDto", demandeDtoMsg);
+				page = "result";
+				return page;
+			}
+			
+			try {
+				montantRechgtrame = "";
+
+				mm = new String[2];
+				String amount1 = calculMontantSansOperation(dmd);
+				
+				System.out.println("montant1 v0 : " + amount1);
+				Util.writeInFileTransaction(folder, file, "montant v0 : " + amount1);
+				
+				if(amount1.contains(",")) {
+					amount1 = amount1.replace(",", ".");
+				}
+				if(!amount1.contains(".") && !amount1.contains(",")) {
+					amount1 = amount1 +"."+"00";
+				}
+				System.out.println("montant1 v1 : " + amount);
+				Util.writeInFileTransaction(folder, file, "montant1 v1 : " + amount1);
+				
+				String montantt = amount1 + "";
+
+				mm = montantt.split("\\.");
+				if (mm[1].length() == 1) {
+					montantRechgtrame = amount1 + "0";
+				} else {
+					montantRechgtrame = amount1 + "";
+				}
+
+				m = new String[2];
+				m = montantRechgtrame.split("\\.");
+				if (m[1].equals("0")) {
+					montantRechgtrame = montantRechgtrame.replace(".", "0");
+				} else
+					montantRechgtrame = montantRechgtrame.replace(".", "");
+				montantRechgtrame = Util.formatageCHamps(montantRechgtrame, 12);
+				System.out.println("montantRechgtrame : " + montantRechgtrame);
+				Util.writeInFileTransaction(folder, file, "montantRechgtrame : " + montantRechgtrame);
 			} catch (Exception err3) {
 				Util.writeInFileTransaction(folder, file,
 						"recharger 500 Error during  amount formatting for given orderid:[" + orderid
@@ -2657,7 +2778,10 @@ public class AppMobileController {
 			if (cvv_present && !is_reccuring) {
 				Util.writeInFileTransaction(folder, file, "not reccuring , normal cvv_present && !is_reccuring");
 				try {
-
+					// tag 046 tlv info carte naps
+					String tlvCCB = new TLVEncoder().withField(Tags.tag1, cartenaps)
+							.withField(Tags.tag14, montantRechgtrame).withField(Tags.tag42, dateExnaps).encode();
+					// tlv total ccb
 					tlv = new TLVEncoder().withField(Tags.tag0, mesg_type).withField(Tags.tag1, cardnumber)
 							.withField(Tags.tag3, processing_code).withField(Tags.tag22, transaction_condition)
 							.withField(Tags.tag49, acq_type).withField(Tags.tag14, montanttrame)
@@ -2668,8 +2792,8 @@ public class AppMobileController {
 							.withField(Tags.tag9, merchantid).withField(Tags.tag66, rrn).withField(Tags.tag67, cvv)
 							.withField(Tags.tag11, merchant_name).withField(Tags.tag12, merchant_city)
 							.withField(Tags.tag90, acqcode).withField(Tags.tag167, champ_cavv)
-							.withField(Tags.tag168, xid).encode();
-
+							.withField(Tags.tag168, xid).withField(Tags.tag46, tlvCCB).encode();
+					
 					Util.writeInFileTransaction(folder, file, "tag0_request : [" + mesg_type + "]");
 					Util.writeInFileTransaction(folder, file, "tag1_request : [" + cardnumber + "]");
 					Util.writeInFileTransaction(folder, file, "tag3_request : [" + processing_code + "]");
@@ -2692,6 +2816,7 @@ public class AppMobileController {
 					Util.writeInFileTransaction(folder, file, "tag90_request : [" + acqcode + "]");
 					Util.writeInFileTransaction(folder, file, "tag167_request : [" + champ_cavv + "]");
 					Util.writeInFileTransaction(folder, file, "tag168_request : [" + xid + "]");
+					Util.writeInFileTransaction(folder, file, "tag46_request : [" + tlvCCB + "]");
 
 				} catch (Exception err4) {
 					Util.writeInFileTransaction(folder, file,
@@ -3037,9 +3162,15 @@ public class AppMobileController {
 				histoAutoGateService.save(hist);
 
 			} catch (Exception e) {
-				Util.writeInFileTransaction(folder, file, "Error during  insert in histoautogate for given orderid");
 				Util.writeInFileTransaction(folder, file,
 						"recharger 500 Error during  insert in histoautogate for given orderid:[" + orderid + "]" + e);
+				try {
+					Util.writeInFileTransaction(folder, file, "2eme tentative : HistoAutoGate Saving ... ");
+					histoAutoGateService.save(hist);
+				} catch (Exception ex) {
+					Util.writeInFileTransaction(folder, file,
+							"2eme tentative : recharger 500 Error during  insert in histoautogate for given orderid:[" + orderid + "]" + ex);
+				}
 			}
 
 			Util.writeInFileTransaction(folder, file, "HistoAutoGate OK.");

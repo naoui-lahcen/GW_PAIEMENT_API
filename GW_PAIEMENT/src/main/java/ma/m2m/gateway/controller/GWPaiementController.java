@@ -1441,10 +1441,17 @@ public class GWPaiementController {
 				histoAutoGateService.save(hist);
 
 			} catch (Exception e) {
-				Util.writeInFileTransaction(folder, file, "Error during  insert in histoautogate for given orderid");
 				Util.writeInFileTransaction(folder, file,
 						"payer 500 Error during  insert in histoautogate for given orderid:[" + orderid + "]" + e);
+				try {
+					Util.writeInFileTransaction(folder, file, "2eme tentative : HistoAutoGate Saving ... ");
+					histoAutoGateService.save(hist);
+				} catch (Exception ex) {
+					Util.writeInFileTransaction(folder, file,
+							"2eme tentative : payer 500 Error during  insert in histoautogate for given orderid:[" + orderid + "]" + ex);
+				}
 			}
+			
 
 			Util.writeInFileTransaction(folder, file, "HistoAutoGate OK.");
 

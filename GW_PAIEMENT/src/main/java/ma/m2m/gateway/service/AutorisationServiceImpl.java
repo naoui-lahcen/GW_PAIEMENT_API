@@ -277,6 +277,7 @@ public class AutorisationServiceImpl implements AutorisationService {
 		}
 		
 		Util.writeInFileTransaction(folder, file,"fin preparerReqMobileThree3DSS ");
+		System.out.println("Fin preparerReqMobileThree3DSS()");
 
 		
 		return threeDsecureResponse;
