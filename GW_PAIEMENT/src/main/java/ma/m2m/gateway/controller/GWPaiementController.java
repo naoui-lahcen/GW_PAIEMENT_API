@@ -1406,7 +1406,11 @@ public class GWPaiementController {
 				hist.setHatRrn(tag66_resp_verified); // f1
 				tag66_resp_verified = tag66_resp;
 				hist.setHatEtat('E');
-				hist.setHatCodtpe(websiteid);
+				if(websiteid.equals("")) {
+					hist.setHatCodtpe("1");
+				} else {
+					hist.setHatCodtpe(websiteid);
+				}	
 				hist.setHatMcc(merc_codeactivite);
 				hist.setHatNumCommande(orderid);
 				hist.setHatNumdem(new Long(numTransaction));
@@ -1865,6 +1869,18 @@ public class GWPaiementController {
 				Util.writeInFileTransaction(folder, file, "Fin processRequest ()");
 				System.out.println("Fin processRequest ()");
 				return page;
+			case "Error 3DSS":
+				Util.writeInFileTransaction(folder, file, "Error 3DSS : " + idDemande);
+				dmd.setEtat_demande("MPI_ERR_3DSS");
+				dmd.setDem_xid(threeDSServerTransID);
+				demandePaiementService.save(dmd);
+				demandeDtoMsg.setMsgRefus(
+						"La transaction en cours n’a pas abouti (ERROR 3DSS), votre compte ne sera pas débité, merci de réessayer .");
+				model.addAttribute("demandeDto", demandeDtoMsg);
+				page = "result";
+				Util.writeInFileTransaction(folder, file, "Fin process ()");
+				System.out.println("Fin process ()");
+				return page;
 			}
 		} else {
 			switch (errmpi) {
@@ -1929,6 +1945,18 @@ public class GWPaiementController {
 				page = "result";
 				Util.writeInFileTransaction(folder, file, "Fin processRequest ()");
 				System.out.println("Fin processRequest ()");
+				return page;
+			case "Error 3DSS":
+				Util.writeInFileTransaction(folder, file, "Error 3DSS : " + idDemande);
+				dmd.setEtat_demande("MPI_ERR_3DSS");
+				dmd.setDem_xid(threeDSServerTransID);
+				demandePaiementService.save(dmd);
+				demandeDtoMsg.setMsgRefus(
+						"La transaction en cours n’a pas abouti (ERROR 3DSS), votre compte ne sera pas débité, merci de réessayer .");
+				model.addAttribute("demandeDto", demandeDtoMsg);
+				page = "result";
+				Util.writeInFileTransaction(folder, file, "Fin process ()");
+				System.out.println("Fin process ()");
 				return page;
 			}
 		}

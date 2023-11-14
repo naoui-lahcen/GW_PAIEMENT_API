@@ -1058,7 +1058,11 @@ public class APIController {
 				hist.setHatRrn(tag66_resp_verified); // f1
 				tag66_resp_verified = tag66_resp;
 				hist.setHatEtat('E');
-				hist.setHatCodtpe(websiteid);
+				if(websiteid.equals("")) {
+					hist.setHatCodtpe("1");
+				} else {
+					hist.setHatCodtpe(websiteid);
+				}			
 				hist.setHatMcc(merc_codeactivite);
 				hist.setHatNumCommande(orderid);
 				hist.setHatNumdem(new Long(numTransaction));
@@ -2195,7 +2199,7 @@ public class APIController {
 		}
 
 		if (current_dmd == null) {
-			Util.writeInFileTransaction(folder, file, "status 500 PaiementRequest not found orderidderid:[" + orderid
+			Util.writeInFileTransaction(folder, file, "status 500 PaiementRequest not found orderid:[" + orderid
 					+ "] and merchantid:[" + merchantid + "]");
 			return getMsgError(jsonOrequest, "status 500 PaiementRequest not found", null);
 		}
@@ -4459,7 +4463,8 @@ public class APIController {
 		System.out.println("*********** Fin exportToExcel ***********");
 	}
 
-	@RequestMapping(path = "/napspayment/cpautorisation", produces = "application/json; charset=UTF-8")
+	@PostMapping(value = "/napspayment/cpautorisation", consumes = "application/json", produces = "application/json")
+	@ResponseBody
 	public String cpautorisation(@RequestHeader MultiValueMap<String, String> header, @RequestBody String cpauths,
 			HttpServletResponse response) {
 		// Traces traces = new Traces();
@@ -4534,17 +4539,16 @@ public class APIController {
 		}
 
 		String capture, currency, orderid, recurring, amount, transactionid, merchantid, capture_id, merchantname,
-				websiteName, websiteid, callbackUrl, cardnumber, token, expirydate, cvv, fname, lname, email,
+				websiteName, websiteid, callbackurl, cardnumber, token, expirydate, cvv, fname, lname, email,
 				authnumber, acqcode, acq_type, date, rrn, heure, securtoken24, mac_value, transactiontype, paymentid;
 
 		SimpleDateFormat formatter_1, formatter_2, formatheure, formatdate = null;
 
 		try {
 			// Transaction info
-			// securtoken24 = (String) jsonOrequest.get("securtoken24");
-			// mac_value = (String) jsonOrequest.get("mac_value");
-
-			currency = (String) jsonOrequest.get("currency");
+			securtoken24 = (String) jsonOrequest.get("securtoken24");
+			mac_value = (String) jsonOrequest.get("mac_value");
+		
 			orderid = (String) jsonOrequest.get("orderid");
 			amount = (String) jsonOrequest.get("amount");
 			transactionid = (String) jsonOrequest.get("transactionid");
@@ -4556,12 +4560,13 @@ public class APIController {
 			merchantname = (String) jsonOrequest.get("merchantname");
 			websiteName = (String) jsonOrequest.get("websitename");
 			websiteid = (String) jsonOrequest.get("websiteid");
+			callbackurl = (String) jsonOrequest.get("callbackurl");
 
 			// Card info
 			cardnumber = (String) jsonOrequest.get("cardnumber");
-			token = (String) jsonOrequest.get("token");
-			expirydate = (String) jsonOrequest.get("expirydate");
-			cvv = (String) jsonOrequest.get("cvv");
+			//token = (String) jsonOrequest.get("token");
+			//expirydate = (String) jsonOrequest.get("expirydate");
+			//cvv = (String) jsonOrequest.get("cvv");
 
 			// Client info
 			fname = (String) jsonOrequest.get("fname");
@@ -4627,10 +4632,10 @@ public class APIController {
 		}
 		if (check_dmd == null) {
 			Util.writeInFileTransaction(folder, file,
-					"cpautorisation 500 Error misconfigured in DB or not existing orderid:[" + orderid
+					"cpautorisation 500 PaiementRequest misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]");
 
-			return getMsgError(jsonOrequest, "cpautorisation 500 Error misconfigured in DB or not existing", "15");
+			return getMsgError(jsonOrequest, "cpautorisation 500 PaiementRequest misconfigured in DB or not existing", "15");
 		}
 
 		try {
