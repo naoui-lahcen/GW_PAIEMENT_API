@@ -1359,10 +1359,19 @@ public class GWPaiementController {
 
 				Util.writeInFileTransaction(folder, file, "get status ...");
 
-				// s_status = histservice.getLib("RPC_LIBELLE", "CODEREPONSE", "RPC_CODE='" +
-				// tag20_resp + "'");
-				// if (s_status == null)
 				s_status = "";
+				try {
+					CodeReponseDto codeReponseDto = codeReponseService.findByRpcCode(tag20_resp_verified);
+					System.out.println("codeReponseDto : " + codeReponseDto);
+					Util.writeInFileTransaction(folder, file, "codeReponseDto : " + codeReponseDto);
+					if(codeReponseDto != null) {
+						s_status = codeReponseDto.getRpcLibelle();
+					}		
+				} catch(Exception ee) {
+					Util.writeInFileTransaction(folder, file, "authorization 500 Error codeReponseDto null");
+					ee.printStackTrace();
+				}	
+				
 				Util.writeInFileTransaction(folder, file, "get status Switch status : [" + s_status + "]");
 
 				Util.writeInFileTransaction(folder, file, "get max id ...");

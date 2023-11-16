@@ -37,6 +37,7 @@ import com.google.gson.GsonBuilder;
 import ma.m2m.gateway.Utils.Util;
 import ma.m2m.gateway.config.JwtTokenUtil;
 import ma.m2m.gateway.dto.CardtokenDto;
+import ma.m2m.gateway.dto.CodeReponseDto;
 import ma.m2m.gateway.dto.CommercantDto;
 import ma.m2m.gateway.dto.ControlRiskCmrDto;
 import ma.m2m.gateway.dto.DemandePaiementDto;
@@ -50,6 +51,7 @@ import ma.m2m.gateway.reporting.GenerateExcel;
 import ma.m2m.gateway.risk.GWRiskAnalysis;
 import ma.m2m.gateway.service.AutorisationService;
 import ma.m2m.gateway.service.CardtokenService;
+import ma.m2m.gateway.service.CodeReponseService;
 import ma.m2m.gateway.service.CommercantService;
 import ma.m2m.gateway.service.ControlRiskCmrService;
 import ma.m2m.gateway.service.DemandePaiementService;
@@ -148,6 +150,9 @@ public class APIController {
 
 	@Autowired
 	private EmetteurService emetteurService;
+	
+	@Autowired
+	CodeReponseService codeReponseService;
 
 	DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	DateFormat dateFormatSimple = new SimpleDateFormat("yyyy-MM-dd");
@@ -1011,10 +1016,19 @@ public class APIController {
 
 				Util.writeInFileTransaction(folder, file, "get status ...");
 
-				// s_status = histservice.getLib("RPC_LIBELLE", "CODEREPONSE", "RPC_CODE='" +
-				// tag20_resp + "'");
-				// if (s_status == null)
 				s_status = "";
+				try {
+					CodeReponseDto codeReponseDto = codeReponseService.findByRpcCode(tag20_resp_verified);
+					System.out.println("codeReponseDto : " + codeReponseDto);
+					Util.writeInFileTransaction(folder, file, "codeReponseDto : " + codeReponseDto);
+					if(codeReponseDto != null) {
+						s_status = codeReponseDto.getRpcLibelle();
+					}		
+				} catch(Exception ee) {
+					Util.writeInFileTransaction(folder, file, "authorization 500 Error codeReponseDto null");
+					ee.printStackTrace();
+				}	
+				
 				Util.writeInFileTransaction(folder, file, "get status Switch status : [" + s_status + "]");
 
 				Util.writeInFileTransaction(folder, file, "get max id ...");
@@ -3908,6 +3922,17 @@ public class APIController {
 		}
 
 		String s_status = "";
+		try {
+			CodeReponseDto codeReponseDto = codeReponseService.findByRpcCode(tag20_resp);
+			System.out.println("codeReponseDto : " + codeReponseDto);
+			Util.writeInFileTransaction(folder, file, "codeReponseDto : " + codeReponseDto);
+			if(codeReponseDto != null) {
+				s_status = codeReponseDto.getRpcLibelle();
+			}		
+		} catch(Exception ee) {
+			Util.writeInFileTransaction(folder, file, "authorization 500 Error codeReponseDto null");
+			ee.printStackTrace();
+		}	
 
 		Util.writeInFileTransaction(folder, file, "Switch status : [" + s_status + "]");
 
