@@ -1793,8 +1793,8 @@ public class APIController {
 			// Merchant info
 			jso.put("merchantid", merchantid);
 
-			Util.writeInFileTransaction(folder, file, "json : " + jso.toString());
-			System.out.println("json : " + jso.toString());
+			Util.writeInFileTransaction(folder, file, "json res : [" + jso.toString() + "]");
+			System.out.println("json res : [" + jso.toString() + "]");
 
 		} catch (Exception err8) {
 			Util.writeInFileTransaction(folder, file,
@@ -2007,8 +2007,8 @@ public class APIController {
 		jsoVerified.put("cx_user", cx_user);
 		jsoVerified.put("mac_value", mac_value);
 
-		System.out.println("response : " + jsoVerified.toString());
-		Util.writeInFileTransaction(folder, file, "response : " + jsoVerified.toString());
+		Util.writeInFileTransaction(folder, file, "json res : [" + jsoVerified.toString() + "]");
+		System.out.println("json res : [" + jsoVerified.toString() + "]");
 
 		// fin
 		System.out.println("*********** Fin generateToken() ************** ");
@@ -2477,6 +2477,9 @@ public class APIController {
 			jso.put("authnumber", authnumber);
 			jso.put("transactionid", transactionid);
 			jso.put("merchantid", merchantid);
+			
+			Util.writeInFileTransaction(folder, file, "json res : [" + jso.toString() + "]");
+			System.out.println("json res : [" + jso.toString() + "]");
 
 		} catch (Exception err3) {
 			err3.printStackTrace();
@@ -2866,6 +2869,10 @@ public class APIController {
 			jso.put("fname", fname);
 			jso.put("lname", lname);
 			jso.put("email", email);
+			
+			Util.writeInFileTransaction(folder, file, "json res : [" + jso.toString() + "]");
+			System.out.println("json res : [" + jso.toString() + "]");
+			
 		} catch (Exception err9) {
 			Util.writeInFileTransaction(folder, file, "capture 500 Error during jso out processing given "
 					+ "authnumber:[" + authnumber + "] and merchantid:[" + merchantid + "]" + err9);
@@ -3373,6 +3380,9 @@ public class APIController {
 			jso.put("fname", fname);
 			jso.put("lname", lname);
 			jso.put("email", email);
+			
+			Util.writeInFileTransaction(folder, file, "json res : [" + jso.toString() + "]");
+			System.out.println("json res : [" + jso.toString() + "]");
 
 		} catch (Exception err8) {
 			Util.writeInFileTransaction(folder, file, "refund 500 Error during jso out processing given authnumber"
@@ -3970,8 +3980,9 @@ public class APIController {
 			jso.put("fname", fname);
 			jso.put("lname", lname);
 			jso.put("email", email);
-			Util.writeInFileTransaction(folder, file, "json res :" + jso.toString());
-			System.out.println("json res :" + jso.toString());
+			
+			Util.writeInFileTransaction(folder, file, "json res : [" + jso.toString() + "]");
+			System.out.println("json res : [" + jso.toString() + "]");
 			
 		} catch (Exception err8) {
 			Util.writeInFileTransaction(folder, file,
@@ -4899,6 +4910,9 @@ public class APIController {
 			jso.put("fname", fname);
 			jso.put("lname", lname);
 			jso.put("email", email);
+			
+			Util.writeInFileTransaction(folder, file, "json res : [" + jso.toString() + "]");
+			System.out.println("json res : [" + jso.toString() + "]");
 
 		} catch (Exception jsouterr) {
 			Util.writeInFileTransaction(folder, file,

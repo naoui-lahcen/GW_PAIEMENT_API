@@ -2082,8 +2082,8 @@ public class AppMobileController {
 			// Merchant info
 			jso.put("merchantid", merchantid);
 
-			Util.writeInFileTransaction(folder, file, "json : " + jso.toString());
-			System.out.println("json : " + jso.toString());
+			Util.writeInFileTransaction(folder, file, "json res : [" + jso.toString() + "]");
+			System.out.println("json res : [" + jso.toString() + "]");
 
 		} catch (Exception err8) {
 			Util.writeInFileTransaction(folder, file,
