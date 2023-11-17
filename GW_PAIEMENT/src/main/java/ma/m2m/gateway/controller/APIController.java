@@ -635,7 +635,7 @@ public class APIController {
 			return getMsgError(jsonOrequest, "Response 3DS is null", "96");
 		}
 		// jsute pour Coca les test sans 3DSS reponseMPI="Y"
-		//reponseMPI = "Y";
+		reponseMPI = "Y";
 
 		if (reponseMPI.equals("Y")) {
 			// ********************* Frictionless responseMPI equal Y *********************
@@ -3611,20 +3611,6 @@ public class APIController {
 			return getMsgError(jsonOrequest, "reversal 500 Error during amount formatting", null);
 		}
 
-		Util.writeInFileTransaction(folder, file, "Switch processing start ...");
-
-		String tlv = "";
-		Util.writeInFileTransaction(folder, file, "Preparing Switch TLV Request start ...");
-
-		// controls
-		String mesg_type = "2";
-		String merchant_name = merchantname;
-		String acq_type = "0000";
-		String processing_code = "0";
-		String reason_code = "H";
-		String transaction_condition = "6";
-		String transactionnumber = authnumber;
-
 		CommercantDto current_merchant = null;
 		try {
 			current_merchant = commercantService.findByCmrNumcmr(merchantid);
@@ -3660,14 +3646,24 @@ public class APIController {
 			return getMsgError(jsonOrequest, "reversal 500 Merchant misconfigured in DB or not existing", "15");
 		}
 
+		Util.writeInFileTransaction(folder, file, "Switch processing start ...");
+
+		String tlv = "";
+		Util.writeInFileTransaction(folder, file, "Preparing Switch TLV Request start ...");
+
+		// controls
 		String merc_codeactivite = current_merchant.getCmrCodactivite();
 		String acqcode = current_merchant.getCmrCodbqe();
+	
+		String mesg_type = "2";
+		String merchant_name = merchantname;
+		String acq_type = "0000";
+		String processing_code = "0";
+		String reason_code = "H";
+		String transaction_condition = "6";
+		String transactionnumber = authnumber;
 		merchant_name = Util.pad_merchant(merchantname, 19, ' ');
 		String merchant_city = "MOROCCO        ";
-		acq_type = "0000";
-		processing_code = "0";
-		reason_code = "H";
-		transaction_condition = "6";
 
 		try {
 
@@ -3974,6 +3970,9 @@ public class APIController {
 			jso.put("fname", fname);
 			jso.put("lname", lname);
 			jso.put("email", email);
+			Util.writeInFileTransaction(folder, file, "json res :" + jso.toString());
+			System.out.println("json res :" + jso.toString());
+			
 		} catch (Exception err8) {
 			Util.writeInFileTransaction(folder, file,
 					"reversal 500 Error during jso out processing given authnumber:[" + authnumber + "]" + err8);
