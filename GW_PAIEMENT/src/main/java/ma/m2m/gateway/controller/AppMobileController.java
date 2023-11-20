@@ -1356,6 +1356,8 @@ public class AppMobileController {
 					String motif = "";
 					String merchnatidauth = "";
 					String dtdem = "";
+					String frais;
+					String montantSansFrais = "";
 
 					try {
 						authnumber = hist.getHatNautemt();
@@ -1364,6 +1366,9 @@ public class AppMobileController {
 						merchnatidauth = hist.getHatNumcmr();
 						dtdem = dmd.getDem_pan();
 						transactionid = String.valueOf(hist.getHatNumdem());
+						montantSansFrais = String.valueOf(dmd.getMontant());
+						frais = String.valueOf(dmd.getFrais());
+						Util.writeInFileTransaction(folder, file, "frais :[" + frais + "]");
 					} catch (Exception e) {
 						Util.writeInFileTransaction(folder, file,
 								"authorization 500 Error during authdata preparation orderid:[" + orderid + "]" + e);
@@ -1388,7 +1393,7 @@ public class AppMobileController {
 						 * "&transactionid=" + transactionid + "&paymentid=" + paymentid;
 						 */
 						String data_noncrypt = "id_commande=" + orderid + "&nomprenom=" + fname + "&email=" + email
-								+ "&montant=" + amount + "&frais=" + "" + "&repauto=" + coderep + "&numAuto="
+								+ "&montant=" + montantSansFrais + "&frais=" + frais + "&repauto=" + coderep + "&numAuto="
 								+ authnumber + "&numCarte=" + Util.formatCard(cardnumber) + "&typecarte="
 								+ dmd.getType_carte() + "&numTrans=" + transactionid;
 
@@ -3436,7 +3441,7 @@ public class AppMobileController {
 
 			Util.writeInFileTransaction(folder, file, "Preparing autorization api response");
 
-			String authnumber, coderep, motif, merchnatidauth, dtdem = "";
+			String authnumber, coderep, motif, merchnatidauth, dtdem = "", frais="", montantSansFrais ="";
 
 			try {
 				authnumber = hist.getHatNautemt();
@@ -3444,6 +3449,9 @@ public class AppMobileController {
 				motif = hist.getHatMtfref1();
 				merchnatidauth = hist.getHatNumcmr();
 				dtdem = dmd.getDem_pan();
+				montantSansFrais = String.valueOf(dmd.getMontant());
+				frais = String.valueOf(dmd.getFrais());
+				Util.writeInFileTransaction(folder, file, "frais :[" + frais + "]");
 			} catch (Exception e) {
 				Util.writeInFileTransaction(folder, file,
 						"recharger 500 Error during authdata preparation orderid:[" + orderid + "]" + e);
@@ -3468,7 +3476,7 @@ public class AppMobileController {
 				 */
 				
 				String data_noncrypt = "id_commande=" + orderid + "&nomprenom=" + fname + "&email=" + email
-						+ "&montant=" + amount + "&frais=" + "" + "&repauto=" + coderep + "&numAuto="
+						+ "&montant=" + montantSansFrais + "&frais=" + frais + "&repauto=" + coderep + "&numAuto="
 						+ authnumber + "&numCarte=" + Util.formatCard(cardnumber) + "&typecarte="
 						+ dmd.getType_carte() + "&numTrans=" + transactionid;
 
