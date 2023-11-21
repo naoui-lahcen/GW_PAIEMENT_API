@@ -1,5 +1,7 @@
 package ma.m2m.gateway.service;
 
+import java.util.Date;
+
 import ma.m2m.gateway.dto.CardtokenDto;
 
 /*
@@ -15,6 +17,8 @@ public interface CardtokenService {
 	void delete(CardtokenDto cardtoken);
 	
 	CardtokenDto findByIdMerchantAndToken(String merchantid, String token);
+	
+	CardtokenDto findByIdMerchantAndTokenAndExprDate(String merchantid, String token, Date dateExp);
 	
 	Integer getMAX_ID();
 }

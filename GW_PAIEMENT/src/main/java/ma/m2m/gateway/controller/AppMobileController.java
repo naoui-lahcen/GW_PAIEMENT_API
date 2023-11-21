@@ -542,17 +542,14 @@ public class AppMobileController {
 						mm = new String[2];
 						amount = calculMontantTotalOperation(dmd);
 						
-						System.out.println("montant v0 : " + amount);
-						Util.writeInFileTransaction(folder, file, "montant v0 : " + amount);
-						
 						if(amount.contains(",")) {
 							amount = amount.replace(",", ".");
 						}
 						if(!amount.contains(".") && !amount.contains(",")) {
 							amount = amount +"."+"00";
 						}
-						System.out.println("montant v1 : " + amount);
-						Util.writeInFileTransaction(folder, file, "montant v1 : " + amount);
+						System.out.println("montant recharge avec frais : [" + amount + "]");
+						Util.writeInFileTransaction(folder, file, "montant recharge avec frais : [" + amount + "]");
 						
 						String montantt = amount + "";
 
@@ -570,8 +567,8 @@ public class AppMobileController {
 						} else
 							montanttrame = montanttrame.replace(".", "");
 						montanttrame = Util.formatageCHamps(montanttrame, 12);
-						System.out.println("montanttrame : " + montanttrame);
-						Util.writeInFileTransaction(folder, file, "montanttrame : " + montanttrame);
+						System.out.println("montanttrame avec frais : [" + montanttrame + "]");
+						Util.writeInFileTransaction(folder, file, "montanttrame avec frais : [" + montanttrame + "]");
 					} catch (Exception err3) {
 						Util.writeInFileTransaction(folder, file,
 								"authorization 500 Error during  amount formatting for given orderid:[" + orderid
@@ -590,17 +587,14 @@ public class AppMobileController {
 						mm = new String[2];
 						String amount1 = calculMontantSansOperation(dmd);
 						
-						System.out.println("montant1 v0 : " + amount1);
-						Util.writeInFileTransaction(folder, file, "montant v0 : " + amount1);
-						
 						if(amount1.contains(",")) {
 							amount1 = amount1.replace(",", ".");
 						}
 						if(!amount1.contains(".") && !amount1.contains(",")) {
 							amount1 = amount1 +"."+"00";
 						}
-						System.out.println("montant1 v1 : " + amount);
-						Util.writeInFileTransaction(folder, file, "montant1 v1 : " + amount1);
+						System.out.println("montant recharge sans frais : [" + amount1 + "]");
+						Util.writeInFileTransaction(folder, file, "montant recharge sans frais : [" + amount1 + "]");
 						
 						String montantt = amount1 + "";
 
@@ -618,8 +612,8 @@ public class AppMobileController {
 						} else
 							montantRechgtrame = montantRechgtrame.replace(".", "");
 						montantRechgtrame = Util.formatageCHamps(montantRechgtrame, 12);
-						System.out.println("montantRechgtrame : " + montantRechgtrame);
-						Util.writeInFileTransaction(folder, file, "montantRechgtrame : " + montantRechgtrame);
+						System.out.println("montantRechgtrame sans frais: [" + montantRechgtrame + "]");
+						Util.writeInFileTransaction(folder, file, "montantRechgtrame sans frais : [" + montantRechgtrame + "]");
 					} catch (Exception err3) {
 						Util.writeInFileTransaction(folder, file,
 								"recharger 500 Error during  amount formatting for given orderid:[" + orderid
@@ -1841,7 +1835,7 @@ public class AppMobileController {
 
 		catch (JSONException jserr) {
 			Util.writeInFileTransaction(folder, file, "getLinkCCB 500 malformed json expression " + linkP + jserr);
-			return getMsgError(null, "getLinkCCB 500 malformed json expression", null);
+			return getMsgError(folder, file, null, "getLinkCCB 500 malformed json expression", null);
 		}
 
 		if (header != null)
@@ -1876,10 +1870,10 @@ public class AppMobileController {
 			if (header.toString() != null) {
 				Util.writeInFileTransaction(folder, file,
 						"getLinkCCB 500 malformed header" + header.toString() + head_err);
-				return getMsgError(null, "getLinkCCB 500 malformed header", null);
+				return getMsgError(folder, file, null, "getLinkCCB 500 malformed header", null);
 			} else {
 				Util.writeInFileTransaction(folder, file, "getLinkCCB 500 malformed header" + head_err);
-				return getMsgError(null, "getLinkCCB 500 malformed header " + head_err.getMessage(), null);
+				return getMsgError(folder, file, null, "getLinkCCB 500 malformed header " + head_err.getMessage(), null);
 			}
 		}
 
@@ -1927,7 +1921,7 @@ public class AppMobileController {
 
 		} catch (Exception jerr) {
 			Util.writeInFileTransaction(folder, file, "getLinkCCB 500 malformed json expression " + linkP + jerr);
-			return getMsgError(null, "getLinkCCB 500 malformed json expression " + jerr.getMessage(), null);
+			return getMsgError(folder, file, null, "getLinkCCB 500 malformed json expression " + jerr.getMessage(), null);
 		}
 
 		CommercantDto current_merchant = null;
@@ -1938,7 +1932,7 @@ public class AppMobileController {
 					"authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]" + e);
 
-			return getMsgError(jsonOrequest, "getLinkCCB 500 Merchant misconfigured in DB or not existing", "15");
+			return getMsgError(folder, file, jsonOrequest, "getLinkCCB 500 Merchant misconfigured in DB or not existing", "15");
 		}
 
 		if (current_merchant == null) {
@@ -1946,7 +1940,7 @@ public class AppMobileController {
 					"getLinkCCB 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]");
 
-			return getMsgError(jsonOrequest, "getLinkCCB 500 Merchant misconfigured in DB or not existing", "15");
+			return getMsgError(folder, file, jsonOrequest, "getLinkCCB 500 Merchant misconfigured in DB or not existing", "15");
 		}
 
 		if (current_merchant.getCmrCodactivite() == null) {
@@ -1954,7 +1948,7 @@ public class AppMobileController {
 					"getLinkCCB 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]");
 
-			return getMsgError(jsonOrequest, "getLinkCCB 500 Merchant misconfigured in DB or not existing", "15");
+			return getMsgError(folder, file, jsonOrequest, "getLinkCCB 500 Merchant misconfigured in DB or not existing", "15");
 		}
 
 		if (current_merchant.getCmrCodbqe() == null) {
@@ -1962,7 +1956,7 @@ public class AppMobileController {
 					"getLinkCCB 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]");
 
-			return getMsgError(jsonOrequest, "getLinkCCB 500 Merchant misconfigured in DB or not existing", "15");
+			return getMsgError(folder, file, jsonOrequest, "getLinkCCB 500 Merchant misconfigured in DB or not existing", "15");
 		}
 
 		DemandePaiementDto check_dmd = null;
@@ -1975,14 +1969,14 @@ public class AppMobileController {
 					"getLinkCCB 500 Error during PaiementRequest findByCommandeAndComid orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]" + err1);
 
-			return getMsgError(jsonOrequest, "getLinkCCB 500 Error during PaiementRequest", null);
+			return getMsgError(folder, file, jsonOrequest, "getLinkCCB 500 Error during PaiementRequest", null);
 		}
 		if (check_dmd != null && check_dmd.getEtat_demande().equals("SW_PAYE")) {
 			Util.writeInFileTransaction(folder, file,
 					"getLinkCCB 500 Error Already exist in PaiementRequest findByCommandeAndComid orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]");
 
-			return getMsgError(jsonOrequest, "getLinkCCB 500 Error Already exist in PaiementRequest", "16");
+			return getMsgError(folder, file, jsonOrequest, "getLinkCCB 500 Error Already exist in PaiementRequest", "16");
 		}
 
 		String url = "", status = "", statuscode = "";
@@ -2070,7 +2064,7 @@ public class AppMobileController {
 			Util.writeInFileTransaction(folder, file,
 					"getLinkCCB 500 Error during DEMANDE_PAIEMENT insertion for given orderid:[" + orderid + "]" + err1);
 
-			return getMsgError(jsonOrequest, "getLinkCCB 500 Error during DEMANDE_PAIEMENT insertion", null);
+			return getMsgError(folder, file, jsonOrequest, "getLinkCCB 500 Error during DEMANDE_PAIEMENT insertion", null);
 		}
 
 		JSONObject jso = new JSONObject();
@@ -2094,7 +2088,7 @@ public class AppMobileController {
 			Util.writeInFileTransaction(folder, file,
 					"getLinkCCB 500 Error during jso out processing given orderid:[" + orderid + "]" + err8);
 
-			return getMsgError(jsonOrequest, "getLinkCCB 500 Error during jso out processing", null);
+			return getMsgError(folder, file, jsonOrequest, "getLinkCCB 500 Error during jso out processing", null);
 		}
 
 		Util.writeInFileTransaction(folder, file, "*********** Fin getLinkCCB() ************** ");
@@ -2664,17 +2658,14 @@ public class AppMobileController {
 				
 				amount = calculMontantTotalOperation(dmd);
 				
-				System.out.println("montant v0 : " + amount);
-				Util.writeInFileTransaction(folder, file, "montant v0 : " + amount);
-				
 				if(amount.contains(",")) {
 					amount = amount.replace(",", ".");
 				}
 				if(!amount.contains(".") && !amount.contains(",")) {
 					amount = amount +"."+"00";
 				}
-				System.out.println("montant v1 : " + amount);
-				Util.writeInFileTransaction(folder, file, "montant v1 : " + amount);
+				System.out.println("montant recharge avec frais : [" + amount + "]");
+				Util.writeInFileTransaction(folder, file, "montant recharge avec frais : [" + amount + "]");
 				
 				String montantt = amount + "";
 
@@ -2692,8 +2683,8 @@ public class AppMobileController {
 				} else
 					montanttrame = montanttrame.replace(".", "");
 				montanttrame = Util.formatageCHamps(montanttrame, 12);
-				System.out.println("montanttrame : " + montanttrame);
-				Util.writeInFileTransaction(folder, file, "montanttrame : " + montanttrame);
+				System.out.println("montanttrame : [" + montanttrame +"]");
+				Util.writeInFileTransaction(folder, file, "montanttrame : [" + montanttrame + "]");
 			} catch (Exception err3) {
 				Util.writeInFileTransaction(folder, file,
 						"recharger 500 Error during  amount formatting for given orderid:[" + orderid
@@ -2710,17 +2701,14 @@ public class AppMobileController {
 				mm = new String[2];
 				String amount1 = calculMontantSansOperation(dmd);
 				
-				System.out.println("montant1 v0 : " + amount1);
-				Util.writeInFileTransaction(folder, file, "montant v0 : " + amount1);
-				
 				if(amount1.contains(",")) {
 					amount1 = amount1.replace(",", ".");
 				}
 				if(!amount1.contains(".") && !amount1.contains(",")) {
 					amount1 = amount1 +"."+"00";
 				}
-				System.out.println("montant1 v1 : " + amount);
-				Util.writeInFileTransaction(folder, file, "montant1 v1 : " + amount1);
+				System.out.println("montant recharge sans frais : [" + amount1 + "]");
+				Util.writeInFileTransaction(folder, file, "montant recharge sans frais : [" + amount1 + "]");
 				
 				String montantt = amount1 + "";
 
@@ -2738,8 +2726,8 @@ public class AppMobileController {
 				} else
 					montantRechgtrame = montantRechgtrame.replace(".", "");
 				montantRechgtrame = Util.formatageCHamps(montantRechgtrame, 12);
-				System.out.println("montantRechgtrame : " + montantRechgtrame);
-				Util.writeInFileTransaction(folder, file, "montantRechgtrame : " + montantRechgtrame);
+				System.out.println("montantRechgtrame : [" + montantRechgtrame + "]");
+				Util.writeInFileTransaction(folder, file, "montantRechgtrame : [" + montantRechgtrame + "]");
 			} catch (Exception err3) {
 				Util.writeInFileTransaction(folder, file,
 						"recharger 500 Error during  amount formatting for given orderid:[" + orderid
@@ -3744,7 +3732,7 @@ public class AppMobileController {
 		return page;
 	}
 
-	public String getMsgError(JSONObject jsonOrequest, String msg, String coderep) {
+	public String getMsgError(String folder, String file, JSONObject jsonOrequest, String msg, String coderep) {
 		Traces traces = new Traces();
 		Util.writeInFileTransaction(folder, file, "*********** Start getMsgError() ************** ");
 		System.out.println("*********** Start getMsgError() ************** ");

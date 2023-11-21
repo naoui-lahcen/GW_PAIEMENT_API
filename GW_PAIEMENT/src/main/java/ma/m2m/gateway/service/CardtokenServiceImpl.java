@@ -1,5 +1,7 @@
 package ma.m2m.gateway.service;
 
+import java.util.Date;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -35,6 +37,11 @@ public class CardtokenServiceImpl implements CardtokenService {
 	@Override
 	public CardtokenDto findByIdMerchantAndToken(String merchantid, String token) {
 		return cardtokenMapper.model2VO(cardtokenDao.findByIdMerchantAndToken(merchantid, token));
+	}
+	
+	@Override
+	public CardtokenDto findByIdMerchantAndTokenAndExprDate(String merchantid, String token, Date dateExp) {
+		return cardtokenMapper.model2VO(cardtokenDao.findByIdMerchantAndTokenAndExprDate(merchantid, token, dateExp));
 	}
 
 	@Override

@@ -951,17 +951,14 @@ public class GWPaiementController {
 
 				mm = new String[2];
 				
-				System.out.println("montant v0 : " + amount);
-				Util.writeInFileTransaction(folder, file, "montant v0 : " + amount);
-				
 				if(amount.contains(",")) {
 					amount = amount.replace(",", ".");
 				}
 				if(!amount.contains(".") && !amount.contains(",")) {
 					amount = amount +"."+"00";
 				}
-				System.out.println("montant v1 : " + amount);
-				Util.writeInFileTransaction(folder, file, "montant v1 : " + amount);
+				System.out.println("montant : [" + amount + "]");
+				Util.writeInFileTransaction(folder, file, "montant : [" + amount + "]");
 				
 				String montantt = amount + "";
 
@@ -979,8 +976,8 @@ public class GWPaiementController {
 				} else
 					montanttrame = montanttrame.replace(".", "");
 				montanttrame = Util.formatageCHamps(montanttrame, 12);
-				System.out.println("montanttrame : " + montanttrame);
-				Util.writeInFileTransaction(folder, file, "montanttrame : " + montanttrame);
+				System.out.println("montanttrame : [" + montanttrame + "]");
+				Util.writeInFileTransaction(folder, file, "montanttrame : [" + montanttrame + "]");
 			} catch (Exception err3) {
 				Util.writeInFileTransaction(folder, file,
 						"payer 500 Error during  amount formatting for given orderid:[" + orderid
