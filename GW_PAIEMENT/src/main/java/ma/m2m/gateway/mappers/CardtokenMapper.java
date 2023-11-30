@@ -1,5 +1,8 @@
 package ma.m2m.gateway.mappers;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import ma.m2m.gateway.Utils.Objects;
 import ma.m2m.gateway.dto.CardtokenDto;
 import ma.m2m.gateway.model.Cardtoken;
@@ -28,6 +31,21 @@ public class CardtokenMapper {
 			Objects.copyProperties(model, vo);
 		}
 		return model;
+	}
+	
+	public List<CardtokenDto> modelList2VOList(List<Cardtoken> vos) {
+		CardtokenDto model = null;
+		List<CardtokenDto> dtos = new ArrayList<>();
+		if (vos != null) {
+			for (Cardtoken vo : vos) {
+		
+			model = new CardtokenDto();
+			Objects.copyProperties(model, vo);
+			dtos.add(model);
+			}
+
+		}
+		return dtos;
 	}
 
 }

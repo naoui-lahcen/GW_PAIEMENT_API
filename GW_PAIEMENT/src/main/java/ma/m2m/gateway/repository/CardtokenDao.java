@@ -1,6 +1,7 @@
 package ma.m2m.gateway.repository;
 
 import java.util.Date;
+import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -18,6 +19,8 @@ import ma.m2m.gateway.model.Cardtoken;
 public interface CardtokenDao extends JpaRepository<Cardtoken, Long> {
 	
 	Cardtoken findByIdMerchantAndToken(String merchantid, String token);
+	
+	List<Cardtoken> findByIdMerchantAndIdMerchantClient(String merchantid, String idclient);
 	
 	Cardtoken findByIdMerchantAndTokenAndExprDate(String merchantid, String token, Date dateExp);
 	

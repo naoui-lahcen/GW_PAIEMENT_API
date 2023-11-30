@@ -153,7 +153,7 @@ public class AutorisationServiceImpl implements AutorisationService {
 		typeCarte = demandeDto.getType_carte();
 		
 		//demandeDto.setExpery(demandeDto.getAnnee().concat(demandeDto.getMois()));
-		demandeDto.setExpery(demandeDto.getDateexpnaps());
+		//demandeDto.setExpery(demandeDto.getDateexpnaps());
 
 		ThreeDSecureRequestor threeDSecureRequestor = new ThreeDSecureRequestor(folder,file);
 		AuthInitRequest authInitRequest= new AuthInitRequest();
@@ -222,7 +222,7 @@ public class AutorisationServiceImpl implements AutorisationService {
 		typeCarte = demandeDto.getType_carte();
 		
 		//demandeDto.setExpery(demandeDto.getAnnee().concat(demandeDto.getMois()));
-		demandeDto.setExpery(demandeDto.getDateexpnaps());
+		//demandeDto.setExpery(demandeDto.getDateexpnaps());
 
 		ThreeDSecureRequestor threeDSecureRequestor = new ThreeDSecureRequestor(folder,file);
 		AuthInitRequest authInitRequest= new AuthInitRequest();

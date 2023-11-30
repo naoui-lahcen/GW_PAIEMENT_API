@@ -452,6 +452,20 @@ public class Util {
 		return token;
 
 	}
+	
+	public static String genCommande(String merchant_id) {
+
+		int length = 5;
+		boolean useLetters = true;
+		boolean useNumbers = true;
+		String generatedString1 = RandomStringUtils.random(length, useLetters, useNumbers);
+		String generatedString2 = RandomStringUtils.random(length, useLetters, useNumbers);
+
+		String token = (generatedString1 + generatedString2 + merchant_id).toUpperCase();
+
+		return token;
+
+	}
 
     public static String generateCardToken(String merchant_id) {
 

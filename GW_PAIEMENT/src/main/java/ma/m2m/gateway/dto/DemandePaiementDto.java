@@ -92,7 +92,23 @@ public class DemandePaiementDto implements Serializable {
 	private String creq;
 	private List<Integer> years;
 	private List<MonthDto> months;
+	private List<Cartes> cartes;
+	private Cartes carte;
+	private String infoCarte;
 	
+	public Cartes getCarte() {
+		return carte;
+	}
+	public void setCarte(Cartes carte) {
+		this.carte = carte;
+	}
+	
+	public String getInfoCarte() {
+		return infoCarte;
+	}
+	public void setInfoCarte(String infoCarte) {
+		this.infoCarte = infoCarte;
+	}
 	public Integer getIddemande() {
 		return iddemande;
 	}
@@ -520,23 +536,31 @@ public class DemandePaiementDto implements Serializable {
 	public void setCondition(boolean condition) {
 		this.condition = condition;
 	}
+	
+	public List<Cartes> getCartes() {
+		return cartes;
+	}
+	public void setCartes(List<Cartes> cartes) {
+		this.cartes = cartes;
+	}
 	public DemandePaiementDto() {
 		super();
 	}
 	
 	public DemandePaiementDto(Integer iddemande, String nom, String prenom, String commande, String email,
-			Double montant, String langue, String successURL, String failURL, String timeoutURL, String tel,
-			String address, String city, String state, String country, String postcode, String comid, String galid,
-			String etat_demande, String dem_cvv, String demxid, String dem_pan, String refdemande, Double frais,
-			String dem_date_time, String cartenaps, String dateexpnaps, String type_carte, String callbackURL,
-			String estimation, String recallRep, String type_annulation, String etat_chargement, String etat_timeout,
-			String id_client, String token, String is_cof, String is_tokenized, String is_cvv_verified,
-			String is_whitelist, String is_3ds, String is_national, String is_addcard, String is_withsave,
-			String is_bpay, String is_bpaytoken, String is_bpaysave, String dateSendMPI, String dateSendSWT,
-			String dateRetourSWT, String dateSendSWTAN, String dateRetourSWTAN, String dateSendRecall,
-			String dateRetourRecall, int nbreTenta, String tokencommande, boolean etat_annulation, String expery,
-			String annee, String mois, CommercantDto commercantDto, GalerieDto galerieDto, String msgRefus,
-			String transactiontype, String creq) {
+			Double montant, String montantStr, String langue, String successURL, String failURL, String timeoutURL,
+			String tel, String address, String city, String state, String country, String postcode, String comid,
+			String galid, String etat_demande, String dem_cvv, String demxid, String dem_pan, String refdemande,
+			Double frais, String dem_date_time, String cartenaps, String dateexpnaps, String type_carte,
+			String callbackURL, String estimation, String recallRep, String type_annulation, String etat_chargement,
+			String etat_timeout, String id_client, String token, String is_cof, String is_tokenized,
+			String is_cvv_verified, String is_whitelist, String is_3ds, String is_national, String is_addcard,
+			String is_withsave, String is_bpay, String is_bpaytoken, String is_bpaysave, String dateSendMPI,
+			String dateSendSWT, String dateRetourSWT, String dateSendSWTAN, String dateRetourSWTAN,
+			String dateSendRecall, String dateRetourRecall, int nbreTenta, String tokencommande,
+			boolean etat_annulation, String expery, String annee, String mois, CommercantDto commercantDto,
+			GalerieDto galerieDto, String msgRefus, String transactiontype, boolean condition, String creq,
+			List<Integer> years, List<MonthDto> months, List<Cartes> cartes) {
 		super();
 		this.iddemande = iddemande;
 		this.nom = nom;
@@ -544,6 +568,7 @@ public class DemandePaiementDto implements Serializable {
 		this.commande = commande;
 		this.email = email;
 		this.montant = montant;
+		this.montantStr = montantStr;
 		this.langue = langue;
 		this.successURL = successURL;
 		this.failURL = failURL;
@@ -602,33 +627,125 @@ public class DemandePaiementDto implements Serializable {
 		this.galerieDto = galerieDto;
 		this.msgRefus = msgRefus;
 		this.transactiontype = transactiontype;
+		this.condition = condition;
 		this.creq = creq;
+		this.years = years;
+		this.months = months;
+		this.cartes = cartes;
 	}
-	// Util.displayCard(dem_pan) display carte pcidss
+	
+	public DemandePaiementDto(Integer iddemande, String nom, String prenom, String commande, String email,
+			Double montant, String montantStr, String langue, String successURL, String failURL, String timeoutURL,
+			String tel, String address, String city, String state, String country, String postcode, String comid,
+			String galid, String etat_demande, String dem_cvv, String demxid, String dem_pan, String refdemande,
+			Double frais, String dem_date_time, String cartenaps, String dateexpnaps, String type_carte,
+			String callbackURL, String estimation, String recallRep, String type_annulation, String etat_chargement,
+			String etat_timeout, String id_client, String token, String is_cof, String is_tokenized,
+			String is_cvv_verified, String is_whitelist, String is_3ds, String is_national, String is_addcard,
+			String is_withsave, String is_bpay, String is_bpaytoken, String is_bpaysave, String dateSendMPI,
+			String dateSendSWT, String dateRetourSWT, String dateSendSWTAN, String dateRetourSWTAN,
+			String dateSendRecall, String dateRetourRecall, int nbreTenta, String tokencommande,
+			boolean etat_annulation, String expery, String annee, String mois, CommercantDto commercantDto,
+			GalerieDto galerieDto, String msgRefus, String transactiontype, boolean condition, String creq,
+			List<Integer> years, List<MonthDto> months, List<Cartes> cartes, Cartes carte) {
+		super();
+		this.iddemande = iddemande;
+		this.nom = nom;
+		this.prenom = prenom;
+		this.commande = commande;
+		this.email = email;
+		this.montant = montant;
+		this.montantStr = montantStr;
+		this.langue = langue;
+		this.successURL = successURL;
+		this.failURL = failURL;
+		this.timeoutURL = timeoutURL;
+		this.tel = tel;
+		this.address = address;
+		this.city = city;
+		this.state = state;
+		this.country = country;
+		this.postcode = postcode;
+		this.comid = comid;
+		this.galid = galid;
+		this.etat_demande = etat_demande;
+		this.dem_cvv = dem_cvv;
+		this.demxid = demxid;
+		this.dem_pan = dem_pan;
+		this.refdemande = refdemande;
+		this.frais = frais;
+		this.dem_date_time = dem_date_time;
+		this.cartenaps = cartenaps;
+		this.dateexpnaps = dateexpnaps;
+		this.type_carte = type_carte;
+		this.callbackURL = callbackURL;
+		this.estimation = estimation;
+		this.recallRep = recallRep;
+		this.type_annulation = type_annulation;
+		this.etat_chargement = etat_chargement;
+		this.etat_timeout = etat_timeout;
+		this.id_client = id_client;
+		this.token = token;
+		this.is_cof = is_cof;
+		this.is_tokenized = is_tokenized;
+		this.is_cvv_verified = is_cvv_verified;
+		this.is_whitelist = is_whitelist;
+		this.is_3ds = is_3ds;
+		this.is_national = is_national;
+		this.is_addcard = is_addcard;
+		this.is_withsave = is_withsave;
+		this.is_bpay = is_bpay;
+		this.is_bpaytoken = is_bpaytoken;
+		this.is_bpaysave = is_bpaysave;
+		this.dateSendMPI = dateSendMPI;
+		this.dateSendSWT = dateSendSWT;
+		this.dateRetourSWT = dateRetourSWT;
+		this.dateSendSWTAN = dateSendSWTAN;
+		this.dateRetourSWTAN = dateRetourSWTAN;
+		this.dateSendRecall = dateSendRecall;
+		this.dateRetourRecall = dateRetourRecall;
+		this.nbreTenta = nbreTenta;
+		this.tokencommande = tokencommande;
+		this.etat_annulation = etat_annulation;
+		this.expery = expery;
+		this.annee = annee;
+		this.mois = mois;
+		this.commercantDto = commercantDto;
+		this.galerieDto = galerieDto;
+		this.msgRefus = msgRefus;
+		this.transactiontype = transactiontype;
+		this.condition = condition;
+		this.creq = creq;
+		this.years = years;
+		this.months = months;
+		this.cartes = cartes;
+		this.carte = carte;
+	}
+	// Util.formatCard(dem_pan) display carte pcidss
 	@Override
 	public String toString() {
 		return "DemandePaiementDto [iddemande=" + iddemande + ", nom=" + nom + ", prenom=" + prenom + ", commande="
-				+ commande + ", email=" + email + ", montant=" + montant + ", langue=" + langue + ", successURL="
-				+ successURL + ", failURL=" + failURL + ", timeoutURL=" + timeoutURL + ", tel=" + tel + ", address="
-				+ address + ", city=" + city + ", state=" + state + ", country=" + country + ", postcode=" + postcode
-				+ ", comid=" + comid + ", galid=" + galid + ", etat_demande=" + etat_demande + ", dem_cvv=" + dem_cvv
-				+ ", demxid=" + demxid + ", dem_pan=" + Util.displayCard(dem_pan) + ", refdemande=" + refdemande + ", frais=" + frais
-				+ ", dem_date_time=" + dem_date_time + ", cartenaps=" + cartenaps + ", dateexpnaps=" + dateexpnaps
-				+ ", type_carte=" + type_carte + ", callbackURL=" + callbackURL + ", estimation=" + estimation
-				+ ", recallRep=" + recallRep + ", type_annulation=" + type_annulation + ", etat_chargement="
-				+ etat_chargement + ", etat_timeout=" + etat_timeout + ", id_client=" + id_client + ", token=" + token
-				+ ", is_cof=" + is_cof + ", is_tokenized=" + is_tokenized + ", is_cvv_verified=" + is_cvv_verified
-				+ ", is_whitelist=" + is_whitelist + ", is_3ds=" + is_3ds + ", is_national=" + is_national
-				+ ", is_addcard=" + is_addcard + ", is_withsave=" + is_withsave + ", is_bpay=" + is_bpay
-				+ ", is_bpaytoken=" + is_bpaytoken + ", is_bpaysave=" + is_bpaysave + ", dateSendMPI=" + dateSendMPI
-				+ ", dateSendSWT=" + dateSendSWT + ", dateRetourSWT=" + dateRetourSWT + ", dateSendSWTAN="
-				+ dateSendSWTAN + ", dateRetourSWTAN=" + dateRetourSWTAN + ", dateSendRecall=" + dateSendRecall
-				+ ", dateRetourRecall=" + dateRetourRecall + ", nbreTenta=" + nbreTenta + ", tokencommande="
-				+ tokencommande + ", etat_annulation=" + etat_annulation + ", expery=" + expery + ", annee=" + annee
-				+ ", mois=" + mois + ", commercantDto=" + commercantDto + ", galerieDto=" + galerieDto + ", msgRefus="
-				+ msgRefus + ", creq=" + creq +  ", transactiontype=" + transactiontype +"]";
+				+ commande + ", email=" + email + ", montant=" + montant + ", montantStr=" + montantStr + ", langue="
+				+ langue + ", successURL=" + successURL + ", failURL=" + failURL + ", timeoutURL=" + timeoutURL
+				+ ", tel=" + tel + ", address=" + address + ", city=" + city + ", state=" + state + ", country="
+				+ country + ", postcode=" + postcode + ", comid=" + comid + ", galid=" + galid + ", etat_demande="
+				+ etat_demande + ", dem_cvv=" + dem_cvv + ", demxid=" + demxid + ", dem_pan=" + Util.formatCard(dem_pan)
+				+ ", refdemande=" + refdemande + ", frais=" + frais + ", dem_date_time=" + dem_date_time
+				+ ", cartenaps=" + cartenaps + ", dateexpnaps=" + dateexpnaps + ", type_carte=" + type_carte
+				+ ", callbackURL=" + callbackURL + ", estimation=" + estimation + ", recallRep=" + recallRep
+				+ ", type_annulation=" + type_annulation + ", etat_chargement=" + etat_chargement + ", etat_timeout="
+				+ etat_timeout + ", id_client=" + id_client + ", token=" + token + ", is_cof=" + is_cof
+				+ ", is_tokenized=" + is_tokenized + ", is_cvv_verified=" + is_cvv_verified + ", is_whitelist="
+				+ is_whitelist + ", is_3ds=" + is_3ds + ", is_national=" + is_national + ", is_addcard=" + is_addcard
+				+ ", is_withsave=" + is_withsave + ", is_bpay=" + is_bpay + ", is_bpaytoken=" + is_bpaytoken
+				+ ", is_bpaysave=" + is_bpaysave + ", dateSendMPI=" + dateSendMPI + ", dateSendSWT=" + dateSendSWT
+				+ ", dateRetourSWT=" + dateRetourSWT + ", dateSendSWTAN=" + dateSendSWTAN + ", dateRetourSWTAN="
+				+ dateRetourSWTAN + ", dateSendRecall=" + dateSendRecall + ", dateRetourRecall=" + dateRetourRecall
+				+ ", nbreTenta=" + nbreTenta + ", tokencommande=" + tokencommande + ", etat_annulation="
+				+ etat_annulation + ", expery=" + expery + ", annee=" + annee + ", mois=" + mois + ", commercantDto="
+				+ commercantDto + ", galerieDto=" + galerieDto + ", msgRefus=" + msgRefus + ", transactiontype="
+				+ transactiontype + ", condition=" + condition + ", creq=" + creq + ", years=" + years + ", months="
+				+ months + ", cartes=" + cartes + "]";
 	}
-
-
 	
 }

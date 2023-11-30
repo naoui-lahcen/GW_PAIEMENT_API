@@ -64,6 +64,10 @@ public class responseDto implements Serializable {
 	private String lname;
 	
 	private String email;
+	
+	private String numTransLydec;
+	
+	private String montantTTC;
 
 
 
@@ -267,6 +271,22 @@ public class responseDto implements Serializable {
 		this.email = email;
 	}
 
+	public String getNumTransLydec() {
+		return numTransLydec;
+	}
+
+	public void setNumTransLydec(String numTransLydec) {
+		this.numTransLydec = numTransLydec;
+	}
+
+	public String getMontantTTC() {
+		return montantTTC;
+	}
+
+	public void setMontantTTC(String montantTTC) {
+		this.montantTTC = montantTTC;
+	}
+
 	public responseDto() {
 		super();
 	}
@@ -321,6 +341,41 @@ public class responseDto implements Serializable {
 		this.email = email;
 	}
 
+	public responseDto(String errorNb, String msgRetour, String urlRetour, String statuscode, String status,
+			String orderid, Double amount, String transactiondate, String transactiontime, String transactionid,
+			String url, String authnumber, String paymentid, String etataut, String treedsid, String linkacs,
+			String merchantid, String merchantname, String websitename, String websiteid, String callbackurl,
+			String cardnumber, String fname, String lname, String email, String numTransLydec, String montantTTC) {
+		super();
+		this.errorNb = errorNb;
+		this.msgRetour = msgRetour;
+		this.urlRetour = urlRetour;
+		this.statuscode = statuscode;
+		this.status = status;
+		this.orderid = orderid;
+		this.amount = amount;
+		this.transactiondate = transactiondate;
+		this.transactiontime = transactiontime;
+		this.transactionid = transactionid;
+		this.url = url;
+		this.authnumber = authnumber;
+		this.paymentid = paymentid;
+		this.etataut = etataut;
+		this.treedsid = treedsid;
+		this.linkacs = linkacs;
+		this.merchantid = merchantid;
+		this.merchantname = merchantname;
+		this.websitename = websitename;
+		this.websiteid = websiteid;
+		this.callbackurl = callbackurl;
+		this.cardnumber = cardnumber;
+		this.fname = fname;
+		this.lname = lname;
+		this.email = email;
+		this.numTransLydec = numTransLydec;
+		this.montantTTC = montantTTC;
+	}
+
 	@Override
 	public String toString() {
 		return "responseDto [errorNb=" + errorNb + ", msgRetour=" + msgRetour + ", urlRetour=" + urlRetour
@@ -330,10 +385,8 @@ public class responseDto implements Serializable {
 				+ ", etataut=" + etataut + ", treedsid=" + treedsid + ", linkacs=" + linkacs + ", merchantid="
 				+ merchantid + ", merchantname=" + merchantname + ", websitename=" + websitename + ", websiteid="
 				+ websiteid + ", callbackurl=" + callbackurl + ", cardnumber=" + cardnumber + ", fname=" + fname
-				+ ", lname=" + lname + ", email=" + email + "]";
+				+ ", lname=" + lname + ", email=" + email + ", numTransLydec=" + numTransLydec + ", montantTTC="
+				+ montantTTC + "]";
 	}
-
-
-	
 
 }

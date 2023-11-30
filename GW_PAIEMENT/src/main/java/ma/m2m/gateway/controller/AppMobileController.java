@@ -9,6 +9,7 @@ import java.net.UnknownHostException;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.Year;
@@ -45,6 +46,8 @@ import com.google.gson.GsonBuilder;
 import ma.m2m.gateway.Utils.Objects;
 import ma.m2m.gateway.Utils.Traces;
 import ma.m2m.gateway.Utils.Util;
+import ma.m2m.gateway.dto.CardtokenDto;
+import ma.m2m.gateway.dto.Cartes;
 import ma.m2m.gateway.dto.CodeReponseDto;
 import ma.m2m.gateway.dto.CommercantDto;
 import ma.m2m.gateway.dto.ControlRiskCmrDto;
@@ -478,7 +481,7 @@ public class AppMobileController {
 				// Card info
 				cardnumber = dmd.getDem_pan();
 				token = dmd.getToken();
-				expirydate = dmd.getDateexpnaps();
+				expirydate = expiry;
 				holdername = "";
 				cvv = dmd.getDem_cvv();
 				cartenaps = dmd.getCartenaps();
@@ -1029,15 +1032,6 @@ public class AppMobileController {
 						
 						Util.writeInFileTransaction(folder, file, "get status Switch status : [" + s_status + "]");
 
-						Util.writeInFileTransaction(folder, file, "get max id ...");
-
-						// Ihist_id = hist.getMAX_ID("HISTOAUTO_GATE", "HAT_ID");
-						// Ihist_id = histoAutoGateService.getMAX_ID();
-						// long currentid = Ihist_id.longValue() + 1;
-						// hist.setId(currentid);
-
-						Util.writeInFileTransaction(folder, file, "max id : [" + Ihist_id + "]");
-
 						Util.writeInFileTransaction(folder, file, "formatting pan...");
 
 						pan_auto = Util.formatagePan(cardnumber);
@@ -1089,10 +1083,6 @@ public class AppMobileController {
 
 						hist.setIs_3ds("N");
 						hist.setIs_addcard("N");
-						// if (card_destination == 1)
-						// hist.setIs_national("Y");
-						// else
-						// hist.setIs_national("N");
 						hist.setIs_whitelist("N");
 						hist.setIs_withsave("N");
 						hist.setIs_tokenized("N");
@@ -1374,10 +1364,6 @@ public class AppMobileController {
 						System.out.println("Fin processRequestMobile ()");
 						return page;
 					}
-
-					// reccurent transaction processing
-
-					// reccurent insert and update
 
 					try {
 						/*
@@ -2148,6 +2134,36 @@ public class AppMobileController {
 				}
 				// if cmr accept transaction cof demandeDto.getIs_cof() = Y show your carte
 				// saved
+				// get cardnumber by idclient
+				String idclient = demandeDto.getId_client();
+				//merchantid = demandeDto.getComid();
+				merchantid = "";
+				String cardnumber = "";
+				List<Cartes> cartes = new ArrayList<>();
+				if (!idclient.equals("") && idclient != null && !idclient.equals("null")) {
+					System.out.println("idclient/merchantid : " + idclient + "/" + merchantid);
+					try {						
+						List<CardtokenDto> cards = cardtokenService.findByIdMerchantAndIdMerchantClient(merchantid, idclient);
+						if (cards != null) {
+							for(CardtokenDto card : cards) {
+								if (card.getCardNumber() != null) {
+									Cartes carte = new Cartes();
+									cardnumber = card.getCardNumber();		
+									carte.setCarte(cardnumber);
+									carte.setPcidsscarte(Util.formatCard(cardnumber));									
+									String dateExStr = dateFormatSimple.format(card.getExprDate());
+									formatDateExp(dateExStr, carte);
+									cartes.add(carte);
+								}
+							}
+							demandeDto.setCartes(cartes);							
+							System.out.println("Cartes : " + cartes.toString());
+						}
+					} catch (Exception ex) {
+						Util.writeInFileTransaction(folder, file, "showPageRchg 500 idclient not found" + ex);
+					}
+					
+				}
 				// Créez un objet DecimalFormat avec le modèle "0.00"
 		        DecimalFormat df = new DecimalFormat("0.00");
 
@@ -2242,6 +2258,7 @@ public class AppMobileController {
 
 		return page;
 	}
+	
 	public String calculMontantTotalOperation(DemandePaiementDto dto) {
 		double mnttotalopp = dto.getMontant() + dto.getFrais();
 		String mntttopp = String.format("%.2f", mnttotalopp).replaceAll(",", ".");
@@ -2253,6 +2270,43 @@ public class AppMobileController {
 		String mntttopp = String.format("%.2f", mnttotalopp).replaceAll(",", ".");
 		return mntttopp;
 	}
+    // Static factory method to create a Cartes object from a string
+	public Cartes fromString(String input) {
+        Cartes cartes = new Cartes();
+
+        // Remove square brackets and split the input string
+        String[] keyValuePairs = input.substring(0, input.length() - 1).split(", ");
+
+        for (String pair : keyValuePairs) {
+            String[] keyValue = pair.split("=");
+
+            if (keyValue.length == 2) {
+                String key = keyValue[0].trim();
+                String value = keyValue[1].trim();
+
+                switch (key) {
+                    case "carte":
+                        cartes.setCarte(value);
+                        break;
+                    case "pcidsscarte":
+                        cartes.setPcidsscarte(value);
+                        break;
+                    case "year":
+                        cartes.setYear(Integer.parseInt(value));
+                        break;
+                    case "mois":
+                        cartes.setMois(value);
+                        break;
+                    case "moisValue":
+                        cartes.setMoisValue(value);
+                        break;
+                    // Handle other properties as needed
+                }
+            }
+        }
+
+        return cartes;
+    }
 
 	@PostMapping("/recharger")
 	public String recharger(Model model, @ModelAttribute("demandeDto") DemandePaiementDto dto,
@@ -2305,14 +2359,32 @@ public class AppMobileController {
 			merchantname = "";
 			websiteName = "";
 			websiteid = "";
+			cardnumber = "";
+			expirydate = "";
 			callbackUrl = demandeDto.getCallbackURL();
 			successURL = demandeDto.getSuccessURL();
 			failURL = demandeDto.getFailURL();
 
 			// Card info
-			cardnumber = demandeDto.getDem_pan();
+			cvv = demandeDto.getDem_cvv();
+			// if transaction not cof
+			if(demandeDto.getDem_pan() != null) {
+				cardnumber = demandeDto.getDem_pan();
+				expirydate = demandeDto.getAnnee().substring(2, 4).concat(demandeDto.getMois());
+			}
+			// if transaction cof
+			if(demandeDto.getDem_pan() == null && demandeDto.getInfoCarte() != null) {
+				String infoCard = demandeDto.getInfoCarte().substring(8, demandeDto.getInfoCarte().length());
+				Cartes carteFormated = fromString(infoCard);
+				demandeDto.setCarte(carteFormated);
+				cardnumber = demandeDto.getCarte().getCarte();
+				//expirydate = demandeDto.getAnnee().substring(2, 4).concat(demandeDto.getMois());
+				String annee = String.valueOf(demandeDto.getCarte().getYear());
+				expirydate = annee.substring(2, 4).concat(demandeDto.getCarte().getMoisValue());
+			}
+			//cardnumber = demandeDto.getDem_pan();
 			token = "";
-			expirydate = demandeDto.getAnnee().substring(2, 4).concat(demandeDto.getMois());
+			//expirydate = demandeDto.getAnnee().substring(2, 4).concat(demandeDto.getMois());
 			holdername = "";
 			cvv = demandeDto.getDem_cvv();
 
@@ -2444,6 +2516,7 @@ public class AppMobileController {
 			dmdToEdit.setDem_date_time(dateFormat.format(new Date()));
 
 			demandeDto = demandePaiementService.save(dmdToEdit);
+			demandeDto.setExpery(expirydate);
 
 		} catch (Exception err1) {
 			Util.writeInFileTransaction(folder, file,
@@ -2469,8 +2542,8 @@ public class AppMobileController {
 				/* --------------------------------- Controle des cartes internationales -----------------------------------------*/
 				if(isNullOrEmpty(controlRiskCmr.getAcceptInternational()) || (controlRiskCmr.getAcceptInternational() != null
 					&& !ACTIVE.getFlag().equalsIgnoreCase(controlRiskCmr.getAcceptInternational().trim()))) {
-					String binDebutCarte = cardnumber.substring(0, 6);
-					binDebutCarte = binDebutCarte+"000";
+					String binDebutCarte = cardnumber.substring(0, 9);
+					//binDebutCarte = binDebutCarte+"000";
 					Util.writeInFileTransaction(folder, file, "controlRiskCmr ici 1");
 					listBin = emetteurService.findByBindebut(binDebutCarte);
 				}		
@@ -3125,15 +3198,6 @@ public class AppMobileController {
 				
 				Util.writeInFileTransaction(folder, file, "get status Switch status : [" + s_status + "]");
 
-				Util.writeInFileTransaction(folder, file, "get max id ...");
-
-				// Ihist_id = hist.getMAX_ID("HISTOAUTO_GATE", "HAT_ID");
-				// Ihist_id = histoAutoGateService.getMAX_ID();
-				// long currentid = Ihist_id.longValue() + 1;
-				// hist.setId(currentid);
-
-				Util.writeInFileTransaction(folder, file, "max id : [" + Ihist_id + "]");
-
 				Util.writeInFileTransaction(folder, file, "formatting pan...");
 
 				pan_auto = Util.formatagePan(cardnumber);
@@ -3185,10 +3249,6 @@ public class AppMobileController {
 
 				hist.setIs_3ds("N");
 				hist.setIs_addcard("N");
-				// if (card_destination == 1)
-				// hist.setIs_national("Y");
-				// else
-				// hist.setIs_national("N");
 				hist.setIs_whitelist("N");
 				hist.setIs_withsave("N");
 				hist.setIs_tokenized("N");
@@ -3489,7 +3549,24 @@ public class AppMobileController {
 					if(dmd.getSuccessURL() != null) {
 						response.sendRedirect(dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" + merchantid);
 					} else {						
+						responseDto responseDto = new responseDto();
+						responseDto.setLname(dmd.getNom());
+						responseDto.setFname(dmd.getPrenom());
+						responseDto.setOrderid(dmd.getCommande());
+						responseDto.setAuthnumber(authnumber);
+						responseDto.setAmount(dmd.getMontant());
+						responseDto.setTransactionid(transactionid);
+						responseDto.setMerchantid(dmd.getComid());
+						responseDto.setEmail(dmd.getEmail());
+						responseDto.setMerchantname(current_infoCommercant.getCmrNom());
+						responseDto.setCardnumber(Util.formatCard(cardnumber));
+						responseDto.setTransactiontime(dateFormat.format(new Date()));
+						
+						model.addAttribute("responseDto", responseDto);
+
 						page = "index";
+						Util.writeInFileTransaction(folder, file, "Fin recharger ()");
+						System.out.println("Fin recharger ()");
 						return page;
 					}
 				} else {
@@ -3895,4 +3972,109 @@ public class AppMobileController {
 		}
 		return monthNamesValues;
 	}
+	
+	 public void formatDateExp(String expirationDate, Cartes carte) {
+	        try {
+		        LocalDate localDate = LocalDate.parse(expirationDate);
+		        Month mois = localDate.getMonth();
+		        Integer year = localDate.getYear();
+		        carte.setYear(year);
+		        //String formattedMonth = mapToFrenchMonth(month);
+		        String moisStr = String.format("%s", mois);
+		        List<String> list = new ArrayList<>();
+		        list.add(moisStr);
+		        MonthDto month = mapToFrenchMonth(moisStr);
+		        carte.setMois(month.getMonth());
+		        carte.setMoisValue(month.getValue());
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+	    }
+
+		private MonthDto mapToFrenchMonth(String month) {
+
+				MonthDto exp = new MonthDto();
+				if (month.equals("JANUARY")) {
+					month = "Janvier";
+					exp.setMonth(month);
+					exp.setValue("01");
+				} else if (month.toString().equals("FEBRUARY")) {
+					month = "Février";
+					exp.setMonth(month);
+					exp.setValue("02");
+				} else if (month.toString().equals("MARCH")) {
+					month = "Mars";
+					exp.setMonth(month);
+					exp.setValue("03");
+				} else if (month.toString().equals("APRIL")) {
+					month = "Avril";
+					exp.setMonth(month);
+					exp.setValue("04");
+				} else if (month.toString().equals("MAY")) {
+					month = "Mai";
+					exp.setMonth(month);
+					exp.setValue("05");
+				} else if (month.toString().equals("JUNE")) {
+					month = "Juin";
+					exp.setMonth(month);
+					exp.setValue("06");
+				} else if (month.toString().equals("JULY")) {
+					month = "Juillet";
+					exp.setMonth(month);
+					exp.setValue("07");
+				} else if (month.toString().equals("AUGUST")) {
+					month = "Aout";
+					exp.setMonth(month);
+					exp.setValue("08");
+				} else if (month.toString().equals("SEPTEMBER")) {
+					month = "Septembre";
+					exp.setMonth(month);
+					exp.setValue("09");
+				} else if (month.toString().equals("OCTOBER")) {
+					month = "Octobre";
+					exp.setMonth(month);
+					exp.setValue("10");
+				} else if (month.toString().equals("NOVEMBER")) {
+					month = "Novembre";
+					exp.setMonth(month);
+					exp.setValue("11");
+				} else if (month.toString().equals("DECEMBER")) {
+					month = "Décembre";
+					exp.setMonth(month);
+					exp.setValue("12");
+				}
+			
+			return exp;
+		}
+	 private String mapToFrenchMonth(Month month) {
+	        // Simple mapping from English to French month names.
+	        switch (month) {
+	            case JANUARY:
+	                return "Janvier";
+	            case FEBRUARY:
+	                return "Février";
+	            case MARCH:
+	                return "Mars";
+	            case APRIL:
+	                return "Avril";
+	            case MAY:
+	                return "Mai";
+	            case JUNE:
+	                return "Juin";
+	            case JULY:
+	                return "Juillet";
+	            case AUGUST:
+	                return "Août";
+	            case SEPTEMBER:
+	                return "Septembre";
+	            case OCTOBER:
+	                return "Octobre";
+	            case NOVEMBER:
+	                return "Novembre";
+	            case DECEMBER:
+	                return "Décembre";
+	            default:
+	                return ""; // Handle unknown month
+	        }
+	  }
 }

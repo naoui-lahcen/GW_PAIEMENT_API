@@ -141,9 +141,15 @@
                   <div class="form-group row">
                      <label for="num" class="col-sm-3 col-form-label">N°
                      carte bancaire</label>
-                     <div class="col-sm-3">
+                     <div class="col-sm-3" th:if="${demandeDto.cartes.size == 0 }">
                         <input type="number" th:field="*{dem_pan}" class="form-control" id="num" required="required"
                            placeholder="N° carte bancaire">
+                     </div>
+                     <div class="col-sm-3" th:if="${demandeDto.cartes.size > 0 }">
+                       <select class="form-control" id="carteID" th:field="*{infoCarte}" required="required" onchange="updateExpirationDate()">
+                           <option value="">Choisir</option>
+                           <option th:each="item : ${demandeDto.cartes}" th:value="${item}" th:text="${item.pcidsscarte}"></option>
+                        </select>
                      </div>
                      <label for="cvv" class="col-sm-3 col-form-label">Code de
                      sécurité</label>
@@ -155,18 +161,30 @@
                   <div class="form-group row">
                      <label for="xxx" class="col-sm-3 col-form-label">Date
                      d'expiration</label>
-                     <div class="col-sm-3">
+                     <div class="col-sm-3" th:if="${demandeDto.cartes.size == 0 }">
                         <select class="form-control" th:field="*{annee}" required="required">
                            <option value="">YY</option>
                            <option th:each="item : ${demandeDto.years}" th:value="${item}" th:text="${item}"></option>
                         </select>
                      </div>
+                     <div class="col-sm-3" th:if="${demandeDto.cartes.size > 0 }">
+<!--                        <select class="form-control" th:field="*{annee}" required="required">-->
+<!--                           <option th:each="carte : ${demandeDto.cartes}" th:value="${carte.year}" th:text="${carte.year}"></option>-->
+<!--                        </select>-->
+                        <input type="number" id="annee"  th:field="*{carte.year}" class="form-control" required="required" disabled>
+                     </div>
                      <label for="xxx" class="col-sm-3 col-form-label">Mois</label>
-                     <div class="col-sm-3">
+                     <div class="col-sm-3" th:if="${demandeDto.cartes.size == 0 }">
                         <select class="form-control" th:field="*{mois}" required="required">
                            <option value="">MM</option>
                            <option th:each="item : ${demandeDto.months}" th:value="${item.value}" th:text="${item.month}"></option>
                         </select>
+                     </div>
+                     <div class="col-sm-3" th:if="${demandeDto.cartes.size > 0 }">
+<!--                        <select class="form-control" th:field="*{mois}" required="required">-->
+<!--                           <option th:each="item : ${demandeDto.cartes}" th:value="${item.monthDto.value}" th:text="${item.monthDto.month}"></option>-->
+<!--                        </select>-->
+                         <input type="text" id="mois"  th:field="*{carte.mois}" class="form-control" required="required" disabled>
                      </div>
                      <input type="hidden" th:field="*{commande}" class="form-control">
                      <input type="hidden" th:field="*{comid}" class="form-control">
@@ -352,6 +370,44 @@
 		    // Supprimez tous les caractères non numériques et non valides (y compris "e")
     		this.value = this.value.replace(/[^0-9.-]/g, "");
         });
+        
+
+    function updateExpirationDate() {
+        var selectedCard = document.getElementById("carteID").value;
+        var anneeToRemplir = document.getElementById("annee");
+        var moisToRemplir = document.getElementById("mois");
+		
+		if(selectedCard) {
+			console.log('selectedCard : ' + selectedCard);
+			// Use regular expressions to extract the year value
+		var yearMatch = selectedCard.match(/year=(\d+)/);
+		
+		// Check if the match is found
+		if (yearMatch && yearMatch.length > 1) {
+		    var yearValue = parseInt(yearMatch[1]);
+		    console.log('yearValue : ' + yearValue);
+		    anneeToRemplir.value = yearValue;
+		} else {
+		    console.error("Year not found in the string");
+		}
+		// Use regular expression to extract mois information
+		var moisMatch = selectedCard.match(/mois=([^,]+),/);
+		
+		// Check if the match is found
+		if (moisMatch && moisMatch.length > 1) {
+		    var moisValue = moisMatch[1];
+		    console.log("Mois : ", moisValue);
+		    moisToRemplir.value = moisValue;
+		} else {
+		    console.error("Mois information not found in the string");
+		}
+		} else {
+			console.log('selectedCard vide');
+			 anneeToRemplir.value = '';
+			  moisToRemplir.value = '';
+		}
+		
+	}
       </script>
    </body>
 </html>

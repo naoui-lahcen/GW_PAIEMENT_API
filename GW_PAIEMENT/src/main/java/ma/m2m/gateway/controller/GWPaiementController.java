@@ -3,9 +3,12 @@ package ma.m2m.gateway.controller;
 import static ma.m2m.gateway.Utils.StringUtils.isNullOrEmpty;
 import static ma.m2m.gateway.config.FlagActivation.ACTIVE;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.SocketTimeoutException;
+import java.net.URL;
 import java.net.UnknownHostException;
+import java.rmi.RemoteException;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -22,6 +25,8 @@ import java.util.SplittableRandom;
 import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.namespace.QName;
+
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -54,6 +59,15 @@ import ma.m2m.gateway.dto.TransactionDto;
 import ma.m2m.gateway.dto.UserDto;
 import ma.m2m.gateway.dto.responseDto;
 import ma.m2m.gateway.encryption.RSACrypto;
+import ma.m2m.gateway.lydec.DemandesReglements;
+import ma.m2m.gateway.lydec.GererEncaissement;
+import ma.m2m.gateway.lydec.GererEncaissementService;
+import ma.m2m.gateway.lydec.Impaye;
+import ma.m2m.gateway.lydec.MoyenPayement;
+import ma.m2m.gateway.lydec.Portefeuille;
+import ma.m2m.gateway.lydec.ReponseReglements;
+import ma.m2m.gateway.lydec.Transaction;
+import ma.m2m.gateway.model.FactureLD;
 import ma.m2m.gateway.reporting.GenerateExcel;
 import ma.m2m.gateway.risk.GWRiskAnalysis;
 import ma.m2m.gateway.service.AutorisationService;
@@ -149,6 +163,8 @@ public class GWPaiementController {
 
 	DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
+	private static final QName SERVICE_NAME = new QName("http://service.lydec.com", "GererEncaissementService");
+	
 	public GWPaiementController() {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		file = "GW_" + randomWithSplittableRandom;
@@ -157,6 +173,22 @@ public class GWPaiementController {
 		folder = date.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
 	}
 
+	public static Portefeuille[] preparerTabEcritureLydecListe(List<Impaye> facListe) {
+		Portefeuille[] tabEcr = new Portefeuille[facListe.size()];
+		int i = 0;
+		for (Impaye fac : facListe) {
+			Portefeuille ecr = new Portefeuille();
+			ecr.setFac_Num(fac.getNumeroFacture());
+			ecr.setLigne(fac.getNumeroLigne());
+			tabEcr[i] = ecr;
+
+			i++;
+
+		}
+
+		return tabEcr;
+	}
+	
 	@RequestMapping(path = "/")
 	@ResponseBody
 	public String home() {
@@ -169,6 +201,80 @@ public class GWPaiementController {
 		System.out.println("*********** Start home() ************** ");
 
 		String msg = "Bienvenue dans la plateforme de paiement NAPS !!!";
+
+
+		try {
+			URL wsdlURL = GererEncaissementService.WSDL_LOCATION;
+			GererEncaissementService ss = new GererEncaissementService(wsdlURL, SERVICE_NAME);
+		    GererEncaissement port = ss.getGererEncaissement();
+
+			ReponseReglements reponseReglement = null;
+			DemandesReglements demReglement = new DemandesReglements();
+			demReglement.setAgc_Cod((short) 840);
+			MoyenPayement[] listeMoyensPayement = new MoyenPayement[1];
+			MoyenPayement ecr = new MoyenPayement();
+			List<Impaye> factListImpayes = new ArrayList<Impaye>();
+			BigDecimal montant = new BigDecimal(0);
+			BigDecimal montantTimbre = new BigDecimal(0);
+			BigDecimal montantTotalSansTimbre = new BigDecimal(0).setScale(2, BigDecimal.ROUND_HALF_UP);
+			
+			ecr.setType_Moy_Pai("C");
+			ecr.setBanq_Cod("NPS");
+
+			//ecr.setDate_Pai(null);
+			ecr.setMontant(montantTimbre.add(new BigDecimal(100).setScale(2, BigDecimal.ROUND_HALF_UP)));
+			ecr.setMoyen_Pai("");
+			listeMoyensPayement[0] = ecr;
+			Transaction transaction = new Transaction();
+			transaction.setAgc_Cod((short) 840);
+			transaction.setDate_Trans(listeMoyensPayement[0].getDate_Pai());
+			//transaction.setDateVal(new Date());
+			transaction.setEtat_Trans("R");
+			transaction.setType_Trans("RX");
+			
+			List<FactureLD> listFactureLD = new ArrayList<>();
+			for (FactureLD facLD : listFactureLD) {
+				// log.info("preparerReglementLydec facLD : " + facLD.toString());
+				Impaye imp = new Impaye();
+				imp.setNumeroFacture(Integer.valueOf(facLD.getNumfacture()));
+				if (facLD.getNumligne() != null) {
+					imp.setNumeroLigne(Integer.valueOf(facLD.getNumligne()));
+				} else {
+					imp.setNumeroLigne(0);
+				}
+				imp.setCodeFourniture(facLD.getFourniture());
+				imp.setNumeroPolice(facLD.getNumPolice());
+				imp.setProduit(Integer.valueOf(facLD.getProduit()));
+				imp.setMontantTTC(new BigDecimal(facLD.getMontantTtc()).setScale(2, BigDecimal.ROUND_HALF_UP));
+				imp.setMontantTimbre(new BigDecimal(facLD.getMontantTbr()).setScale(2, BigDecimal.ROUND_HALF_UP));
+				imp.setMontantTVA(new BigDecimal(facLD.getMontantTva()).setScale(2, BigDecimal.ROUND_HALF_UP));
+				montant = montant.add(new BigDecimal(facLD.getMontantTtc()).setScale(2, BigDecimal.ROUND_HALF_UP));
+				montantTimbre = montantTimbre
+						.add(new BigDecimal(facLD.getMontantTbr()).setScale(2, BigDecimal.ROUND_HALF_UP));
+				Util.writeInFileTransaction(folder, file, "preparerReglementLydec imp  : " + imp.toString());
+				factListImpayes.add(imp);
+			}
+			Portefeuille[] listePortefeuilles = preparerTabEcritureLydecListe(factListImpayes);
+			
+			demReglement.setTransaction(transaction);
+			demReglement.setListeMoyensPayement(listeMoyensPayement);
+			demReglement.setListePortefeuilles(listePortefeuilles);
+			Util.writeInFileTransaction(folder, file,
+					"preparerReglementLydec demReglement : " + demReglement.toString());
+			reponseReglement = port.ecrireReglements(demReglement);
+			
+			if(reponseReglement != null) {
+				System.out.println("isOk/message : " + reponseReglement.isOk() + "/" + reponseReglement.getMessage());
+				Util.writeInFileTransaction(folder, file, "isOk/message : " + reponseReglement.isOk() + "/" + reponseReglement.getMessage());
+			} else {
+				System.out.println("reponseReglement : " + null);
+				Util.writeInFileTransaction(folder, file, "reponseReglement : " + null);
+			}
+		} 
+		catch (Exception ex) {
+			ex.printStackTrace();
+			Util.writeInFileTransaction(folder, file, "Exception : " + ex);
+		}
 
 		Util.writeInFileTransaction(folder, file, "*********** Fin home () ************** ");
 		System.out.println("*********** Fin home () ************** ");
@@ -731,7 +837,6 @@ public class GWPaiementController {
 			dmdToEdit.setDem_pan(cardnumber);
 			dmdToEdit.setDem_cvv(cvv);
 			dmdToEdit.setType_carte(i_card_type + "");
-			dmdToEdit.setDateexpnaps(expirydate);
 			dmdToEdit.setTransactiontype(transactiontype);
 
 			formatter_1 = new SimpleDateFormat("yyyy-MM-dd");
@@ -742,6 +847,7 @@ public class GWPaiementController {
 			dmdToEdit.setDem_date_time(dateFormat.format(new Date()));
 
 			demandeDto = demandePaiementService.save(dmdToEdit);
+			demandeDto.setExpery(expirydate);
 
 		} catch (Exception err1) {
 			Util.writeInFileTransaction(folder, file,
@@ -767,8 +873,8 @@ public class GWPaiementController {
 				/* --------------------------------- Controle des cartes internationales -----------------------------------------*/
 				if(isNullOrEmpty(controlRiskCmr.getAcceptInternational()) || (controlRiskCmr.getAcceptInternational() != null
 					&& !ACTIVE.getFlag().equalsIgnoreCase(controlRiskCmr.getAcceptInternational().trim()))) {
-					String binDebutCarte = cardnumber.substring(0, 6);
-					binDebutCarte = binDebutCarte+"000";
+					String binDebutCarte = cardnumber.substring(0, 9);
+					//binDebutCarte = binDebutCarte+"000";
 					Util.writeInFileTransaction(folder, file, "controlRiskCmr ici 1");
 					listBin = emetteurService.findByBindebut(binDebutCarte);
 				}		
@@ -1733,7 +1839,24 @@ public class GWPaiementController {
 					if(dmd.getSuccessURL() != null) {
 						response.sendRedirect(dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" + merchantid);
 					} else {						
+						responseDto responseDto = new responseDto();
+						responseDto.setLname(dmd.getNom());
+						responseDto.setFname(dmd.getPrenom());
+						responseDto.setOrderid(dmd.getCommande());
+						responseDto.setAuthnumber(authnumber);
+						responseDto.setAmount(dmd.getMontant());
+						responseDto.setTransactionid(transactionid);
+						responseDto.setMerchantid(dmd.getComid());
+						responseDto.setEmail(dmd.getEmail());
+						responseDto.setMerchantname(current_infoCommercant.getCmrNom());
+						responseDto.setCardnumber(Util.formatCard(cardnumber));
+						responseDto.setTransactiontime(dateFormat.format(new Date()));
+						
+						model.addAttribute("responseDto", responseDto);
+
 						page = "index";
+						Util.writeInFileTransaction(folder, file, "Fin payer ()");
+						System.out.println("Fin payer ()");
 						return page;
 					}
 				} else {
