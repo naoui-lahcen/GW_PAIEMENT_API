@@ -109,6 +109,9 @@ public class ACSController {
 	
 	@Value("${key.LYDEC_PROD}")
 	private String LYDEC_PROD;
+	
+	@Value("${key.URL_WSDL_LYDEC}")
+	private String URL_WSDL_LYDEC; 
 
 	@Autowired
 	private DemandePaiementService demandePaiementService;
@@ -1234,7 +1237,10 @@ public class ACSController {
 							
 							 if (reponseRegelemnt.getMessage() != null && !reponseRegelemnt.isOk()) {
 								 Util.writeInFileTransaction(folder, file, "reponseRegelemnt KO ");
+								 Util.writeInFileTransaction(folder, file, "Annulation Start ... ");
+								 Util.writeInFileTransaction(folder, file, "Annulation End ... ");
 							 } else {
+								 Util.writeInFileTransaction(folder, file, "reponseRegelemnt OK ");
 								 for (FactureLDDto facLD : listFactureLD) {
 									 facLD.setEtat("O");
 									 facLD.setDatepai(strDate_Pai);
@@ -1991,7 +1997,10 @@ public class ACSController {
 			demReglement.setListeMoyensPayement(listeMoyensPayement);
 			demReglement.setListePortefeuilles(listePortefeuilles);
 
-			URL wsdlURL = GererEncaissementService.WSDL_LOCATION;
+			//URL wsdlURL = GererEncaissementService.WSDL_LOCATION;
+			URL wsdlURL = new URL(URL_WSDL_LYDEC);
+			Util.writeInFileTransaction(folder, file, "wsdlURL : " + wsdlURL);
+			
 			GererEncaissementService ss = new GererEncaissementService(wsdlURL, SERVICE_NAME);
 		    GererEncaissement port = ss.getGererEncaissement();
 			Util.writeInFileTransaction(folder, file, "preparerReglementLydec transaction : " + transaction.toString());
@@ -1999,13 +2008,14 @@ public class ACSController {
 					"preparerReglementLydec demReglement : " + demReglement.toString());
 
 			reponseReglement = port.ecrireReglements(demReglement);
-
-			Util.writeInFileTransaction(folder, file,
-					"preparerReglementLydec demReglement.setAgc_Cod/transaction.setAgc_Cod " + transaction.getAgc_Cod()
-							+ "/" + demReglement.getAgc_Cod());
-
-			Util.writeInFileTransaction(folder, file,
-					"preparerReglementLydec reg.getMessage() " + reponseReglement.getMessage());
+			
+			if(reponseReglement != null) {
+				System.out.println("reponseReglement isOk/message : " + reponseReglement.isOk() + "/" + reponseReglement.getMessage());
+				Util.writeInFileTransaction(folder, file, "reponseReglement isOk/message : " + reponseReglement.isOk() + "/" + reponseReglement.getMessage());
+			} else {
+				System.out.println("reponseReglement : " + null);
+				Util.writeInFileTransaction(folder, file, "reponseReglement : " + null);
+			}
 
 		} catch (Exception e) {
 			Util.writeInFileTransaction(folder, file, "preparerReglementLydec Exception =>" + e.getMessage());

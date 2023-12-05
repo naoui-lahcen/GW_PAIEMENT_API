@@ -34,4 +34,19 @@ public class Portefeuille {
         this.ligne = value;
     }
 
+	public Portefeuille(int fac_Num, int ligne) {
+		super();
+		this.fac_Num = fac_Num;
+		this.ligne = ligne;
+	}
+
+	public Portefeuille() {
+		super();
+	}
+
+	@Override
+	public String toString() {
+		return "Portefeuille [fac_Num=" + fac_Num + ", ligne=" + ligne + "]";
+	}
+
 }

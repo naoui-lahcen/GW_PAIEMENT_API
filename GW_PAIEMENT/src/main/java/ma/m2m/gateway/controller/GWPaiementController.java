@@ -19,6 +19,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.SplittableRandom;
@@ -50,6 +51,7 @@ import ma.m2m.gateway.dto.CommercantDto;
 import ma.m2m.gateway.dto.ControlRiskCmrDto;
 import ma.m2m.gateway.dto.DemandePaiementDto;
 import ma.m2m.gateway.dto.EmetteurDto;
+import ma.m2m.gateway.dto.FactureLDDto;
 import ma.m2m.gateway.dto.MonthDto;
 import ma.m2m.gateway.dto.GalerieDto;
 import ma.m2m.gateway.dto.HistoAutoGateDto;
@@ -76,6 +78,7 @@ import ma.m2m.gateway.service.CommercantService;
 import ma.m2m.gateway.service.ControlRiskCmrService;
 import ma.m2m.gateway.service.DemandePaiementService;
 import ma.m2m.gateway.service.EmetteurService;
+import ma.m2m.gateway.service.FactureLDService;
 import ma.m2m.gateway.service.GalerieService;
 import ma.m2m.gateway.service.HistoAutoGateService;
 import ma.m2m.gateway.service.InfoCommercantService;
@@ -127,6 +130,9 @@ public class GWPaiementController {
 	@Value("${key.JWT_TOKEN_VALIDITY}")
 	private long jwt_token_validity; 
 	
+	@Value("${key.URL_WSDL_LYDEC}")
+	private String URL_WSDL_LYDEC; 
+	
 	@Autowired
 	CommercantService commercantService;
 
@@ -153,6 +159,9 @@ public class GWPaiementController {
 
 	@Autowired
 	CodeReponseService codeReponseService;
+	
+	@Autowired
+	FactureLDService factureLDService;
 	
 	//private Traces traces = new Traces();
 	private LocalDateTime date;
@@ -188,23 +197,24 @@ public class GWPaiementController {
 
 		return tabEcr;
 	}
-	
-	@RequestMapping(path = "/")
+	@RequestMapping(path = "/connectLydec")
 	@ResponseBody
-	public String home() {
+	public String connectLydec() {
 		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "GW_" + randomWithSplittableRandom;
 		// create file log
 		Util.creatFileTransaction(file);
-		Util.writeInFileTransaction(folder, file, "*********** Start home() ************** ");
-		System.out.println("*********** Start home() ************** ");
-
-		String msg = "Bienvenue dans la plateforme de paiement NAPS !!!";
-
+		Util.writeInFileTransaction(folder, file, "*********** Start connectLydec() ************** ");
+		System.out.println("*********** Start connectLydec() ************** ");
+		
+		String msg = "Test connectLydec !!! ";
 
 		try {
-			URL wsdlURL = GererEncaissementService.WSDL_LOCATION;
+			//URL wsdlURL = GererEncaissementService.WSDL_LOCATION;
+			URL wsdlURL = new URL(URL_WSDL_LYDEC);
+			Util.writeInFileTransaction(folder, file, "wsdlURL : " + wsdlURL);
+			
 			GererEncaissementService ss = new GererEncaissementService(wsdlURL, SERVICE_NAME);
 		    GererEncaissement port = ss.getGererEncaissement();
 
@@ -217,11 +227,12 @@ public class GWPaiementController {
 			BigDecimal montant = new BigDecimal(0);
 			BigDecimal montantTimbre = new BigDecimal(0);
 			BigDecimal montantTotalSansTimbre = new BigDecimal(0).setScale(2, BigDecimal.ROUND_HALF_UP);
-			
+			 java.util.Calendar date_pai = Calendar.getInstance();
+			 DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			ecr.setType_Moy_Pai("C");
 			ecr.setBanq_Cod("NPS");
 
-			//ecr.setDate_Pai(null);
+			ecr.setDate_Pai(date_pai);
 			ecr.setMontant(montantTimbre.add(new BigDecimal(100).setScale(2, BigDecimal.ROUND_HALF_UP)));
 			ecr.setMoyen_Pai("");
 			listeMoyensPayement[0] = ecr;
@@ -232,8 +243,11 @@ public class GWPaiementController {
 			transaction.setEtat_Trans("R");
 			transaction.setType_Trans("RX");
 			
-			List<FactureLD> listFactureLD = new ArrayList<>();
-			for (FactureLD facLD : listFactureLD) {
+			List<FactureLDDto> listFactureLD = new ArrayList<>();
+			Util.writeInFileTransaction(folder, file,"findFactureByIddemande : " + 196884);
+			listFactureLD = factureLDService.findFactureByIddemande(196884);
+			Util.writeInFileTransaction(folder, file, "preparerReglementLydec listFactureLD.size  : " + listFactureLD.size());
+			for (FactureLDDto facLD : listFactureLD) {
 				// log.info("preparerReglementLydec facLD : " + facLD.toString());
 				Impaye imp = new Impaye();
 				imp.setNumeroFacture(Integer.valueOf(facLD.getNumfacture()));
@@ -264,17 +278,39 @@ public class GWPaiementController {
 			reponseReglement = port.ecrireReglements(demReglement);
 			
 			if(reponseReglement != null) {
-				System.out.println("isOk/message : " + reponseReglement.isOk() + "/" + reponseReglement.getMessage());
+				System.out.println("reponseReglement isOk/message : " + reponseReglement.isOk() + "/" + reponseReglement.getMessage());
 				Util.writeInFileTransaction(folder, file, "isOk/message : " + reponseReglement.isOk() + "/" + reponseReglement.getMessage());
+				msg = msg + "reponseReglement isOk/message : " + reponseReglement.isOk() + "/" + reponseReglement.getMessage();
 			} else {
 				System.out.println("reponseReglement : " + null);
 				Util.writeInFileTransaction(folder, file, "reponseReglement : " + null);
+				msg = "Test connectLydec !!! failed : reponseReglement null";
 			}
 		} 
 		catch (Exception ex) {
 			ex.printStackTrace();
 			Util.writeInFileTransaction(folder, file, "Exception : " + ex);
+			msg = "Test connectLydec !!! failed";
 		}
+
+		Util.writeInFileTransaction(folder, file, "*********** Fin connectLydec () ************** ");
+		System.out.println("*********** Fin connectLydec () ************** ");
+
+		return msg;
+	}
+	
+	@RequestMapping(path = "/")
+	@ResponseBody
+	public String home() {
+		// Traces traces = new Traces();
+		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
+		String file = "GW_" + randomWithSplittableRandom;
+		// create file log
+		Util.creatFileTransaction(file);
+		Util.writeInFileTransaction(folder, file, "*********** Start home() ************** ");
+		System.out.println("*********** Start home() ************** ");
+
+		String msg = "Bienvenue dans la plateforme de paiement NAPS !!!";
 
 		Util.writeInFileTransaction(folder, file, "*********** Fin home () ************** ");
 		System.out.println("*********** Fin home () ************** ");

@@ -19,12 +19,13 @@ import javax.xml.ws.Service;
                   targetNamespace = "http://service.lydec.com")
 public class GererEncaissementService extends Service {
 
-    public final static URL WSDL_LOCATION;
+    //public final static URL WSDL_LOCATION;
+    public static URL WSDL_LOCATION;
 
     public final static QName SERVICE = new QName("http://service.lydec.com", "GererEncaissementService");
     public final static QName GererEncaissement = new QName("http://service.lydec.com", "GererEncaissement");
     static {
-        URL url = null;
+        /*URL url = null;
         try {
             url = new URL("http://192.168.20.33:80/lydecWebServices/services/GererEncaissement?wsdl");
         } catch (MalformedURLException e) {
@@ -32,7 +33,7 @@ public class GererEncaissementService extends Service {
                 .log(java.util.logging.Level.INFO,
                      "Can not initialize the default wsdl from {0}", "http://192.168.20.33:80/lydecWebServices/services/GererEncaissement?wsdl");
         }
-        WSDL_LOCATION = url;
+        WSDL_LOCATION = url;*/
     }
 
     public GererEncaissementService(URL wsdlLocation) {
@@ -41,6 +42,7 @@ public class GererEncaissementService extends Service {
 
     public GererEncaissementService(URL wsdlLocation, QName serviceName) {
         super(wsdlLocation, serviceName);
+        WSDL_LOCATION = wsdlLocation;
     }
 
     public GererEncaissementService() {

@@ -4065,7 +4065,7 @@ public class APIController {
 		catch (JSONException jserr) {
 			Util.writeInFileTransaction(folder, file,
 					"savingcardtoken 500 malformed json expression " + savingcardtoken + jserr);
-			return getMsgError(folder, file, null, "savingcardtoken 500 malformed json expression", null);
+			return getMsgErrorV1(folder, file, null, "savingcardtoken 500 malformed json expression", null);
 		}
 
 		if (header != null)
@@ -4147,7 +4147,7 @@ public class APIController {
 					"savingcardtoken 500 malformed json expression " + savingcardtoken + jerr);
 			Util.writeInFileTransaction(folder, file, "*********** Fin savingCardToken() ************** ");
 			System.out.println("*********** Fin savingCardToken() ************** ");
-			return getMsgError(folder, file, null, "savingcardtoken 500 malformed json expression " + jerr.getMessage(),
+			return getMsgErrorV1(folder, file, null, "savingcardtoken 500 malformed json expression " + jerr.getMessage(),
 					null);
 		}
 
@@ -4269,7 +4269,7 @@ public class APIController {
 						"savingCardToken 500 Merchant misconfigured in DB or not existing merchantid:[" + merchantid
 								+ "]");
 
-				return getMsgError(folder, file, jsonOrequest,
+				return getMsgErrorV1(folder, file, jsonOrequest,
 						"savingCardToken 500 Merchant misconfigured in DB or not existing", "15");
 			}
 
@@ -4278,7 +4278,7 @@ public class APIController {
 						"savingCardToken 500 Merchant misconfigured in DB or not existing merchantid:[" + merchantid
 								+ "]");
 
-				return getMsgError(folder, file, jsonOrequest,
+				return getMsgErrorV1(folder, file, jsonOrequest,
 						"savingCardToken 500 Merchant misconfigured in DB or not existing", "15");
 			}
 
@@ -4287,7 +4287,7 @@ public class APIController {
 						"savingCardToken 500 Merchant misconfigured in DB or not existing merchantid:[" + merchantid
 								+ "]");
 
-				return getMsgError(folder, file, jsonOrequest,
+				return getMsgErrorV1(folder, file, jsonOrequest,
 						"savingCardToken 500 Merchant misconfigured in DB or not existing", "15");
 			}
 
@@ -4296,7 +4296,7 @@ public class APIController {
 						"savingCardToken 500 Merchant misconfigured in DB or not existing merchantid:[" + merchantid
 								+ "]");
 
-				return getMsgError(folder, file, jsonOrequest,
+				return getMsgErrorV1(folder, file, jsonOrequest,
 						"savingCardToken 500 Merchant misconfigured in DB or not existing", "");
 			}
 			int i_card_type = Util.getCardIss(cardnumber);
@@ -4335,7 +4335,6 @@ public class APIController {
 				dmd.setCountry("");
 				dmd.setState("");
 				dmd.setPostcode("");
-				dmd.setDateexpnaps(expirydate);
 				dmd.setLangue("E");
 				dmd.setEtat_demande("INIT");
 
@@ -4359,13 +4358,14 @@ public class APIController {
 				dmd.setTransactiontype("0");
 
 				dmdSaved = demandePaiementService.save(dmd);
+				dmdSaved.setExpery(expirydate);
 
 			} catch (Exception err1) {
 				Util.writeInFileTransaction(folder, file,
 						"savingCardToken 500 Error during DEMANDE_PAIEMENT insertion for given merchantid:[" + merchantid
 								+ "]" + err1);
 
-				return getMsgError(folder, file, jsonOrequest,
+				return getMsgErrorV1(folder, file, jsonOrequest,
 						"savingCardToken 500 Error during DEMANDE_PAIEMENT insertion", null);
 			}
 			
@@ -4381,7 +4381,7 @@ public class APIController {
 						"savingCardToken 500 Error during  date formatting for given orderid:[" + orderid
 								+ "] and merchantid:[" + merchantid + "]" + err2);
 
-				return getMsgError(folder, file, jsonOrequest, "savingCardToken 500 Error during  date formatting", null);
+				return getMsgErrorV1(folder, file, jsonOrequest, "savingCardToken 500 Error during  date formatting", null);
 			}
 
 			// appel 3DSSecure ***********************************************************
@@ -4438,7 +4438,7 @@ public class APIController {
 				demandePaiementService.save(dmdSaved);
 				Util.writeInFileTransaction(folder, file,
 						"demandePaiement after update MPI_KO idDemande null : " + dmdSaved.toString());
-				return getMsgError(folder, file, jsonOrequest, "AUTO INVALIDE DEMANDE MPI_KO", "96");
+				return getMsgErrorV1(folder, file, jsonOrequest, "AUTO INVALIDE DEMANDE MPI_KO", "96");
 			}
 
 			dmd = demandePaiementService.findByIdDemande(Integer.parseInt(idDemande));
@@ -4447,7 +4447,7 @@ public class APIController {
 				Util.writeInFileTransaction(folder, file,
 						"demandePaiement not found !!!! demandePaiement = null  / received idDemande from MPI => "
 								+ idDemande);
-				return getMsgError(folder, file, jsonOrequest, "AUTO INVALIDE DEMANDE NOT FOUND", "96");
+				return getMsgErrorV1(folder, file, jsonOrequest, "AUTO INVALIDE DEMANDE NOT FOUND", "96");
 			}
 
 			if (reponseMPI.equals("") || reponseMPI == null) {
@@ -4456,7 +4456,7 @@ public class APIController {
 				Util.writeInFileTransaction(folder, file,
 						"demandePaiement after update MPI_KO reponseMPI null : " + dmd.toString());
 				Util.writeInFileTransaction(folder, file, "Response 3DS is null");
-				return getMsgError(folder, file, jsonOrequest, "Response 3DS is null", "96");
+				return getMsgErrorV1(folder, file, jsonOrequest, "Response 3DS is null", "96");
 			}
 			// jsute pour Coca les test sans 3DSS reponseMPI="Y"
 			reponseMPI = "Y";
@@ -4500,7 +4500,7 @@ public class APIController {
 							"savingcardtoken 500 Error during  amount formatting for given merchantid:[" + merchantid
 									+ "]" + err3);
 
-					return getMsgError(folder, file, jsonOrequest,
+					return getMsgErrorV1(folder, file, jsonOrequest,
 							"savingcardtoken 500 Error during  amount formatting", null);
 				}
 
@@ -4531,7 +4531,7 @@ public class APIController {
 							"savingcardtoken 500 Error during  date formatting for given merchantid:[" + merchantid
 									+ "]" + err2);
 
-					return getMsgError(folder, file, jsonOrequest, "savingcardtoken 500 Error during  date formatting",
+					return getMsgErrorV1(folder, file, jsonOrequest, "savingcardtoken 500 Error during  date formatting",
 							null);
 				}
 
@@ -4551,7 +4551,7 @@ public class APIController {
 					Util.writeInFileTransaction(folder, file,
 							"savingcardtoken 500 cvv not set , reccuring flag set to N, cvv must be present in normal transaction");
 
-					return getMsgError(folder, file, jsonOrequest,
+					return getMsgErrorV1(folder, file, jsonOrequest,
 							"savingcardtoken 500 cvv not set , reccuring flag set to N, cvv must be present in normal transaction",
 							"82");
 				}
@@ -4598,7 +4598,7 @@ public class APIController {
 								"savingcardtoken 500 Error during switch tlv buildup for given merchantid:["
 										+ merchantid + "]" + err4);
 
-						return getMsgError(folder, file, jsonOrequest,
+						return getMsgErrorV1(folder, file, jsonOrequest,
 								"savingcardtoken 500 Error during switch tlv buildup", "96");
 					}
 
@@ -4628,7 +4628,7 @@ public class APIController {
 					if (!s_conn) {
 						Util.writeInFileTransaction(folder, file, "Switch  malfunction cannot connect!!!");
 
-						return getMsgError(folder, file, jsonOrequest,
+						return getMsgErrorV1(folder, file, jsonOrequest,
 								"savingcardtoken 500 Error Switch communication s_conn false", "96");
 					}
 
@@ -4645,13 +4645,13 @@ public class APIController {
 				} catch (UnknownHostException e) {
 					Util.writeInFileTransaction(folder, file, "Switch  malfunction UnknownHostException !!!" + e);
 
-					return getMsgError(folder, file, jsonOrequest,
+					return getMsgErrorV1(folder, file, jsonOrequest,
 							"savingcardtoken 500 Error Switch communication UnknownHostException", "96");
 
 				} catch (java.net.ConnectException e) {
 					Util.writeInFileTransaction(folder, file, "Switch  malfunction ConnectException !!!" + e);
 					switch_ko = 1;
-					return getMsgError(folder, file, jsonOrequest,
+					return getMsgErrorV1(folder, file, jsonOrequest,
 							"savingcardtoken 500 Error Switch communication ConnectException", "96");
 				}
 
@@ -4662,7 +4662,7 @@ public class APIController {
 					Util.writeInFileTransaction(folder, file,
 							"savingcardtoken 500 Error Switch communication SocketTimeoutException" + "switch ip:["
 									+ sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-					return getMsgError(folder, file, jsonOrequest, "Switch  malfunction  SocketTimeoutException !!!",
+					return getMsgErrorV1(folder, file, jsonOrequest, "Switch  malfunction  SocketTimeoutException !!!",
 							"96");
 				}
 
@@ -4673,14 +4673,14 @@ public class APIController {
 					Util.writeInFileTransaction(folder, file,
 							"savingcardtoken 500 Error Switch communication IOException" + "switch ip:[" + sw_s
 									+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-					return getMsgError(folder, file, jsonOrequest, "Switch  malfunction  IOException !!!", "96");
+					return getMsgErrorV1(folder, file, jsonOrequest, "Switch  malfunction  IOException !!!", "96");
 				}
 
 				catch (Exception e) {
 					Util.writeInFileTransaction(folder, file, "Switch  malfunction Exception!!!" + e);
 					switch_ko = 1;
 					e.printStackTrace();
-					return getMsgError(folder, file, jsonOrequest,
+					return getMsgErrorV1(folder, file, jsonOrequest,
 							"savingcardtoken 500 Error Switch communication General Exception", "96");
 				}
 
@@ -4694,7 +4694,7 @@ public class APIController {
 					switch_ko = 1;
 					Util.writeInFileTransaction(folder, file, "savingcardtoken 500 Error Switch null response"
 							+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-					return getMsgError(folder, file, jsonOrequest, "Switch  malfunction resp null!!!", "96");
+					return getMsgErrorV1(folder, file, jsonOrequest, "Switch  malfunction resp null!!!", "96");
 				}
 
 				if (switch_ko == 0 && resp.length() < 3) {
@@ -4933,7 +4933,7 @@ public class APIController {
 				} catch (Exception e) {
 					Util.writeInFileTransaction(folder, file,
 							"savingcardtoken 500 Error during  paymentid generation for given orderid:[" + orderid + "]" + e);
-					return getMsgError(folder, file, jsonOrequest, "savingcardtoken 500 Error during  paymentid generation",
+					return getMsgErrorV1(folder, file, jsonOrequest, "savingcardtoken 500 Error during  paymentid generation",
 							tag20_resp);
 				}
 
@@ -4956,7 +4956,7 @@ public class APIController {
 					Util.writeInFileTransaction(folder, file,
 							"savingcardtoken 500 Error during authdata preparation orderid:[" + orderid + "]" + e);
 
-					return getMsgError(folder, file, jsonOrequest, "savingcardtoken 500 Error during authdata preparation",
+					return getMsgErrorV1(folder, file, jsonOrequest, "savingcardtoken 500 Error during authdata preparation",
 							tag20_resp);
 				}
 
@@ -5107,7 +5107,7 @@ public class APIController {
 				} catch (Exception ex) {
 					Util.writeInFileTransaction(folder, file, "savingcardtoken 500 Error during jso out processing " + ex);
 
-					return getMsgError(folder, file, jsonOrequest, "savingcardtoken 500 Error during jso out processing ",
+					return getMsgErrorV1(folder, file, jsonOrequest, "savingcardtoken 500 Error during jso out processing ",
 							null);
 				}
 			} else if (reponseMPI.equals("E")) {
@@ -5161,31 +5161,31 @@ public class APIController {
 					demandePaiementService.save(dmd);
 					// externalContext.redirect("operationErreur.xhtml?Error=".concat("COMMERCANT
 					// NON PARAMETRE"));
-					return getMsgError(folder, file, jsonOrequest, "COMMERCANT NON PARAMETRE", "15");
+					return getMsgErrorV1(folder, file, jsonOrequest, "COMMERCANT NON PARAMETRE", "15");
 				case "BIN NON PARAMETRE":
 					Util.writeInFileTransaction(folder, file, "BIN NON PARAMETRE : " + idDemande);
 					dmd.setEtat_demande("MPI_BIN_NON_PAR");
 					dmd.setDem_xid(threeDSServerTransID);
 					demandePaiementService.save(dmd);
-					return getMsgError(folder, file, jsonOrequest, "BIN NON PARAMETREE", "96");
+					return getMsgErrorV1(folder, file, jsonOrequest, "BIN NON PARAMETREE", "96");
 				case "DIRECTORY SERVER":
 					Util.writeInFileTransaction(folder, file, "DIRECTORY SERVER : " + idDemande);
 					dmd.setEtat_demande("MPI_DS_ERR");
 					dmd.setDem_xid(threeDSServerTransID);
 					demandePaiementService.save(dmd);
-					return getMsgError(folder, file, jsonOrequest, "MPI_DS_ERR", "96");
+					return getMsgErrorV1(folder, file, jsonOrequest, "MPI_DS_ERR", "96");
 				case "CARTE ERRONEE":
 					Util.writeInFileTransaction(folder, file, "CARTE ERRONEE : " + idDemande);
 					dmd.setEtat_demande("MPI_CART_ERROR");
 					dmd.setDem_xid(threeDSServerTransID);
 					demandePaiementService.save(dmd);
-					return getMsgError(folder, file, jsonOrequest, "CARTE ERRONEE", "96");
+					return getMsgErrorV1(folder, file, jsonOrequest, "CARTE ERRONEE", "96");
 				case "CARTE NON ENROLEE":
 					Util.writeInFileTransaction(folder, file, "CARTE NON ENROLEE : " + idDemande);
 					dmd.setEtat_demande("MPI_CART_NON_ENR");
 					dmd.setDem_xid(threeDSServerTransID);
 					demandePaiementService.save(dmd);
-					return getMsgError(folder, file, jsonOrequest, "CARTE NON ENROLLE", "96");
+					return getMsgErrorV1(folder, file, jsonOrequest, "CARTE NON ENROLLE", "96");
 				}
 			}
 		} catch (Exception ex) {
@@ -6331,6 +6331,39 @@ public class APIController {
 
 		Util.writeInFileTransaction(folder, file, "*********** Fin getMsgError() ************** ");
 		System.out.println("*********** Fin getMsgError() ************** ");
+		return jso.toString();
+	}
+	
+	public String getMsgErrorV1(String folder, String file, JSONObject jsonOrequest, String msg, String coderep) {
+		// Traces traces = new Traces();
+		Util.writeInFileTransaction(folder, file, "*********** Start getMsgErrorV1() ************** ");
+		System.out.println("*********** Start getMsgErrorV1() ************** ");
+
+		JSONObject jso = new JSONObject();
+		if (jsonOrequest != null) {
+			jso.put("merchantid", (String) jsonOrequest.get("merchantid"));
+		} else {
+			jso.put("orderid", "");
+			jso.put("merchantid", "");
+			jso.put("amount", "");
+		}
+		if (coderep != null) {
+			jso.put("statuscode", coderep);
+		} else {
+			jso.put("statuscode", "17");
+		}
+
+		jso.put("status", msg);
+		jso.put("etataut", "N");
+		jso.put("linkacs", "");
+		jso.put("url", "");
+		jso.put("idDemande", "");
+
+		Util.writeInFileTransaction(folder, file, "json : " + jso.toString());
+		System.out.println("json : " + jso.toString());
+
+		Util.writeInFileTransaction(folder, file, "*********** Fin getMsgErrorV1() ************** ");
+		System.out.println("*********** Fin getMsgErrorV1() ************** ");
 		return jso.toString();
 	}
 
