@@ -234,18 +234,18 @@ public class GWPaiementController {
 
 			ecr.setDate_Pai(date_pai);
 			ecr.setMontant(montantTimbre.add(new BigDecimal(100).setScale(2, BigDecimal.ROUND_HALF_UP)));
-			ecr.setMoyen_Pai("");
+			ecr.setMoyen_Pai("974772");
 			listeMoyensPayement[0] = ecr;
 			Transaction transaction = new Transaction();
 			transaction.setAgc_Cod((short) 840);
 			transaction.setDate_Trans(listeMoyensPayement[0].getDate_Pai());
-			//transaction.setDateVal(new Date());
+			transaction.setDate_Val(new Date());
 			transaction.setEtat_Trans("R");
 			transaction.setType_Trans("RX");
 			
 			List<FactureLDDto> listFactureLD = new ArrayList<>();
 			Util.writeInFileTransaction(folder, file,"findFactureByIddemande : " + 196884);
-			listFactureLD = factureLDService.findFactureByIddemande(196884);
+			listFactureLD = factureLDService.findFactureByIddemande(197267);
 			Util.writeInFileTransaction(folder, file, "preparerReglementLydec listFactureLD.size  : " + listFactureLD.size());
 			for (FactureLDDto facLD : listFactureLD) {
 				// log.info("preparerReglementLydec facLD : " + facLD.toString());
