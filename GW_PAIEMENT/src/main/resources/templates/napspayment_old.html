@@ -55,10 +55,10 @@
                      <span th:text="${demandeDto.commande}"></span>
                      </label>
                      <label for="comid" class="col-sm-6 col-form-label">Commerçant : 
-                     <span th:text="${demandeDto.commercantDto.cmrNom}"></span>
+                     <span th:if="${demandeDto.commercantDto != null}" th:text="${demandeDto.commercantDto.cmrNom}"></span>
                      </label>
                      <label for="galid" class="col-sm-6 col-form-label">Site web commerçant : 
-                     <span th:text="${demandeDto.galerieDto.urlGal}"></span>
+                     <span th:if="${demandeDto.galerieDto != null}" th:text="${demandeDto.galerieDto.urlGal}"></span>
                      </label>
                      <label for="montant" class="col-sm-6 col-form-label">Montant à payer : 
                      <span th:text="${demandeDto.montantStr}" style="color: #DF6537;font-weight: 700;"></span> DH

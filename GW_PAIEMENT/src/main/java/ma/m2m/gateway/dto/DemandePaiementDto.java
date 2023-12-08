@@ -95,6 +95,7 @@ public class DemandePaiementDto implements Serializable {
 	private List<Cartes> cartes;
 	private Cartes carte;
 	private String infoCarte;
+	private List<FactureLDDto> factures;
 	
 	public Cartes getCarte() {
 		return carte;
@@ -542,6 +543,13 @@ public class DemandePaiementDto implements Serializable {
 	}
 	public void setCartes(List<Cartes> cartes) {
 		this.cartes = cartes;
+	}
+	
+	public List<FactureLDDto> getFactures() {
+		return factures;
+	}
+	public void setFactures(List<FactureLDDto> factures) {
+		this.factures = factures;
 	}
 	public DemandePaiementDto() {
 		super();

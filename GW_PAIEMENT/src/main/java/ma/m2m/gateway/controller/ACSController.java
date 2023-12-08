@@ -162,8 +162,6 @@ public class ACSController {
 	@PostMapping("/napspayment/acs")
 	public String processRequest(HttpServletRequest request, HttpServletResponse response, Model model)
 			throws IOException {
-
-		//Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "R_ACS_" + randomWithSplittableRandom;
 		// create file log

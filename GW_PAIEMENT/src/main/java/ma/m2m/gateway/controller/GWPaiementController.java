@@ -133,6 +133,12 @@ public class GWPaiementController {
 	@Value("${key.URL_WSDL_LYDEC}")
 	private String URL_WSDL_LYDEC; 
 	
+	@Value("${key.LYDEC_PREPROD}")
+	private String LYDEC_PREPROD;
+	
+	@Value("${key.LYDEC_PROD}")
+	private String LYDEC_PROD;
+	
 	@Autowired
 	CommercantService commercantService;
 
@@ -163,7 +169,6 @@ public class GWPaiementController {
 	@Autowired
 	FactureLDService factureLDService;
 	
-	//private Traces traces = new Traces();
 	private LocalDateTime date;
 	private String folder;
 	private String file;
@@ -486,7 +491,6 @@ public class GWPaiementController {
 
 	@RequestMapping(value = "/napspayment/authorization/token/{token}", method = RequestMethod.GET)
 	public String showPagePayment(@PathVariable(value = "token") String token, Model model) {
-		//Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "GW_PAGE_" + randomWithSplittableRandom;
 		// create file log
@@ -620,6 +624,23 @@ public class GWPaiementController {
 			demandePaiementService.save(demandeDto);
 			System.out.println("update Demandepaiement status to P_CHRG_OK");
 			Util.writeInFileTransaction(folder, file, "update Demandepaiement status to P_CHRG_OK");
+			if(demandeDto.getComid().equals(LYDEC_PREPROD) || demandeDto.getComid().equals(LYDEC_PROD)) {
+				System.out.println("Si le commercant est LYDEC : " + demandeDto.getComid());
+				Util.writeInFileTransaction(folder, file, "Si le commercant est LYDEC : " + demandeDto.getComid());
+				List<FactureLDDto> listFactureLD = new ArrayList<>();
+				listFactureLD = factureLDService.findFactureByIddemande(demandeDto.getIddemande());
+				if(listFactureLD != null && listFactureLD.size() > 0) {
+					System.out.println("listFactureLD : " + listFactureLD.size());
+					Util.writeInFileTransaction(folder, file, "listFactureLD : " + listFactureLD.size());
+					demandeDto.setFactures(listFactureLD);
+				} else {
+					System.out.println("listFactureLD vide ");
+					Util.writeInFileTransaction(folder, file, "listFactureLD vide ");
+					demandeDto.setFactures(null);
+				}				
+				model.addAttribute("demandeDto", demandeDto);
+				//page = "napspaymentlydec";
+			}
 		}
 
 		Util.writeInFileTransaction(folder, file, "*********** Fin affichage page ************** ");
@@ -628,6 +649,159 @@ public class GWPaiementController {
 		return page;
 	}
 
+
+	@RequestMapping(value = "/napspayment/authorization/lydec/token/{token}", method = RequestMethod.GET)
+	public String showPagePaymentLdec(@PathVariable(value = "token") String token, Model model) {
+		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
+		String file = "GW_PAGE_" + randomWithSplittableRandom;
+		// create file log
+		Util.creatFileTransaction(file);
+		Util.writeInFileTransaction(folder, file, "*********** Start affichage page ***********");
+		System.out.println("*********** Start affichage page ***********");
+
+		Util.writeInFileTransaction(folder, file, "findByTokencommande token : " + token);
+		System.out.println("findByTokencommande token : " + token);
+
+		DemandePaiementDto demandeDto = new DemandePaiementDto();
+		CommercantDto merchant = null;
+		GalerieDto galerie = null;
+		String merchantid = "";
+		String orderid = "";
+
+		String page = "napspaymentlydec";
+
+		try {
+			demandeDto = demandePaiementService.findByTokencommande(token);
+
+			if (demandeDto != null) {
+				System.out.println("DemandePaiement is found idDemande/Commande : " + demandeDto.getIddemande() + "/" + demandeDto.getCommande());
+				Util.writeInFileTransaction(folder, file,
+						"DemandePaiement is found iddemande/Commande : " + demandeDto.getIddemande() + "/" + demandeDto.getCommande());
+
+				// get list of years + 10
+				int currentYear = Year.now().getValue();
+				List<Integer> years = generateYearList(currentYear, currentYear + 10);
+
+				demandeDto.setYears(years);
+
+				// get list of months
+				List<Month> months = Arrays.asList(Month.values());
+				List<String> monthNames = convertMonthListToStringList(months);
+				List<MonthDto> monthValues = convertStringAGListToFR(monthNames);
+
+				demandeDto.setMonths(monthValues);
+				// if cmr don't accept transaction cof demandeDto.getIs_cof() = N don't show
+				// carte
+				if (demandeDto.getIs_cof() == null || demandeDto.getIs_cof().equals("N")) {
+					demandeDto.setDem_pan("");
+					demandeDto.setDem_cvv("");
+				}
+				// if cmr accept transaction cof demandeDto.getIs_cof() = Y show your carte
+				// saved
+				// Créez un objet DecimalFormat avec le modèle "0.00"
+		        DecimalFormat df = new DecimalFormat("0.00");
+
+		        // Formatez le nombre en une chaîne avec deux chiffres après la virgule
+		        Double mont = demandeDto.getMontant();
+		        String mtFormate = df.format(mont);
+		        if (mtFormate.contains(",")) {
+		        	mtFormate = mtFormate.replace(",", ".");
+		        }
+		        
+		        demandeDto.setMontantStr(mtFormate);
+
+				model.addAttribute("demandeDto", demandeDto);
+
+				if (demandeDto.getEtat_demande().equals("SW_PAYE") || demandeDto.getEtat_demande().equals("PAYE")) {
+					Util.writeInFileTransaction(folder, file, "Opération déjà effectuée");
+					demandeDto.setMsgRefus(
+							"La transaction en cours n’a pas abouti (Opération déjà effectuée), votre compte ne sera pas débité, merci de réessayer .");
+					model.addAttribute("demandeDto", demandeDto);
+					page = "operationEffectue";
+				} else if (demandeDto.getEtat_demande().equals("SW_REJET")) {
+					Util.writeInFileTransaction(folder, file, "Transaction rejetée");
+					demandeDto.setMsgRefus(
+							"La transaction en cours n’a pas abouti (Transaction rejetée), votre compte ne sera pas débité, merci de réessayer .");
+					model.addAttribute("demandeDto", demandeDto);
+					page = "result";
+				} else {
+					try {
+						merchantid = demandeDto.getComid();
+						orderid = demandeDto.getCommande();
+						merchant = commercantService.findByCmrNumcmr(merchantid);
+						if (merchant != null) {
+							demandeDto.setCommercantDto(merchant);
+						}
+					} catch (Exception e) {
+						Util.writeInFileTransaction(folder, file,
+								"showPagePayment 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
+										+ "] and merchantid:[" + merchantid + "]" + e);
+						demandeDto = new DemandePaiementDto();
+						demandeDto.setMsgRefus("Commerçant mal configuré dans la base de données ou inexistant");
+						model.addAttribute("demandeDto", demandeDto);
+						page = "result";
+					}
+					try {
+						merchantid = demandeDto.getComid();
+						orderid = demandeDto.getCommande();
+						galerie = galerieService.findByCodeCmr(merchantid);
+						if (galerie != null) {
+							demandeDto.setGalerieDto(galerie);
+						}
+					} catch (Exception e) {
+						Util.writeInFileTransaction(folder, file,
+								"showPagePayment 500 Galerie misconfigured in DB or not existing orderid:[" + orderid
+										+ "] and merchantid:[" + merchantid + "]" + e);
+						demandeDto = new DemandePaiementDto();
+						demandeDto.setMsgRefus("Galerie mal configuré dans la base de données ou inexistant");
+						model.addAttribute("demandeDto", demandeDto);
+						page = "result";
+					}
+				}
+			} else {
+				Util.writeInFileTransaction(folder, file, "demandeDto not found token : " + token);
+				System.out.println("demandeDto not found token : " + token);
+				demandeDto = new DemandePaiementDto();
+				demandeDto.setMsgRefus("Demande paiement mal configuré dans la base de données ou inexistant");
+				model.addAttribute("demandeDto", demandeDto);
+				page = "result";
+			}
+
+		} catch (Exception e) {
+			Util.writeInFileTransaction(folder, file,
+					"showPagePaymentLdec 500 DEMANDE_PAIEMENT misconfigured in DB or not existing token:[" + token + "]"
+							+ e);
+
+			Util.writeInFileTransaction(folder, file, "showPagePaymentLdec 500 exception" + e);
+			e.printStackTrace();
+			demandeDto = new DemandePaiementDto();
+			demandeDto.setMsgRefus("Demande paiement mal configuré dans la base de données ou inexistant");
+			model.addAttribute("demandeDto", demandeDto);
+			page = "result";
+		}
+		
+		if(page.equals("napspaymentlydec")) {
+			demandeDto.setEtat_demande("P_CHRG_OK");
+			demandePaiementService.save(demandeDto);
+			System.out.println("update Demandepaiement status to P_CHRG_OK");
+			Util.writeInFileTransaction(folder, file, "update Demandepaiement status to P_CHRG_OK");
+			
+			List<FactureLDDto> listFactureLD = new ArrayList<>();
+			listFactureLD = factureLDService.findFactureByIddemande(73);
+			if(listFactureLD != null && listFactureLD.size() > 0) {
+				System.out.println("listFactureLD : " + listFactureLD.size());
+				demandeDto.setFactures(listFactureLD);
+			} else {
+				demandeDto.setFactures(null);
+			}				
+			model.addAttribute("demandeDto", demandeDto);
+		}
+
+		Util.writeInFileTransaction(folder, file, "*********** Fin affichage page ************** ");
+		System.out.println("*********** Fin affichage page ************** ");
+
+		return page;
+	}
 	@RequestMapping(path = "/napspayment/linkpayment1", produces = "application/json; charset=UTF-8")
 	public ResponseEntity<responseDto> getLink1(@RequestBody DemandePaiementDto demandeDto) {
 		// Traces traces = new Traces();
@@ -697,7 +871,6 @@ public class GWPaiementController {
 	@PostMapping("/payer")
 	public String payer(Model model, @ModelAttribute("demandeDto") DemandePaiementDto dto,
 			HttpServletRequest request, HttpServletResponse response) {
-		//Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "GW_PAYE_" + randomWithSplittableRandom;
 		// create file log

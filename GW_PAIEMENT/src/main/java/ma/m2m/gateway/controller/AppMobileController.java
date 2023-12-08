@@ -91,7 +91,6 @@ import ma.m2m.gateway.tlv.Tags;
 @CrossOrigin(origins = "*", allowedHeaders = "*", maxAge = 3600)
 public class AppMobileController {
 	
-	// private Traces traces = new Traces();
 	private LocalDateTime dateF;
 	private String folder;
 	private String file;
@@ -185,8 +184,6 @@ public class AppMobileController {
 	@PostMapping("/napspayment/ccb/acs")
 	public String processRequestMobile(HttpServletRequest request, HttpServletResponse response, Model model)
 			throws IOException {
-
-		//Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "MB_R_ACS_" + randomWithSplittableRandom;
 		// create file log
@@ -1798,7 +1795,6 @@ public class AppMobileController {
 	@ResponseBody
 	public String getLinkCCB(@RequestHeader MultiValueMap<String, String> header, @RequestBody String linkP,
 			HttpServletResponse response) {
-		//Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "MB_LINK_CCB_" + randomWithSplittableRandom;
 		// create file log
@@ -2087,7 +2083,6 @@ public class AppMobileController {
 	
 	@RequestMapping(value = "/napspayment/authorization/ccb/token/{token}", method = RequestMethod.GET)
 	public String showPageRchg(@PathVariable(value = "token") String token, Model model) {
-		//Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "MB_PAGE_CCB_" + randomWithSplittableRandom;
 		// create file log
@@ -2142,9 +2137,10 @@ public class AppMobileController {
 				List<Cartes> cartes = new ArrayList<>();
 				if (!idclient.equals("") && idclient != null && !idclient.equals("null")) {
 					System.out.println("idclient/merchantid : " + idclient + "/" + merchantid);
-					try {						
-						List<CardtokenDto> cards = cardtokenService.findByIdMerchantAndIdMerchantClient(merchantid, idclient);
-						if (cards != null) {
+					try {		
+						List<CardtokenDto> cards = new ArrayList<>();
+						cards = cardtokenService.findByIdMerchantAndIdMerchantClient(merchantid, idclient);
+						if (cards != null && cards.size() > 0) {
 							for(CardtokenDto card : cards) {
 								if (card.getCardNumber() != null) {
 									Cartes carte = new Cartes();
@@ -2155,15 +2151,19 @@ public class AppMobileController {
 									formatDateExp(dateExStr, carte);
 									cartes.add(carte);
 								}
-							}
-							demandeDto.setCartes(cartes);							
+							}														
 							System.out.println("Cartes : " + cartes.toString());
+							demandeDto.setCartes(cartes);
+						} else {
+							demandeDto.setCartes(null);					
 						}
 					} catch (Exception ex) {
 						Util.writeInFileTransaction(folder, file, "showPageRchg 500 idclient not found" + ex);
-					}
-					
+					}	
+				} else {
+					demandeDto.setCartes(null);	
 				}
+
 				// Créez un objet DecimalFormat avec le modèle "0.00"
 		        DecimalFormat df = new DecimalFormat("0.00");
 
@@ -2311,7 +2311,6 @@ public class AppMobileController {
 	@PostMapping("/recharger")
 	public String recharger(Model model, @ModelAttribute("demandeDto") DemandePaiementDto dto,
 			HttpServletRequest request, HttpServletResponse response) {
-		//Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "MB_PAYE_" + randomWithSplittableRandom;
 		// create file log

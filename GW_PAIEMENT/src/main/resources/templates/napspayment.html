@@ -81,6 +81,14 @@
         display: none;
     }
     }
+    table {
+		width: 100%;
+	}
+	td {
+		padding-left: 5px;
+		border: solid 0.1px #df65374d;
+		text-transform: capitalize;
+	}
   </style>
    </head>
    <body>
@@ -91,6 +99,8 @@
             <article class="card">
                <div class="card-body p-2">
                   <img th:src="@{/images/powered_by_naps.png}" alt="Image" style="float:right;width:80px;margin-right:0px;" >
+                   <img th:if="${demandeDto.comid == '2104202' or demandeDto.comid == '2210205'}"
+                   th:src="@{/images/logo-lydec-color.png}" alt="Image" style="float:left;width:80px;margin-right:0px;" >
                </div>
                <!-- card-body.// -->
             </article>
@@ -106,24 +116,72 @@
                   </p>
                   <br class="mobile-hide">
                   <br class="mobile-hide">
-                  <div class="row">
+                  <div class="row" th:if="${demandeDto.factures == null}">
                      <p class="text-right tr2" style="color: #DF6537;font-size: x-large;font-weight: 700;">. Informations de votre paiement
                      </p>
                   </div>
-                  <div class="row">
+                  <div class="row" th:if="${demandeDto.factures == null}">
                      <label for="commande" class="col-sm-6 col-form-label">Commande : 
                      <span th:text="${demandeDto.commande}"></span>
                      </label>
                      <label for="comid" class="col-sm-6 col-form-label">Commerçant : 
-                     <span th:text="${demandeDto.commercantDto.cmrNom}"></span>
+                     <span th:if="${demandeDto.commercantDto != null}" th:text="${demandeDto.commercantDto.cmrNom}"></span>
                      </label>
                      <label for="galid" class="col-sm-6 col-form-label">Site web commerçant : 
-                     <span th:text="${demandeDto.galerieDto.urlGal}"></span>
+                     <span th:if="${demandeDto.galerieDto != null}" th:text="${demandeDto.galerieDto.urlGal}"></span>                     
                      </label>
                      <label for="montant" class="col-sm-6 col-form-label">Montant à payer : 
                      <span th:text="${demandeDto.montantStr}" style="color: #DF6537;font-weight: 700;"></span> DH
                      </label>
                   </div>
+                  <div class="row" th:if="${demandeDto.factures != null and demandeDto.factures.size > 0}">
+                     <p class="text-right tr2" style="color: #DF6537;font-size: x-large;font-weight: 700;">. Détails factures
+                     </p>
+                  </div>
+                  <div class="row" th:if="${demandeDto.factures != null and demandeDto.factures.size > 0}">
+                  <table style="margin-top: 10px;">
+						<thead>
+						<tr style="line-height: 30px;">
+				
+							<td style="background: #fef7f7;">Référence</td>
+				
+							<td style="background: #fef7f7;">Fourniture</td>
+				
+							<td style="background: #fef7f7;">N° contrat</td>
+				
+				
+							<td style="background: #fef7f7;">Type</td>
+				
+							<!-- <td style="background: #fef7f7;">Description</td>-->
+				
+							<td style="background: #fef7f7;">Montant</td>
+						</tr>
+						</thead>
+						<tbody>
+							<tr style="line-height: 30px;" th:each="dem : ${demandeDto.factures}">
+				
+								<td id="numfacture" th:text="${dem.numfacture}"></td>
+				
+								<td id="fourniture" th:text="${dem.fourniture}"></td>
+				
+								<td id="numcontrat" th:text="${dem.numcontrat}"></td>
+								
+								<td id="name" th:text="${dem.name}"></td>
+				
+								<td id="montantSTbr" th:text="${dem.montantSTbr}"></td>
+							</tr>
+							<tr style="line-height: 30px;">
+				
+							<td colspan="4"
+								style="text-align: right; padding-right: 5px; font-weight: bold;">TOTAL
+								À PAYER</td>
+				
+							<td th:text="${demandeDto.montantStr}"></td>
+						</tr>
+						</tbody>
+																			
+					</table>
+					</div>
                </div>
             </article>
             <!-- card.// -->

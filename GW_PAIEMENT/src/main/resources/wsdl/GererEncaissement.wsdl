@@ -1,0 +1,535 @@
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/"
+	xmlns:apachesoap="http://xml.apache.org/xml-soap"
+	xmlns:impl="http://service.lydec.com"
+	xmlns:intf="http://service.lydec.com"
+	xmlns:tns2="http://commun.lydec.com"
+	xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+	xmlns:wsdlsoap="http://schemas.xmlsoap.org/wsdl/soap/"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	targetNamespace="http://service.lydec.com">
+	<types>
+		<schema xmlns="http://www.w3.org/2001/XMLSchema"
+			elementFormDefault="qualified"
+			targetNamespace="http://commun.lydec.com">
+			<complexType name="SignatureComplete">
+				<sequence>
+					<element name="typeSignature" nillable="true"
+						type="xsd:string" />
+					<element name="dateSignature" nillable="true"
+						type="xsd:dateTime" />
+					<element name="dateDebut" nillable="true"
+						type="xsd:dateTime" />
+					<element name="dateFin" nillable="true" type="xsd:dateTime" />
+					<element name="numeroTransactionDebut" type="xsd:int" />
+					<element name="numeroTransactionFin" type="xsd:int" />
+					<element name="numeroTransactionIfxDebut" type="xsd:int" />
+					<element name="numeroTransactionIfxFin" type="xsd:int" />
+					<element name="espaceServiceDebut" type="xsd:int" />
+					<element name="espaceServiceFin" type="xsd:int" />
+					<element name="montantDebiteDebut" nillable="true"
+						type="xsd:decimal" />
+					<element name="montantDebiteFin" nillable="true"
+						type="xsd:decimal" />
+					<element name="nombreAnnulations" type="xsd:int" />
+					<element name="nombreRejets" type="xsd:int" />
+					<element name="nombreTransactionsDebitees" type="xsd:int" />
+					<element name="nombreTransactions" type="xsd:int" />
+					<element name="montantTotalDebite" nillable="true"
+						type="xsd:decimal" />
+					<element name="montantTotalEspecesTr" nillable="true"
+						type="xsd:decimal" />
+					<element name="montantTotalAutresMPTr" nillable="true"
+						type="xsd:decimal" />
+					<element name="montantTotalTimbresAnnules" nillable="true"
+						type="xsd:decimal" />
+					<element name="nombreFacturesRegles" type="xsd:int" />
+					<element name="montantTotalTTC" nillable="true"
+						type="xsd:decimal" />
+					<element name="nombreMPs" type="xsd:int" />
+					<element name="montantTotalEspecesMP" nillable="true"
+						type="xsd:decimal" />
+					<element name="montantTotalAutresMPMP" nillable="true"
+						type="xsd:decimal" />
+					<element name="agcCod" type="xsd:int" />
+				</sequence>
+			</complexType>
+			<complexType name="ReponseSignature">
+				<sequence>
+					<element name="numero" type="xsd:int" />
+					<element name="validation" type="xsd:short" />
+					<element name="message" nillable="true" type="xsd:string" />
+					<element name="ok" type="xsd:boolean" />
+				</sequence>
+			</complexType>
+			<complexType name="SignaturesParTransaction">
+				<sequence>
+					<element maxOccurs="unbounded" name="listeSFactures"
+						nillable="true" type="tns2:SFacture" />
+					<element maxOccurs="unbounded" name="listeSTransactions"
+						nillable="true" type="tns2:STransaction" />
+					<element name="agcCod" type="xsd:int" />
+					<element name="numeroSignature" type="xsd:int" />
+				</sequence>
+			</complexType>
+			<complexType name="SFacture">
+				<sequence>
+					<element name="numeroFacture" type="xsd:int" />
+					<element name="numeroLigne" type="xsd:int" />
+					<element name="numTransLydec" type="xsd:int" />
+				</sequence>
+			</complexType>
+			<complexType name="STransaction">
+				<sequence>
+					<element name="guichetCod" type="xsd:int" />
+					<element name="mtAnnuleTimbre" nillable="true"
+						type="xsd:decimal" />
+					<element name="mtEncEsp" nillable="true" type="xsd:decimal" />
+					<element name="mtEncMp" nillable="true" type="xsd:decimal" />
+					<element name="numTransLydec" type="xsd:int" />
+					<element name="numTransPartenaire" type="xsd:int" />
+				</sequence>
+			</complexType>
+			<complexType name="ReponseSignatureParTransaction">
+				<sequence>
+					<element maxOccurs="unbounded" name="listeRTransactions"
+						nillable="true" type="tns2:STransaction" />
+					<element name="message" nillable="true" type="xsd:string" />
+					<element name="numero" type="xsd:int" />
+					<element name="ok" type="xsd:boolean" />
+				</sequence>
+			</complexType>
+			<complexType name="Impayes">
+				<sequence>
+					<element maxOccurs="unbounded" name="listeImpayes"
+						nillable="true" type="tns2:Impaye" />
+					<element name="client" nillable="true" type="tns2:Client" />
+					<element name="message" nillable="true" type="xsd:string" />
+					<element name="ok" type="xsd:boolean" />
+				</sequence>
+			</complexType>
+			<complexType name="Impaye">
+				<sequence>
+					<element name="numeroFacture" type="xsd:int" />
+					<element name="numeroLigne" type="xsd:int" />
+					<element name="codeFourniture" nillable="true"
+						type="xsd:string" />
+					<element name="numeroPolice" nillable="true"
+						type="xsd:string" />
+					<element name="montantTTC" nillable="true"
+						type="xsd:decimal" />
+					<element name="adresse" nillable="true" type="xsd:string" />
+					<element name="delegation" type="xsd:int" />
+					<element name="secteur" type="xsd:int" />
+					<element name="tournee" type="xsd:int" />
+					<element name="ordre" type="xsd:int" />
+					<element name="produit" type="xsd:int" />
+					<element name="montantTimbre" nillable="true"
+						type="xsd:decimal" />
+					<element name="montantTVA" nillable="true"
+						type="xsd:decimal" />
+					<element name="dateEcheance" nillable="true"
+						type="xsd:date" />
+				</sequence>
+			</complexType>
+			<complexType name="Client">
+				<sequence>
+					<element name="numero" type="xsd:int" />
+					<element name="nom" nillable="true" type="xsd:string" />
+					<element name="id" nillable="true" type="xsd:string" />
+					<element name="typeId" nillable="true" type="xsd:string" />
+				</sequence>
+			</complexType>
+			<complexType name="DemandesReglements">
+				<sequence>
+					<element maxOccurs="unbounded" name="listePortefeuilles"
+						nillable="true" type="tns2:Portefeuille" />
+					<element maxOccurs="unbounded" name="listeMoyensPayement"
+						nillable="true" type="tns2:MoyenPayement" />
+					<element name="transaction" nillable="true"
+						type="tns2:Transaction" />
+					<element name="agc_Cod" type="xsd:short" />
+				</sequence>
+			</complexType>
+			<complexType name="Portefeuille">
+				<sequence>
+					<element name="fac_Num" type="xsd:int" />
+					<element name="ligne" type="xsd:int" />
+				</sequence>
+			</complexType>
+			<complexType name="MoyenPayement">
+				<sequence>
+					<element name="banq_Cod" nillable="true" type="xsd:string" />
+					<element name="moyen_Pai" nillable="true" type="xsd:string" />
+					<element name="type_Moy_Pai" nillable="true"
+						type="xsd:string" />
+					<element name="montant" nillable="true" type="xsd:decimal" />
+					<element name="date_Pai" nillable="true"
+						type="xsd:dateTime" />
+				</sequence>
+			</complexType>
+			<complexType name="Transaction">
+				<sequence>
+					<element name="num_Trans" type="xsd:int" />
+					<element name="date_Trans" nillable="true"
+						type="xsd:dateTime" />
+					<element name="date_Val" nillable="true" type="xsd:date" />
+					<element name="agc_Cod" type="xsd:short" />
+					<element name="guichet_Cod" type="xsd:short" />
+					<element name="matr" type="xsd:int" />
+					<element name="type_Trans" nillable="true"
+						type="xsd:string" />
+					<element name="etat_Trans" nillable="true"
+						type="xsd:string" />
+					<element name="mt_Debite" nillable="true"
+						type="xsd:decimal" />
+					<element name="mt_Facture" nillable="true"
+						type="xsd:decimal" />
+					<element name="mt_Credite_Cred" nillable="true"
+						type="xsd:decimal" />
+					<element name="mt_Enc_Mp" nillable="true"
+						type="xsd:decimal" />
+					<element name="mt_Enc_Esp" nillable="true"
+						type="xsd:decimal" />
+					<element name="mt_Credite_Vers" nillable="true"
+						type="xsd:decimal" />
+					<element name="mt_Credite_Prov" nillable="true"
+						type="xsd:decimal" />
+					<element name="mt_Annule_Timbre" nillable="true"
+						type="xsd:decimal" />
+					<element name="mt_Remb_Cheq" nillable="true"
+						type="xsd:decimal" />
+					<element name="mt_Od" nillable="true" type="xsd:decimal" />
+					<element name="tr_Annul" type="xsd:int" />
+					<element name="tr_Recu" nillable="true" type="xsd:string" />
+				</sequence>
+			</complexType>
+			<complexType name="ReponseReglements">
+				<sequence>
+					<element name="numeroTransaction" type="xsd:int" />
+					<element name="message" nillable="true" type="xsd:string" />
+					<element name="ok" type="xsd:boolean" />
+				</sequence>
+			</complexType>
+			<complexType name="DemandesReglementsParLot">
+				<sequence>
+					<element name="listeTransactions" nillable="true"
+						type="xsd:string" />
+					<element name="listePortefeuilles" nillable="true"
+						type="xsd:string" />
+					<element name="listeMoyensPayement" nillable="true"
+						type="xsd:string" />
+					<element name="signature" nillable="true" type="xsd:string" />
+					<element name="agc_Cod" type="xsd:short" />
+				</sequence>
+			</complexType>
+			<complexType name="ReponseReglementsParLot">
+				<sequence>
+					<element name="message" nillable="true" type="xsd:string" />
+					<element name="ok" type="xsd:boolean" />
+					<element maxOccurs="unbounded" name="numerosTransactions"
+						type="xsd:int" />
+				</sequence>
+			</complexType>
+			<complexType name="SignaturesParPointEnc">
+				<sequence>
+					<element maxOccurs="unbounded"
+						name="listeSignaturesParPointEnc" nillable="true"
+						type="tns2:SignatureParPointEnc" />
+					<element name="numeroSignature" type="xsd:int" />
+					<element name="agcCod" type="xsd:int" />
+				</sequence>
+			</complexType>
+			<complexType name="SignatureParPointEnc">
+				<sequence>
+					<element name="guichetCod" type="xsd:int" />
+					<element name="mtAnnulations" nillable="true"
+						type="xsd:decimal" />
+					<element name="mtAnnuleTimbre" nillable="true"
+						type="xsd:decimal" />
+					<element name="mtEncEsp" nillable="true" type="xsd:decimal" />
+					<element name="mtEncMp" nillable="true" type="xsd:decimal" />
+					<element name="nbrFactures" type="xsd:int" />
+				</sequence>
+			</complexType>
+			<complexType name="ReponseSignatureParPointEnc">
+				<sequence>
+					<element name="message" nillable="true" type="xsd:string" />
+					<element name="numero" type="xsd:int" />
+					<element name="ok" type="xsd:boolean" />
+					<element maxOccurs="unbounded" name="guichetsCodes"
+						nillable="true" type="xsd:int" />
+				</sequence>
+			</complexType>
+		</schema>
+		<schema xmlns="http://www.w3.org/2001/XMLSchema"
+			elementFormDefault="qualified"
+			targetNamespace="http://service.lydec.com">
+			<element name="ecrireSignature">
+				<complexType>
+					<sequence>
+						<element name="pSignatureComplete" nillable="true"
+							type="tns2:SignatureComplete" />
+					</sequence>
+				</complexType>
+			</element>
+			<element name="ecrireSignatureResponse">
+				<complexType>
+					<sequence>
+						<element name="ecrireSignatureReturn" nillable="true"
+							type="tns2:ReponseSignature" />
+					</sequence>
+				</complexType>
+			</element>
+			<element name="ecrireSignatureParTransaction">
+				<complexType>
+					<sequence>
+						<element name="pSignaturesParTransaction" nillable="true"
+							type="tns2:SignaturesParTransaction" />
+					</sequence>
+				</complexType>
+			</element>
+			<element name="ecrireSignatureParTransactionResponse">
+				<complexType>
+					<sequence>
+						<element name="ecrireSignatureParTransactionReturn"
+							nillable="true" type="tns2:ReponseSignatureParTransaction" />
+					</sequence>
+				</complexType>
+			</element>
+			<element name="lireImpayes">
+				<complexType>
+					<sequence>
+						<element name="pCritere" nillable="true" type="xsd:string" />
+						<element name="pTypeCritere" type="xsd:int" />
+						<element name="pNom" nillable="true" type="xsd:string" />
+						<element name="pAgence" type="xsd:int" />
+					</sequence>
+				</complexType>
+			</element>
+			<element name="lireImpayesResponse">
+				<complexType>
+					<sequence>
+						<element name="lireImpayesReturn" nillable="true"
+							type="tns2:Impayes" />
+					</sequence>
+				</complexType>
+			</element>
+			<element name="ecrireReglements">
+				<complexType>
+					<sequence>
+						<element name="pDemandeReglements" nillable="true"
+							type="tns2:DemandesReglements" />
+					</sequence>
+				</complexType>
+			</element>
+			<element name="ecrireReglementsResponse">
+				<complexType>
+					<sequence>
+						<element name="ecrireReglementsReturn" nillable="true"
+							type="tns2:ReponseReglements" />
+					</sequence>
+				</complexType>
+			</element>
+			<element name="ecrireReglementsParLot">
+				<complexType>
+					<sequence>
+						<element name="pDemandeReglementsParLot" nillable="true"
+							type="tns2:DemandesReglementsParLot" />
+					</sequence>
+				</complexType>
+			</element>
+			<element name="ecrireReglementsParLotResponse">
+				<complexType>
+					<sequence>
+						<element name="ecrireReglementsParLotReturn"
+							nillable="true" type="tns2:ReponseReglementsParLot" />
+					</sequence>
+				</complexType>
+			</element>
+			<element name="ecrireSignatureParPointEnc">
+				<complexType>
+					<sequence>
+						<element name="pSignaturesParPointEnc" nillable="true"
+							type="tns2:SignaturesParPointEnc" />
+					</sequence>
+				</complexType>
+			</element>
+			<element name="ecrireSignatureParPointEncResponse">
+				<complexType>
+					<sequence>
+						<element name="ecrireSignatureParPointEncReturn"
+							nillable="true" type="tns2:ReponseSignatureParPointEnc" />
+					</sequence>
+				</complexType>
+			</element>
+		</schema>
+	</types>
+	<message name="lireImpayesRequest">
+		<part element="impl:lireImpayes" name="parameters">
+		</part>
+	</message>
+	<message name="ecrireSignatureParPointEncResponse">
+		<part element="impl:ecrireSignatureParPointEncResponse"
+			name="parameters">
+		</part>
+	</message>
+	<message name="ecrireReglementsRequest">
+		<part element="impl:ecrireReglements" name="parameters">
+		</part>
+	</message>
+	<message name="ecrireReglementsParLotRequest">
+		<part element="impl:ecrireReglementsParLot" name="parameters">
+		</part>
+	</message>
+	<message name="ecrireSignatureRequest">
+		<part element="impl:ecrireSignature" name="parameters">
+		</part>
+	</message>
+	<message name="ecrireSignatureParTransactionResponse">
+		<part element="impl:ecrireSignatureParTransactionResponse"
+			name="parameters">
+		</part>
+	</message>
+	<message name="ecrireSignatureParPointEncRequest">
+		<part element="impl:ecrireSignatureParPointEnc" name="parameters">
+		</part>
+	</message>
+	<message name="ecrireReglementsResponse">
+		<part element="impl:ecrireReglementsResponse" name="parameters">
+		</part>
+	</message>
+	<message name="ecrireSignatureResponse">
+		<part element="impl:ecrireSignatureResponse" name="parameters">
+		</part>
+	</message>
+	<message name="ecrireReglementsParLotResponse">
+		<part element="impl:ecrireReglementsParLotResponse"
+			name="parameters">
+		</part>
+	</message>
+	<message name="lireImpayesResponse">
+		<part element="impl:lireImpayesResponse" name="parameters">
+		</part>
+	</message>
+	<message name="ecrireSignatureParTransactionRequest">
+		<part element="impl:ecrireSignatureParTransaction"
+			name="parameters">
+		</part>
+	</message>
+	<portType name="GererEncaissement">
+		<operation name="ecrireSignature">
+			<input message="impl:ecrireSignatureRequest"
+				name="ecrireSignatureRequest">
+			</input>
+			<output message="impl:ecrireSignatureResponse"
+				name="ecrireSignatureResponse">
+			</output>
+		</operation>
+		<operation name="ecrireSignatureParTransaction">
+			<input message="impl:ecrireSignatureParTransactionRequest"
+				name="ecrireSignatureParTransactionRequest">
+			</input>
+			<output message="impl:ecrireSignatureParTransactionResponse"
+				name="ecrireSignatureParTransactionResponse">
+			</output>
+		</operation>
+		<operation name="lireImpayes">
+			<input message="impl:lireImpayesRequest"
+				name="lireImpayesRequest">
+			</input>
+			<output message="impl:lireImpayesResponse"
+				name="lireImpayesResponse">
+			</output>
+		</operation>
+		<operation name="ecrireReglements">
+			<input message="impl:ecrireReglementsRequest"
+				name="ecrireReglementsRequest">
+			</input>
+			<output message="impl:ecrireReglementsResponse"
+				name="ecrireReglementsResponse">
+			</output>
+		</operation>
+		<operation name="ecrireReglementsParLot">
+			<input message="impl:ecrireReglementsParLotRequest"
+				name="ecrireReglementsParLotRequest">
+			</input>
+			<output message="impl:ecrireReglementsParLotResponse"
+				name="ecrireReglementsParLotResponse">
+			</output>
+		</operation>
+		<operation name="ecrireSignatureParPointEnc">
+			<input message="impl:ecrireSignatureParPointEncRequest"
+				name="ecrireSignatureParPointEncRequest">
+			</input>
+			<output message="impl:ecrireSignatureParPointEncResponse"
+				name="ecrireSignatureParPointEncResponse">
+			</output>
+		</operation>
+	</portType>
+	<binding name="GererEncaissementSoapBinding"
+		type="impl:GererEncaissement">
+		<wsdlsoap:binding style="document"
+			transport="http://schemas.xmlsoap.org/soap/http" />
+		<operation name="ecrireSignature">
+			<wsdlsoap:operation soapAction="" />
+			<input name="ecrireSignatureRequest">
+				<wsdlsoap:body use="literal" />
+			</input>
+			<output name="ecrireSignatureResponse">
+				<wsdlsoap:body use="literal" />
+			</output>
+		</operation>
+		<operation name="ecrireSignatureParTransaction">
+			<wsdlsoap:operation soapAction="" />
+			<input name="ecrireSignatureParTransactionRequest">
+				<wsdlsoap:body use="literal" />
+			</input>
+			<output name="ecrireSignatureParTransactionResponse">
+				<wsdlsoap:body use="literal" />
+			</output>
+		</operation>
+		<operation name="lireImpayes">
+			<wsdlsoap:operation soapAction="" />
+			<input name="lireImpayesRequest">
+				<wsdlsoap:body use="literal" />
+			</input>
+			<output name="lireImpayesResponse">
+				<wsdlsoap:body use="literal" />
+			</output>
+		</operation>
+		<operation name="ecrireReglements">
+			<wsdlsoap:operation soapAction="" />
+			<input name="ecrireReglementsRequest">
+				<wsdlsoap:body use="literal" />
+			</input>
+			<output name="ecrireReglementsResponse">
+				<wsdlsoap:body use="literal" />
+			</output>
+		</operation>
+		<operation name="ecrireReglementsParLot">
+			<wsdlsoap:operation soapAction="" />
+			<input name="ecrireReglementsParLotRequest">
+				<wsdlsoap:body use="literal" />
+			</input>
+			<output name="ecrireReglementsParLotResponse">
+				<wsdlsoap:body use="literal" />
+			</output>
+		</operation>
+		<operation name="ecrireSignatureParPointEnc">
+			<wsdlsoap:operation soapAction="" />
+			<input name="ecrireSignatureParPointEncRequest">
+				<wsdlsoap:body use="literal" />
+			</input>
+			<output name="ecrireSignatureParPointEncResponse">
+				<wsdlsoap:body use="literal" />
+			</output>
+		</operation>
+	</binding>
+	<service name="GererEncaissementService">
+		<port binding="impl:GererEncaissementSoapBinding"
+			name="GererEncaissement">
+			<wsdlsoap:address
+				location="http://192.168.20.33:80/lydecWebServices/services/GererEncaissement" />
+		</port>
+	</service>
+</definitions>

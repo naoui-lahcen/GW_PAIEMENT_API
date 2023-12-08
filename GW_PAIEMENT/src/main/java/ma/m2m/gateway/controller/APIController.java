@@ -82,7 +82,6 @@ public class APIController {
 
 	private static Logger logger = LogManager.getLogger(APIController.class);
 
-	// private Traces traces = new Traces();
 	private LocalDateTime dateF;
 	private String folder;
 	private String file;
@@ -170,7 +169,6 @@ public class APIController {
 	@ResponseBody
 	public String authorization(@RequestHeader MultiValueMap<String, String> header, @RequestBody String auths,
 			HttpServletResponse response) {
-		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "API_AUTH_" + randomWithSplittableRandom;
 		// create file log
@@ -1550,7 +1548,6 @@ public class APIController {
 	@ResponseBody
 	public String getLink(@RequestHeader MultiValueMap<String, String> header, @RequestBody String linkP,
 			HttpServletResponse response) {
-		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "API_LINK_" + randomWithSplittableRandom;
 		// create file log
@@ -1830,7 +1827,6 @@ public class APIController {
 	@ResponseBody
 	public String generateToken(@RequestHeader MultiValueMap<String, String> header, @RequestBody String token24,
 			HttpServletResponse response) {
-		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "API_" + randomWithSplittableRandom;
 		// create file log
@@ -2035,7 +2031,6 @@ public class APIController {
 
 	@RequestMapping(value = "/napspayment/chalenge/token/{token}", method = RequestMethod.GET)
 	public String chalengeapi(@PathVariable(value = "token") String token, Model model) {
-		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "API_" + randomWithSplittableRandom;
 		// create file log
@@ -2108,7 +2103,6 @@ public class APIController {
 	@ResponseBody
 	public String status(@RequestHeader MultiValueMap<String, String> header, @RequestBody String status,
 			HttpServletResponse response) {
-		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "API_" + randomWithSplittableRandom;
 		// create file log
@@ -2515,7 +2509,6 @@ public class APIController {
 	@ResponseBody
 	public String capture(@RequestHeader MultiValueMap<String, String> header, @RequestBody String capture,
 			HttpServletResponse response) {
-		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "API_" + randomWithSplittableRandom;
 		// create file log
@@ -2911,7 +2904,6 @@ public class APIController {
 	@ResponseBody
 	public String refund(@RequestHeader MultiValueMap<String, String> header, @RequestBody String refund,
 			HttpServletResponse response) {
-		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "API_" + randomWithSplittableRandom;
 		// create file log
@@ -3429,7 +3421,6 @@ public class APIController {
 	@ResponseBody
 	public String reversal(@RequestHeader MultiValueMap<String, String> header, @RequestBody String reversal,
 			HttpServletResponse response) {
-		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "API_" + randomWithSplittableRandom;
 		// create file log
@@ -4041,7 +4032,6 @@ public class APIController {
 	@ResponseBody
 	public String savingCardToken(@RequestHeader MultiValueMap<String, String> header,
 			@RequestBody String savingcardtoken, HttpServletResponse response) {
-		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "API_" + randomWithSplittableRandom;
 		// create file log
@@ -5214,7 +5204,6 @@ public class APIController {
 	@ResponseBody
 	public String getCardTkenOld(@RequestHeader MultiValueMap<String, String> header, @RequestBody String cardtoken,
 			HttpServletResponse response) {
-		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "API_" + randomWithSplittableRandom;
 		// create file log
@@ -5479,7 +5468,6 @@ public class APIController {
 	@ResponseBody
 	public String deleteCardTken(@RequestHeader MultiValueMap<String, String> header, @RequestBody String cardtoken,
 			HttpServletResponse response) {
-		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "API_" + randomWithSplittableRandom;
 		// create file log
@@ -5655,7 +5643,6 @@ public class APIController {
 	@PostMapping(value = "/napspayment/histo/exportexcel", consumes = "application/json", produces = "application/json")
 	public void exportToExcel(@RequestHeader MultiValueMap<String, String> header, @RequestBody String req,
 			HttpServletResponse response) throws IOException {
-		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "API_" + randomWithSplittableRandom;
 		// create file log
@@ -5716,7 +5703,6 @@ public class APIController {
 	@ResponseBody
 	public String cpautorisation(@RequestHeader MultiValueMap<String, String> header, @RequestBody String cpauths,
 			HttpServletResponse response) {
-		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "API_" + randomWithSplittableRandom;
 		// create file log
@@ -6159,7 +6145,6 @@ public class APIController {
 
 	@RequestMapping(path = "/napspayment/cpautorisationTest", produces = "application/json; charset=UTF-8")
 	public ResponseEntity<responseDto> cpautorisation1(@RequestBody RequestDto requestDto) {
-		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "API_" + randomWithSplittableRandom;
 		// create file log
@@ -6184,7 +6169,6 @@ public class APIController {
 	@ResponseBody
 	public String testapi(@RequestHeader MultiValueMap<String, String> header, @RequestBody String req,
 			HttpServletResponse response, Model model) throws IOException {
-		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "API_" + randomWithSplittableRandom;
 		// create file log
@@ -6257,9 +6241,7 @@ public class APIController {
 	}
 
 	public JSONObject verifieToken(String securtoken24, String file) {
-		// Traces traces = new Traces();
 		JSONObject jso = new JSONObject();
-
 		if (!securtoken24.equals("")) {
 			JwtTokenUtil jwtTokenUtil = new JwtTokenUtil();
 			String token = securtoken24;
@@ -6300,7 +6282,6 @@ public class APIController {
 	}
 
 	public String getMsgError(String folder, String file, JSONObject jsonOrequest, String msg, String coderep) {
-		// Traces traces = new Traces();
 		Util.writeInFileTransaction(folder, file, "*********** Start getMsgError() ************** ");
 		System.out.println("*********** Start getMsgError() ************** ");
 
@@ -6335,7 +6316,6 @@ public class APIController {
 	}
 	
 	public String getMsgErrorV1(String folder, String file, JSONObject jsonOrequest, String msg, String coderep) {
-		// Traces traces = new Traces();
 		Util.writeInFileTransaction(folder, file, "*********** Start getMsgErrorV1() ************** ");
 		System.out.println("*********** Start getMsgErrorV1() ************** ");
 
