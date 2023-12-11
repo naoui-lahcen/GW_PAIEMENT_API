@@ -1,13 +1,4 @@
-package ma.m2m.gateway.model;
-
-import java.io.Serializable;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+package ma.m2m.gateway.dto;
 
 /*
 * @author  LAHCEN NAOUI
@@ -15,43 +6,29 @@ import javax.persistence.Table;
 * @since   2023-12-11
  */
 
-@Entity
-@Table(name="ArticleDGI")
-public class ArticleDGI implements Serializable {
+public class ArticleDGIDto {
 
-	private static final long serialVersionUID = 1L;
-	
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name="idArticleDGI")
 	private Integer idArticleDGI;
 	
-	@Column(name="uniqueID")
 	private String uniqueID;
 	
-	@Column(name="name")
 	private String name;
 	
-	@Column(name="price")
 	private String price ;
 	
-	@Column(name="type")
 	private String type;
 	
-	@Column(name="cF_R_COMMONE")
 	private String cF_R_COMMONE;
 	
-	@Column(name="commande")
 	private String commande;
 	
-	@Column(name="id_demande")
 	private int iddemande;
 	
-	public ArticleDGI() {
+	public ArticleDGIDto() {
 		super();
 	}
 
-	public ArticleDGI(Integer idArticleDGI, String uniqueID, String name, String price, String type, String cF_R_COMMONE,
+	public ArticleDGIDto(Integer idArticleDGI, String uniqueID, String name, String price, String type, String cF_R_COMMONE,
 			String commande, int iddemande) {
 		super();
 		this.idArticleDGI = idArticleDGI;
@@ -130,7 +107,7 @@ public class ArticleDGI implements Serializable {
 
 	@Override
 	public String toString() {
-		return "ArticleDGI [idArticleDGI=" + idArticleDGI + ", uniqueID=" + uniqueID + ", name=" + name + ", price="
+		return "ArticleDGIDto [idArticleDGI=" + idArticleDGI + ", uniqueID=" + uniqueID + ", name=" + name + ", price="
 				+ price + ", type=" + type + ", cF_R_COMMONE=" + cF_R_COMMONE + ", commande=" + commande
 				+ ", iddemande=" + iddemande + "]";
 	}

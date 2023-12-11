@@ -124,7 +124,7 @@ public class DataDGIDto {
 
 	@Override
 	public String toString() {
-		return "DataDGI [idDataDGI=" + idDataDGI + ", storeId=" + storeId + ", dateTrx=" + dateTrx + ", commande="
+		return "DataDGIDto [idDataDGI=" + idDataDGI + ", storeId=" + storeId + ", dateTrx=" + dateTrx + ", commande="
 				+ commande + ", montant=" + montant + ", checksum=" + checksum + ", xml=" + xml + ", etat=" + etat
 				+ ", iddemande=" + iddemande + "]";
 	}

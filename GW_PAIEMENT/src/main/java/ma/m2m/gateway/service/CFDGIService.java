@@ -1,5 +1,7 @@
 package ma.m2m.gateway.service;
 
+import ma.m2m.gateway.dto.CFDGIDto;
+
 /*
 * @author  LAHCEN NAOUI
 * @version 1.0
@@ -8,4 +10,5 @@ package ma.m2m.gateway.service;
 
 public interface CFDGIService {
 
+	CFDGIDto findCFDGIByIddemande(int iddemande);
 }

@@ -13,4 +13,5 @@ import ma.m2m.gateway.model.CFDGI;
 @Repository
 public interface CFDGIDao extends JpaRepository<CFDGI, Long> {
 
+	CFDGI findCFDGIByIddemande(int iddemande);
 }

@@ -161,7 +161,7 @@ public class CFDGIDto {
 
 	@Override
 	public String toString() {
-		return "CFDGI [idCFDGI=" + idCFDGI + ", cF_R_OICodeclient=" + cF_R_OICodeclient + ", cF_R_OINReference="
+		return "CFDGIDto [idCFDGI=" + idCFDGI + ", cF_R_OICodeclient=" + cF_R_OICodeclient + ", cF_R_OINReference="
 				+ cF_R_OINReference + ", cF_R_OIConfirmUrl=" + cF_R_OIConfirmUrl + ", cF_R_OIemail=" + cF_R_OIemail
 				+ ", cF_R_OIMtTotal=" + cF_R_OIMtTotal + ", cF_R_OICodeOper=" + cF_R_OICodeOper + ", cF_R_OIUpdateURL="
 				+ cF_R_OIUpdateURL + ", offerURL=" + offerURL + ", cF_R_OIRefFacture=" + cF_R_OIRefFacture
