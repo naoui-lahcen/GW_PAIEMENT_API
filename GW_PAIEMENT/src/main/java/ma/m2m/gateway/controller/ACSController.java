@@ -53,7 +53,6 @@ import ma.m2m.gateway.lydec.MoyenPayement;
 import ma.m2m.gateway.lydec.Portefeuille;
 import ma.m2m.gateway.lydec.ReponseReglements;
 import ma.m2m.gateway.lydec.Transaction;
-import ma.m2m.gateway.model.FactureLD;
 import ma.m2m.gateway.service.AutorisationService;
 import ma.m2m.gateway.service.CardtokenService;
 import ma.m2m.gateway.service.CodeReponseService;
@@ -1237,6 +1236,13 @@ public class ACSController {
 								 Util.writeInFileTransaction(folder, file, "reponseRegelemnt KO ");
 								 Util.writeInFileTransaction(folder, file, "Annulation Start ... ");
 								 Util.writeInFileTransaction(folder, file, "Annulation End ... ");
+								 demandeDtoMsg.setMsgRefus(
+											"La transaction en cours n’a pas abouti (Web service LYDEC Hors service), votre compte ne sera pas débité, merci de réessayer .");
+								model.addAttribute("demandeDto", demandeDtoMsg);
+								 page = "result";
+								Util.writeInFileTransaction(folder, file, "Fin processRequest ()");
+								System.out.println("Fin processRequest ()");
+								return page;
 							 } else {
 								 Util.writeInFileTransaction(folder, file, "reponseRegelemnt OK ");
 								 for (FactureLDDto facLD : listFactureLD) {
@@ -1250,6 +1256,27 @@ public class ACSController {
 									  + facLD.getNumCommande() + "/" + facLD.getEtat() + "/"
 									  + facLD.getNumrecnaps() + "/" + facLD.getTrxFactureLydec());
 									 }
+								 	page = "recapLydec";
+								 	responseDto responseDto = new responseDto();
+									responseDto.setLname(dmd.getNom());
+									responseDto.setFname(dmd.getPrenom());
+									responseDto.setOrderid(dmd.getCommande());
+									responseDto.setAuthnumber(hist.getHatNautemt());
+									responseDto.setAmount(dmd.getMontant());
+									responseDto.setTransactionid(transactionid);
+									responseDto.setMerchantid(dmd.getComid());
+									responseDto.setEmail(dmd.getEmail());
+									responseDto.setMerchantname(current_infoCommercant.getCmrNom());
+									responseDto.setCardnumber(Util.formatCard(cardnumber));
+									responseDto.setTransactiontime(dateFormat.format(new Date()));
+									responseDto.setNumTransLydec(String.valueOf(reponseRegelemnt.getNumeroTransaction()));
+									
+									model.addAttribute("responseDto", responseDto);
+
+									page = "recapLydec";
+									Util.writeInFileTransaction(folder, file, "Fin processRequest ()");
+									System.out.println("Fin processRequest ()");
+									return page;
 							 }
 						 }
 

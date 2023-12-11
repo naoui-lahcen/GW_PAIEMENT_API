@@ -1,13 +1,4 @@
-package ma.m2m.gateway.model;
-
-import java.io.Serializable;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+package ma.m2m.gateway.dto;
 
 /*
 * @author  LAHCEN NAOUI
@@ -15,46 +6,27 @@ import javax.persistence.Table;
 * @since   2023-12-11
  */
 
-@Entity
-@Table(name="DataDGI")
-public class DataDGI implements Serializable {
-	
-	
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name="idDataDGI")
+public class DataDGIDto {
+
 	private Integer idDataDGI;
 	
-	@Column(name="storeId")
 	private String storeId; //code commerçant
 	
-	@Column(name="dateTrx")
 	private String dateTrx;
 	
-	@Column(name="commande")
 	private String commande;
 	
-	@Column(name="MONTANT")
 	private Double montant;
 	
-	@Column(name="checksum")
 	private String checksum;
 	
-	@Column(name="xml")
 	private String xml;
 	
-	@Column(name="etat")
 	private String etat;
 	
-	@Column(name="id_demande")
 	private int iddemande;
 	
-	public DataDGI() {
+	public DataDGIDto() {
 		super();
 	}
 	
@@ -136,7 +108,7 @@ public class DataDGI implements Serializable {
 	}
 
 
-	public DataDGI(String storeId, String dateTrx, String commande, Double montant, String checksum, String xml,
+	public DataDGIDto(String storeId, String dateTrx, String commande, Double montant, String checksum, String xml,
 			String etat, int iddemande) {
 		super();
 		this.storeId = storeId;
@@ -156,5 +128,5 @@ public class DataDGI implements Serializable {
 				+ commande + ", montant=" + montant + ", checksum=" + checksum + ", xml=" + xml + ", etat=" + etat
 				+ ", iddemande=" + iddemande + "]";
 	}
-	
+
 }
