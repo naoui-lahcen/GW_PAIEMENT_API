@@ -46,6 +46,7 @@ import org.springframework.ui.Model;
 import ma.m2m.gateway.Utils.Objects;
 import ma.m2m.gateway.Utils.Util;
 import ma.m2m.gateway.config.JwtTokenUtil;
+import ma.m2m.gateway.dto.ArticleDGIDto;
 import ma.m2m.gateway.dto.CodeReponseDto;
 import ma.m2m.gateway.dto.CommercantDto;
 import ma.m2m.gateway.dto.ControlRiskCmrDto;
@@ -72,6 +73,7 @@ import ma.m2m.gateway.lydec.Transaction;
 import ma.m2m.gateway.model.FactureLD;
 import ma.m2m.gateway.reporting.GenerateExcel;
 import ma.m2m.gateway.risk.GWRiskAnalysis;
+import ma.m2m.gateway.service.ArticleDGIService;
 import ma.m2m.gateway.service.AutorisationService;
 import ma.m2m.gateway.service.CodeReponseService;
 import ma.m2m.gateway.service.CommercantService;
@@ -168,6 +170,9 @@ public class GWPaiementController {
 	
 	@Autowired
 	FactureLDService factureLDService;
+	
+	@Autowired
+	ArticleDGIService articleDGIService;
 	
 	private LocalDateTime date;
 	private String folder;
@@ -649,9 +654,8 @@ public class GWPaiementController {
 		return page;
 	}
 
-
 	@RequestMapping(value = "/napspayment/authorization/lydec/token/{token}", method = RequestMethod.GET)
-	public String showPagePaymentLdec(@PathVariable(value = "token") String token, Model model) {
+	public String showPagePaymentLydec(@PathVariable(value = "token") String token, Model model) {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "GW_PAGE_" + randomWithSplittableRandom;
 		// create file log
@@ -734,7 +738,7 @@ public class GWPaiementController {
 						}
 					} catch (Exception e) {
 						Util.writeInFileTransaction(folder, file,
-								"showPagePayment 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
+								"showPagePaymentLydec 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 										+ "] and merchantid:[" + merchantid + "]" + e);
 						demandeDto = new DemandePaiementDto();
 						demandeDto.setMsgRefus("Commerçant mal configuré dans la base de données ou inexistant");
@@ -750,7 +754,7 @@ public class GWPaiementController {
 						}
 					} catch (Exception e) {
 						Util.writeInFileTransaction(folder, file,
-								"showPagePayment 500 Galerie misconfigured in DB or not existing orderid:[" + orderid
+								"showPagePaymentLydec 500 Galerie misconfigured in DB or not existing orderid:[" + orderid
 										+ "] and merchantid:[" + merchantid + "]" + e);
 						demandeDto = new DemandePaiementDto();
 						demandeDto.setMsgRefus("Galerie mal configuré dans la base de données ou inexistant");
@@ -769,7 +773,7 @@ public class GWPaiementController {
 
 		} catch (Exception e) {
 			Util.writeInFileTransaction(folder, file,
-					"showPagePaymentLdec 500 DEMANDE_PAIEMENT misconfigured in DB or not existing token:[" + token + "]"
+					"showPagePaymentLydec 500 DEMANDE_PAIEMENT misconfigured in DB or not existing token:[" + token + "]"
 							+ e);
 
 			Util.writeInFileTransaction(folder, file, "showPagePaymentLdec 500 exception" + e);
@@ -802,6 +806,160 @@ public class GWPaiementController {
 
 		return page;
 	}
+	
+	@RequestMapping(value = "/napspayment/authorization/dgi/token/{token}", method = RequestMethod.GET)
+	public String showPagePaymentDGI(@PathVariable(value = "token") String token, Model model) {
+		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
+		String file = "GW_PAGE_" + randomWithSplittableRandom;
+		// create file log
+		Util.creatFileTransaction(file);
+		Util.writeInFileTransaction(folder, file, "*********** Start affichage page ***********");
+		System.out.println("*********** Start affichage page ***********");
+
+		Util.writeInFileTransaction(folder, file, "findByTokencommande token : " + token);
+		System.out.println("findByTokencommande token : " + token);
+
+		DemandePaiementDto demandeDto = new DemandePaiementDto();
+		CommercantDto merchant = null;
+		GalerieDto galerie = null;
+		String merchantid = "";
+		String orderid = "";
+
+		String page = "napspaymentdgi";
+
+		try {
+			demandeDto = demandePaiementService.findByTokencommande(token);
+
+			if (demandeDto != null) {
+				System.out.println("DemandePaiement is found idDemande/Commande : " + demandeDto.getIddemande() + "/" + demandeDto.getCommande());
+				Util.writeInFileTransaction(folder, file,
+						"DemandePaiement is found iddemande/Commande : " + demandeDto.getIddemande() + "/" + demandeDto.getCommande());
+
+				// get list of years + 10
+				int currentYear = Year.now().getValue();
+				List<Integer> years = generateYearList(currentYear, currentYear + 10);
+
+				demandeDto.setYears(years);
+
+				// get list of months
+				List<Month> months = Arrays.asList(Month.values());
+				List<String> monthNames = convertMonthListToStringList(months);
+				List<MonthDto> monthValues = convertStringAGListToFR(monthNames);
+
+				demandeDto.setMonths(monthValues);
+				// if cmr don't accept transaction cof demandeDto.getIs_cof() = N don't show
+				// carte
+				if (demandeDto.getIs_cof() == null || demandeDto.getIs_cof().equals("N")) {
+					demandeDto.setDem_pan("");
+					demandeDto.setDem_cvv("");
+				}
+				// if cmr accept transaction cof demandeDto.getIs_cof() = Y show your carte
+				// saved
+				// Créez un objet DecimalFormat avec le modèle "0.00"
+		        DecimalFormat df = new DecimalFormat("0.00");
+
+		        // Formatez le nombre en une chaîne avec deux chiffres après la virgule
+		        Double mont = demandeDto.getMontant();
+		        String mtFormate = df.format(mont);
+		        if (mtFormate.contains(",")) {
+		        	mtFormate = mtFormate.replace(",", ".");
+		        }
+		        
+		        demandeDto.setMontantStr(mtFormate);
+
+				model.addAttribute("demandeDto", demandeDto);
+
+				if (demandeDto.getEtat_demande().equals("SW_PAYE") || demandeDto.getEtat_demande().equals("PAYE")) {
+					Util.writeInFileTransaction(folder, file, "Opération déjà effectuée");
+					demandeDto.setMsgRefus(
+							"La transaction en cours n’a pas abouti (Opération déjà effectuée), votre compte ne sera pas débité, merci de réessayer .");
+					model.addAttribute("demandeDto", demandeDto);
+					page = "operationEffectue";
+				} else if (demandeDto.getEtat_demande().equals("SW_REJET")) {
+					Util.writeInFileTransaction(folder, file, "Transaction rejetée");
+					demandeDto.setMsgRefus(
+							"La transaction en cours n’a pas abouti (Transaction rejetée), votre compte ne sera pas débité, merci de réessayer .");
+					model.addAttribute("demandeDto", demandeDto);
+					page = "result";
+				} else {
+					try {
+						merchantid = demandeDto.getComid();
+						orderid = demandeDto.getCommande();
+						merchant = commercantService.findByCmrNumcmr(merchantid);
+						if (merchant != null) {
+							demandeDto.setCommercantDto(merchant);
+						}
+					} catch (Exception e) {
+						Util.writeInFileTransaction(folder, file,
+								"showPagePaymentDGI 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
+										+ "] and merchantid:[" + merchantid + "]" + e);
+						demandeDto = new DemandePaiementDto();
+						demandeDto.setMsgRefus("Commerçant mal configuré dans la base de données ou inexistant");
+						model.addAttribute("demandeDto", demandeDto);
+						page = "result";
+					}
+					try {
+						merchantid = demandeDto.getComid();
+						orderid = demandeDto.getCommande();
+						galerie = galerieService.findByCodeCmr(merchantid);
+						if (galerie != null) {
+							demandeDto.setGalerieDto(galerie);
+						}
+					} catch (Exception e) {
+						Util.writeInFileTransaction(folder, file,
+								"showPagePaymentDGI 500 Galerie misconfigured in DB or not existing orderid:[" + orderid
+										+ "] and merchantid:[" + merchantid + "]" + e);
+						demandeDto = new DemandePaiementDto();
+						demandeDto.setMsgRefus("Galerie mal configuré dans la base de données ou inexistant");
+						model.addAttribute("demandeDto", demandeDto);
+						page = "result";
+					}
+				}
+			} else {
+				Util.writeInFileTransaction(folder, file, "demandeDto not found token : " + token);
+				System.out.println("demandeDto not found token : " + token);
+				demandeDto = new DemandePaiementDto();
+				demandeDto.setMsgRefus("Demande paiement mal configuré dans la base de données ou inexistant");
+				model.addAttribute("demandeDto", demandeDto);
+				page = "result";
+			}
+
+		} catch (Exception e) {
+			Util.writeInFileTransaction(folder, file,
+					"showPagePaymentDGILdec 500 DEMANDE_PAIEMENT misconfigured in DB or not existing token:[" + token + "]"
+							+ e);
+
+			Util.writeInFileTransaction(folder, file, "showPagePaymentDGILdec 500 exception" + e);
+			e.printStackTrace();
+			demandeDto = new DemandePaiementDto();
+			demandeDto.setMsgRefus("Demande paiement mal configuré dans la base de données ou inexistant");
+			model.addAttribute("demandeDto", demandeDto);
+			page = "result";
+		}
+		
+		if(page.equals("napspaymentdgi")) {
+			demandeDto.setEtat_demande("P_CHRG_OK");
+			demandePaiementService.save(demandeDto);
+			System.out.println("update Demandepaiement status to P_CHRG_OK");
+			Util.writeInFileTransaction(folder, file, "update Demandepaiement status to P_CHRG_OK");
+			
+			List<ArticleDGIDto> articles = new ArrayList<>();
+			articles = articleDGIService.findArticleByIddemande(demandeDto.getIddemande());
+			if(articles != null && articles.size() > 0) {
+				System.out.println("articles : " + articles.size());
+				demandeDto.setArticles(articles);
+			} else {
+				demandeDto.setArticles(null);
+			}				
+			model.addAttribute("demandeDto", demandeDto);
+		}
+
+		Util.writeInFileTransaction(folder, file, "*********** Fin affichage page ************** ");
+		System.out.println("*********** Fin affichage page ************** ");
+
+		return page;
+	}
+	
 	@RequestMapping(path = "/napspayment/linkpayment1", produces = "application/json; charset=UTF-8")
 	public ResponseEntity<responseDto> getLink1(@RequestBody DemandePaiementDto demandeDto) {
 		// Traces traces = new Traces();

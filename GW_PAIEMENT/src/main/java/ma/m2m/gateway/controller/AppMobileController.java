@@ -2131,6 +2131,9 @@ public class AppMobileController {
 				// saved
 				// get cardnumber by idclient
 				String idclient = demandeDto.getId_client();
+				if(idclient == null) {
+					idclient="";
+				}
 				//merchantid = demandeDto.getComid();
 				merchantid = "";
 				String cardnumber = "";

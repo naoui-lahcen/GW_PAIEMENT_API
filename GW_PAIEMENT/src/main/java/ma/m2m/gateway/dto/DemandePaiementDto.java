@@ -96,6 +96,7 @@ public class DemandePaiementDto implements Serializable {
 	private Cartes carte;
 	private String infoCarte;
 	private List<FactureLDDto> factures;
+	private List<ArticleDGIDto> articles;
 	
 	public Cartes getCarte() {
 		return carte;
@@ -551,6 +552,13 @@ public class DemandePaiementDto implements Serializable {
 	public void setFactures(List<FactureLDDto> factures) {
 		this.factures = factures;
 	}
+	
+	public List<ArticleDGIDto> getArticles() {
+		return articles;
+	}
+	public void setArticles(List<ArticleDGIDto> articles) {
+		this.articles = articles;
+	}
 	public DemandePaiementDto() {
 		super();
 	}
@@ -655,7 +663,8 @@ public class DemandePaiementDto implements Serializable {
 			String dateSendRecall, String dateRetourRecall, int nbreTenta, String tokencommande,
 			boolean etat_annulation, String expery, String annee, String mois, CommercantDto commercantDto,
 			GalerieDto galerieDto, String msgRefus, String transactiontype, boolean condition, String creq,
-			List<Integer> years, List<MonthDto> months, List<Cartes> cartes, Cartes carte) {
+			List<Integer> years, List<MonthDto> months, List<Cartes> cartes, Cartes carte, String infoCarte,
+			List<FactureLDDto> factures, List<ArticleDGIDto> articles) {
 		super();
 		this.iddemande = iddemande;
 		this.nom = nom;
@@ -728,6 +737,9 @@ public class DemandePaiementDto implements Serializable {
 		this.months = months;
 		this.cartes = cartes;
 		this.carte = carte;
+		this.infoCarte = infoCarte;
+		this.factures = factures;
+		this.articles = articles;
 	}
 	// Util.formatCard(dem_pan) display carte pcidss
 	@Override

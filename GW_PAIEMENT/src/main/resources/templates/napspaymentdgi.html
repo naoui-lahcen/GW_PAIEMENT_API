@@ -127,34 +127,28 @@
 				
 							<td style="background: #fef7f7;">Référence</td>
 				
-							<td style="background: #fef7f7;">Fourniture</td>
-				
-							<td style="background: #fef7f7;">N° contrat</td>
-				
-				
 							<td style="background: #fef7f7;">Type</td>
 				
-							<!-- <td style="background: #fef7f7;">Description</td>-->
+							<td style="background: #fef7f7;">Description</td>
 				
 							<td style="background: #fef7f7;">Montant</td>
+
 						</tr>
 						</thead>
 						<tbody>
-							<tr style="line-height: 30px;" th:each="dem : ${demandeDto.factures}">
+							<tr style="line-height: 30px;" th:each="dem : ${demandeDto.articles}">
 				
-								<td id="numfacture" th:text="${dem.numfacture}"></td>
+								<td id="uniqueID" th:text="${dem.uniqueID}"></td>
 				
-								<td id="fourniture" th:text="${dem.fourniture}"></td>
+								<td id="type" th:text="${dem.type}"></td>
 				
-								<td id="numcontrat" th:text="${dem.numcontrat}"></td>
-								
 								<td id="name" th:text="${dem.name}"></td>
-				
-								<td id="montantSTbr" th:text="${dem.montantSTbr}"></td>
+												
+								<td id="price" th:text="${dem.price}"></td>
 							</tr>
 							<tr style="line-height: 30px;">
 				
-							<td colspan="4"
+							<td colspan="3"
 								style="text-align: right; padding-right: 5px; font-weight: bold;">TOTAL
 								À PAYER</td>
 				
