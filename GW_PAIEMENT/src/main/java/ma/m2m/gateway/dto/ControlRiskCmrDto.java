@@ -2,13 +2,6 @@ package ma.m2m.gateway.dto;
 
 import java.io.Serializable;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 /*
 * @author  LAHCEN NAOUI
 * @version 1.0

@@ -10,7 +10,6 @@ import ma.m2m.gateway.dto.HistoAutoGateDto;
 import ma.m2m.gateway.mappers.HistoAutoGateMapper;
 import ma.m2m.gateway.model.HistoAutoGate;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 /*
 * @author  LAHCEN NAOUI

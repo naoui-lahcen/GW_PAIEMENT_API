@@ -2,11 +2,6 @@ package ma.m2m.gateway.dto;
 
 import java.util.Date;
 
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-
 /*
 * @author  LAHCEN NAOUI
 * @version 1.0

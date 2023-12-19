@@ -2,14 +2,6 @@ package ma.m2m.gateway.model;
 
 import java.io.Serializable;
 import java.util.Date;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
-
-import org.springframework.stereotype.Component;
-
 /*
 * @author  LAHCEN NAOUI
 * @version 1.0

@@ -2,9 +2,6 @@ package ma.m2m.gateway.mappers;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.mapstruct.Mapper;
-
 import ma.m2m.gateway.Utils.Objects;
 import ma.m2m.gateway.dto.DemandePaiementDto;
 import ma.m2m.gateway.model.DemandePaiement;

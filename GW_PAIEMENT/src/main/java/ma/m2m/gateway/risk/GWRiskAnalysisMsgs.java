@@ -1,7 +1,5 @@
 package ma.m2m.gateway.risk;
 
-import lombok.Getter;
-
 /*
 * @author  LAHCEN NAOUI
 * @version 1.0

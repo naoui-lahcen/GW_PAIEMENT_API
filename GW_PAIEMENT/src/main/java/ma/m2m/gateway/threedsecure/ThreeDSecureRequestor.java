@@ -1,18 +1,12 @@
 package ma.m2m.gateway.threedsecure;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
-import java.rmi.registry.Registry;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
 import lombok.extern.slf4j.Slf4j;
-import ma.m2m.gateway.Utils.Traces;
 import ma.m2m.gateway.Utils.Util;
-
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -21,29 +15,17 @@ import javax.net.ssl.TrustManager;
 import java.security.cert.X509Certificate;
 import java.security.GeneralSecurityException;
 import javax.net.ssl.X509TrustManager;
-
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.config.RegistryBuilder;
-import org.apache.http.conn.HttpClientConnectionManager;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.apache.http.util.EntityUtils;
-
 import java.security.SecureRandom;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-import java.io.IOException;
-import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -64,8 +46,6 @@ public class ThreeDSecureRequestor {
 
 	private String urlThreeDSS;
 	private AuthInitRequest authInitRequest;
-
-	private Traces traces = new Traces();
 	
 	static {
 		// lnaoui 23-11-2022
@@ -128,7 +108,7 @@ public class ThreeDSecureRequestor {
 	}
 
 	public ThreeDSecureResponse initAuth(String logFolder, String logFile) throws ThreeDSecureRequestorException {
-		traces.writeInFileTransaction(logFolder, logFile, 
+		Util.writeInFileTransaction(logFolder, logFile, 
 				"*********** DEBUT initAuth ***********");
 		ThreeDSecureResponse threeDsRes = new ThreeDSecureResponse();
 
@@ -139,7 +119,7 @@ public class ThreeDSecureRequestor {
 			threeDsRes = callThreeDSServer(logFolder, logFile);
 		} catch (Exception e) {
 			if (e instanceof SocketTimeoutException) {
-				traces.writeInFileTransaction(logFolder, logFile, "********* 2eme TENTATIVE ************");
+				Util.writeInFileTransaction(logFolder, logFile, "********* 2eme TENTATIVE ************");
 				try {
 					threeDsRes = callThreeDSServer(logFolder, logFile);
 				} catch (Exception e2) {
@@ -148,14 +128,14 @@ public class ThreeDSecureRequestor {
 			} else
 				throw new ThreeDSecureRequestorException((e.getCause() != null) ? e.getCause() : e);
 		}
-		traces.writeInFileTransaction(logFolder, logFile,
+		Util.writeInFileTransaction(logFolder, logFile,
 				"*********** FIN initAuth ***********");
 		return threeDsRes;
 	}
 
 	protected ThreeDSecureResponse callThreeDSServer(String logFolder, String logFile)
 			throws KeyManagementException, KeyStoreException, NoSuchAlgorithmException {
-		traces.writeInFileTransaction(logFolder, logFile, "*********** DEBUT callThreeDSServer ***********");
+		Util.writeInFileTransaction(logFolder, logFile, "*********** DEBUT callThreeDSServer ***********");
 
 		HttpClient httpClient = HttpClientBuilder.create().build();
 		httpClient = getAllSSLClient();
@@ -186,7 +166,7 @@ public class ThreeDSecureRequestor {
 			authInitReqPCIDSS.setUrlThreeDSS(authInitRequest.getUrlThreeDSS());
 			
 			final String jsonBodyPCIDSS = gson.toJson(authInitReqPCIDSS);
-			traces.writeInFileTransaction(logFolder, logFile, "*********** jsonBodyPCIDSS ***********" + jsonBodyPCIDSS.toString());
+			Util.writeInFileTransaction(logFolder, logFile, "*********** jsonBodyPCIDSS ***********" + jsonBodyPCIDSS.toString());
 			// added 2023-03-22 pcidss carte
 			
 			final StringEntity entity = new StringEntity(jsonBody, StandardCharsets.UTF_8);
@@ -198,25 +178,25 @@ public class ThreeDSecureRequestor {
 			HttpResponse response = httpClient.execute(httpPost);
 
 			StatusLine responseStatusLine = response.getStatusLine();
-			traces.writeInFileTransaction(logFolder, logFile, "Response StatusCode : " + responseStatusLine.getStatusCode());
+			Util.writeInFileTransaction(logFolder, logFile, "Response StatusCode : " + responseStatusLine.getStatusCode());
 			
-			//traces.writeInFileTransaction(logFolder, logFile, "response : " + response);
+			//Util.writeInFileTransaction(logFolder, logFile, "response : " + response);
 			
 			String responseStr = EntityUtils.toString(response.getEntity());
-			traces.writeInFileTransaction(logFolder, logFile, "Ares String : " + responseStr);
+			Util.writeInFileTransaction(logFolder, logFile, "Ares String : " + responseStr);
 
 			threeDSecureResponse = gson.fromJson(responseStr, ThreeDSecureResponse.class);
-			traces.writeInFileTransaction(logFolder, logFile,""+ threeDSecureResponse);
+			Util.writeInFileTransaction(logFolder, logFile,""+ threeDSecureResponse);
 
 			// ((InputStream) httpClient).close();
 
 		} catch (ClientProtocolException e) {
-			traces.writeInFileTransaction(logFolder, logFile, "[GW-EXCEPTION-ClientProtocolException] " + e);
+			Util.writeInFileTransaction(logFolder, logFile, "[GW-EXCEPTION-ClientProtocolException] " + e);
 		} catch (IOException e) {
-			traces.writeInFileTransaction(logFolder, logFile, "[GW-EXCEPTION-IOException] " + e);
+			Util.writeInFileTransaction(logFolder, logFile, "[GW-EXCEPTION-IOException] " + e);
 		}
 
-		traces.writeInFileTransaction(logFolder, logFile, "*********** FIN callThreeDSServer ***********");
+		Util.writeInFileTransaction(logFolder, logFile, "*********** FIN callThreeDSServer ***********");
 		return threeDSecureResponse;
 	}
 

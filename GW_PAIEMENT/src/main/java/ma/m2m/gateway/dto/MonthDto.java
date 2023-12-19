@@ -31,7 +31,7 @@ public class MonthDto {
 	public MonthDto(String month, String valueMonth) {
 		super();
 		this.month = month;
-		this.value = value;
+		this.value = valueMonth;
 	}
 
 	public MonthDto() {

@@ -1,8 +1,6 @@
 package ma.m2m.gateway.service;
 
 import java.util.List;
-
-import org.springframework.stereotype.Service;
 import ma.m2m.gateway.dto.DemandePaiementDto;
 
 /*
@@ -11,7 +9,6 @@ import ma.m2m.gateway.dto.DemandePaiementDto;
 * @since   2023-07-01 / 2023-09-01 
  */
 
-//@Service
 public interface DemandePaiementService {
 	
 	List<DemandePaiementDto> findAllDemandePaiement();

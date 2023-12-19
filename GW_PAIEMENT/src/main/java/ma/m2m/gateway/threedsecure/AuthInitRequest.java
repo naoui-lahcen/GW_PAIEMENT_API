@@ -1,6 +1,5 @@
 package ma.m2m.gateway.threedsecure;
 
-import lombok.Data;
 import ma.m2m.gateway.Utils.Util;
 
 /*

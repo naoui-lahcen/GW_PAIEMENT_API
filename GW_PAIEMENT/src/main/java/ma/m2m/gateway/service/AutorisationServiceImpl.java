@@ -4,15 +4,9 @@ import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.SplittableRandom;
-
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
@@ -35,10 +29,8 @@ import ma.m2m.gateway.dto.DemandePaiementDto;
 import ma.m2m.gateway.dto.InfoCommercantDto;
 import ma.m2m.gateway.model.Commercant;
 import ma.m2m.gateway.model.Galerie;
-import ma.m2m.gateway.model.InfoCommercant;
 import ma.m2m.gateway.repository.CommercantDao;
 import ma.m2m.gateway.repository.GalerieDao;
-import ma.m2m.gateway.repository.InfoCommercantDao;
 import ma.m2m.gateway.threedsecure.AuthInitRequest;
 import ma.m2m.gateway.threedsecure.ThreeDSecureRequestor;
 import ma.m2m.gateway.threedsecure.ThreeDSecureRequestorException;
@@ -52,9 +44,7 @@ import ma.m2m.gateway.threedsecure.ThreeDSecureResponse;
 
 @Service
 public class AutorisationServiceImpl implements AutorisationService {
-	
-	private Traces traces = new Traces();
-	
+		
 	private Gson gson;
 	
 	@Value("${key.LIEN_3DSS_V}")
@@ -74,9 +64,6 @@ public class AutorisationServiceImpl implements AutorisationService {
 	private Galerie galerie = new Galerie();
 	private Commercant commercant = new Commercant();
 	private InfoCommercantDto infoCommercantDto = new InfoCommercantDto();
-	
-	@Autowired
-	private InfoCommercantDao infoCommercantDao;
 	
 	@Autowired
 	private InfoCommercantService infoCommercantService;

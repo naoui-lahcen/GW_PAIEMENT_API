@@ -3,11 +3,6 @@ package ma.m2m.gateway.dto;
 import java.io.Serializable;
 import java.util.Date;
 
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 /*
 * @author  LAHCEN NAOUI
 * @version 1.0

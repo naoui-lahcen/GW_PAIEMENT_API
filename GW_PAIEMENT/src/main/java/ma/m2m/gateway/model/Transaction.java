@@ -10,8 +10,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import org.springframework.stereotype.Component;
-
 /*
 * @author  LAHCEN NAOUI
 * @version 1.0
@@ -20,7 +18,6 @@ import org.springframework.stereotype.Component;
 
 @Entity
 @Table(name = "TRANSACTION")
-//@Component
 public class Transaction implements Serializable {
 
 	/**
@@ -234,7 +231,7 @@ public class Transaction implements Serializable {
 		return trsnumcmr;
 	}
 	public void setTrsnumcmr(String trs_numcmr) {
-		this.trsnumcmr = trsnumcmr;
+		this.trsnumcmr = trs_numcmr;
 	}
 	public Double getTrs_numtlcolcte() {
 		return trs_numtlcolcte;

@@ -10,8 +10,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import org.springframework.stereotype.Component;
-
 /*
 * @author  LAHCEN NAOUI
 * @version 1.0
@@ -20,7 +18,6 @@ import org.springframework.stereotype.Component;
 
 @Entity
 @Table(name = "TELECOLLECTE")
-//@Component
 public class Telecollecte implements Serializable {
 
 	/**
