@@ -11,4 +11,6 @@ import ma.m2m.gateway.dto.CFDGIDto;
 public interface CFDGIService {
 
 	CFDGIDto findCFDGIByIddemande(int iddemande);
+	
+	CFDGIDto save(CFDGIDto cFDGIDto);
 }

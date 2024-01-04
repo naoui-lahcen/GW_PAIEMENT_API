@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ma.m2m.gateway.dto.CFDGIDto;
 import ma.m2m.gateway.mappers.CFDGIMapper;
+import ma.m2m.gateway.model.CFDGI;
 import ma.m2m.gateway.repository.CFDGIDao;
 
 /*
@@ -23,6 +24,13 @@ public class CFDGIServiceImpl implements CFDGIService {
 	@Override
 	public CFDGIDto findCFDGIByIddemande(int iddemande) {
 		return cfdgiMapper.model2VO(cfdgiDao.findCFDGIByIddemande(iddemande));
+	}
+
+	@Override
+	public CFDGIDto save(CFDGIDto cFDGIDto) {
+		CFDGI cFDGI = cfdgiMapper.vo2Model(cFDGIDto);
+		CFDGIDto cFDGIDtoSaved = cfdgiMapper.model2VO(cfdgiDao.save(cFDGI));
+		return cFDGIDtoSaved;
 	}
 
 }

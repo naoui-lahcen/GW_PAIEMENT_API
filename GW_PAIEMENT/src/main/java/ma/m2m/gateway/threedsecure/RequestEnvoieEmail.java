@@ -10,7 +10,6 @@ import lombok.Data;
 * @since   2023-07-01 / 2023-09-01 
  */
 
-@Data
 public class RequestEnvoieEmail implements Serializable {
 	
 	/**
@@ -25,6 +24,30 @@ public class RequestEnvoieEmail implements Serializable {
 	private String numCmr;
 
 	
+	public int getIdDemande() {
+		return idDemande;
+	}
+
+	public void setIdDemande(int idDemande) {
+		this.idDemande = idDemande;
+	}
+
+	public String getIdCommande() {
+		return idCommande;
+	}
+
+	public void setIdCommande(String idCommande) {
+		this.idCommande = idCommande;
+	}
+
+	public String getNumCmr() {
+		return numCmr;
+	}
+
+	public void setNumCmr(String numCmr) {
+		this.numCmr = numCmr;
+	}
+
 	public RequestEnvoieEmail(int idDemande, String idCommande, String numCmr) {
 		super();
 		this.idDemande = idDemande;

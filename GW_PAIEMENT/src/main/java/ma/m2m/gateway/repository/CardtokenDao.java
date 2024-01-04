@@ -20,6 +20,8 @@ public interface CardtokenDao extends JpaRepository<Cardtoken, Long> {
 	
 	Cardtoken findByIdMerchantAndToken(String merchantid, String token);
 	
+	List<Cardtoken> findByIdMerchantClientAndCardNumber(String merchantid, String cardNumber);
+	
 	List<Cardtoken> findByIdMerchantAndIdMerchantClient(String merchantid, String idclient);
 	
 	Cardtoken findByIdMerchantAndTokenAndExprDate(String merchantid, String token, Date dateExp);

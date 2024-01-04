@@ -1310,6 +1310,9 @@ public class APIController {
 
 					dmd.setEtat_demande("SW_REJET");
 					demandePaiementService.save(dmd);
+					
+					hist.setHatEtat('A');
+					histoAutoGateService.save(hist);
 
 				} catch (Exception e) {
 					Util.writeInFileTransaction(folder, file,

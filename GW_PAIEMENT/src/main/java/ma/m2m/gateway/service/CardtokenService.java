@@ -19,6 +19,8 @@ public interface CardtokenService {
 	
 	CardtokenDto findByIdMerchantAndToken(String merchantid, String token);
 	
+	List<CardtokenDto> findByIdMerchantClientAndCardNumber(String merchantid, String cardNumber);
+	
 	List<CardtokenDto> findByIdMerchantAndIdMerchantClient(String merchantid, String idclient);
 	
 	CardtokenDto findByIdMerchantAndTokenAndExprDate(String merchantid, String token, Date dateExp);

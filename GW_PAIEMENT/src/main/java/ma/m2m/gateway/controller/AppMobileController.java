@@ -8,6 +8,7 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -17,6 +18,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.SplittableRandom;
@@ -1289,6 +1291,9 @@ public class AppMobileController {
 
 							dmd.setEtat_demande("SW_REJET");
 							demandePaiementService.save(dmd);
+							
+							hist.setHatEtat('A');
+							histoAutoGateService.save(hist);
 
 						} catch (Exception e) {
 							Util.writeInFileTransaction(folder, file,
@@ -2099,7 +2104,7 @@ public class AppMobileController {
 		String merchantid = "";
 		String orderid = "";
 
-		String page = "erecharge.html";
+		String page = "erecharge";
 
 		try {
 			demandeDto = demandePaiementService.findByTokencommande(token);
@@ -2134,8 +2139,8 @@ public class AppMobileController {
 				if(idclient == null) {
 					idclient="";
 				}
-				//merchantid = demandeDto.getComid();
-				merchantid = "";
+				merchantid = demandeDto.getComid();
+				//merchantid = "";
 				String cardnumber = "";
 				List<Cartes> cartes = new ArrayList<>();
 				if (!idclient.equals("") && idclient != null && !idclient.equals("null")) {
@@ -2249,7 +2254,7 @@ public class AppMobileController {
 			page = "result";
 		}
 		
-		if(page.equals("erecharge.html")) {
+		if(page.equals("erecharge")) {
 			demandeDto.setEtat_demande("P_CHRG_OK");
 			demandePaiementService.save(demandeDto);
 			System.out.println("update Demandepaiement status to P_CHRG_OK");
@@ -2261,55 +2266,6 @@ public class AppMobileController {
 
 		return page;
 	}
-	
-	public String calculMontantTotalOperation(DemandePaiementDto dto) {
-		double mnttotalopp = dto.getMontant() + dto.getFrais();
-		String mntttopp = String.format("%.2f", mnttotalopp).replaceAll(",", ".");
-		return mntttopp;
-	}
-	
-	public String calculMontantSansOperation(DemandePaiementDto dto) {
-		double mnttotalopp = dto.getMontant();
-		String mntttopp = String.format("%.2f", mnttotalopp).replaceAll(",", ".");
-		return mntttopp;
-	}
-    // Static factory method to create a Cartes object from a string
-	public Cartes fromString(String input) {
-        Cartes cartes = new Cartes();
-
-        // Remove square brackets and split the input string
-        String[] keyValuePairs = input.substring(0, input.length() - 1).split(", ");
-
-        for (String pair : keyValuePairs) {
-            String[] keyValue = pair.split("=");
-
-            if (keyValue.length == 2) {
-                String key = keyValue[0].trim();
-                String value = keyValue[1].trim();
-
-                switch (key) {
-                    case "carte":
-                        cartes.setCarte(value);
-                        break;
-                    case "pcidsscarte":
-                        cartes.setPcidsscarte(value);
-                        break;
-                    case "year":
-                        cartes.setYear(Integer.parseInt(value));
-                        break;
-                    case "mois":
-                        cartes.setMois(value);
-                        break;
-                    case "moisValue":
-                        cartes.setMoisValue(value);
-                        break;
-                    // Handle other properties as needed
-                }
-            }
-        }
-
-        return cartes;
-    }
 
 	@PostMapping("/recharger")
 	public String recharger(Model model, @ModelAttribute("demandeDto") DemandePaiementDto dto,
@@ -2325,8 +2281,8 @@ public class AppMobileController {
 				merchantname, websiteName, websiteid, callbackUrl, cardnumber, token, expirydate, holdername, cvv,
 				fname, lname, email, country, phone, city, state, zipcode, address, mesg_type, merc_codeactivite,
 				acqcode, merchant_name, merchant_city, acq_type, processing_code, reason_code, transaction_condition,
-				transactiondate, transactiontime, date, rrn, heure, montanttrame, montantRechgtrame,cartenaps,dateExnaps, num_trs = "", successURL, failURL,
-				transactiontype;
+				transactiondate, transactiontime, date, rrn, heure, montanttrame, montantRechgtrame,cartenaps,dateExnaps, num_trs = "",
+				successURL, failURL, transactiontype, idclient;
 
 		DemandePaiementDto demandeDto = new DemandePaiementDto();
 		Objects.copyProperties(demandeDto, dto);
@@ -2340,6 +2296,7 @@ public class AppMobileController {
 		Integer Idmd_id = null;
 		String[] mm;
 		String[] m;
+		boolean flagNvCarte, flagSaveCarte;
 
 		String page = "chalenge";
 		try {
@@ -2370,19 +2327,23 @@ public class AppMobileController {
 			// Card info
 			cvv = demandeDto.getDem_cvv();
 			// if transaction not cof
-			if(demandeDto.getDem_pan() != null) {
+			if(demandeDto.getDem_pan() != null && !demandeDto.getDem_pan().equals("")) {
 				cardnumber = demandeDto.getDem_pan();
-				expirydate = demandeDto.getAnnee().substring(2, 4).concat(demandeDto.getMois());
+				expirydate = demandeDto.getAnnee().substring(2,4).concat(demandeDto.getMois().substring(0,2));
 			}
 			// if transaction cof
-			if(demandeDto.getDem_pan() == null && demandeDto.getInfoCarte() != null) {
+			if(demandeDto.getInfoCarte() != null && !demandeDto.isFlagNvCarte() && (demandeDto.getDem_pan() == null || demandeDto.getDem_pan().equals(""))) {
 				String infoCard = demandeDto.getInfoCarte().substring(8, demandeDto.getInfoCarte().length());
 				Cartes carteFormated = fromString(infoCard);
 				demandeDto.setCarte(carteFormated);
 				cardnumber = demandeDto.getCarte().getCarte();
-				//expirydate = demandeDto.getAnnee().substring(2, 4).concat(demandeDto.getMois());
 				String annee = String.valueOf(demandeDto.getCarte().getYear());
-				expirydate = annee.substring(2, 4).concat(demandeDto.getCarte().getMoisValue());
+				expirydate = annee.substring(2,4).concat(demandeDto.getCarte().getMoisValue());
+			}
+			flagNvCarte = demandeDto.isFlagNvCarte();
+			flagSaveCarte = demandeDto.isFlagSaveCarte();
+			if(cardnumber.contains(",")) {
+				cardnumber = cardnumber.replace(",", "");
 			}
 			//cardnumber = demandeDto.getDem_pan();
 			token = "";
@@ -2519,7 +2480,12 @@ public class AppMobileController {
 
 			demandeDto = demandePaiementService.save(dmdToEdit);
 			demandeDto.setExpery(expirydate);
-
+			demandeDto.setFlagNvCarte(flagNvCarte);
+			demandeDto.setFlagSaveCarte(flagSaveCarte);
+			idclient = demandeDto.getId_client();
+			if(idclient == null) {
+				idclient="";
+			}
 		} catch (Exception err1) {
 			Util.writeInFileTransaction(folder, file,
 					"recharger 500 Error during DEMANDE_PAIEMENT insertion for given orderid:[" + orderid + "]"
@@ -2529,7 +2495,6 @@ public class AppMobileController {
 			page = "result";
 			return page;
 		}
-
 		
 		// for test control risk
 		GWRiskAnalysis riskAnalysis = new GWRiskAnalysis(folder, file);
@@ -2587,9 +2552,72 @@ public class AppMobileController {
 			page = "result";
 			return page;
 		}
+		// saving card if flagSaveCarte true
+		if(demandeDto.isFlagSaveCarte()) {
+			try {
+				List<CardtokenDto> checkCardNumber = cardtokenService.findByIdMerchantClientAndCardNumber(idclient, cardnumber);
+				if(checkCardNumber.size() == 0) {
+					// insert new cardToken
+					CardtokenDto cardtokenDto = new CardtokenDto();
+					String tokencard = Util.generateCardToken(idclient);
+
+					// test if token not exist in DB
+					CardtokenDto checkCardToken = cardtokenService.findByIdMerchantAndToken(idclient, tokencard);
+
+					while (checkCardToken != null) {
+						tokencard = Util.generateCardToken(idclient);
+						System.out.println("checkCardToken exist => generate new tokencard : " + tokencard);
+						Util.writeInFileTransaction(folder, file,
+								"checkCardToken exist => generate new tokencard : " + tokencard);
+						checkCardToken = cardtokenService.findByIdMerchantAndToken(merchantid, tokencard);
+					}
+					System.out.println("tokencard : " + tokencard);
+					Util.writeInFileTransaction(folder, file, "tokencard : " + tokencard);
+
+					int dateint = Integer.valueOf(expirydate);
+
+					Calendar dateCalendar = Calendar.getInstance();
+					Date dateToken = dateCalendar.getTime();
+
+					Util.writeInFileTransaction(folder, file, "cardtokenDto expirydate input : " + expirydate);
+					String anne = String.valueOf(dateCalendar.get(Calendar.YEAR));
+					// get year from date
+					String xx = anne.substring(0, 2) + expirydate.substring(0, 2);
+					String MM = expirydate.substring(2, expirydate.length());
+					// format date to "yyyy-MM-dd"
+					String expirydateFormated = xx + "-" + MM + "-" + "01";
+					System.out.println("cardtokenDto expirydate : " + expirydateFormated);
+					Util.writeInFileTransaction(folder, file, "cardtokenDto expirydate formated : " + expirydateFormated);
+					Date dateExp;
+					dateExp = dateFormatSimple.parse(expirydateFormated);
+					
+					cardtokenDto.setToken(tokencard);
+					String tokenid = UUID.randomUUID().toString();
+					cardtokenDto.setIdToken(tokenid);
+					cardtokenDto.setExprDate(dateExp);
+					String dateTokenStr = dateFormat.format(dateToken);
+					Date dateTokenFormated = dateFormat.parse(dateTokenStr);
+					cardtokenDto.setTokenDate(dateTokenFormated);
+					cardtokenDto.setCardNumber(cardnumber);
+					cardtokenDto.setIdMerchant(merchantid);
+					cardtokenDto.setIdMerchantClient(idclient);
+					cardtokenDto.setFirst_name(fname);
+					cardtokenDto.setLast_name(lname);
+					cardtokenDto.setHolderName(holdername);
+					cardtokenDto.setMcc(merchantid);
+
+					CardtokenDto cardtokenSaved = cardtokenService.save(cardtokenDto);
+
+					Util.writeInFileTransaction(folder, file, "Insert into table CARDTOKEN OK");
+				}
+				
+			} catch (ParseException e) {
+				e.printStackTrace();
+				Util.writeInFileTransaction(folder, file, "savingcardtoken 500 Error during CARDTOKEN Saving " + e);
+			}
+		}
 		
 		try {
-
 			formatheure = new SimpleDateFormat("HHmmss");
 			formatdate = new SimpleDateFormat("ddMMyy");
 			date = formatdate.format(new Date());
@@ -3454,6 +3482,9 @@ public class AppMobileController {
 					dmd.setEtat_demande("SW_REJET");
 					demandePaiementService.save(dmd);
 					
+					hist.setHatEtat('A');
+					histoAutoGateService.save(hist);
+					
 				} catch (Exception e) {
 					Util.writeInFileTransaction(folder, file,
 							"recharger 500 Error during  DemandePaiement update SW_REJET for given orderid:[" + orderid + "]"
@@ -3810,7 +3841,57 @@ public class AppMobileController {
 
 		return page;
 	}
+	
+	public String calculMontantTotalOperation(DemandePaiementDto dto) {
+		double mnttotalopp = dto.getMontant() + dto.getFrais();
+		String mntttopp = String.format("%.2f", mnttotalopp).replaceAll(",", ".");
+		return mntttopp;
+	}
+	
+	public String calculMontantSansOperation(DemandePaiementDto dto) {
+		double mnttotalopp = dto.getMontant();
+		String mntttopp = String.format("%.2f", mnttotalopp).replaceAll(",", ".");
+		return mntttopp;
+	}
+	
+    // Static factory method to create a Cartes object from a string
+	public Cartes fromString(String input) {
+        Cartes cartes = new Cartes();
 
+        // Remove square brackets and split the input string
+        String[] keyValuePairs = input.substring(0, input.length() - 1).split(", ");
+
+        for (String pair : keyValuePairs) {
+            String[] keyValue = pair.split("=");
+
+            if (keyValue.length == 2) {
+                String key = keyValue[0].trim();
+                String value = keyValue[1].trim();
+
+                switch (key) {
+                    case "carte":
+                        cartes.setCarte(value);
+                        break;
+                    case "pcidsscarte":
+                        cartes.setPcidsscarte(value);
+                        break;
+                    case "year":
+                        cartes.setYear(Integer.parseInt(value));
+                        break;
+                    case "mois":
+                        cartes.setMois(value);
+                        break;
+                    case "moisValue":
+                        cartes.setMoisValue(value);
+                        break;
+                    // Handle other properties as needed
+                }
+            }
+        }
+
+        return cartes;
+    }
+	
 	public String getMsgError(String folder, String file, JSONObject jsonOrequest, String msg, String coderep) {
 		Traces traces = new Traces();
 		Util.writeInFileTransaction(folder, file, "*********** Start getMsgError() ************** ");

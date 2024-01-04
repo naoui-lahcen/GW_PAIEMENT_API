@@ -2112,6 +2112,9 @@ public class GWPaiementController {
 					dmd.setEtat_demande("SW_REJET");
 					demandePaiementService.save(dmd);
 					
+					hist.setHatEtat('A');
+					histoAutoGateService.save(hist);
+					
 				} catch (Exception e) {
 					Util.writeInFileTransaction(folder, file,
 							"payer 500 Error during  DemandePaiement update SW_REJET for given orderid:[" + orderid + "]"

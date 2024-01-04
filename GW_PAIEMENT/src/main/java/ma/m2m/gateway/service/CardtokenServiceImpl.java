@@ -41,6 +41,11 @@ public class CardtokenServiceImpl implements CardtokenService {
 	}
 	
 	@Override
+	public List<CardtokenDto> findByIdMerchantClientAndCardNumber(String merchantid, String cardNumber) {
+		return cardtokenMapper.modelList2VOList(cardtokenDao.findByIdMerchantClientAndCardNumber(merchantid, cardNumber));
+	}
+	
+	@Override
 	public List<CardtokenDto> findByIdMerchantAndIdMerchantClient(String merchantid, String idclient) {
 		return cardtokenMapper.modelList2VOList(cardtokenDao.findByIdMerchantAndIdMerchantClient(merchantid, idclient));
 	}

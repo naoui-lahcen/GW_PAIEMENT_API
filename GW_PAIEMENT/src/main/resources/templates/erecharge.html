@@ -140,15 +140,20 @@
                   <div class="form-group row">
                      <label for="num" class="col-sm-3 col-form-label">N°
                      carte bancaire</label>
-                     <div class="col-sm-3" th:if="${demandeDto.cartes == null}">
+                     <div class="col-sm-3" th:if="${demandeDto.cartes == null }">
                         <input type="number" th:field="*{dem_pan}" class="form-control" id="num" required="required"
                            placeholder="N° carte bancaire">
                      </div>
-                     <div class="col-sm-3" th:if="${demandeDto.cartes != null and demandeDto.cartes.size > 0 }">
+                     <div class="col-sm-3" id="cartes" th:if="${demandeDto.cartes != null and demandeDto.cartes.size > 0 }">
                        <select class="form-control" id="carteID" th:field="*{infoCarte}" required="required" onchange="updateExpirationDate()">
-                           <option value="">Choisir</option>
+                           <option value="Cartes [carte=4111111111112322, pcidsscarte=411111******2322, year=2026, mois=Mai, moisValue=05]">Choisir</option>
                            <option th:each="item : ${demandeDto.cartes}" th:value="${item}" th:text="${item.pcidsscarte}"></option>
                         </select>
+                     </div>
+                     <!-- si je clique sur Nouvelle carte jaffiche cette div-->
+                     <div class="col-sm-3" id="nvnums" style="display: none;">
+                        <input type="number" th:field="*{dem_pan}" class="form-control" id="nvnum"
+                           placeholder="N° nouvelle carte bancaire">
                      </div>
                      <label for="cvv" class="col-sm-3 col-form-label">Code de
                      sécurité</label>
@@ -166,11 +171,15 @@
                            <option th:each="item : ${demandeDto.years}" th:value="${item}" th:text="${item}"></option>
                         </select>
                      </div>
-                     <div class="col-sm-3" th:if="${demandeDto.cartes != null and demandeDto.cartes.size > 0}">
-<!--                        <select class="form-control" th:field="*{annee}" required="required">-->
-<!--                           <option th:each="carte : ${demandeDto.cartes}" th:value="${carte.year}" th:text="${carte.year}"></option>-->
-<!--                        </select>-->
+                     <div class="col-sm-3" id="annees" th:if="${demandeDto.cartes != null and demandeDto.cartes.size > 0}">
                         <input type="number" id="annee"  th:field="*{carte.year}" class="form-control" required="required" disabled>
+                     </div>                     
+                     <!-- si je clique sur Nouvelle carte jaffiche cette div-->
+                     <div class="col-sm-3" id="nvannes" style="display: none;">
+                        <select class="form-control" th:field="*{annee}">
+                           <option value="">YY</option>
+                           <option th:each="item : ${demandeDto.years}" th:value="${item}" th:text="${item}"></option>
+                        </select>
                      </div>
                      <label for="xxx" class="col-sm-3 col-form-label">Mois</label>
                      <div class="col-sm-3" th:if="${demandeDto.cartes == null }">
@@ -179,11 +188,15 @@
                            <option th:each="item : ${demandeDto.months}" th:value="${item.value}" th:text="${item.month}"></option>
                         </select>
                      </div>
-                     <div class="col-sm-3" th:if="${demandeDto.cartes != null and demandeDto.cartes.size > 0 }">
-<!--                        <select class="form-control" th:field="*{mois}" required="required">-->
-<!--                           <option th:each="item : ${demandeDto.cartes}" th:value="${item.monthDto.value}" th:text="${item.monthDto.month}"></option>-->
-<!--                        </select>-->
+                     <div class="col-sm-3" id="moiss" th:if="${demandeDto.cartes != null and demandeDto.cartes.size > 0 }">
                          <input type="text" id="mois"  th:field="*{carte.mois}" class="form-control" required="required" disabled>
+                     </div>
+                      <!-- si je clique sur Nouvelle carte jaffiche cette div-->
+                     <div class="col-sm-3" id="nvmois" style="display: none;">
+                        <select class="form-control" th:field="*{mois}">
+                           <option value="">MM</option>
+                           <option th:each="item : ${demandeDto.months}" th:value="${item.value}" th:text="${item.month}"></option>
+                        </select>
                      </div>
                      <input type="hidden" th:field="*{commande}" class="form-control">
                      <input type="hidden" th:field="*{comid}" class="form-control">
@@ -191,13 +204,28 @@
                      <input type="hidden" th:field="*{montant}" class="form-control">
                      <input type="hidden" th:field="*{iddemande}" class="form-control">
                   </div>
-                  <div class="form-group row col-md-12">
+                  <div class="form-group row col-md-10">
                      <label>
                      <input type="checkbox" th:field="*{condition}" required="required" /> J'ai lu et j'accepte
                      </label>
                      <a id="openDialog" style="color: #0056b3;cursor: pointer;text-decoration: underline;">
                      les conditions générales d'utilisation</a>
                   </div>
+                  <div class="form-group row">
+					   <!-- Saisir nouvelle carte -->
+					<div class="col-md-3" th:if="${demandeDto.cartes != null and demandeDto.cartes.size > 0 }">
+                     <label>
+                     <input type="checkbox" th:field="*{flagNvCarte}" id="addNewCardCheckbox" onchange="toggleNewCardFields()"/> Nouvelle carte
+                     </label>
+                  </div>
+                  <!-- Sauvegarder la carte -->
+                   <div class="col-md-3">
+                     <label>
+                     <input type="checkbox" th:field="*{flagSaveCarte}" id="saveCard"/> Sauvegarder la carte
+                     </label>
+                  </div>
+				  </div>
+
                   <div class="form-group row">
 					  <div class="col-sm-6">
 						<img th:src="@{/images/secureicon.png}" alt="Image" style="width: 20px;margin-right: 7px;" >
@@ -372,7 +400,9 @@
         
 
     function updateExpirationDate() {
-        var selectedCard = document.getElementById("carteID").value;
+		 var checkbox = document.getElementById("addNewCardCheckbox");
+		if (!checkbox.checked) {
+		var selectedCard = document.getElementById("carteID").value;
         var anneeToRemplir = document.getElementById("annee");
         var moisToRemplir = document.getElementById("mois");
 		
@@ -406,7 +436,39 @@
 			  moisToRemplir.value = '';
 		}
 		
+	  }
+      
 	}
+function toggleNewCardFields() {
+    var checkbox = document.getElementById("addNewCardCheckbox");
+    var nvnums = document.getElementById("nvnums");
+    var cartes = document.getElementById("cartes");
+    var cvv = document.getElementById("cvv");
+    var nvannes = document.getElementById("nvannes");
+    var annees = document.getElementById("annees");
+    var moiss = document.getElementById("moiss");
+    var nvmois = document.getElementById("nvmois");
+    var nvnumToRemplir = document.getElementById("nvnum");
+
+    if (checkbox.checked) {
+        nvnums.style.display = "block";
+        cartes.style.display = "none";
+        annees.style.display = "none";
+        nvannes.style.display = "block";
+        moiss.style.display = "none";
+        nvmois.style.display = "block";
+        cvv.value = '';
+    } else {
+        nvnums.style.display = "none";
+        nvnumToRemplir.value = '';
+        cartes.style.display = "block";
+       annees.style.display = "block";
+        nvannes.style.display = "none";
+        moiss.style.display = "block";
+        nvmois.style.display = "none";
+        cvv.value = '';
+    }
+}
       </script>
    </body>
 </html>

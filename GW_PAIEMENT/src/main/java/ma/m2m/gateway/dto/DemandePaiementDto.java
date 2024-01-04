@@ -93,6 +93,8 @@ public class DemandePaiementDto implements Serializable {
 	private String infoCarte;
 	private List<FactureLDDto> factures;
 	private List<ArticleDGIDto> articles;
+	private boolean flagNvCarte;
+	private boolean flagSaveCarte;
 	
 	public Cartes getCarte() {
 		return carte;
@@ -554,6 +556,20 @@ public class DemandePaiementDto implements Serializable {
 	}
 	public void setArticles(List<ArticleDGIDto> articles) {
 		this.articles = articles;
+	}
+	
+	public boolean isFlagNvCarte() {
+		return flagNvCarte;
+	}
+	public void setFlagNvCarte(boolean flagNvCarte) {
+		this.flagNvCarte = flagNvCarte;
+	}
+	
+	public boolean isFlagSaveCarte() {
+		return flagSaveCarte;
+	}
+	public void setFlagSaveCarte(boolean flagSaveCarte) {
+		this.flagSaveCarte = flagSaveCarte;
 	}
 	public DemandePaiementDto() {
 		super();
