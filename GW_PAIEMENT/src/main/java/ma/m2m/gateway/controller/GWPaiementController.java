@@ -1410,7 +1410,8 @@ public class GWPaiementController {
 			page = "result";
 			return page;
 		}
-
+		// dans la preprod les tests sans 3DSS reponseMPI="Y"
+		reponseMPI = "Y";
 		if (reponseMPI.equals("Y")) {
 			// ********************* Frictionless responseMPI equal Y *********************
 			Util.writeInFileTransaction(folder, file,
@@ -2160,6 +2161,7 @@ public class GWPaiementController {
 				motif = hist.getHatMtfref1();
 				merchnatidauth = hist.getHatNumcmr();
 				dtdem = dmd.getDem_pan();
+				transactionid = String.valueOf(hist.getHatNumdem());
 			} catch (Exception e) {
 				Util.writeInFileTransaction(folder, file,
 						"payer 500 Error during authdata preparation orderid:[" + orderid + "]" + e);

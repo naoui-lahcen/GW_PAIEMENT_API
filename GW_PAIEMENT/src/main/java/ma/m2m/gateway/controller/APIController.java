@@ -643,7 +643,7 @@ public class APIController {
 			Util.writeInFileTransaction(folder, file, "Response 3DS is null");
 			return getMsgError(folder, file, jsonOrequest, "Response 3DS is null", "96");
 		}
-		// jsute pour Coca les test sans 3DSS reponseMPI="Y"
+		// dans la preprod les tests Coca sans 3DSS reponseMPI="Y"
 		reponseMPI = "Y";
 
 		if (reponseMPI.equals("Y")) {
@@ -4451,7 +4451,7 @@ public class APIController {
 				Util.writeInFileTransaction(folder, file, "Response 3DS is null");
 				return getMsgErrorV1(folder, file, jsonOrequest, "Response 3DS is null", "96");
 			}
-			// jsute pour Coca les test sans 3DSS reponseMPI="Y"
+			// dans la preprod les tests Coca sans 3DSS reponseMPI="Y"
 			reponseMPI = "Y";
 
 			if (reponseMPI.equals("Y")) {

@@ -1630,14 +1630,14 @@ public class ACSController {
 						System.out.println("data encrypt : " + data);
 
 						if (coderep.equals("00")) {
-							Util.writeInFileTransaction(folder, file,
-									"coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
-							System.out.println("coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
 							if (dmd.getSuccessURL() != null) {
 								// generation et envoie du token de la carte enregitré dans le successURL
 								// apres le paiment de 1 DH de check porteur carte
 								if (dmd.getIs_addcard().equals("Y") && dmd.getIs_tokenized().equals("Y")
 										&& dmd.getIs_withsave().equals("Y") && dmd.getIs_cof().equals("Y")) {
+									Util.writeInFileTransaction(folder, file,
+											"coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
+									System.out.println("coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
 									boolean flag = false;
 									String tokencard = "";
 									String data_noncrypt_token = "";

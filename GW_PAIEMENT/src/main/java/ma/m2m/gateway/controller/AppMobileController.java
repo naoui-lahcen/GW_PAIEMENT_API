@@ -3530,6 +3530,7 @@ public class AppMobileController {
 				motif = hist.getHatMtfref1();
 				merchnatidauth = hist.getHatNumcmr();
 				dtdem = dmd.getDem_pan();
+				transactionid = String.valueOf(hist.getHatNumdem());
 				montantSansFrais = String.valueOf(dmd.getMontant());
 				frais = String.valueOf(dmd.getFrais());
 				Util.writeInFileTransaction(folder, file, "frais :[" + frais + "]");
