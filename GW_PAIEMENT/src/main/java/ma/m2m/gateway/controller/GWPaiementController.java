@@ -11,7 +11,9 @@ import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.Year;
@@ -47,6 +49,8 @@ import ma.m2m.gateway.Utils.Objects;
 import ma.m2m.gateway.Utils.Util;
 import ma.m2m.gateway.config.JwtTokenUtil;
 import ma.m2m.gateway.dto.ArticleDGIDto;
+import ma.m2m.gateway.dto.CardtokenDto;
+import ma.m2m.gateway.dto.Cartes;
 import ma.m2m.gateway.dto.CodeReponseDto;
 import ma.m2m.gateway.dto.CommercantDto;
 import ma.m2m.gateway.dto.ControlRiskCmrDto;
@@ -75,6 +79,7 @@ import ma.m2m.gateway.reporting.GenerateExcel;
 import ma.m2m.gateway.risk.GWRiskAnalysis;
 import ma.m2m.gateway.service.ArticleDGIService;
 import ma.m2m.gateway.service.AutorisationService;
+import ma.m2m.gateway.service.CardtokenService;
 import ma.m2m.gateway.service.CodeReponseService;
 import ma.m2m.gateway.service.CommercantService;
 import ma.m2m.gateway.service.ControlRiskCmrService;
@@ -130,17 +135,17 @@ public class GWPaiementController {
 	private String portSwitch;
 
 	@Value("${key.JWT_TOKEN_VALIDITY}")
-	private long jwt_token_validity; 
-	
+	private long jwt_token_validity;
+
 	@Value("${key.URL_WSDL_LYDEC}")
-	private String URL_WSDL_LYDEC; 
-	
+	private String URL_WSDL_LYDEC;
+
 	@Value("${key.LYDEC_PREPROD}")
 	private String LYDEC_PREPROD;
-	
+
 	@Value("${key.LYDEC_PROD}")
 	private String LYDEC_PROD;
-	
+
 	@Autowired
 	CommercantService commercantService;
 
@@ -158,22 +163,25 @@ public class GWPaiementController {
 
 	@Autowired
 	TelecollecteService telecollecteService;
-	
+
+	@Autowired
+	CardtokenService cardtokenService;
+
 	@Autowired
 	private ControlRiskCmrService controlRiskCmrService;
-	
+
 	@Autowired
 	private EmetteurService emetteurService;
 
 	@Autowired
 	CodeReponseService codeReponseService;
-	
+
 	@Autowired
 	FactureLDService factureLDService;
-	
+
 	@Autowired
 	ArticleDGIService articleDGIService;
-	
+
 	private LocalDateTime date;
 	private String folder;
 	private String file;
@@ -181,9 +189,10 @@ public class GWPaiementController {
 	long randomWithSplittableRandom;
 
 	DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	DateFormat dateFormatSimple = new SimpleDateFormat("yyyy-MM-dd");
 
 	private static final QName SERVICE_NAME = new QName("http://service.lydec.com", "GererEncaissementService");
-	
+
 	public GWPaiementController() {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		file = "GW_" + randomWithSplittableRandom;
@@ -207,6 +216,7 @@ public class GWPaiementController {
 
 		return tabEcr;
 	}
+
 	@RequestMapping(path = "/connectLydec")
 	@ResponseBody
 	public String connectLydec() {
@@ -217,16 +227,16 @@ public class GWPaiementController {
 		Util.creatFileTransaction(file);
 		Util.writeInFileTransaction(folder, file, "*********** Start connectLydec() ************** ");
 		System.out.println("*********** Start connectLydec() ************** ");
-		
+
 		String msg = "Test connectLydec !!! ";
 
 		try {
-			//URL wsdlURL = GererEncaissementService.WSDL_LOCATION;
+			// URL wsdlURL = GererEncaissementService.WSDL_LOCATION;
 			URL wsdlURL = new URL(URL_WSDL_LYDEC);
 			Util.writeInFileTransaction(folder, file, "wsdlURL : " + wsdlURL);
-			
+
 			GererEncaissementService ss = new GererEncaissementService(wsdlURL, SERVICE_NAME);
-		    GererEncaissement port = ss.getGererEncaissement();
+			GererEncaissement port = ss.getGererEncaissement();
 
 			ReponseReglements reponseReglement = null;
 			DemandesReglements demReglement = new DemandesReglements();
@@ -237,8 +247,8 @@ public class GWPaiementController {
 			BigDecimal montant = new BigDecimal(0);
 			BigDecimal montantTimbre = new BigDecimal(0);
 			BigDecimal montantTotalSansTimbre = new BigDecimal(0).setScale(2, BigDecimal.ROUND_HALF_UP);
-			 java.util.Calendar date_pai = Calendar.getInstance();
-			 DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			java.util.Calendar date_pai = Calendar.getInstance();
+			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			ecr.setType_Moy_Pai("C");
 			ecr.setBanq_Cod("NPS");
 
@@ -252,11 +262,12 @@ public class GWPaiementController {
 			transaction.setDate_Val(new Date());
 			transaction.setEtat_Trans("R");
 			transaction.setType_Trans("RX");
-			
+
 			List<FactureLDDto> listFactureLD = new ArrayList<>();
-			Util.writeInFileTransaction(folder, file,"findFactureByIddemande : " + 196884);
+			Util.writeInFileTransaction(folder, file, "findFactureByIddemande : " + 196884);
 			listFactureLD = factureLDService.findFactureByIddemande(197267);
-			Util.writeInFileTransaction(folder, file, "preparerReglementLydec listFactureLD.size  : " + listFactureLD.size());
+			Util.writeInFileTransaction(folder, file,
+					"preparerReglementLydec listFactureLD.size  : " + listFactureLD.size());
 			for (FactureLDDto facLD : listFactureLD) {
 				// log.info("preparerReglementLydec facLD : " + facLD.toString());
 				Impaye imp = new Impaye();
@@ -279,25 +290,27 @@ public class GWPaiementController {
 				factListImpayes.add(imp);
 			}
 			Portefeuille[] listePortefeuilles = preparerTabEcritureLydecListe(factListImpayes);
-			
+
 			demReglement.setTransaction(transaction);
 			demReglement.setListeMoyensPayement(listeMoyensPayement);
 			demReglement.setListePortefeuilles(listePortefeuilles);
 			Util.writeInFileTransaction(folder, file,
 					"preparerReglementLydec demReglement : " + demReglement.toString());
 			reponseReglement = port.ecrireReglements(demReglement);
-			
-			if(reponseReglement != null) {
-				System.out.println("reponseReglement isOk/message : " + reponseReglement.isOk() + "/" + reponseReglement.getMessage());
-				Util.writeInFileTransaction(folder, file, "isOk/message : " + reponseReglement.isOk() + "/" + reponseReglement.getMessage());
-				msg = msg + "reponseReglement isOk/message : " + reponseReglement.isOk() + "/" + reponseReglement.getMessage();
+
+			if (reponseReglement != null) {
+				System.out.println("reponseReglement isOk/message : " + reponseReglement.isOk() + "/"
+						+ reponseReglement.getMessage());
+				Util.writeInFileTransaction(folder, file,
+						"isOk/message : " + reponseReglement.isOk() + "/" + reponseReglement.getMessage());
+				msg = msg + "reponseReglement isOk/message : " + reponseReglement.isOk() + "/"
+						+ reponseReglement.getMessage();
 			} else {
 				System.out.println("reponseReglement : " + null);
 				Util.writeInFileTransaction(folder, file, "reponseReglement : " + null);
 				msg = "Test connectLydec !!! failed : reponseReglement null";
 			}
-		} 
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			ex.printStackTrace();
 			Util.writeInFileTransaction(folder, file, "Exception : " + ex);
 			msg = "Test connectLydec !!! failed";
@@ -308,7 +321,7 @@ public class GWPaiementController {
 
 		return msg;
 	}
-	
+
 	@RequestMapping(path = "/")
 	@ResponseBody
 	public String home() {
@@ -350,7 +363,7 @@ public class GWPaiementController {
 			// verification expiration token
 			jso = verifieToken(token);
 
-			if(jso != null && !jso.get("statuscode").equals("00")) {
+			if (jso != null && !jso.get("statuscode").equals("00")) {
 				Util.writeInFileTransaction(folder, file, "jsoVerified : " + jso.toString());
 				System.out.println("jsoVerified : " + jso.toString());
 				msg = "echec lors de la génération du token";
@@ -358,8 +371,8 @@ public class GWPaiementController {
 				System.out.println("*********** Fin generateToken() ************** ");
 			} else {
 				msg = "the token successfully generated";
-			}			
-			
+			}
+
 		} catch (Exception ex) {
 			msg = "the token generation failed";
 		}
@@ -370,12 +383,12 @@ public class GWPaiementController {
 
 		return ResponseEntity.ok().body(msg);
 	}
-	
+
 	public JSONObject verifieToken(String securtoken24) {
 		// Traces traces = new Traces();
 		JSONObject jso = new JSONObject();
-		
-		if(!securtoken24.equals("")) {
+
+		if (!securtoken24.equals("")) {
 			JwtTokenUtil jwtTokenUtil = new JwtTokenUtil();
 			String token = securtoken24;
 			try {
@@ -391,13 +404,13 @@ public class GWPaiementController {
 				Util.writeInFileTransaction(folder, file, "dateExpirationStr : " + dateExpirationStr);
 				String condition = isTokenExpired == false ? "NO" : "YES";
 				Util.writeInFileTransaction(folder, file, "token is expired : " + condition);
-				if(condition.equalsIgnoreCase("YES")) {
+				if (condition.equalsIgnoreCase("YES")) {
 					Util.writeInFileTransaction(folder, file, "Error 500 securtoken24 is expired");
 
 					// Transaction info
 					jso.put("statuscode", "17");
 					jso.put("status", "Error 500 securtoken24 is expired");
-					
+
 					return jso;
 				} else {
 					jso.put("statuscode", "00");
@@ -407,13 +420,13 @@ public class GWPaiementController {
 				jso.put("statuscode", "17");
 				jso.put("status", "Error 500 securtoken24 " + ex.getMessage());
 				System.out.println(jso.get("status"));
-				
+
 				return jso;
 			}
 		}
 		return jso;
 	}
-	
+
 	@RequestMapping(path = "/napspayment/generateexcel")
 	@ResponseBody
 	public String generateExcel() {
@@ -443,7 +456,8 @@ public class GWPaiementController {
 	}
 
 	@RequestMapping(value = "/napspayment/histo/exportexcel/{merchantid}", method = RequestMethod.GET)
-	public void exportToExcel(HttpServletResponse response,@PathVariable(value = "merchantid") String merchantid) throws IOException {
+	public void exportToExcel(HttpServletResponse response, @PathVariable(value = "merchantid") String merchantid)
+			throws IOException {
 		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "GW_" + randomWithSplittableRandom;
@@ -454,7 +468,7 @@ public class GWPaiementController {
 
 		Util.writeInFileTransaction(folder, file, "findByHatNumcmr merchantid : " + merchantid);
 		System.out.println("findByHatNumcmr merchantid : " + merchantid);
-		
+
 		response.setContentType("application/octet-stream");
 		DateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
 		String currentDateTime = dateFormatter.format(new Date());
@@ -463,20 +477,20 @@ public class GWPaiementController {
 		response.setHeader(headerKey, headerValue);
 
 		try {
-			
-			//List<HistoAutoGateDto> listHistoGate = histoAutoGateService.findAll();
+
+			// List<HistoAutoGateDto> listHistoGate = histoAutoGateService.findAll();
 			List<HistoAutoGateDto> listHistoGate = histoAutoGateService.findByHatNumcmr(merchantid);
-			
+
 			GenerateExcel excelExporter = new GenerateExcel(listHistoGate);
-			
+
 			excelExporter.export(response);
-			
+
 		} catch (Exception e) {
 			Util.writeInFileTransaction(folder, file, "exportToExcel 500 merchantid:[" + merchantid + "]");
 			Util.writeInFileTransaction(folder, file, "exportToExcel 500 exception" + e);
 			e.printStackTrace();
 		}
-		
+
 		Util.writeInFileTransaction(folder, file, "*********** Fin exportToExcel ***********");
 		System.out.println("*********** Fin exportToExcel ***********");
 	}
@@ -518,9 +532,10 @@ public class GWPaiementController {
 			demandeDto = demandePaiementService.findByTokencommande(token);
 
 			if (demandeDto != null) {
-				System.out.println("DemandePaiement is found idDemande/Commande : " + demandeDto.getIddemande() + "/" + demandeDto.getCommande());
-				Util.writeInFileTransaction(folder, file,
-						"DemandePaiement is found iddemande/Commande : " + demandeDto.getIddemande() + "/" + demandeDto.getCommande());
+				System.out.println("DemandePaiement is found idDemande/Commande : " + demandeDto.getIddemande() + "/"
+						+ demandeDto.getCommande());
+				Util.writeInFileTransaction(folder, file, "DemandePaiement is found iddemande/Commande : "
+						+ demandeDto.getIddemande() + "/" + demandeDto.getCommande());
 
 				// get list of years + 10
 				int currentYear = Year.now().getValue();
@@ -542,17 +557,64 @@ public class GWPaiementController {
 				}
 				// if cmr accept transaction cof demandeDto.getIs_cof() = Y show your carte
 				// saved
+				// get cardnumber by idclient
+				if(demandeDto.getToken() != null) {
+					if(demandeDto.getToken().equals("") || demandeDto.getToken().equals(" ")) {
+						demandeDto.setToken(null);
+					}
+				}
+				if(demandeDto.getId_client() != null) {
+					if(demandeDto.getId_client().equals("") || demandeDto.getId_client().equals(" ")) {
+						demandeDto.setId_client(null);
+					}
+				}
+				String idclient = demandeDto.getId_client();
+				if (idclient == null) {
+					idclient = "";
+				}
+				merchantid = demandeDto.getComid();
+				// merchantid = "";
+				String cardnumber = "";
+				List<Cartes> cartes = new ArrayList<>();
+				if (!idclient.equals("") && idclient != null && !idclient.equals("null")) {
+					System.out.println("idclient/merchantid : " + idclient + "/" + merchantid);
+					try {
+						List<CardtokenDto> cards = new ArrayList<>();
+						cards = cardtokenService.findByIdMerchantAndIdMerchantClient(merchantid, idclient);
+						if (cards != null && cards.size() > 0) {
+							for (CardtokenDto card : cards) {
+								if (card.getCardNumber() != null) {
+									Cartes carte = new Cartes();
+									cardnumber = card.getCardNumber();
+									carte.setCarte(cardnumber);
+									carte.setPcidsscarte(Util.formatCard(cardnumber));
+									String dateExStr = dateFormatSimple.format(card.getExprDate());
+									formatDateExp(dateExStr, carte);
+									cartes.add(carte);
+								}
+							}
+							System.out.println("Cartes : " + cartes.toString());
+							demandeDto.setCartes(cartes);
+						} else {
+							demandeDto.setCartes(null);
+						}
+					} catch (Exception ex) {
+						Util.writeInFileTransaction(folder, file, "showPagePayment 500 idclient not found" + ex);
+					}
+				} else {
+					demandeDto.setCartes(null);
+				}
 				// Créez un objet DecimalFormat avec le modèle "0.00"
-		        DecimalFormat df = new DecimalFormat("0.00");
+				DecimalFormat df = new DecimalFormat("0.00");
 
-		        // Formatez le nombre en une chaîne avec deux chiffres après la virgule
-		        Double mont = demandeDto.getMontant();
-		        String mtFormate = df.format(mont);
-		        if (mtFormate.contains(",")) {
-		        	mtFormate = mtFormate.replace(",", ".");
-		        }
-		        
-		        demandeDto.setMontantStr(mtFormate);
+				// Formatez le nombre en une chaîne avec deux chiffres après la virgule
+				Double mont = demandeDto.getMontant();
+				String mtFormate = df.format(mont);
+				if (mtFormate.contains(",")) {
+					mtFormate = mtFormate.replace(",", ".");
+				}
+
+				demandeDto.setMontantStr(mtFormate);
 
 				model.addAttribute("demandeDto", demandeDto);
 
@@ -623,18 +685,18 @@ public class GWPaiementController {
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
 		}
-		
-		if(page.equals("napspayment")) {
+
+		if (page.equals("napspayment")) {
 			demandeDto.setEtat_demande("P_CHRG_OK");
 			demandePaiementService.save(demandeDto);
 			System.out.println("update Demandepaiement status to P_CHRG_OK");
 			Util.writeInFileTransaction(folder, file, "update Demandepaiement status to P_CHRG_OK");
-			if(demandeDto.getComid().equals(LYDEC_PREPROD) || demandeDto.getComid().equals(LYDEC_PROD)) {
+			if (demandeDto.getComid().equals(LYDEC_PREPROD) || demandeDto.getComid().equals(LYDEC_PROD)) {
 				System.out.println("Si le commercant est LYDEC : " + demandeDto.getComid());
 				Util.writeInFileTransaction(folder, file, "Si le commercant est LYDEC : " + demandeDto.getComid());
 				List<FactureLDDto> listFactureLD = new ArrayList<>();
 				listFactureLD = factureLDService.findFactureByIddemande(demandeDto.getIddemande());
-				if(listFactureLD != null && listFactureLD.size() > 0) {
+				if (listFactureLD != null && listFactureLD.size() > 0) {
 					System.out.println("listFactureLD : " + listFactureLD.size());
 					Util.writeInFileTransaction(folder, file, "listFactureLD : " + listFactureLD.size());
 					demandeDto.setFactures(listFactureLD);
@@ -642,9 +704,9 @@ public class GWPaiementController {
 					System.out.println("listFactureLD vide ");
 					Util.writeInFileTransaction(folder, file, "listFactureLD vide ");
 					demandeDto.setFactures(null);
-				}				
+				}
 				model.addAttribute("demandeDto", demandeDto);
-				//page = "napspaymentlydec";
+				// page = "napspaymentlydec";
 			}
 		}
 
@@ -678,9 +740,10 @@ public class GWPaiementController {
 			demandeDto = demandePaiementService.findByTokencommande(token);
 
 			if (demandeDto != null) {
-				System.out.println("DemandePaiement is found idDemande/Commande : " + demandeDto.getIddemande() + "/" + demandeDto.getCommande());
-				Util.writeInFileTransaction(folder, file,
-						"DemandePaiement is found iddemande/Commande : " + demandeDto.getIddemande() + "/" + demandeDto.getCommande());
+				System.out.println("DemandePaiement is found idDemande/Commande : " + demandeDto.getIddemande() + "/"
+						+ demandeDto.getCommande());
+				Util.writeInFileTransaction(folder, file, "DemandePaiement is found iddemande/Commande : "
+						+ demandeDto.getIddemande() + "/" + demandeDto.getCommande());
 
 				// get list of years + 10
 				int currentYear = Year.now().getValue();
@@ -703,16 +766,16 @@ public class GWPaiementController {
 				// if cmr accept transaction cof demandeDto.getIs_cof() = Y show your carte
 				// saved
 				// Créez un objet DecimalFormat avec le modèle "0.00"
-		        DecimalFormat df = new DecimalFormat("0.00");
+				DecimalFormat df = new DecimalFormat("0.00");
 
-		        // Formatez le nombre en une chaîne avec deux chiffres après la virgule
-		        Double mont = demandeDto.getMontant();
-		        String mtFormate = df.format(mont);
-		        if (mtFormate.contains(",")) {
-		        	mtFormate = mtFormate.replace(",", ".");
-		        }
-		        
-		        demandeDto.setMontantStr(mtFormate);
+				// Formatez le nombre en une chaîne avec deux chiffres après la virgule
+				Double mont = demandeDto.getMontant();
+				String mtFormate = df.format(mont);
+				if (mtFormate.contains(",")) {
+					mtFormate = mtFormate.replace(",", ".");
+				}
+
+				demandeDto.setMontantStr(mtFormate);
 
 				model.addAttribute("demandeDto", demandeDto);
 
@@ -738,8 +801,8 @@ public class GWPaiementController {
 						}
 					} catch (Exception e) {
 						Util.writeInFileTransaction(folder, file,
-								"showPagePaymentLydec 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
-										+ "] and merchantid:[" + merchantid + "]" + e);
+								"showPagePaymentLydec 500 Merchant misconfigured in DB or not existing orderid:["
+										+ orderid + "] and merchantid:[" + merchantid + "]" + e);
 						demandeDto = new DemandePaiementDto();
 						demandeDto.setMsgRefus("Commerçant mal configuré dans la base de données ou inexistant");
 						model.addAttribute("demandeDto", demandeDto);
@@ -754,8 +817,8 @@ public class GWPaiementController {
 						}
 					} catch (Exception e) {
 						Util.writeInFileTransaction(folder, file,
-								"showPagePaymentLydec 500 Galerie misconfigured in DB or not existing orderid:[" + orderid
-										+ "] and merchantid:[" + merchantid + "]" + e);
+								"showPagePaymentLydec 500 Galerie misconfigured in DB or not existing orderid:["
+										+ orderid + "] and merchantid:[" + merchantid + "]" + e);
 						demandeDto = new DemandePaiementDto();
 						demandeDto.setMsgRefus("Galerie mal configuré dans la base de données ou inexistant");
 						model.addAttribute("demandeDto", demandeDto);
@@ -773,8 +836,8 @@ public class GWPaiementController {
 
 		} catch (Exception e) {
 			Util.writeInFileTransaction(folder, file,
-					"showPagePaymentLydec 500 DEMANDE_PAIEMENT misconfigured in DB or not existing token:[" + token + "]"
-							+ e);
+					"showPagePaymentLydec 500 DEMANDE_PAIEMENT misconfigured in DB or not existing token:[" + token
+							+ "]" + e);
 
 			Util.writeInFileTransaction(folder, file, "showPagePaymentLdec 500 exception" + e);
 			e.printStackTrace();
@@ -783,21 +846,21 @@ public class GWPaiementController {
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
 		}
-		
-		if(page.equals("napspaymentlydec")) {
+
+		if (page.equals("napspaymentlydec")) {
 			demandeDto.setEtat_demande("P_CHRG_OK");
 			demandePaiementService.save(demandeDto);
 			System.out.println("update Demandepaiement status to P_CHRG_OK");
 			Util.writeInFileTransaction(folder, file, "update Demandepaiement status to P_CHRG_OK");
-			
+
 			List<FactureLDDto> listFactureLD = new ArrayList<>();
 			listFactureLD = factureLDService.findFactureByIddemande(73);
-			if(listFactureLD != null && listFactureLD.size() > 0) {
+			if (listFactureLD != null && listFactureLD.size() > 0) {
 				System.out.println("listFactureLD : " + listFactureLD.size());
 				demandeDto.setFactures(listFactureLD);
 			} else {
 				demandeDto.setFactures(null);
-			}				
+			}
 			model.addAttribute("demandeDto", demandeDto);
 		}
 
@@ -806,7 +869,7 @@ public class GWPaiementController {
 
 		return page;
 	}
-	
+
 	@RequestMapping(value = "/napspayment/authorization/dgi/token/{token}", method = RequestMethod.GET)
 	public String showPagePaymentDGI(@PathVariable(value = "token") String token, Model model) {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
@@ -831,9 +894,10 @@ public class GWPaiementController {
 			demandeDto = demandePaiementService.findByTokencommande(token);
 
 			if (demandeDto != null) {
-				System.out.println("DemandePaiement is found idDemande/Commande : " + demandeDto.getIddemande() + "/" + demandeDto.getCommande());
-				Util.writeInFileTransaction(folder, file,
-						"DemandePaiement is found iddemande/Commande : " + demandeDto.getIddemande() + "/" + demandeDto.getCommande());
+				System.out.println("DemandePaiement is found idDemande/Commande : " + demandeDto.getIddemande() + "/"
+						+ demandeDto.getCommande());
+				Util.writeInFileTransaction(folder, file, "DemandePaiement is found iddemande/Commande : "
+						+ demandeDto.getIddemande() + "/" + demandeDto.getCommande());
 
 				// get list of years + 10
 				int currentYear = Year.now().getValue();
@@ -856,16 +920,16 @@ public class GWPaiementController {
 				// if cmr accept transaction cof demandeDto.getIs_cof() = Y show your carte
 				// saved
 				// Créez un objet DecimalFormat avec le modèle "0.00"
-		        DecimalFormat df = new DecimalFormat("0.00");
+				DecimalFormat df = new DecimalFormat("0.00");
 
-		        // Formatez le nombre en une chaîne avec deux chiffres après la virgule
-		        Double mont = demandeDto.getMontant();
-		        String mtFormate = df.format(mont);
-		        if (mtFormate.contains(",")) {
-		        	mtFormate = mtFormate.replace(",", ".");
-		        }
-		        
-		        demandeDto.setMontantStr(mtFormate);
+				// Formatez le nombre en une chaîne avec deux chiffres après la virgule
+				Double mont = demandeDto.getMontant();
+				String mtFormate = df.format(mont);
+				if (mtFormate.contains(",")) {
+					mtFormate = mtFormate.replace(",", ".");
+				}
+
+				demandeDto.setMontantStr(mtFormate);
 
 				model.addAttribute("demandeDto", demandeDto);
 
@@ -891,8 +955,8 @@ public class GWPaiementController {
 						}
 					} catch (Exception e) {
 						Util.writeInFileTransaction(folder, file,
-								"showPagePaymentDGI 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
-										+ "] and merchantid:[" + merchantid + "]" + e);
+								"showPagePaymentDGI 500 Merchant misconfigured in DB or not existing orderid:["
+										+ orderid + "] and merchantid:[" + merchantid + "]" + e);
 						demandeDto = new DemandePaiementDto();
 						demandeDto.setMsgRefus("Commerçant mal configuré dans la base de données ou inexistant");
 						model.addAttribute("demandeDto", demandeDto);
@@ -926,8 +990,8 @@ public class GWPaiementController {
 
 		} catch (Exception e) {
 			Util.writeInFileTransaction(folder, file,
-					"showPagePaymentDGILdec 500 DEMANDE_PAIEMENT misconfigured in DB or not existing token:[" + token + "]"
-							+ e);
+					"showPagePaymentDGILdec 500 DEMANDE_PAIEMENT misconfigured in DB or not existing token:[" + token
+							+ "]" + e);
 
 			Util.writeInFileTransaction(folder, file, "showPagePaymentDGILdec 500 exception" + e);
 			e.printStackTrace();
@@ -936,21 +1000,21 @@ public class GWPaiementController {
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
 		}
-		
-		if(page.equals("napspaymentdgi")) {
+
+		if (page.equals("napspaymentdgi")) {
 			demandeDto.setEtat_demande("P_CHRG_OK");
 			demandePaiementService.save(demandeDto);
 			System.out.println("update Demandepaiement status to P_CHRG_OK");
 			Util.writeInFileTransaction(folder, file, "update Demandepaiement status to P_CHRG_OK");
-			
+
 			List<ArticleDGIDto> articles = new ArrayList<>();
 			articles = articleDGIService.findArticleByIddemande(demandeDto.getIddemande());
-			if(articles != null && articles.size() > 0) {
+			if (articles != null && articles.size() > 0) {
 				System.out.println("articles : " + articles.size());
 				demandeDto.setArticles(articles);
 			} else {
 				demandeDto.setArticles(null);
-			}				
+			}
 			model.addAttribute("demandeDto", demandeDto);
 		}
 
@@ -959,7 +1023,7 @@ public class GWPaiementController {
 
 		return page;
 	}
-	
+
 	@RequestMapping(path = "/napspayment/linkpayment1", produces = "application/json; charset=UTF-8")
 	public ResponseEntity<responseDto> getLink1(@RequestBody DemandePaiementDto demandeDto) {
 		// Traces traces = new Traces();
@@ -1027,21 +1091,21 @@ public class GWPaiementController {
 	}
 
 	@PostMapping("/payer")
-	public String payer(Model model, @ModelAttribute("demandeDto") DemandePaiementDto dto,
-			HttpServletRequest request, HttpServletResponse response) {
+	public String payer(Model model, @ModelAttribute("demandeDto") DemandePaiementDto dto, HttpServletRequest request,
+			HttpServletResponse response) {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "GW_PAYE_" + randomWithSplittableRandom;
 		// create file log
 		Util.creatFileTransaction(file);
 		Util.writeInFileTransaction(folder, file, "*********** Start payer () ************** ");
 		System.out.println("*********** Start payer () ************** ");
-		
+
 		String capture, currency, orderid, recurring, amount, promoCode, transactionid, capture_id, merchantid,
 				merchantname, websiteName, websiteid, callbackUrl, cardnumber, token, expirydate, holdername, cvv,
 				fname, lname, email, country, phone, city, state, zipcode, address, mesg_type, merc_codeactivite,
 				acqcode, merchant_name, merchant_city, acq_type, processing_code, reason_code, transaction_condition,
 				transactiondate, transactiontime, date, rrn, heure, montanttrame, num_trs = "", successURL, failURL,
-				transactiontype;
+				transactiontype, idclient;
 
 		DemandePaiementDto demandeDto = new DemandePaiementDto();
 		Objects.copyProperties(demandeDto, dto);
@@ -1049,18 +1113,19 @@ public class GWPaiementController {
 		Util.writeInFileTransaction(folder, file, "demandeDto commande : " + dto.getCommande());
 		DemandePaiementDto demandeDtoMsg = new DemandePaiementDto();
 		DemandePaiementDto dmd = new DemandePaiementDto();
-		
+
 		SimpleDateFormat formatter_1, formatter_2, formatheure, formatdate = null;
 		Date trsdate = null;
 		Integer Idmd_id = null;
 		String[] mm;
 		String[] m;
+		boolean flagNvCarte, flagSaveCarte;
 
 		String page = "chalenge";
 		try {
 			// Transaction info
 			orderid = demandeDto.getCommande();
-			if(demandeDto.getMontant() == null) {
+			if (demandeDto.getMontant() == null) {
 				demandeDto.setMontant(0.00);
 			}
 			amount = String.valueOf(demandeDto.getMontant());
@@ -1076,14 +1141,41 @@ public class GWPaiementController {
 			merchantname = "";
 			websiteName = "";
 			websiteid = "";
+			cardnumber = "";
+			expirydate = "";
 			callbackUrl = demandeDto.getCallbackURL();
 			successURL = demandeDto.getSuccessURL();
 			failURL = demandeDto.getFailURL();
 
 			// Card info
-			cardnumber = demandeDto.getDem_pan();
+			// if transaction not cof
+			if (demandeDto.getDem_pan() != null && !demandeDto.getDem_pan().equals("")) {
+				cardnumber = demandeDto.getDem_pan();
+				expirydate = demandeDto.getAnnee().substring(2, 4).concat(demandeDto.getMois().substring(0, 2));
+			}
+			// if transaction cof
+			if (demandeDto.getInfoCarte() != null && !demandeDto.isFlagNvCarte()
+					&& (demandeDto.getDem_pan() == null || demandeDto.getDem_pan().equals(""))) {
+				String infoCard = demandeDto.getInfoCarte().substring(8, demandeDto.getInfoCarte().length());
+				Cartes carteFormated = fromString(infoCard);
+				demandeDto.setCarte(carteFormated);
+				cardnumber = demandeDto.getCarte().getCarte();
+				String annee = String.valueOf(demandeDto.getCarte().getYear());
+				expirydate = annee.substring(2, 4).concat(demandeDto.getCarte().getMoisValue());
+			}
+			if (demandeDto.getDem_pan().equals("") && demandeDto.getInfoCarte() != null) {
+				if(!demandeDto.getAnnee().equals("") && !demandeDto.getMois().equals("")) {
+					expirydate = demandeDto.getAnnee().substring(2, 4).concat(demandeDto.getMois().substring(0, 2));
+				}
+			}
+			flagNvCarte = demandeDto.isFlagNvCarte();
+			flagSaveCarte = demandeDto.isFlagSaveCarte();
+			if (cardnumber.contains(",")) {
+				cardnumber = cardnumber.replace(",", "");
+			}
+			// cardnumber = demandeDto.getDem_pan();
 			token = "";
-			expirydate = demandeDto.getAnnee().substring(2, 4).concat(demandeDto.getMois());
+			// expirydate = demandeDto.getAnnee().substring(2, 4).concat(demandeDto.getMois());
 			holdername = "";
 			cvv = demandeDto.getDem_cvv();
 
@@ -1110,9 +1202,8 @@ public class GWPaiementController {
 		try {
 			current_merchant = commercantService.findByCmrNumcmr(merchantid);
 		} catch (Exception e) {
-			Util.writeInFileTransaction(folder, file,
-					"payer 500 Merchant misconfigured in DB or not existing orderid:[" + orderid + "] and merchantid:["
-							+ merchantid + "]" + e);
+			Util.writeInFileTransaction(folder, file, "payer 500 Merchant misconfigured in DB or not existing orderid:["
+					+ orderid + "] and merchantid:[" + merchantid + "]" + e);
 			demandeDtoMsg.setMsgRefus("Commerçant mal configuré dans la base de données ou inexistant");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
@@ -1120,9 +1211,8 @@ public class GWPaiementController {
 		}
 
 		if (current_merchant == null) {
-			Util.writeInFileTransaction(folder, file,
-					"payer 500 Merchant misconfigured in DB or not existing orderid:[" + orderid + "] and merchantid:["
-							+ merchantid + "]");
+			Util.writeInFileTransaction(folder, file, "payer 500 Merchant misconfigured in DB or not existing orderid:["
+					+ orderid + "] and merchantid:[" + merchantid + "]");
 			demandeDtoMsg.setMsgRefus("Commerçant mal configuré dans la base de données ou inexistant");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
@@ -1130,9 +1220,8 @@ public class GWPaiementController {
 		}
 
 		if (current_merchant.getCmrCodactivite() == null) {
-			Util.writeInFileTransaction(folder, file,
-					"payer 500 Merchant misconfigured in DB or not existing orderid:[" + orderid + "] and merchantid:["
-							+ merchantid + "]");
+			Util.writeInFileTransaction(folder, file, "payer 500 Merchant misconfigured in DB or not existing orderid:["
+					+ orderid + "] and merchantid:[" + merchantid + "]");
 			demandeDtoMsg.setMsgRefus("Commerçant mal configuré dans la base de données ou inexistant");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
@@ -1140,9 +1229,8 @@ public class GWPaiementController {
 		}
 
 		if (current_merchant.getCmrCodbqe() == null) {
-			Util.writeInFileTransaction(folder, file,
-					"payer 500 Merchant misconfigured in DB or not existing orderid:[" + orderid + "] and merchantid:["
-							+ merchantid + "]");
+			Util.writeInFileTransaction(folder, file, "payer 500 Merchant misconfigured in DB or not existing orderid:["
+					+ orderid + "] and merchantid:[" + merchantid + "]");
 			demandeDtoMsg.setMsgRefus("Commerçant mal configuré dans la base de données ou inexistant");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
@@ -1215,44 +1303,56 @@ public class GWPaiementController {
 
 			demandeDto = demandePaiementService.save(dmdToEdit);
 			demandeDto.setExpery(expirydate);
+			demandeDto.setFlagNvCarte(flagNvCarte);
+			demandeDto.setFlagSaveCarte(flagSaveCarte);
+			idclient = demandeDto.getId_client();
+			if (idclient == null) {
+				idclient = "";
+			}
 
 		} catch (Exception err1) {
 			Util.writeInFileTransaction(folder, file,
-					"payer 500 Error during DEMANDE_PAIEMENT insertion for given orderid:[" + orderid + "]"
-							+ err1);
+					"payer 500 Error during DEMANDE_PAIEMENT insertion for given orderid:[" + orderid + "]" + err1);
 			demandeDtoMsg.setMsgRefus("Erreur lors de l'insertion DEMANDE_PAIEMENT");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			return page;
 		}
 
-		
 		// for test control risk
 		GWRiskAnalysis riskAnalysis = new GWRiskAnalysis(folder, file);
 		try {
 			ControlRiskCmrDto controlRiskCmr = controlRiskCmrService.findByNumCommercant(demandeDto.getComid());
 			List<HistoAutoGateDto> porteurFlowPerDay = null;
-			
+
 			Double globalFlowPerDay = 0.00;
 			List<EmetteurDto> listBin = null;
 
 			if (controlRiskCmr != null) {
-				/* --------------------------------- Controle des cartes internationales -----------------------------------------*/
-				if(isNullOrEmpty(controlRiskCmr.getAcceptInternational()) || (controlRiskCmr.getAcceptInternational() != null
-					&& !ACTIVE.getFlag().equalsIgnoreCase(controlRiskCmr.getAcceptInternational().trim()))) {
+				/*
+				 * --------------------------------- Controle des cartes internationales
+				 * -----------------------------------------
+				 */
+				if (isNullOrEmpty(controlRiskCmr.getAcceptInternational())
+						|| (controlRiskCmr.getAcceptInternational() != null && !ACTIVE.getFlag()
+								.equalsIgnoreCase(controlRiskCmr.getAcceptInternational().trim()))) {
 					String binDebutCarte = cardnumber.substring(0, 9);
-					//binDebutCarte = binDebutCarte+"000";
+					// binDebutCarte = binDebutCarte+"000";
 					Util.writeInFileTransaction(folder, file, "controlRiskCmr ici 1");
 					listBin = emetteurService.findByBindebut(binDebutCarte);
-				}		
-				// --------------------------------- Controle de flux journalier autorisé par commerçant  ----------------------------------
-				if(!isNullOrEmpty(controlRiskCmr.getIsGlobalFlowControlActive()) && ACTIVE.getFlag().equalsIgnoreCase(controlRiskCmr.getIsGlobalFlowControlActive())) {
+				}
+				// --------------------------------- Controle de flux journalier autorisé par
+				// commerçant ----------------------------------
+				if (!isNullOrEmpty(controlRiskCmr.getIsGlobalFlowControlActive())
+						&& ACTIVE.getFlag().equalsIgnoreCase(controlRiskCmr.getIsGlobalFlowControlActive())) {
 					Util.writeInFileTransaction(folder, file, "controlRiskCmr ici 2");
 					globalFlowPerDay = histoAutoGateService.getCommercantGlobalFlowPerDay(merchantid);
-			 	}
-				// ------------------------- Controle de flux journalier autorisé par client (porteur de carte) ----------------------------
-				if((controlRiskCmr.getFlowCardPerDay() != null && controlRiskCmr.getFlowCardPerDay() > 0) 
-						|| (controlRiskCmr.getNumberOfTransactionCardPerDay() != null && controlRiskCmr.getNumberOfTransactionCardPerDay() > 0)) {
+				}
+				// ------------------------- Controle de flux journalier autorisé par client
+				// (porteur de carte) ----------------------------
+				if ((controlRiskCmr.getFlowCardPerDay() != null && controlRiskCmr.getFlowCardPerDay() > 0)
+						|| (controlRiskCmr.getNumberOfTransactionCardPerDay() != null
+								&& controlRiskCmr.getNumberOfTransactionCardPerDay() > 0)) {
 					Util.writeInFileTransaction(folder, file, "controlRiskCmr ici 3");
 					porteurFlowPerDay = histoAutoGateService.getPorteurMerchantFlowPerDay(demandeDto.getComid(),
 							demandeDto.getDem_pan());
@@ -1260,8 +1360,8 @@ public class GWPaiementController {
 			}
 			String msg = riskAnalysis.executeRiskControls(demandeDto.getComid(), demandeDto.getMontant(),
 					demandeDto.getDem_pan(), controlRiskCmr, globalFlowPerDay, porteurFlowPerDay, listBin);
-			
-			if(!msg.equalsIgnoreCase("OK")) {
+
+			if (!msg.equalsIgnoreCase("OK")) {
 				demandeDto.setEtat_demande("REJET_RISK_CTRL");
 				demandePaiementService.save(demandeDto);
 				Util.writeInFileTransaction(folder, file, "payer 500 Error " + msg);
@@ -1276,12 +1376,83 @@ public class GWPaiementController {
 			demandeDto.setEtat_demande("REJET_RISK_CTRL");
 			demandePaiementService.save(demandeDto);
 			Util.writeInFileTransaction(folder, file,
-					"payer 500 ControlRiskCmr misconfigured in DB or not existing merchantid:[" + demandeDto.getComid() + e);
+					"payer 500 ControlRiskCmr misconfigured in DB or not existing merchantid:[" + demandeDto.getComid()
+							+ e);
 			demandeDto = new DemandePaiementDto();
 			demandeDtoMsg.setMsgRefus("Error 500 Opération rejetée: Contrôle risque");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			return page;
+		}
+		// saving card if flagSaveCarte true
+		if (demandeDto.isFlagSaveCarte()) {
+			try {
+				List<CardtokenDto> checkCardNumber = cardtokenService.findByIdMerchantClientAndCardNumber(idclient,
+						cardnumber);
+				
+				CardtokenDto cardtokenDto = new CardtokenDto();
+
+				if (checkCardNumber.size() == 0) {
+					// insert new cardToken
+					String tokencard = Util.generateCardToken(idclient);
+
+					// test if token not exist in DB
+					CardtokenDto checkCardToken = cardtokenService.findByIdMerchantAndToken(idclient, tokencard);
+
+					while (checkCardToken != null) {
+						tokencard = Util.generateCardToken(idclient);
+						System.out.println("checkCardToken exist => generate new tokencard : " + tokencard);
+						Util.writeInFileTransaction(folder, file,
+								"checkCardToken exist => generate new tokencard : " + tokencard);
+						checkCardToken = cardtokenService.findByIdMerchantAndToken(merchantid, tokencard);
+					}
+					System.out.println("tokencard : " + tokencard);
+					Util.writeInFileTransaction(folder, file, "tokencard : " + tokencard);
+
+					int dateint = Integer.valueOf(expirydate);
+
+					Calendar dateCalendar = Calendar.getInstance();
+					Date dateToken = dateCalendar.getTime();
+
+					Util.writeInFileTransaction(folder, file, "cardtokenDto expirydate input : " + expirydate);
+					String anne = String.valueOf(dateCalendar.get(Calendar.YEAR));
+					// get year from date
+					String xx = anne.substring(0, 2) + expirydate.substring(0, 2);
+					String MM = expirydate.substring(2, expirydate.length());
+					// format date to "yyyy-MM-dd"
+					String expirydateFormated = xx + "-" + MM + "-" + "01";
+					System.out.println("cardtokenDto expirydate : " + expirydateFormated);
+					Util.writeInFileTransaction(folder, file,
+							"cardtokenDto expirydate formated : " + expirydateFormated);
+					Date dateExp;
+					dateExp = dateFormatSimple.parse(expirydateFormated);
+
+					cardtokenDto.setToken(tokencard);
+					String tokenid = UUID.randomUUID().toString();
+					cardtokenDto.setIdToken(tokenid);
+					cardtokenDto.setExprDate(dateExp);
+					String dateTokenStr = dateFormat.format(dateToken);
+					Date dateTokenFormated = dateFormat.parse(dateTokenStr);
+					cardtokenDto.setTokenDate(dateTokenFormated);
+					cardtokenDto.setCardNumber(cardnumber);
+					cardtokenDto.setIdMerchant(merchantid);
+					cardtokenDto.setIdMerchantClient(idclient);
+					cardtokenDto.setFirst_name(fname);
+					cardtokenDto.setLast_name(lname);
+					cardtokenDto.setHolderName(holdername);
+					cardtokenDto.setMcc(merchantid);
+
+					CardtokenDto cardtokenSaved = cardtokenService.save(cardtokenDto);
+
+					Util.writeInFileTransaction(folder, file, "Saving CARDTOKEN OK");
+				} else {
+					Util.writeInFileTransaction(folder, file, "Carte deja enregistrée");
+				}
+
+			} catch (ParseException e) {
+				e.printStackTrace();
+				Util.writeInFileTransaction(folder, file, "savingcardtoken 500 Error during CARDTOKEN Saving " + e);
+			}
 		}
 		
 		try {
@@ -1292,9 +1463,8 @@ public class GWPaiementController {
 			heure = formatheure.format(new Date());
 			rrn = Util.getGeneratedRRN();
 		} catch (Exception err2) {
-			Util.writeInFileTransaction(folder, file,
-					"payer 500 Error during  date formatting for given orderid:[" + orderid
-							+ "] and merchantid:[" + merchantid + "]" + err2);
+			Util.writeInFileTransaction(folder, file, "payer 500 Error during  date formatting for given orderid:["
+					+ orderid + "] and merchantid:[" + merchantid + "]" + err2);
 			demandeDtoMsg.setMsgRefus("Erreur lors du formatage de la date");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
@@ -1419,21 +1589,21 @@ public class GWPaiementController {
 
 			dmd.setDem_xid(threeDSServerTransID);
 			demandePaiementService.save(dmd);
-			
+
 			try {
 				montanttrame = "";
 
 				mm = new String[2];
-				
-				if(amount.contains(",")) {
+
+				if (amount.contains(",")) {
 					amount = amount.replace(",", ".");
 				}
-				if(!amount.contains(".") && !amount.contains(",")) {
-					amount = amount +"."+"00";
+				if (!amount.contains(".") && !amount.contains(",")) {
+					amount = amount + "." + "00";
 				}
 				System.out.println("montant : [" + amount + "]");
 				Util.writeInFileTransaction(folder, file, "montant : [" + amount + "]");
-				
+
 				String montantt = amount + "";
 
 				mm = montantt.split("\\.");
@@ -1454,8 +1624,8 @@ public class GWPaiementController {
 				Util.writeInFileTransaction(folder, file, "montanttrame : [" + montanttrame + "]");
 			} catch (Exception err3) {
 				Util.writeInFileTransaction(folder, file,
-						"payer 500 Error during  amount formatting for given orderid:[" + orderid
-								+ "] and merchantid:[" + merchantid + "]" + err3);
+						"payer 500 Error during  amount formatting for given orderid:[" + orderid + "] and merchantid:["
+								+ merchantid + "]" + err3);
 				demandeDtoMsg.setMsgRefus("Erreur lors du formatage du montant");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
@@ -1611,8 +1781,9 @@ public class GWPaiementController {
 				if (!s_conn) {
 					Util.writeInFileTransaction(folder, file, "Switch  malfunction cannot connect!!!");
 
-					Util.writeInFileTransaction(folder, file, "payer 500 Error Switch communication s_conn false switch ip:[" + sw_s
-							+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
+					Util.writeInFileTransaction(folder, file,
+							"payer 500 Error Switch communication s_conn false switch ip:[" + sw_s
+									+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
 					demandeDtoMsg.setMsgRefus("Un dysfonctionnement du switch ne peut pas se connecter !!!");
 					model.addAttribute("demandeDto", demandeDtoMsg);
 					page = "result";
@@ -1651,9 +1822,8 @@ public class GWPaiementController {
 				Util.writeInFileTransaction(folder, file, "Switch  malfunction  SocketTimeoutException !!!" + e);
 				switch_ko = 1;
 				e.printStackTrace();
-				Util.writeInFileTransaction(folder, file,
-						"payer 500 Error Switch communication SocketTimeoutException" + "switch ip:[" + sw_s
-								+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
+				Util.writeInFileTransaction(folder, file, "payer 500 Error Switch communication SocketTimeoutException"
+						+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
 				demandeDtoMsg.setMsgRefus(
 						"La transaction en cours n’a pas abouti (Erreur de communication du switch SocketTimeoutException), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDtoMsg);
@@ -1690,8 +1860,8 @@ public class GWPaiementController {
 			if (switch_ko == 0 && resp == null) {
 				Util.writeInFileTransaction(folder, file, "Switch  malfunction resp null!!!");
 				switch_ko = 1;
-				Util.writeInFileTransaction(folder, file, "payer 500 Error Switch null response" + "switch ip:["
-						+ sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
+				Util.writeInFileTransaction(folder, file, "payer 500 Error Switch null response" + "switch ip:[" + sw_s
+						+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
 				demandeDtoMsg.setMsgRefus(
 						"La transaction en cours n’a pas abouti (Dysfonctionnement du switch resp null), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDtoMsg);
@@ -1835,14 +2005,14 @@ public class GWPaiementController {
 					CodeReponseDto codeReponseDto = codeReponseService.findByRpcCode(tag20_resp_verified);
 					System.out.println("codeReponseDto : " + codeReponseDto);
 					Util.writeInFileTransaction(folder, file, "codeReponseDto : " + codeReponseDto);
-					if(codeReponseDto != null) {
+					if (codeReponseDto != null) {
 						s_status = codeReponseDto.getRpcLibelle();
-					}		
-				} catch(Exception ee) {
+					}
+				} catch (Exception ee) {
 					Util.writeInFileTransaction(folder, file, "authorization 500 Error codeReponseDto null");
 					ee.printStackTrace();
-				}	
-				
+				}
+
 				Util.writeInFileTransaction(folder, file, "get status Switch status : [" + s_status + "]");
 
 				Util.writeInFileTransaction(folder, file, "get max id ...");
@@ -1886,11 +2056,11 @@ public class GWPaiementController {
 				hist.setHatRrn(tag66_resp_verified); // f1
 				tag66_resp_verified = tag66_resp;
 				hist.setHatEtat('E');
-				if(websiteid.equals("")) {
+				if (websiteid.equals("")) {
 					hist.setHatCodtpe("1");
 				} else {
 					hist.setHatCodtpe(websiteid);
-				}	
+				}
 				hist.setHatMcc(merc_codeactivite);
 				hist.setHatNumCommande(orderid);
 				hist.setHatNumdem(new Long(numTransaction));
@@ -1932,10 +2102,10 @@ public class GWPaiementController {
 					histoAutoGateService.save(hist);
 				} catch (Exception ex) {
 					Util.writeInFileTransaction(folder, file,
-							"2eme tentative : payer 500 Error during  insert in histoautogate for given orderid:[" + orderid + "]" + ex);
+							"2eme tentative : payer 500 Error during  insert in histoautogate for given orderid:["
+									+ orderid + "]" + ex);
 				}
 			}
-			
 
 			Util.writeInFileTransaction(folder, file, "HistoAutoGate OK.");
 
@@ -2112,14 +2282,14 @@ public class GWPaiementController {
 
 					dmd.setEtat_demande("SW_REJET");
 					demandePaiementService.save(dmd);
-					
+
 					hist.setHatEtat('A');
 					histoAutoGateService.save(hist);
-					
+
 				} catch (Exception e) {
 					Util.writeInFileTransaction(folder, file,
-							"payer 500 Error during  DemandePaiement update SW_REJET for given orderid:[" + orderid + "]"
-									+ e);
+							"payer 500 Error during  DemandePaiement update SW_REJET for given orderid:[" + orderid
+									+ "]" + e);
 					demandeDtoMsg.setMsgRefus(
 							"La transaction en cours n’a pas abouti (Erreur lors de la mise à jour de DemandePaiement SW_REJET), votre compte ne sera pas débité, merci de réessayer .");
 					model.addAttribute("demandeDto", demandeDtoMsg);
@@ -2184,11 +2354,11 @@ public class GWPaiementController {
 				 * "&authnumber=" + authnumber + "&cardnumber=" + Util.formatCard(cardnumber) +
 				 * "&transactionid=" + transactionid + "&paymentid=" + paymentid;
 				 */
-				
+
 				String data_noncrypt = "id_commande=" + orderid + "&nomprenom=" + fname + "&email=" + email
-						+ "&montant=" + amount + "&frais=" + "" + "&repauto=" + coderep + "&numAuto="
-						+ authnumber + "&numCarte=" + Util.formatCard(cardnumber) + "&typecarte="
-						+ dmd.getType_carte() + "&numTrans=" + transactionid;
+						+ "&montant=" + amount + "&frais=" + "" + "&repauto=" + coderep + "&numAuto=" + authnumber
+						+ "&numCarte=" + Util.formatCard(cardnumber) + "&typecarte=" + dmd.getType_carte()
+						+ "&numTrans=" + transactionid;
 
 				Util.writeInFileTransaction(folder, file, "data_noncrypt : " + data_noncrypt);
 				System.out.println("data_noncrypt : " + data_noncrypt);
@@ -2208,9 +2378,9 @@ public class GWPaiementController {
 					Util.writeInFileTransaction(folder, file,
 							"coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
 					System.out.println("coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
-					if(dmd.getSuccessURL() != null) {
+					if (dmd.getSuccessURL() != null) {
 						response.sendRedirect(dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" + merchantid);
-					} else {						
+					} else {
 						responseDto responseDto = new responseDto();
 						responseDto.setLname(dmd.getNom());
 						responseDto.setFname(dmd.getPrenom());
@@ -2223,7 +2393,7 @@ public class GWPaiementController {
 						responseDto.setMerchantname(current_infoCommercant.getCmrNom());
 						responseDto.setCardnumber(Util.formatCard(cardnumber));
 						responseDto.setTransactiontime(dateFormat.format(new Date()));
-						
+
 						model.addAttribute("responseDto", responseDto);
 
 						page = "index";
@@ -2240,16 +2410,16 @@ public class GWPaiementController {
 						CodeReponseDto codeReponseDto = codeReponseService.findByRpcCode(coderep);
 						System.out.println("codeReponseDto : " + codeReponseDto);
 						Util.writeInFileTransaction(folder, file, "codeReponseDto : " + codeReponseDto);
-						if(codeReponseDto != null) {
+						if (codeReponseDto != null) {
 							libelle = codeReponseDto.getRpcLibelle();
-						}		
-					} catch(Exception ee) {
+						}
+					} catch (Exception ee) {
 						Util.writeInFileTransaction(folder, file, "payer 500 Error codeReponseDto null");
 						ee.printStackTrace();
-					}					
+					}
 					demandeDtoMsg.setMsgRefus(
-							"La transaction en cours n’a pas abouti (Error during response Switch coderep " + coderep + ":" + libelle +"),"
-									+ " votre compte ne sera pas débité, merci de réessayer .");
+							"La transaction en cours n’a pas abouti (Error during response Switch coderep " + coderep
+									+ ":" + libelle + ")," + " votre compte ne sera pas débité, merci de réessayer .");
 					model.addAttribute("demandeDto", demandeDtoMsg);
 					page = "result";
 				}
@@ -2273,19 +2443,22 @@ public class GWPaiementController {
 
 				// insertion htmlCreq dans la demandePaiement
 				// dmd.setCreq(threeDsecureResponse.getHtmlCreq());
-				//dmd.setCreq(
-				//		"<form  action='https://acs2.sgmaroc.com:443/lacs2' method='post' enctype='application/x-www-form-urlencoded'><input type='hidden' name='creq' value='ewogICJtZXNzYWdlVmVyc2lvbiI6ICIyLjEuMCIsCiAgInRocmVlRFNTZXJ2ZXJUcmFuc0lEIjogIjBlYmU1ODEwLTlhMDMtNGYzZi05MDgzLTJlZWNhNjhiMjY2YSIsCiAgImFjc1RyYW5zSUQiOiAiMmM5MjAxNDgtNjhiOC00ZjA0LWJhODQtY2RiYTFlOTM5MDM3IiwKICAiY2hhbGxlbmdlV2luZG93U2l6ZSI6ICIwNSIsCiAgIm1lc3NhZ2VUeXBlIjogIkNSZXEiCn0=' /></form>");
+				// dmd.setCreq(
+				// "<form action='https://acs2.sgmaroc.com:443/lacs2' method='post'
+				// enctype='application/x-www-form-urlencoded'><input type='hidden' name='creq'
+				// value='ewogICJtZXNzYWdlVmVyc2lvbiI6ICIyLjEuMCIsCiAgInRocmVlRFNTZXJ2ZXJUcmFuc0lEIjogIjBlYmU1ODEwLTlhMDMtNGYzZi05MDgzLTJlZWNhNjhiMjY2YSIsCiAgImFjc1RyYW5zSUQiOiAiMmM5MjAxNDgtNjhiOC00ZjA0LWJhODQtY2RiYTFlOTM5MDM3IiwKICAiY2hhbGxlbmdlV2luZG93U2l6ZSI6ICIwNSIsCiAgIm1lc3NhZ2VUeXBlIjogIkNSZXEiCn0='
+				// /></form>");
 				dmd.setCreq(threeDsecureResponse.getHtmlCreq());
 				dmd.setDem_xid(threeDSServerTransID);
 				dmd.setEtat_demande("SND_TO_ACS");
 				demandeDto = demandePaiementService.save(dmd);
 				model.addAttribute("demandeDto", demandeDto);
 				page = "chalenge";
-				
+
 				Util.writeInFileTransaction(folder, file, "set demandeDto model creq : " + demandeDto.getCreq());
 				Util.writeInFileTransaction(folder, file, "return page : " + page);
-				
-				//return page;
+
+				// return page;
 			} catch (Exception ex) {
 				Util.writeInFileTransaction(folder, file, "payer 500 Error during jso out processing " + ex);
 				demandeDtoMsg.setMsgRefus(
@@ -2464,7 +2637,7 @@ public class GWPaiementController {
 
 		System.out.println("demandeDto htmlCreq : " + demandeDto.getCreq());
 		System.out.println("return page : " + page);
-		
+
 		Util.writeInFileTransaction(folder, file, "*********** Fin payer () ************** ");
 		System.out.println("*********** Fin payer () ************** ");
 
@@ -2494,10 +2667,10 @@ public class GWPaiementController {
 
 		model.addAttribute("demandeDto", dem);
 		System.out.println("return to chalenge.html");
-		
+
 		Util.writeInFileTransaction(folder, file, "*********** Fin chalenge () ************** ");
 		System.out.println("*********** Fin chalenge () ************** ");
-		
+
 		return "chalenge";
 	}
 
@@ -2547,7 +2720,7 @@ public class GWPaiementController {
 			System.out.println("current_dem null ");
 			page = "error";
 		}
-		
+
 		Util.writeInFileTransaction(folder, file, "*********** Fin error ************** ");
 		System.out.println("*********** Fin error ************** ");
 
@@ -2562,10 +2735,10 @@ public class GWPaiementController {
 		Util.creatFileTransaction(file);
 		Util.writeInFileTransaction(folder, file, "*********** Start index2 () ************** ");
 		System.out.println("*********** Start index2 () ************** ");
-		
+
 		Util.writeInFileTransaction(folder, file, "return to index2.html");
 		System.out.println("return to index2.html");
-		
+
 		Util.writeInFileTransaction(folder, file, "*********** Fin index2 () ************** ");
 		System.out.println("*********** Fin index2 () ************** ");
 
@@ -2578,13 +2751,13 @@ public class GWPaiementController {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "GW_" + randomWithSplittableRandom;
 		Util.creatFileTransaction(file);
-		
+
 		Util.writeInFileTransaction(folder, file, "*********** Start result () ************** ");
 		System.out.println("*********** Start result () ************** ");
-		
+
 		Util.writeInFileTransaction(folder, file, "return to result.html");
 		System.out.println("return to result.html");
-		
+
 		Util.writeInFileTransaction(folder, file, "*********** Fin result () ************** ");
 		System.out.println("*********** Start Fin () ************** ");
 
@@ -2599,7 +2772,7 @@ public class GWPaiementController {
 
 		return "User information saved successfully ::.";
 	}
-	
+
 	private List<Integer> generateYearList(int startYear, int endYear) {
 		List<Integer> years = new ArrayList<>();
 		for (int year = startYear; year <= endYear; year++) {
@@ -2679,6 +2852,134 @@ public class GWPaiementController {
 		return monthNamesValues;
 	}
 
+	public void formatDateExp(String expirationDate, Cartes carte) {
+		try {
+			LocalDate localDate = LocalDate.parse(expirationDate);
+			Month mois = localDate.getMonth();
+			Integer year = localDate.getYear();
+			carte.setYear(year);
+			// String formattedMonth = mapToFrenchMonth(month);
+			String moisStr = String.format("%s", mois);
+			List<String> list = new ArrayList<>();
+			list.add(moisStr);
+			MonthDto month = mapToFrenchMonth(moisStr);
+			carte.setMois(month.getMonth());
+			carte.setMoisValue(month.getValue());
+			
+			Calendar dateCalendar = Calendar.getInstance();
+			Date dateToken = dateCalendar.getTime();
+			// get year from date
+			// format date to "yyyy-MM-dd"
+			String expirydateFormated = carte.getYear() + "-" + carte.getMoisValue() + "-" + "01";
+			// exp
+			//String expirydateFormated = "2020" + "-" + "05" + "-" + "01";
+			System.out.println("cardtokenDto expirydate : " + expirydateFormated);
+			Util.writeInFileTransaction(folder, file,
+					"cardtokenDto expirydate formated : " + expirydateFormated);
+			Date dateExp = dateFormatSimple.parse(expirydateFormated);
+			if(dateExp.before(dateToken)) {
+				System.out.println("date exiration est inferieur à l adate systeme : " + dateExp + " < " + dateToken);
+				Util.writeInFileTransaction(folder, file, "date exiration est inferieur à l adate systeme : " + dateExp + " < " + dateToken);
+				carte.setMoisValue("xxxx");
+				carte.setMois("xxxx");
+				carte.setYear(1111);
+			}
+			if(dateExp.after(dateToken)) {
+				System.out.println("date exiration est superieur à l adate systeme : " + dateExp + " < " + dateToken);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	private MonthDto mapToFrenchMonth(String month) {
+
+		MonthDto exp = new MonthDto();
+		if (month.equals("JANUARY")) {
+			month = "Janvier";
+			exp.setMonth(month);
+			exp.setValue("01");
+		} else if (month.toString().equals("FEBRUARY")) {
+			month = "Février";
+			exp.setMonth(month);
+			exp.setValue("02");
+		} else if (month.toString().equals("MARCH")) {
+			month = "Mars";
+			exp.setMonth(month);
+			exp.setValue("03");
+		} else if (month.toString().equals("APRIL")) {
+			month = "Avril";
+			exp.setMonth(month);
+			exp.setValue("04");
+		} else if (month.toString().equals("MAY")) {
+			month = "Mai";
+			exp.setMonth(month);
+			exp.setValue("05");
+		} else if (month.toString().equals("JUNE")) {
+			month = "Juin";
+			exp.setMonth(month);
+			exp.setValue("06");
+		} else if (month.toString().equals("JULY")) {
+			month = "Juillet";
+			exp.setMonth(month);
+			exp.setValue("07");
+		} else if (month.toString().equals("AUGUST")) {
+			month = "Aout";
+			exp.setMonth(month);
+			exp.setValue("08");
+		} else if (month.toString().equals("SEPTEMBER")) {
+			month = "Septembre";
+			exp.setMonth(month);
+			exp.setValue("09");
+		} else if (month.toString().equals("OCTOBER")) {
+			month = "Octobre";
+			exp.setMonth(month);
+			exp.setValue("10");
+		} else if (month.toString().equals("NOVEMBER")) {
+			month = "Novembre";
+			exp.setMonth(month);
+			exp.setValue("11");
+		} else if (month.toString().equals("DECEMBER")) {
+			month = "Décembre";
+			exp.setMonth(month);
+			exp.setValue("12");
+		}
+
+		return exp;
+	}
+
+	private String mapToFrenchMonth(Month month) {
+		// Simple mapping from English to French month names.
+		switch (month) {
+		case JANUARY:
+			return "Janvier";
+		case FEBRUARY:
+			return "Février";
+		case MARCH:
+			return "Mars";
+		case APRIL:
+			return "Avril";
+		case MAY:
+			return "Mai";
+		case JUNE:
+			return "Juin";
+		case JULY:
+			return "Juillet";
+		case AUGUST:
+			return "Août";
+		case SEPTEMBER:
+			return "Septembre";
+		case OCTOBER:
+			return "Octobre";
+		case NOVEMBER:
+			return "Novembre";
+		case DECEMBER:
+			return "Décembre";
+		default:
+			return ""; // Handle unknown month
+		}
+	}
+
 	private boolean is_reccuring_check(String recurring) {
 		if (recurring.equalsIgnoreCase("Y"))
 			return true;
@@ -2729,5 +3030,42 @@ public class GWPaiementController {
 
 	}
 
+	// Static factory method to create a Cartes object from a string
+	public Cartes fromString(String input) {
+		Cartes cartes = new Cartes();
+
+		// Remove square brackets and split the input string
+		String[] keyValuePairs = input.substring(0, input.length() - 1).split(", ");
+
+		for (String pair : keyValuePairs) {
+			String[] keyValue = pair.split("=");
+
+			if (keyValue.length == 2) {
+				String key = keyValue[0].trim();
+				String value = keyValue[1].trim();
+
+				switch (key) {
+				case "carte":
+					cartes.setCarte(value);
+					break;
+				case "pcidsscarte":
+					cartes.setPcidsscarte(value);
+					break;
+				case "year":
+					cartes.setYear(Integer.parseInt(value));
+					break;
+				case "mois":
+					cartes.setMois(value);
+					break;
+				case "moisValue":
+					cartes.setMoisValue(value);
+					break;
+				// Handle other properties as needed
+				}
+			}
+		}
+
+		return cartes;
+	}
 
 }

@@ -38,12 +38,12 @@
     font-weight: 760;
 	}
 	.tr2 {
-	color: #DF6537;
+	color: #f27a45f2;
     font-size: larger !important;
     font-weight: 700;
 	}
 	.tr3 {
-	color: #DF6537;
+	color: #f27a45f2;
     font-size: larger !important;
     font-weight: 700;
 	}
@@ -64,16 +64,16 @@
 	}
 	.tr1 {
 	color: #DF6537;
-    font-size: large !important;
+    font-size: medium !important;
     font-weight: 760;
 	}
 	.tr2 {
-	color: #DF6537;
+	color: #f27a45f2;
     font-size: larger !important;
     font-weight: 700;
 	}
 	.tr3 {
-	color: #DF6537;
+	color: #f27a45f2;
     font-size: larger !important;
     font-weight: 700;
 	}
@@ -106,7 +106,7 @@
                   </p>
 <!--                  <br class="mobile-hide">-->
                   <div class="row">
-                     <p class="text-right tr2" style="color: #DF6537;font-size: x-large;font-weight: 700;">. Informations de votre recharge
+                     <p class="text-right tr2" style="color: #f27a45f2;font-size: x-large;font-weight: 700;">. Informations de votre recharge
                      </p>
                   </div>
                   <div class="row">
@@ -133,7 +133,7 @@
             <article class="card">
             <div class="card-body p-5">
                <div class="row">
-                  <p class="text-left tr3" style="color: #DF6537;font-size: x-large;font-weight: 700;">. Informations de votre carte
+                  <p class="text-left tr3" style="color: #f27a45f2;font-size: x-large;font-weight: 700;">. Informations de votre carte
                   </p>
                </div>
                <form role="form" method="POST" th:action="@{/recharger}" th:object="${demandeDto}">
@@ -146,8 +146,9 @@
                      </div>
                      <div class="col-sm-3" id="cartes" th:if="${demandeDto.cartes != null and demandeDto.cartes.size > 0 }">
                        <select class="form-control" id="carteID" th:field="*{infoCarte}" required="required" onchange="updateExpirationDate()">
-                           <option value="Cartes [carte=4111111111112322, pcidsscarte=411111******2322, year=2026, mois=Mai, moisValue=05]">Choisir</option>
+                           <option value="Cartes [carte=, pcidsscarte=, year=, mois=, moisValue=]">Séllectionner Carte</option>
                            <option th:each="item : ${demandeDto.cartes}" th:value="${item}" th:text="${item.pcidsscarte}"></option>
+                           <option value="Cartes [carte=0000, pcidsscarte=0000, year=0000, mois=0000, moisValue=0000]">Autre Carte</option>
                         </select>
                      </div>
                      <!-- si je clique sur Nouvelle carte jaffiche cette div-->
@@ -204,27 +205,27 @@
                      <input type="hidden" th:field="*{montant}" class="form-control">
                      <input type="hidden" th:field="*{iddemande}" class="form-control">
                   </div>
-                  <div class="form-group row col-md-10">
+                  <div class="form-group row">
+					   <!-- Saisir nouvelle carte -->
+<!--					<div class="col-md-3" th:if="${demandeDto.cartes != null and demandeDto.cartes.size > 0 }">-->
+<!--                     <label>-->
+<!--                     <input type="checkbox" th:field="*{flagNvCarte}" id="addNewCardCheckbox" onchange="toggleNewCardFields()"/> Nouvelle carte-->
+<!--                     </label>-->
+<!--                  </div>-->
+                  <!-- Sauvegarder la carte -->
+                   <div class="col-md-3" th:if="${demandeDto.id_client != null or demandeDto.token != null}">
+                     <label id="saveCard">
+                     <input type="checkbox" th:field="*{flagSaveCarte}" /> Sauvegarder la carte
+                     </label>
+                  </div>
+				  </div>
+                  <div class="form-group row col-md-12">
                      <label>
                      <input type="checkbox" th:field="*{condition}" required="required" /> J'ai lu et j'accepte
                      </label>
                      <a id="openDialog" style="color: #0056b3;cursor: pointer;text-decoration: underline;">
                      les conditions générales d'utilisation</a>
                   </div>
-                  <div class="form-group row">
-					   <!-- Saisir nouvelle carte -->
-					<div class="col-md-3" th:if="${demandeDto.cartes != null and demandeDto.cartes.size > 0 }">
-                     <label>
-                     <input type="checkbox" th:field="*{flagNvCarte}" id="addNewCardCheckbox" onchange="toggleNewCardFields()"/> Nouvelle carte
-                     </label>
-                  </div>
-                  <!-- Sauvegarder la carte -->
-                   <div class="col-md-3">
-                     <label>
-                     <input type="checkbox" th:field="*{flagSaveCarte}" id="saveCard"/> Sauvegarder la carte
-                     </label>
-                  </div>
-				  </div>
 
                   <div class="form-group row">
 					  <div class="col-sm-6">
@@ -401,10 +402,22 @@
 
     function updateExpirationDate() {
 		 var checkbox = document.getElementById("addNewCardCheckbox");
-		if (!checkbox.checked) {
+		// if (!checkbox.checked) {
 		var selectedCard = document.getElementById("carteID").value;
         var anneeToRemplir = document.getElementById("annee");
         var moisToRemplir = document.getElementById("mois");
+		var saveCard = document.getElementById("saveCard");
+        var nvnums = document.getElementById("nvnums");
+	    var cartes = document.getElementById("cartes");
+	    var cvv = document.getElementById("cvv");
+	    var nvannes = document.getElementById("nvannes");
+	    var annees = document.getElementById("annees");
+	    var moiss = document.getElementById("moiss");
+	    var nvmois = document.getElementById("nvmois");
+	    var nvnumToRemplir = document.getElementById("nvnum");
+	    
+	    console.log('saveCard ' , saveCard);
+		saveCard.style.display = "none";
 		
 		if(selectedCard) {
 			console.log('selectedCard : ' + selectedCard);
@@ -418,6 +431,7 @@
 		    anneeToRemplir.value = yearValue;
 		} else {
 		    console.error("Year not found in the string");
+		    anneeToRemplir.value = '';
 		}
 		// Use regular expression to extract mois information
 		var moisMatch = selectedCard.match(/mois=([^,]+),/);
@@ -427,17 +441,35 @@
 		    var moisValue = moisMatch[1];
 		    console.log("Mois : ", moisValue);
 		    moisToRemplir.value = moisValue;
+		    if(moisValue == 0000) {
+			nvnums.style.display = "block";
+	        cartes.style.display = "none";
+	        annees.style.display = "none";
+	        nvannes.style.display = "block";
+	        moiss.style.display = "none";
+	        nvmois.style.display = "block";
+	        cvv.value = '';
+			saveCard.style.display = "block";
+			}
+			// si la carte expiree on donne la main de saisir nv carte
+			if(moisValue == 'xxxx') {
+	        annees.style.display = "none";
+	        nvannes.style.display = "block";
+	        moiss.style.display = "none";
+	        nvmois.style.display = "block";
+	        cvv.value = '';
+			saveCard.style.display = "block";
+			}
 		} else {
 		    console.error("Mois information not found in the string");
+		    moisToRemplir.value = '';
 		}
 		} else {
 			console.log('selectedCard vide');
 			 anneeToRemplir.value = '';
 			  moisToRemplir.value = '';
-		}
-		
-	  }
-      
+		}		
+	  // }    
 	}
 function toggleNewCardFields() {
     var checkbox = document.getElementById("addNewCardCheckbox");

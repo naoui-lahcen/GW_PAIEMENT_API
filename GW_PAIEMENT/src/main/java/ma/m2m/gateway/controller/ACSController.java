@@ -1694,7 +1694,7 @@ public class ACSController {
 
 										CardtokenDto cardtokenSaved = cardtokenService.save(cardtokenDto);
 
-										Util.writeInFileTransaction(folder, file, "Insert into table CARDTOKEN OK");
+										Util.writeInFileTransaction(folder, file, "Saving CARDTOKEN OK");
 										data_noncrypt_token = "id_commande=" + orderid + "&montant=" + amount
 												+ "&repauto=" + coderep + "&numAuto=" + authnumber + "&numCarte="
 												+ Util.formatCard(cardnumber) + "&numTrans=" + transactionid + "&token="

@@ -92,7 +92,7 @@ import ma.m2m.gateway.tlv.Tags;
 @Controller
 @CrossOrigin(origins = "*", allowedHeaders = "*", maxAge = 3600)
 public class AppMobileController {
-	
+
 	private LocalDateTime dateF;
 	private String folder;
 	private String file;
@@ -106,7 +106,7 @@ public class AppMobileController {
 
 	@Value("${key.LINK_SUCCESS}")
 	private String link_success;
-	
+
 	@Value("${key.LINK_CCB}")
 	private String link_ccb;
 
@@ -148,7 +148,7 @@ public class AppMobileController {
 
 	@Autowired
 	CommercantService commercantService;
-	
+
 	@Autowired
 	private InfoCommercantService infoCommercantService;
 
@@ -166,10 +166,9 @@ public class AppMobileController {
 
 	@Autowired
 	GalerieService galerieService;
-	
+
 	@Autowired
 	CodeReponseService codeReponseService;
-	
 
 	DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	DateFormat dateFormatSimple = new SimpleDateFormat("yyyy-MM-dd");
@@ -182,7 +181,7 @@ public class AppMobileController {
 		folder = dateF.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
 		this.gson = new GsonBuilder().serializeNulls().create();
 	}
-	
+
 	@PostMapping("/napspayment/ccb/acs")
 	public String processRequestMobile(HttpServletRequest request, HttpServletResponse response, Model model)
 			throws IOException {
@@ -218,8 +217,7 @@ public class AppMobileController {
 
 			if (cleanCres.getTransStatus().equals("Y")) {
 				System.out.println("ACSController RETOUR ACS =====> cleanCres TransStatus = Y ");
-				Util.writeInFileTransaction(folder, file,
-						"ACSController RETOUR ACS =====> cleanCres TransStatus = Y ");
+				Util.writeInFileTransaction(folder, file, "ACSController RETOUR ACS =====> cleanCres TransStatus = Y ");
 
 				System.out.println("ACSController RETOUR ACS =====> callThree3DSSAfterACS ");
 				Util.writeInFileTransaction(folder, file, "ACSController RETOUR ACS =====> callThree3DSSAfterACS ");
@@ -309,7 +307,7 @@ public class AppMobileController {
 				String rrn = "";
 				String heure = "";
 				String montanttrame = "";
-				String montantRechgtrame = "",cartenaps = "",dateExnaps = "";
+				String montantRechgtrame = "", cartenaps = "", dateExnaps = "";
 				String num_trs = "";
 				String successURL = "";
 				String failURL;
@@ -349,7 +347,8 @@ public class AppMobileController {
 				if (idDemande == null || idDemande.equals("")) {
 					Util.writeInFileTransaction(folder, file, "received idDemande from MPI is Null or Empty");
 					Util.writeInFileTransaction(folder, file, "demandePaiement after update MPI_KO idDemande null");
-					demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti (MPI_KO), votre compte ne sera pas débité, merci de réessayer .");
+					demandeDtoMsg.setMsgRefus(
+							"La transaction en cours n’a pas abouti (MPI_KO), votre compte ne sera pas débité, merci de réessayer .");
 					model.addAttribute("demandeDto", demandeDtoMsg);
 					page = "result";
 					Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -363,7 +362,8 @@ public class AppMobileController {
 					Util.writeInFileTransaction(folder, file,
 							"demandePaiement not found !!!! demandePaiement = null  / received idDemande from MPI => "
 									+ idDemande);
-					demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti (DemandePaiement introuvable), votre compte ne sera pas débité, merci de réessayer .");
+					demandeDtoMsg.setMsgRefus(
+							"La transaction en cours n’a pas abouti (DemandePaiement introuvable), votre compte ne sera pas débité, merci de réessayer .");
 					model.addAttribute("demandeDto", demandeDtoMsg);
 					page = "result";
 					Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -538,21 +538,21 @@ public class AppMobileController {
 					dmd.setDem_xid(threeDSServerTransID);
 					dmd.setEtat_demande("RETOUR_ACS_AUTH_OK");
 					demandePaiementService.save(dmd);
-					
+
 					try {
 						montanttrame = "";
 						mm = new String[2];
 						amount = calculMontantTotalOperation(dmd);
-						
-						if(amount.contains(",")) {
+
+						if (amount.contains(",")) {
 							amount = amount.replace(",", ".");
 						}
-						if(!amount.contains(".") && !amount.contains(",")) {
-							amount = amount +"."+"00";
+						if (!amount.contains(".") && !amount.contains(",")) {
+							amount = amount + "." + "00";
 						}
 						System.out.println("montant recharge avec frais : [" + amount + "]");
 						Util.writeInFileTransaction(folder, file, "montant recharge avec frais : [" + amount + "]");
-						
+
 						String montantt = amount + "";
 
 						mm = montantt.split("\\.");
@@ -582,22 +582,22 @@ public class AppMobileController {
 						System.out.println("Fin processRequestMobile ()");
 						return page;
 					}
-					
+
 					try {
 						montantRechgtrame = "";
 
 						mm = new String[2];
 						String amount1 = calculMontantSansOperation(dmd);
-						
-						if(amount1.contains(",")) {
+
+						if (amount1.contains(",")) {
 							amount1 = amount1.replace(",", ".");
 						}
-						if(!amount1.contains(".") && !amount1.contains(",")) {
-							amount1 = amount1 +"."+"00";
+						if (!amount1.contains(".") && !amount1.contains(",")) {
+							amount1 = amount1 + "." + "00";
 						}
 						System.out.println("montant recharge sans frais : [" + amount1 + "]");
 						Util.writeInFileTransaction(folder, file, "montant recharge sans frais : [" + amount1 + "]");
-						
+
 						String montantt = amount1 + "";
 
 						mm = montantt.split("\\.");
@@ -615,7 +615,8 @@ public class AppMobileController {
 							montantRechgtrame = montantRechgtrame.replace(".", "");
 						montantRechgtrame = Util.formatageCHamps(montantRechgtrame, 12);
 						System.out.println("montantRechgtrame sans frais: [" + montantRechgtrame + "]");
-						Util.writeInFileTransaction(folder, file, "montantRechgtrame sans frais : [" + montantRechgtrame + "]");
+						Util.writeInFileTransaction(folder, file,
+								"montantRechgtrame sans frais : [" + montantRechgtrame + "]");
 					} catch (Exception err3) {
 						Util.writeInFileTransaction(folder, file,
 								"recharger 500 Error during  amount formatting for given orderid:[" + orderid
@@ -682,7 +683,8 @@ public class AppMobileController {
 						try {
 							// tag 046 tlv info carte naps
 							String tlvCCB = new TLVEncoder().withField(Tags.tag1, cartenaps)
-									.withField(Tags.tag14, montantRechgtrame).withField(Tags.tag42, dateExnaps).encode();
+									.withField(Tags.tag14, montantRechgtrame).withField(Tags.tag42, dateExnaps)
+									.encode();
 							// tlv total ccb
 							tlv = new TLVEncoder().withField(Tags.tag0, mesg_type).withField(Tags.tag1, cardnumber)
 									.withField(Tags.tag3, processing_code).withField(Tags.tag22, transaction_condition)
@@ -691,15 +693,17 @@ public class AppMobileController {
 									.withField(Tags.tag18, "761454").withField(Tags.tag42, expirydate)
 									.withField(Tags.tag16, date).withField(Tags.tag17, heure)
 									.withField(Tags.tag10, merc_codeactivite).withField(Tags.tag8, "0" + merchantid)
-									.withField(Tags.tag9, merchantid).withField(Tags.tag66, rrn).withField(Tags.tag67, cvv)
-									.withField(Tags.tag11, merchant_name).withField(Tags.tag12, merchant_city)
-									.withField(Tags.tag90, acqcode).withField(Tags.tag167, champ_cavv)
-									.withField(Tags.tag168, xid).withField(Tags.tag46, tlvCCB).encode();
-							
+									.withField(Tags.tag9, merchantid).withField(Tags.tag66, rrn)
+									.withField(Tags.tag67, cvv).withField(Tags.tag11, merchant_name)
+									.withField(Tags.tag12, merchant_city).withField(Tags.tag90, acqcode)
+									.withField(Tags.tag167, champ_cavv).withField(Tags.tag168, xid)
+									.withField(Tags.tag46, tlvCCB).encode();
+
 							Util.writeInFileTransaction(folder, file, "tag0_request : [" + mesg_type + "]");
 							Util.writeInFileTransaction(folder, file, "tag1_request : [" + cardnumber + "]");
 							Util.writeInFileTransaction(folder, file, "tag3_request : [" + processing_code + "]");
-							Util.writeInFileTransaction(folder, file, "tag22_request : [" + transaction_condition + "]");
+							Util.writeInFileTransaction(folder, file,
+									"tag22_request : [" + transaction_condition + "]");
 							Util.writeInFileTransaction(folder, file, "tag49_request : [" + acq_type + "]");
 							Util.writeInFileTransaction(folder, file, "tag14_request : [" + montanttrame + "]");
 							Util.writeInFileTransaction(folder, file, "tag15_request : [" + currency + "]");
@@ -734,7 +738,7 @@ public class AppMobileController {
 						}
 
 						Util.writeInFileTransaction(folder, file, "Switch TLV Request :[" + tlv + "]");
-						
+
 					}
 
 					// reccuring
@@ -764,8 +768,9 @@ public class AppMobileController {
 
 						if (!s_conn) {
 							Util.writeInFileTransaction(folder, file, "Switch  malfunction cannot connect!!!");
-							Util.writeInFileTransaction(folder, file, "authorization 500 Error Switch communication s_conn false switch ip:[" + sw_s
-									+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
+							Util.writeInFileTransaction(folder, file,
+									"authorization 500 Error Switch communication s_conn false switch ip:[" + sw_s
+											+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
 							demandeDtoMsg.setMsgRefus("Un dysfonctionnement du switch ne peut pas se connecter !!!");
 							model.addAttribute("demandeDto", demandeDtoMsg);
 							page = "result";
@@ -996,7 +1001,7 @@ public class AppMobileController {
 					String s_status, pan_auto = "";
 
 					// SWHistoAutoDto swhist = null;
-					
+
 					if (switch_ko == 1) {
 						pan_auto = Util.formatagePan(cardnumber);
 						Util.writeInFileTransaction(folder, file,
@@ -1021,14 +1026,14 @@ public class AppMobileController {
 							CodeReponseDto codeReponseDto = codeReponseService.findByRpcCode(tag20_resp_verified);
 							System.out.println("codeReponseDto : " + codeReponseDto);
 							Util.writeInFileTransaction(folder, file, "codeReponseDto : " + codeReponseDto);
-							if(codeReponseDto != null) {
+							if (codeReponseDto != null) {
 								s_status = codeReponseDto.getRpcLibelle();
-							}		
-						} catch(Exception ee) {
+							}
+						} catch (Exception ee) {
 							Util.writeInFileTransaction(folder, file, "authorization 500 Error codeReponseDto null");
 							ee.printStackTrace();
-						}	
-						
+						}
+
 						Util.writeInFileTransaction(folder, file, "get status Switch status : [" + s_status + "]");
 
 						Util.writeInFileTransaction(folder, file, "formatting pan...");
@@ -1063,11 +1068,11 @@ public class AppMobileController {
 						hist.setHatRrn(tag66_resp_verified); // f1
 						tag66_resp_verified = tag66_resp;
 						hist.setHatEtat('E');
-						if(websiteid.equals("")) {
+						if (websiteid.equals("")) {
 							hist.setHatCodtpe("1");
 						} else {
 							hist.setHatCodtpe(websiteid);
-						}	
+						}
 						hist.setHatMcc(merc_codeactivite);
 						hist.setHatNumCommande(orderid);
 						hist.setHatNumdem(new Long(numTransaction));
@@ -1106,7 +1111,8 @@ public class AppMobileController {
 							histoAutoGateService.save(hist);
 						} catch (Exception ex) {
 							Util.writeInFileTransaction(folder, file,
-									"2eme tentative : authorization 500 Error during  insert in histoautogate for given orderid:[" + orderid + "]" + ex);
+									"2eme tentative : authorization 500 Error during  insert in histoautogate for given orderid:["
+											+ orderid + "]" + ex);
 						}
 					}
 
@@ -1291,7 +1297,7 @@ public class AppMobileController {
 
 							dmd.setEtat_demande("SW_REJET");
 							demandePaiementService.save(dmd);
-							
+
 							hist.setHatEtat('A');
 							histoAutoGateService.save(hist);
 
@@ -1375,8 +1381,8 @@ public class AppMobileController {
 						 * "&transactionid=" + transactionid + "&paymentid=" + paymentid;
 						 */
 						String data_noncrypt = "id_commande=" + orderid + "&nomprenom=" + fname + "&email=" + email
-								+ "&montant=" + montantSansFrais + "&frais=" + frais + "&repauto=" + coderep + "&numAuto="
-								+ authnumber + "&numCarte=" + Util.formatCard(cardnumber) + "&typecarte="
+								+ "&montant=" + montantSansFrais + "&frais=" + frais + "&repauto=" + coderep
+								+ "&numAuto=" + authnumber + "&numCarte=" + Util.formatCard(cardnumber) + "&typecarte="
 								+ dmd.getType_carte() + "&numTrans=" + transactionid;
 
 						Util.writeInFileTransaction(folder, file, "data_noncrypt : " + data_noncrypt);
@@ -1397,8 +1403,9 @@ public class AppMobileController {
 							Util.writeInFileTransaction(folder, file,
 									"coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
 							System.out.println("coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
-							if(dmd.getSuccessURL() != null) {
-								response.sendRedirect(dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" + merchantid);
+							if (dmd.getSuccessURL() != null) {
+								response.sendRedirect(
+										dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" + merchantid);
 							} else {
 								responseDto responseDto = new responseDto();
 								responseDto.setLname(dmd.getNom());
@@ -1412,7 +1419,7 @@ public class AppMobileController {
 								responseDto.setMerchantname(current_infoCommercant.getCmrNom());
 								responseDto.setCardnumber(Util.formatCard(cardnumber));
 								responseDto.setTransactiontime(dateFormat.format(new Date()));
-								
+
 								model.addAttribute("responseDto", responseDto);
 
 								page = "index";
@@ -1423,22 +1430,24 @@ public class AppMobileController {
 						} else {
 							Util.writeInFileTransaction(folder, file,
 									"coderep = " + coderep + " => Redirect to failURL : " + dmd.getFailURL());
-							System.out.println("coderep = " + coderep + " => Redirect to failURL : " + dmd.getFailURL());
+							System.out
+									.println("coderep = " + coderep + " => Redirect to failURL : " + dmd.getFailURL());
 							String libelle = "";
 							try {
 								CodeReponseDto codeReponseDto = codeReponseService.findByRpcCode(coderep);
 								System.out.println("codeReponseDto : " + codeReponseDto);
 								Util.writeInFileTransaction(folder, file, "codeReponseDto : " + codeReponseDto);
-								if(codeReponseDto != null) {
+								if (codeReponseDto != null) {
 									libelle = codeReponseDto.getRpcLibelle();
-								}		
-							} catch(Exception ee) {
+								}
+							} catch (Exception ee) {
 								Util.writeInFileTransaction(folder, file, "payer 500 Error codeReponseDto null");
 								ee.printStackTrace();
-							}					
+							}
 							demandeDtoMsg.setMsgRefus(
-									"La transaction en cours n’a pas abouti (Error during response Switch coderep " + coderep + ":" + libelle +"),"
-											+ " votre compte ne sera pas débité, merci de réessayer .");						
+									"La transaction en cours n’a pas abouti (Error during response Switch coderep "
+											+ coderep + ":" + libelle + "),"
+											+ " votre compte ne sera pas débité, merci de réessayer .");
 							model.addAttribute("demandeDto", demandeDtoMsg);
 							page = "result";
 							Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -1499,20 +1508,22 @@ public class AppMobileController {
 						dmd.setCreq(threeDsecureResponse.getHtmlCreq());
 						dmd.setDem_xid(threeDSServerTransID);
 						demandePaiementService.save(dmd);
-						
+
 						System.out.println("link_chalenge " + link_chalenge + dmd.getTokencommande());
-						Util.writeInFileTransaction(folder, file, "link_chalenge " + link_chalenge + dmd.getTokencommande());
+						Util.writeInFileTransaction(folder, file,
+								"link_chalenge " + link_chalenge + dmd.getTokencommande());
 
 						System.out.println("autorization api response chalenge :  [" + jso.toString() + "]");
 						Util.writeInFileTransaction(folder, file,
 								"autorization api response chalenge :  [" + jso.toString() + "]");
-						
+
 						Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
 						System.out.println("Fin processRequestMobile ()");
-						
+
 						return jso.toString();
 					} catch (Exception ex) {
-						Util.writeInFileTransaction(folder, file, "authorization 500 Error during jso out processing " + ex);
+						Util.writeInFileTransaction(folder, file,
+								"authorization 500 Error during jso out processing " + ex);
 						demandeDtoMsg.setMsgRefus(
 								"La transaction en cours n’a pas abouti (Erreur lors du traitement de sortie JSON), votre compte ne sera pas débité, merci de réessayer .");
 						model.addAttribute("demandeDto", demandeDtoMsg);
@@ -1702,8 +1713,7 @@ public class AppMobileController {
 				}
 
 			} else {
-				Util.writeInFileTransaction(folder, file,
-						"ACSController RETOUR ACS =====> cleanCres TransStatus = N ");
+				Util.writeInFileTransaction(folder, file, "ACSController RETOUR ACS =====> cleanCres TransStatus = N ");
 				System.out.println("ACSController RETOUR ACS =====> cleanCres TransStatus = N ");
 				DemandePaiementDto demandeP = new DemandePaiementDto();
 				Util.writeInFileTransaction(folder, file,
@@ -1714,10 +1724,10 @@ public class AppMobileController {
 				demandeP = demandePaiementService.findByDem_xid(cleanCres.getThreeDSServerTransID());
 
 				if (demandeP != null) {
-					
+
 					demandeP.setEtat_demande("RETOUR_ACS_NON_AUTH");
 					demandePaiementService.save(demandeP);
-					
+
 					msgRefus = "La transaction en cours n’a pas abouti (TransStatus = N), votre compte ne sera pas débité, merci de réessayer .";
 					String data_noncrypt = "id_commande=" + demandeP.getCommande() + "&nomprenom="
 							+ demandeP.getPrenom() + "&email=" + demandeP.getEmail() + "&montant="
@@ -1742,7 +1752,8 @@ public class AppMobileController {
 						Util.writeInFileTransaction(folder, file,
 								"authorization 500 InfoCommercantDto misconfigured in DB or not existing orderid:["
 										+ demandeP.getCommande() + "] and merchantid:[" + demandeP.getComid() + "]");
-						demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti (InfoCommercant mal configuré dans la base de données ou inexistant), votre compte ne sera pas débité, merci de réessayer .");
+						demandeDtoMsg.setMsgRefus(
+								"La transaction en cours n’a pas abouti (InfoCommercant mal configuré dans la base de données ou inexistant), votre compte ne sera pas débité, merci de réessayer .");
 						model.addAttribute("demandeDto", demandeDtoMsg);
 						page = "result";
 						Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -1764,7 +1775,8 @@ public class AppMobileController {
 					Util.writeInFileTransaction(folder, file,
 							"TransStatus = N => Redirect to FailURL : " + demandeP.getFailURL());
 					System.out.println("TransStatus = N => Redirect to FailURL : " + demandeP.getFailURL());
-					demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti (TransStatus = N), votre compte ne sera pas débité, merci de réessayer .");
+					demandeDtoMsg.setMsgRefus(
+							"La transaction en cours n’a pas abouti (TransStatus = N), votre compte ne sera pas débité, merci de réessayer .");
 					model.addAttribute("demandeDto", demandeDtoMsg);
 					page = "result";
 					Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -1783,7 +1795,8 @@ public class AppMobileController {
 		} catch (Exception ex) {
 			Util.writeInFileTransaction(folder, file, "ACSController RETOUR ACS =====> Exception " + ex);
 			System.out.println("ACSController RETOUR ACS =====> Exception " + ex);
-			demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti (TransStatus = N), votre compte ne sera pas débité, merci de réessayer .");
+			demandeDtoMsg.setMsgRefus(
+					"La transaction en cours n’a pas abouti (TransStatus = N), votre compte ne sera pas débité, merci de réessayer .");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -1792,10 +1805,10 @@ public class AppMobileController {
 		}
 		Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
 		System.out.println("Fin processRequestMobile ()");
-	
+
 		return page;
 	}
-	
+
 	@PostMapping(value = "/napspayment/linkCCB", consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public String getLinkCCB(@RequestHeader MultiValueMap<String, String> header, @RequestBody String linkP,
@@ -1860,7 +1873,8 @@ public class AppMobileController {
 				return getMsgError(folder, file, null, "getLinkCCB 500 malformed header", null);
 			} else {
 				Util.writeInFileTransaction(folder, file, "getLinkCCB 500 malformed header" + head_err);
-				return getMsgError(folder, file, null, "getLinkCCB 500 malformed header " + head_err.getMessage(), null);
+				return getMsgError(folder, file, null, "getLinkCCB 500 malformed header " + head_err.getMessage(),
+						null);
 			}
 		}
 
@@ -1872,8 +1886,8 @@ public class AppMobileController {
 
 		String orderid, amount, merchantid, merchantname, websiteName, websiteid, recurring, country, phone, city,
 				state, zipcode, address, expirydate, transactiondate, transactiontime, callbackUrl, fname, lname,
-				email = "", securtoken24, mac_value, successURL, failURL, idDemande,
-				id_client, token, cartenaps, dateexpnaps;
+				email = "", securtoken24, mac_value, successURL, failURL, idDemande, id_client, token, cartenaps,
+				dateexpnaps;
 		try {
 			// Transaction info
 			orderid = (String) jsonOrequest.get("orderid");
@@ -1908,7 +1922,8 @@ public class AppMobileController {
 
 		} catch (Exception jerr) {
 			Util.writeInFileTransaction(folder, file, "getLinkCCB 500 malformed json expression " + linkP + jerr);
-			return getMsgError(folder, file, null, "getLinkCCB 500 malformed json expression " + jerr.getMessage(), null);
+			return getMsgError(folder, file, null, "getLinkCCB 500 malformed json expression " + jerr.getMessage(),
+					null);
 		}
 
 		CommercantDto current_merchant = null;
@@ -1919,7 +1934,8 @@ public class AppMobileController {
 					"authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]" + e);
 
-			return getMsgError(folder, file, jsonOrequest, "getLinkCCB 500 Merchant misconfigured in DB or not existing", "15");
+			return getMsgError(folder, file, jsonOrequest,
+					"getLinkCCB 500 Merchant misconfigured in DB or not existing", "15");
 		}
 
 		if (current_merchant == null) {
@@ -1927,7 +1943,8 @@ public class AppMobileController {
 					"getLinkCCB 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]");
 
-			return getMsgError(folder, file, jsonOrequest, "getLinkCCB 500 Merchant misconfigured in DB or not existing", "15");
+			return getMsgError(folder, file, jsonOrequest,
+					"getLinkCCB 500 Merchant misconfigured in DB or not existing", "15");
 		}
 
 		if (current_merchant.getCmrCodactivite() == null) {
@@ -1935,7 +1952,8 @@ public class AppMobileController {
 					"getLinkCCB 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]");
 
-			return getMsgError(folder, file, jsonOrequest, "getLinkCCB 500 Merchant misconfigured in DB or not existing", "15");
+			return getMsgError(folder, file, jsonOrequest,
+					"getLinkCCB 500 Merchant misconfigured in DB or not existing", "15");
 		}
 
 		if (current_merchant.getCmrCodbqe() == null) {
@@ -1943,7 +1961,8 @@ public class AppMobileController {
 					"getLinkCCB 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]");
 
-			return getMsgError(folder, file, jsonOrequest, "getLinkCCB 500 Merchant misconfigured in DB or not existing", "15");
+			return getMsgError(folder, file, jsonOrequest,
+					"getLinkCCB 500 Merchant misconfigured in DB or not existing", "15");
 		}
 
 		DemandePaiementDto check_dmd = null;
@@ -1963,7 +1982,8 @@ public class AppMobileController {
 					"getLinkCCB 500 Error Already exist in PaiementRequest findByCommandeAndComid orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]");
 
-			return getMsgError(folder, file, jsonOrequest, "getLinkCCB 500 Error Already exist in PaiementRequest", "16");
+			return getMsgError(folder, file, jsonOrequest, "getLinkCCB 500 Error Already exist in PaiementRequest",
+					"16");
 		}
 
 		String url = "", status = "", statuscode = "";
@@ -1999,7 +2019,7 @@ public class AppMobileController {
 				// calcule des frais de recharge
 				Double montantrecharge = (0 + (Double.parseDouble(amount) * 0.65) / 100);
 				String fraistr = String.format("%.2f", montantrecharge).replaceAll(",", ".");
-				
+
 				dmd.setFrais(Double.parseDouble(fraistr));
 				dmd.setNom(lname);
 				dmd.setPrenom(fname);
@@ -2021,11 +2041,11 @@ public class AppMobileController {
 				// dmd.setDem_date_time(transactiondate + transactiontime);
 				dmd.setDem_date_time(dateFormat.format(new Date()));
 
-				if (recurring.equalsIgnoreCase("Y"))
+				if (!id_client.equalsIgnoreCase("") || !token.equalsIgnoreCase("")) {
 					dmd.setIs_cof("Y");
-				if (recurring.equalsIgnoreCase("N"))
+				}else {
 					dmd.setIs_cof("N");
-
+				}
 				dmd.setIs_addcard("N");
 				dmd.setIs_tokenized("N");
 				dmd.setIs_whitelist("N");
@@ -2049,9 +2069,11 @@ public class AppMobileController {
 			status = "KO";
 			idDemande = "";
 			Util.writeInFileTransaction(folder, file,
-					"getLinkCCB 500 Error during DEMANDE_PAIEMENT insertion for given orderid:[" + orderid + "]" + err1);
+					"getLinkCCB 500 Error during DEMANDE_PAIEMENT insertion for given orderid:[" + orderid + "]"
+							+ err1);
 
-			return getMsgError(folder, file, jsonOrequest, "getLinkCCB 500 Error during DEMANDE_PAIEMENT insertion", null);
+			return getMsgError(folder, file, jsonOrequest, "getLinkCCB 500 Error during DEMANDE_PAIEMENT insertion",
+					null);
 		}
 
 		JSONObject jso = new JSONObject();
@@ -2085,7 +2107,6 @@ public class AppMobileController {
 
 	}
 
-	
 	@RequestMapping(value = "/napspayment/authorization/ccb/token/{token}", method = RequestMethod.GET)
 	public String showPageRchg(@PathVariable(value = "token") String token, Model model) {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
@@ -2110,9 +2131,10 @@ public class AppMobileController {
 			demandeDto = demandePaiementService.findByTokencommande(token);
 
 			if (demandeDto != null) {
-				System.out.println("DemandePaiement is found idDemande/Commande : " + demandeDto.getIddemande() + "/" + demandeDto.getCommande());
-				Util.writeInFileTransaction(folder, file,
-						"DemandePaiement is found iddemande/Commande : " + demandeDto.getIddemande() + "/" + demandeDto.getCommande());
+				System.out.println("DemandePaiement is found idDemande/Commande : " + demandeDto.getIddemande() + "/"
+						+ demandeDto.getCommande());
+				Util.writeInFileTransaction(folder, file, "DemandePaiement is found iddemande/Commande : "
+						+ demandeDto.getIddemande() + "/" + demandeDto.getCommande());
 
 				// get list of years + 10
 				int currentYear = Year.now().getValue();
@@ -2136,53 +2158,53 @@ public class AppMobileController {
 				// saved
 				// get cardnumber by idclient
 				String idclient = demandeDto.getId_client();
-				if(idclient == null) {
-					idclient="";
+				if (idclient == null) {
+					idclient = "";
 				}
 				merchantid = demandeDto.getComid();
-				//merchantid = "";
+				// merchantid = "";
 				String cardnumber = "";
 				List<Cartes> cartes = new ArrayList<>();
 				if (!idclient.equals("") && idclient != null && !idclient.equals("null")) {
 					System.out.println("idclient/merchantid : " + idclient + "/" + merchantid);
-					try {		
+					try {
 						List<CardtokenDto> cards = new ArrayList<>();
 						cards = cardtokenService.findByIdMerchantAndIdMerchantClient(merchantid, idclient);
 						if (cards != null && cards.size() > 0) {
-							for(CardtokenDto card : cards) {
+							for (CardtokenDto card : cards) {
 								if (card.getCardNumber() != null) {
 									Cartes carte = new Cartes();
-									cardnumber = card.getCardNumber();		
+									cardnumber = card.getCardNumber();
 									carte.setCarte(cardnumber);
-									carte.setPcidsscarte(Util.formatCard(cardnumber));									
+									carte.setPcidsscarte(Util.formatCard(cardnumber));
 									String dateExStr = dateFormatSimple.format(card.getExprDate());
 									formatDateExp(dateExStr, carte);
 									cartes.add(carte);
 								}
-							}														
+							}
 							System.out.println("Cartes : " + cartes.toString());
 							demandeDto.setCartes(cartes);
 						} else {
-							demandeDto.setCartes(null);					
+							demandeDto.setCartes(null);
 						}
 					} catch (Exception ex) {
 						Util.writeInFileTransaction(folder, file, "showPageRchg 500 idclient not found" + ex);
-					}	
+					}
 				} else {
-					demandeDto.setCartes(null);	
+					demandeDto.setCartes(null);
 				}
 
 				// Créez un objet DecimalFormat avec le modèle "0.00"
-		        DecimalFormat df = new DecimalFormat("0.00");
+				DecimalFormat df = new DecimalFormat("0.00");
 
-		        // Formatez le nombre en une chaîne avec deux chiffres après la virgule
-		        Double mont = demandeDto.getMontant();
-		        String mtFormate = df.format(mont);
-		        if (mtFormate.contains(",")) {
-		        	mtFormate = mtFormate.replace(",", ".");
-		        }
-		        
-		        demandeDto.setMontantStr(mtFormate);
+				// Formatez le nombre en une chaîne avec deux chiffres après la virgule
+				Double mont = demandeDto.getMontant();
+				String mtFormate = df.format(mont);
+				if (mtFormate.contains(",")) {
+					mtFormate = mtFormate.replace(",", ".");
+				}
+
+				demandeDto.setMontantStr(mtFormate);
 
 				model.addAttribute("demandeDto", demandeDto);
 
@@ -2243,8 +2265,7 @@ public class AppMobileController {
 
 		} catch (Exception e) {
 			Util.writeInFileTransaction(folder, file,
-					"showPageRchg 500 DEMANDE_PAIEMENT misconfigured in DB or not existing token:[" + token + "]"
-							+ e);
+					"showPageRchg 500 DEMANDE_PAIEMENT misconfigured in DB or not existing token:[" + token + "]" + e);
 
 			Util.writeInFileTransaction(folder, file, "showPageRchg 500 exception" + e);
 			e.printStackTrace();
@@ -2253,8 +2274,8 @@ public class AppMobileController {
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
 		}
-		
-		if(page.equals("erecharge")) {
+
+		if (page.equals("erecharge")) {
 			demandeDto.setEtat_demande("P_CHRG_OK");
 			demandePaiementService.save(demandeDto);
 			System.out.println("update Demandepaiement status to P_CHRG_OK");
@@ -2276,13 +2297,13 @@ public class AppMobileController {
 		Util.creatFileTransaction(file);
 		Util.writeInFileTransaction(folder, file, "*********** Start recharger () ************** ");
 		System.out.println("*********** Start recharger () ************** ");
-		
+
 		String capture, currency, orderid, recurring, amount, promoCode, transactionid, capture_id, merchantid,
 				merchantname, websiteName, websiteid, callbackUrl, cardnumber, token, expirydate, holdername, cvv,
 				fname, lname, email, country, phone, city, state, zipcode, address, mesg_type, merc_codeactivite,
 				acqcode, merchant_name, merchant_city, acq_type, processing_code, reason_code, transaction_condition,
-				transactiondate, transactiontime, date, rrn, heure, montanttrame, montantRechgtrame,cartenaps,dateExnaps, num_trs = "",
-				successURL, failURL, transactiontype, idclient;
+				transactiondate, transactiontime, date, rrn, heure, montanttrame, montantRechgtrame, cartenaps,
+				dateExnaps, num_trs = "", successURL, failURL, transactiontype, idclient;
 
 		DemandePaiementDto demandeDto = new DemandePaiementDto();
 		Objects.copyProperties(demandeDto, dto);
@@ -2290,7 +2311,7 @@ public class AppMobileController {
 		Util.writeInFileTransaction(folder, file, "demandeDto commande : " + dto.getCommande());
 		DemandePaiementDto demandeDtoMsg = new DemandePaiementDto();
 		DemandePaiementDto dmd = new DemandePaiementDto();
-		
+
 		SimpleDateFormat formatter_1, formatter_2, formatheure, formatdate = null;
 		Date trsdate = null;
 		Integer Idmd_id = null;
@@ -2302,7 +2323,7 @@ public class AppMobileController {
 		try {
 			// Transaction info
 			orderid = demandeDto.getCommande();
-			if(demandeDto.getMontant() == null) {
+			if (demandeDto.getMontant() == null) {
 				demandeDto.setMontant(0.00);
 			}
 			amount = String.valueOf(demandeDto.getMontant());
@@ -2327,27 +2348,33 @@ public class AppMobileController {
 			// Card info
 			cvv = demandeDto.getDem_cvv();
 			// if transaction not cof
-			if(demandeDto.getDem_pan() != null && !demandeDto.getDem_pan().equals("")) {
+			if (demandeDto.getDem_pan() != null && !demandeDto.getDem_pan().equals("")) {
 				cardnumber = demandeDto.getDem_pan();
-				expirydate = demandeDto.getAnnee().substring(2,4).concat(demandeDto.getMois().substring(0,2));
+				expirydate = demandeDto.getAnnee().substring(2, 4).concat(demandeDto.getMois().substring(0, 2));
 			}
 			// if transaction cof
-			if(demandeDto.getInfoCarte() != null && !demandeDto.isFlagNvCarte() && (demandeDto.getDem_pan() == null || demandeDto.getDem_pan().equals(""))) {
+			if (demandeDto.getInfoCarte() != null && !demandeDto.isFlagNvCarte()
+					&& (demandeDto.getDem_pan() == null || demandeDto.getDem_pan().equals(""))) {
 				String infoCard = demandeDto.getInfoCarte().substring(8, demandeDto.getInfoCarte().length());
 				Cartes carteFormated = fromString(infoCard);
 				demandeDto.setCarte(carteFormated);
 				cardnumber = demandeDto.getCarte().getCarte();
 				String annee = String.valueOf(demandeDto.getCarte().getYear());
-				expirydate = annee.substring(2,4).concat(demandeDto.getCarte().getMoisValue());
+				expirydate = annee.substring(2, 4).concat(demandeDto.getCarte().getMoisValue());
+			}
+			if (demandeDto.getDem_pan().equals("") && demandeDto.getInfoCarte() != null) {
+				if(!demandeDto.getAnnee().equals("") && !demandeDto.getMois().equals("")) {
+					expirydate = demandeDto.getAnnee().substring(2, 4).concat(demandeDto.getMois().substring(0, 2));
+				}
 			}
 			flagNvCarte = demandeDto.isFlagNvCarte();
 			flagSaveCarte = demandeDto.isFlagSaveCarte();
-			if(cardnumber.contains(",")) {
+			if (cardnumber.contains(",")) {
 				cardnumber = cardnumber.replace(",", "");
 			}
-			//cardnumber = demandeDto.getDem_pan();
+			// cardnumber = demandeDto.getDem_pan();
 			token = "";
-			//expirydate = demandeDto.getAnnee().substring(2, 4).concat(demandeDto.getMois());
+			// expirydate = demandeDto.getAnnee().substring(2, 4).concat(demandeDto.getMois());
 			holdername = "";
 			cvv = demandeDto.getDem_cvv();
 
@@ -2375,8 +2402,8 @@ public class AppMobileController {
 			current_merchant = commercantService.findByCmrNumcmr(merchantid);
 		} catch (Exception e) {
 			Util.writeInFileTransaction(folder, file,
-					"recharger 500 Merchant misconfigured in DB or not existing orderid:[" + orderid + "] and merchantid:["
-							+ merchantid + "]" + e);
+					"recharger 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
+							+ "] and merchantid:[" + merchantid + "]" + e);
 			demandeDtoMsg.setMsgRefus("Commerçant mal configuré dans la base de données ou inexistant");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
@@ -2385,8 +2412,8 @@ public class AppMobileController {
 
 		if (current_merchant == null) {
 			Util.writeInFileTransaction(folder, file,
-					"recharger 500 Merchant misconfigured in DB or not existing orderid:[" + orderid + "] and merchantid:["
-							+ merchantid + "]");
+					"recharger 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
+							+ "] and merchantid:[" + merchantid + "]");
 			demandeDtoMsg.setMsgRefus("Commerçant mal configuré dans la base de données ou inexistant");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
@@ -2395,8 +2422,8 @@ public class AppMobileController {
 
 		if (current_merchant.getCmrCodactivite() == null) {
 			Util.writeInFileTransaction(folder, file,
-					"recharger 500 Merchant misconfigured in DB or not existing orderid:[" + orderid + "] and merchantid:["
-							+ merchantid + "]");
+					"recharger 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
+							+ "] and merchantid:[" + merchantid + "]");
 			demandeDtoMsg.setMsgRefus("Commerçant mal configuré dans la base de données ou inexistant");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
@@ -2405,8 +2432,8 @@ public class AppMobileController {
 
 		if (current_merchant.getCmrCodbqe() == null) {
 			Util.writeInFileTransaction(folder, file,
-					"recharger 500 Merchant misconfigured in DB or not existing orderid:[" + orderid + "] and merchantid:["
-							+ merchantid + "]");
+					"recharger 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
+							+ "] and merchantid:[" + merchantid + "]");
 			demandeDtoMsg.setMsgRefus("Commerçant mal configuré dans la base de données ou inexistant");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
@@ -2442,8 +2469,8 @@ public class AppMobileController {
 		int i_card_valid = Util.isCardValid(cardnumber);
 
 		if (i_card_valid == 1) {
-			Util.writeInFileTransaction(folder, file, "recharger 500 Card number length is incorrect orderid:[" + orderid
-					+ "] and merchantid:[" + merchantid + "]");
+			Util.writeInFileTransaction(folder, file, "recharger 500 Card number length is incorrect orderid:["
+					+ orderid + "] and merchantid:[" + merchantid + "]");
 			demandeDtoMsg.setMsgRefus("La longueur du numéro de la carte est incorrecte");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
@@ -2468,7 +2495,7 @@ public class AppMobileController {
 			dmdToEdit.setDem_pan(cardnumber);
 			dmdToEdit.setDem_cvv(cvv);
 			dmdToEdit.setType_carte(i_card_type + "");
-			//dmdToEdit.setDateexpnaps(expirydate);
+			// dmdToEdit.setDateexpnaps(expirydate);
 			dmdToEdit.setTransactiontype(transactiontype);
 
 			formatter_1 = new SimpleDateFormat("yyyy-MM-dd");
@@ -2483,45 +2510,52 @@ public class AppMobileController {
 			demandeDto.setFlagNvCarte(flagNvCarte);
 			demandeDto.setFlagSaveCarte(flagSaveCarte);
 			idclient = demandeDto.getId_client();
-			if(idclient == null) {
-				idclient="";
+			if (idclient == null) {
+				idclient = "";
 			}
 		} catch (Exception err1) {
 			Util.writeInFileTransaction(folder, file,
-					"recharger 500 Error during DEMANDE_PAIEMENT insertion for given orderid:[" + orderid + "]"
-							+ err1);
+					"recharger 500 Error during DEMANDE_PAIEMENT insertion for given orderid:[" + orderid + "]" + err1);
 			demandeDtoMsg.setMsgRefus("Erreur lors de l'insertion DEMANDE_PAIEMENT");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			return page;
 		}
-		
+
 		// for test control risk
 		GWRiskAnalysis riskAnalysis = new GWRiskAnalysis(folder, file);
 		try {
 			ControlRiskCmrDto controlRiskCmr = controlRiskCmrService.findByNumCommercant(demandeDto.getComid());
 			List<HistoAutoGateDto> porteurFlowPerDay = null;
-			
+
 			Double globalFlowPerDay = 0.00;
 			List<EmetteurDto> listBin = null;
 
 			if (controlRiskCmr != null) {
-				/* --------------------------------- Controle des cartes internationales -----------------------------------------*/
-				if(isNullOrEmpty(controlRiskCmr.getAcceptInternational()) || (controlRiskCmr.getAcceptInternational() != null
-					&& !ACTIVE.getFlag().equalsIgnoreCase(controlRiskCmr.getAcceptInternational().trim()))) {
+				/*
+				 * --------------------------------- Controle des cartes internationales
+				 * -----------------------------------------
+				 */
+				if (isNullOrEmpty(controlRiskCmr.getAcceptInternational())
+						|| (controlRiskCmr.getAcceptInternational() != null && !ACTIVE.getFlag()
+								.equalsIgnoreCase(controlRiskCmr.getAcceptInternational().trim()))) {
 					String binDebutCarte = cardnumber.substring(0, 9);
-					//binDebutCarte = binDebutCarte+"000";
+					// binDebutCarte = binDebutCarte+"000";
 					Util.writeInFileTransaction(folder, file, "controlRiskCmr ici 1");
 					listBin = emetteurService.findByBindebut(binDebutCarte);
-				}		
-				// --------------------------------- Controle de flux journalier autorisé par commerçant  ----------------------------------
-				if(!isNullOrEmpty(controlRiskCmr.getIsGlobalFlowControlActive()) && ACTIVE.getFlag().equalsIgnoreCase(controlRiskCmr.getIsGlobalFlowControlActive())) {
+				}
+				// --------------------------------- Controle de flux journalier autorisé par
+				// commerçant ----------------------------------
+				if (!isNullOrEmpty(controlRiskCmr.getIsGlobalFlowControlActive())
+						&& ACTIVE.getFlag().equalsIgnoreCase(controlRiskCmr.getIsGlobalFlowControlActive())) {
 					Util.writeInFileTransaction(folder, file, "controlRiskCmr ici 2");
 					globalFlowPerDay = histoAutoGateService.getCommercantGlobalFlowPerDay(merchantid);
-			 	}
-				// ------------------------- Controle de flux journalier autorisé par client (porteur de carte) ----------------------------
-				if((controlRiskCmr.getFlowCardPerDay() != null && controlRiskCmr.getFlowCardPerDay() > 0) 
-						|| (controlRiskCmr.getNumberOfTransactionCardPerDay() != null && controlRiskCmr.getNumberOfTransactionCardPerDay() > 0)) {
+				}
+				// ------------------------- Controle de flux journalier autorisé par client
+				// (porteur de carte) ----------------------------
+				if ((controlRiskCmr.getFlowCardPerDay() != null && controlRiskCmr.getFlowCardPerDay() > 0)
+						|| (controlRiskCmr.getNumberOfTransactionCardPerDay() != null
+								&& controlRiskCmr.getNumberOfTransactionCardPerDay() > 0)) {
 					Util.writeInFileTransaction(folder, file, "controlRiskCmr ici 3");
 					porteurFlowPerDay = histoAutoGateService.getPorteurMerchantFlowPerDay(demandeDto.getComid(),
 							demandeDto.getDem_pan());
@@ -2529,8 +2563,8 @@ public class AppMobileController {
 			}
 			String msg = riskAnalysis.executeRiskControls(demandeDto.getComid(), demandeDto.getMontant(),
 					demandeDto.getDem_pan(), controlRiskCmr, globalFlowPerDay, porteurFlowPerDay, listBin);
-			
-			if(!msg.equalsIgnoreCase("OK")) {
+
+			if (!msg.equalsIgnoreCase("OK")) {
 				demandeDto.setEtat_demande("REJET_RISK_CTRL");
 				demandePaiementService.save(demandeDto);
 				Util.writeInFileTransaction(folder, file, "recharger 500 Error " + msg);
@@ -2545,7 +2579,8 @@ public class AppMobileController {
 			demandeDto.setEtat_demande("REJET_RISK_CTRL");
 			demandePaiementService.save(demandeDto);
 			Util.writeInFileTransaction(folder, file,
-					"recharger 500 ControlRiskCmr misconfigured in DB or not existing merchantid:[" + demandeDto.getComid() + e);
+					"recharger 500 ControlRiskCmr misconfigured in DB or not existing merchantid:["
+							+ demandeDto.getComid() + e);
 			demandeDto = new DemandePaiementDto();
 			demandeDtoMsg.setMsgRefus("Error 500 Opération rejetée: Contrôle risque");
 			model.addAttribute("demandeDto", demandeDtoMsg);
@@ -2553,12 +2588,15 @@ public class AppMobileController {
 			return page;
 		}
 		// saving card if flagSaveCarte true
-		if(demandeDto.isFlagSaveCarte()) {
+		if (demandeDto.isFlagSaveCarte()) {
 			try {
-				List<CardtokenDto> checkCardNumber = cardtokenService.findByIdMerchantClientAndCardNumber(idclient, cardnumber);
-				if(checkCardNumber.size() == 0) {
+				List<CardtokenDto> checkCardNumber = cardtokenService.findByIdMerchantClientAndCardNumber(idclient,
+						cardnumber);
+				
+				CardtokenDto cardtokenDto = new CardtokenDto();
+
+				if (checkCardNumber.size() == 0) {
 					// insert new cardToken
-					CardtokenDto cardtokenDto = new CardtokenDto();
 					String tokencard = Util.generateCardToken(idclient);
 
 					// test if token not exist in DB
@@ -2587,10 +2625,11 @@ public class AppMobileController {
 					// format date to "yyyy-MM-dd"
 					String expirydateFormated = xx + "-" + MM + "-" + "01";
 					System.out.println("cardtokenDto expirydate : " + expirydateFormated);
-					Util.writeInFileTransaction(folder, file, "cardtokenDto expirydate formated : " + expirydateFormated);
+					Util.writeInFileTransaction(folder, file,
+							"cardtokenDto expirydate formated : " + expirydateFormated);
 					Date dateExp;
 					dateExp = dateFormatSimple.parse(expirydateFormated);
-					
+
 					cardtokenDto.setToken(tokencard);
 					String tokenid = UUID.randomUUID().toString();
 					cardtokenDto.setIdToken(tokenid);
@@ -2608,15 +2647,17 @@ public class AppMobileController {
 
 					CardtokenDto cardtokenSaved = cardtokenService.save(cardtokenDto);
 
-					Util.writeInFileTransaction(folder, file, "Insert into table CARDTOKEN OK");
+					Util.writeInFileTransaction(folder, file, "Saving CARDTOKEN OK");
+				} else {
+					Util.writeInFileTransaction(folder, file, "Carte deja enregistrée");
 				}
-				
+
 			} catch (ParseException e) {
 				e.printStackTrace();
 				Util.writeInFileTransaction(folder, file, "savingcardtoken 500 Error during CARDTOKEN Saving " + e);
 			}
 		}
-		
+
 		try {
 			formatheure = new SimpleDateFormat("HHmmss");
 			formatdate = new SimpleDateFormat("ddMMyy");
@@ -2624,9 +2665,8 @@ public class AppMobileController {
 			heure = formatheure.format(new Date());
 			rrn = Util.getGeneratedRRN();
 		} catch (Exception err2) {
-			Util.writeInFileTransaction(folder, file,
-					"recharger 500 Error during  date formatting for given orderid:[" + orderid
-							+ "] and merchantid:[" + merchantid + "]" + err2);
+			Util.writeInFileTransaction(folder, file, "recharger 500 Error during  date formatting for given orderid:["
+					+ orderid + "] and merchantid:[" + merchantid + "]" + err2);
 			demandeDtoMsg.setMsgRefus("Erreur lors du formatage de la date");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
@@ -2637,7 +2677,8 @@ public class AppMobileController {
 
 		// appel 3DSSecure ***********************************************************
 
-		ThreeDSecureResponse threeDsecureResponse = autorisationService.preparerReqMobileThree3DSS(demandeDto, folder, file);
+		ThreeDSecureResponse threeDsecureResponse = autorisationService.preparerReqMobileThree3DSS(demandeDto, folder,
+				file);
 		// fin 3DSSecure ***********************************************************
 
 		/*
@@ -2729,7 +2770,7 @@ public class AppMobileController {
 			page = "result";
 			return page;
 		}
-		
+
 		if (reponseMPI.equals("") || reponseMPI == null) {
 			dmd.setEtat_demande("MPI_KO");
 			demandePaiementService.save(dmd);
@@ -2750,26 +2791,26 @@ public class AppMobileController {
 
 			dmd.setDem_xid(threeDSServerTransID);
 			demandePaiementService.save(dmd);
-			
+
 			cartenaps = dmd.getCartenaps();
 			dateExnaps = dmd.getDateexpnaps();
-			
+
 			try {
 				montanttrame = "";
 
 				mm = new String[2];
-				
+
 				amount = calculMontantTotalOperation(dmd);
-				
-				if(amount.contains(",")) {
+
+				if (amount.contains(",")) {
 					amount = amount.replace(",", ".");
 				}
-				if(!amount.contains(".") && !amount.contains(",")) {
-					amount = amount +"."+"00";
+				if (!amount.contains(".") && !amount.contains(",")) {
+					amount = amount + "." + "00";
 				}
 				System.out.println("montant recharge avec frais : [" + amount + "]");
 				Util.writeInFileTransaction(folder, file, "montant recharge avec frais : [" + amount + "]");
-				
+
 				String montantt = amount + "";
 
 				mm = montantt.split("\\.");
@@ -2786,7 +2827,7 @@ public class AppMobileController {
 				} else
 					montanttrame = montanttrame.replace(".", "");
 				montanttrame = Util.formatageCHamps(montanttrame, 12);
-				System.out.println("montanttrame : [" + montanttrame +"]");
+				System.out.println("montanttrame : [" + montanttrame + "]");
 				Util.writeInFileTransaction(folder, file, "montanttrame : [" + montanttrame + "]");
 			} catch (Exception err3) {
 				Util.writeInFileTransaction(folder, file,
@@ -2797,22 +2838,22 @@ public class AppMobileController {
 				page = "result";
 				return page;
 			}
-			
+
 			try {
 				montantRechgtrame = "";
 
 				mm = new String[2];
 				String amount1 = calculMontantSansOperation(dmd);
-				
-				if(amount1.contains(",")) {
+
+				if (amount1.contains(",")) {
 					amount1 = amount1.replace(",", ".");
 				}
-				if(!amount1.contains(".") && !amount1.contains(",")) {
-					amount1 = amount1 +"."+"00";
+				if (!amount1.contains(".") && !amount1.contains(",")) {
+					amount1 = amount1 + "." + "00";
 				}
 				System.out.println("montant recharge sans frais : [" + amount1 + "]");
 				Util.writeInFileTransaction(folder, file, "montant recharge sans frais : [" + amount1 + "]");
-				
+
 				String montantt = amount1 + "";
 
 				mm = montantt.split("\\.");
@@ -2926,7 +2967,7 @@ public class AppMobileController {
 							.withField(Tags.tag11, merchant_name).withField(Tags.tag12, merchant_city)
 							.withField(Tags.tag90, acqcode).withField(Tags.tag167, champ_cavv)
 							.withField(Tags.tag168, xid).withField(Tags.tag46, tlvCCB).encode();
-					
+
 					Util.writeInFileTransaction(folder, file, "tag0_request : [" + mesg_type + "]");
 					Util.writeInFileTransaction(folder, file, "tag1_request : [" + cardnumber + "]");
 					Util.writeInFileTransaction(folder, file, "tag3_request : [" + processing_code + "]");
@@ -2994,8 +3035,9 @@ public class AppMobileController {
 				if (!s_conn) {
 					Util.writeInFileTransaction(folder, file, "Switch  malfunction cannot connect!!!");
 
-					Util.writeInFileTransaction(folder, file, "recharger 500 Error Switch communication s_conn false switch ip:[" + sw_s
-							+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
+					Util.writeInFileTransaction(folder, file,
+							"recharger 500 Error Switch communication s_conn false switch ip:[" + sw_s
+									+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
 					demandeDtoMsg.setMsgRefus("Un dysfonctionnement du switch ne peut pas se connecter !!!");
 					model.addAttribute("demandeDto", demandeDtoMsg);
 					page = "result";
@@ -3141,8 +3183,8 @@ public class AppMobileController {
 					Util.writeInFileTransaction(folder, file, "Switch  malfunction !!! tag1_resp == null");
 					switch_ko = 1;
 					Util.writeInFileTransaction(folder, file,
-							"recharger 500 Error during tlv Switch response parse tag1_resp tag null" + "switch ip:[" + sw_s
-									+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
+							"recharger 500 Error during tlv Switch response parse tag1_resp tag null" + "switch ip:["
+									+ sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
 				}
 
 				if (tag1_resp != null && tag1_resp.length() < 3) {
@@ -3158,8 +3200,8 @@ public class AppMobileController {
 					Util.writeInFileTransaction(folder, file, "Switch  malfunction !!! tag20_resp == null");
 					switch_ko = 1;
 					Util.writeInFileTransaction(folder, file,
-							"recharger 500 Error during tlv Switch response parse tag1_resp tag null" + "switch ip:[" + sw_s
-									+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
+							"recharger 500 Error during tlv Switch response parse tag1_resp tag null" + "switch ip:["
+									+ sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
 				}
 			}
 			Util.writeInFileTransaction(folder, file, "Switch TLV Respnose Processed");
@@ -3218,14 +3260,14 @@ public class AppMobileController {
 					CodeReponseDto codeReponseDto = codeReponseService.findByRpcCode(tag20_resp_verified);
 					System.out.println("codeReponseDto : " + codeReponseDto);
 					Util.writeInFileTransaction(folder, file, "codeReponseDto : " + codeReponseDto);
-					if(codeReponseDto != null) {
+					if (codeReponseDto != null) {
 						s_status = codeReponseDto.getRpcLibelle();
-					}		
-				} catch(Exception ee) {
+					}
+				} catch (Exception ee) {
 					Util.writeInFileTransaction(folder, file, "recharger 500 Error codeReponseDto null");
 					ee.printStackTrace();
-				}	
-				
+				}
+
 				Util.writeInFileTransaction(folder, file, "get status Switch status : [" + s_status + "]");
 
 				Util.writeInFileTransaction(folder, file, "formatting pan...");
@@ -3260,11 +3302,11 @@ public class AppMobileController {
 				hist.setHatRrn(tag66_resp_verified); // f1
 				tag66_resp_verified = tag66_resp;
 				hist.setHatEtat('E');
-				if(websiteid.equals("")) {
+				if (websiteid.equals("")) {
 					hist.setHatCodtpe("1");
 				} else {
 					hist.setHatCodtpe(websiteid);
-				}	
+				}
 				hist.setHatMcc(merc_codeactivite);
 				hist.setHatNumCommande(orderid);
 				hist.setHatNumdem(new Long(numTransaction));
@@ -3302,7 +3344,8 @@ public class AppMobileController {
 					histoAutoGateService.save(hist);
 				} catch (Exception ex) {
 					Util.writeInFileTransaction(folder, file,
-							"2eme tentative : recharger 500 Error during  insert in histoautogate for given orderid:[" + orderid + "]" + ex);
+							"2eme tentative : recharger 500 Error during  insert in histoautogate for given orderid:["
+									+ orderid + "]" + ex);
 				}
 			}
 
@@ -3325,8 +3368,8 @@ public class AppMobileController {
 
 				} catch (Exception e) {
 					Util.writeInFileTransaction(folder, file,
-							"recharger 500 Error during DEMANDE_PAIEMENT update etat demande for given orderid:[" + orderid
-									+ "]" + e);
+							"recharger 500 Error during DEMANDE_PAIEMENT update etat demande for given orderid:["
+									+ orderid + "]" + e);
 				}
 
 				Util.writeInFileTransaction(folder, file, "udapate etat demande : SW_PAYE OK");
@@ -3481,14 +3524,14 @@ public class AppMobileController {
 
 					dmd.setEtat_demande("SW_REJET");
 					demandePaiementService.save(dmd);
-					
+
 					hist.setHatEtat('A');
 					histoAutoGateService.save(hist);
-					
+
 				} catch (Exception e) {
 					Util.writeInFileTransaction(folder, file,
-							"recharger 500 Error during  DemandePaiement update SW_REJET for given orderid:[" + orderid + "]"
-									+ e);
+							"recharger 500 Error during  DemandePaiement update SW_REJET for given orderid:[" + orderid
+									+ "]" + e);
 					demandeDtoMsg.setMsgRefus(
 							"La transaction en cours n’a pas abouti (Erreur lors de la mise à jour de DemandePaiement SW_REJET), votre compte ne sera pas débité, merci de réessayer .");
 					model.addAttribute("demandeDto", demandeDtoMsg);
@@ -3522,7 +3565,7 @@ public class AppMobileController {
 
 			Util.writeInFileTransaction(folder, file, "Preparing autorization api response");
 
-			String authnumber, coderep, motif, merchnatidauth, dtdem = "", frais="", montantSansFrais ="";
+			String authnumber, coderep, motif, merchnatidauth, dtdem = "", frais = "", montantSansFrais = "";
 
 			try {
 				authnumber = hist.getHatNautemt();
@@ -3556,11 +3599,11 @@ public class AppMobileController {
 				 * "&authnumber=" + authnumber + "&cardnumber=" + Util.formatCard(cardnumber) +
 				 * "&transactionid=" + transactionid + "&paymentid=" + paymentid;
 				 */
-				
+
 				String data_noncrypt = "id_commande=" + orderid + "&nomprenom=" + fname + "&email=" + email
 						+ "&montant=" + montantSansFrais + "&frais=" + frais + "&repauto=" + coderep + "&numAuto="
-						+ authnumber + "&numCarte=" + Util.formatCard(cardnumber) + "&typecarte="
-						+ dmd.getType_carte() + "&numTrans=" + transactionid;
+						+ authnumber + "&numCarte=" + Util.formatCard(cardnumber) + "&typecarte=" + dmd.getType_carte()
+						+ "&numTrans=" + transactionid;
 
 				Util.writeInFileTransaction(folder, file, "data_noncrypt : " + data_noncrypt);
 				System.out.println("data_noncrypt : " + data_noncrypt);
@@ -3580,9 +3623,9 @@ public class AppMobileController {
 					Util.writeInFileTransaction(folder, file,
 							"coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
 					System.out.println("coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
-					if(dmd.getSuccessURL() != null) {
+					if (dmd.getSuccessURL() != null) {
 						response.sendRedirect(dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" + merchantid);
-					} else {						
+					} else {
 						responseDto responseDto = new responseDto();
 						responseDto.setLname(dmd.getNom());
 						responseDto.setFname(dmd.getPrenom());
@@ -3595,7 +3638,7 @@ public class AppMobileController {
 						responseDto.setMerchantname(current_infoCommercant.getCmrNom());
 						responseDto.setCardnumber(Util.formatCard(cardnumber));
 						responseDto.setTransactiontime(dateFormat.format(new Date()));
-						
+
 						model.addAttribute("responseDto", responseDto);
 
 						page = "index";
@@ -3612,22 +3655,23 @@ public class AppMobileController {
 						CodeReponseDto codeReponseDto = codeReponseService.findByRpcCode(coderep);
 						System.out.println("codeReponseDto : " + codeReponseDto);
 						Util.writeInFileTransaction(folder, file, "codeReponseDto : " + codeReponseDto);
-						if(codeReponseDto != null) {
+						if (codeReponseDto != null) {
 							libelle = codeReponseDto.getRpcLibelle();
-						}		
-					} catch(Exception ee) {
+						}
+					} catch (Exception ee) {
 						Util.writeInFileTransaction(folder, file, "recharger 500 Error codeReponseDto null");
 						ee.printStackTrace();
-					}					
+					}
 					demandeDtoMsg.setMsgRefus(
-							"La transaction en cours n’a pas abouti (Error during response Switch coderep " + coderep + ":" + libelle +"),"
-									+ " votre compte ne sera pas débité, merci de réessayer .");
+							"La transaction en cours n’a pas abouti (Error during response Switch coderep " + coderep
+									+ ":" + libelle + ")," + " votre compte ne sera pas débité, merci de réessayer .");
 					model.addAttribute("demandeDto", demandeDtoMsg);
 					page = "result";
 				}
 			} catch (Exception jsouterr) {
 				Util.writeInFileTransaction(folder, file,
-						"recharger 500 Error during jso out processing given authnumber:[" + authnumber + "]" + jsouterr);
+						"recharger 500 Error during jso out processing given authnumber:[" + authnumber + "]"
+								+ jsouterr);
 				demandeDtoMsg.setMsgRefus(
 						"La transaction en cours n’a pas abouti (Erreur lors du traitement de sortie JSON), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDtoMsg);
@@ -3645,19 +3689,22 @@ public class AppMobileController {
 
 				// insertion htmlCreq dans la demandePaiement
 				// dmd.setCreq(threeDsecureResponse.getHtmlCreq());
-				//dmd.setCreq(
-				//		"<form  action='https://acs2.sgmaroc.com:443/lacs2' method='post' enctype='application/x-www-form-urlencoded'><input type='hidden' name='creq' value='ewogICJtZXNzYWdlVmVyc2lvbiI6ICIyLjEuMCIsCiAgInRocmVlRFNTZXJ2ZXJUcmFuc0lEIjogIjBlYmU1ODEwLTlhMDMtNGYzZi05MDgzLTJlZWNhNjhiMjY2YSIsCiAgImFjc1RyYW5zSUQiOiAiMmM5MjAxNDgtNjhiOC00ZjA0LWJhODQtY2RiYTFlOTM5MDM3IiwKICAiY2hhbGxlbmdlV2luZG93U2l6ZSI6ICIwNSIsCiAgIm1lc3NhZ2VUeXBlIjogIkNSZXEiCn0=' /></form>");
+				// dmd.setCreq(
+				// "<form action='https://acs2.sgmaroc.com:443/lacs2' method='post'
+				// enctype='application/x-www-form-urlencoded'><input type='hidden' name='creq'
+				// value='ewogICJtZXNzYWdlVmVyc2lvbiI6ICIyLjEuMCIsCiAgInRocmVlRFNTZXJ2ZXJUcmFuc0lEIjogIjBlYmU1ODEwLTlhMDMtNGYzZi05MDgzLTJlZWNhNjhiMjY2YSIsCiAgImFjc1RyYW5zSUQiOiAiMmM5MjAxNDgtNjhiOC00ZjA0LWJhODQtY2RiYTFlOTM5MDM3IiwKICAiY2hhbGxlbmdlV2luZG93U2l6ZSI6ICIwNSIsCiAgIm1lc3NhZ2VUeXBlIjogIkNSZXEiCn0='
+				// /></form>");
 				dmd.setCreq(threeDsecureResponse.getHtmlCreq());
 				dmd.setDem_xid(threeDSServerTransID);
 				dmd.setEtat_demande("SND_TO_ACS");
 				demandeDto = demandePaiementService.save(dmd);
 				model.addAttribute("demandeDto", demandeDto);
 				page = "chalenge";
-				
+
 				Util.writeInFileTransaction(folder, file, "set demandeDto model creq : " + demandeDto.getCreq());
 				Util.writeInFileTransaction(folder, file, "return page : " + page);
-				
-				//return page;
+
+				// return page;
 			} catch (Exception ex) {
 				Util.writeInFileTransaction(folder, file, "recharger 500 Error during jso out processing " + ex);
 				demandeDtoMsg.setMsgRefus(
@@ -3753,7 +3800,7 @@ public class AppMobileController {
 				page = "result";
 				Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
 				System.out.println("Fin processRequestMobile ()");
-				return page;				
+				return page;
 			}
 		} else {
 			switch (errmpi) {
@@ -3836,63 +3883,63 @@ public class AppMobileController {
 
 		System.out.println("demandeDto htmlCreq : " + demandeDto.getCreq());
 		System.out.println("return page : " + page);
-		
+
 		Util.writeInFileTransaction(folder, file, "*********** Fin recharger () ************** ");
 		System.out.println("*********** Fin recharger () ************** ");
 
 		return page;
 	}
-	
+
 	public String calculMontantTotalOperation(DemandePaiementDto dto) {
 		double mnttotalopp = dto.getMontant() + dto.getFrais();
 		String mntttopp = String.format("%.2f", mnttotalopp).replaceAll(",", ".");
 		return mntttopp;
 	}
-	
+
 	public String calculMontantSansOperation(DemandePaiementDto dto) {
 		double mnttotalopp = dto.getMontant();
 		String mntttopp = String.format("%.2f", mnttotalopp).replaceAll(",", ".");
 		return mntttopp;
 	}
-	
-    // Static factory method to create a Cartes object from a string
+
+	// Static factory method to create a Cartes object from a string
 	public Cartes fromString(String input) {
-        Cartes cartes = new Cartes();
+		Cartes cartes = new Cartes();
 
-        // Remove square brackets and split the input string
-        String[] keyValuePairs = input.substring(0, input.length() - 1).split(", ");
+		// Remove square brackets and split the input string
+		String[] keyValuePairs = input.substring(0, input.length() - 1).split(", ");
 
-        for (String pair : keyValuePairs) {
-            String[] keyValue = pair.split("=");
+		for (String pair : keyValuePairs) {
+			String[] keyValue = pair.split("=");
 
-            if (keyValue.length == 2) {
-                String key = keyValue[0].trim();
-                String value = keyValue[1].trim();
+			if (keyValue.length == 2) {
+				String key = keyValue[0].trim();
+				String value = keyValue[1].trim();
 
-                switch (key) {
-                    case "carte":
-                        cartes.setCarte(value);
-                        break;
-                    case "pcidsscarte":
-                        cartes.setPcidsscarte(value);
-                        break;
-                    case "year":
-                        cartes.setYear(Integer.parseInt(value));
-                        break;
-                    case "mois":
-                        cartes.setMois(value);
-                        break;
-                    case "moisValue":
-                        cartes.setMoisValue(value);
-                        break;
-                    // Handle other properties as needed
-                }
-            }
-        }
+				switch (key) {
+				case "carte":
+					cartes.setCarte(value);
+					break;
+				case "pcidsscarte":
+					cartes.setPcidsscarte(value);
+					break;
+				case "year":
+					cartes.setYear(Integer.parseInt(value));
+					break;
+				case "mois":
+					cartes.setMois(value);
+					break;
+				case "moisValue":
+					cartes.setMoisValue(value);
+					break;
+				// Handle other properties as needed
+				}
+			}
+		}
 
-        return cartes;
-    }
-	
+		return cartes;
+	}
+
 	public String getMsgError(String folder, String file, JSONObject jsonOrequest, String msg, String coderep) {
 		Traces traces = new Traces();
 		Util.writeInFileTransaction(folder, file, "*********** Start getMsgError() ************** ");
@@ -3977,7 +4024,7 @@ public class AppMobileController {
 		return d_notime;
 
 	}
-	
+
 	private List<Integer> generateYearList(int startYear, int endYear) {
 		List<Integer> years = new ArrayList<>();
 		for (int year = startYear; year <= endYear; year++) {
@@ -4056,109 +4103,132 @@ public class AppMobileController {
 		}
 		return monthNamesValues;
 	}
-	
-	 public void formatDateExp(String expirationDate, Cartes carte) {
-	        try {
-		        LocalDate localDate = LocalDate.parse(expirationDate);
-		        Month mois = localDate.getMonth();
-		        Integer year = localDate.getYear();
-		        carte.setYear(year);
-		        //String formattedMonth = mapToFrenchMonth(month);
-		        String moisStr = String.format("%s", mois);
-		        List<String> list = new ArrayList<>();
-		        list.add(moisStr);
-		        MonthDto month = mapToFrenchMonth(moisStr);
-		        carte.setMois(month.getMonth());
-		        carte.setMoisValue(month.getValue());
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-	    }
 
-		private MonthDto mapToFrenchMonth(String month) {
-
-				MonthDto exp = new MonthDto();
-				if (month.equals("JANUARY")) {
-					month = "Janvier";
-					exp.setMonth(month);
-					exp.setValue("01");
-				} else if (month.toString().equals("FEBRUARY")) {
-					month = "Février";
-					exp.setMonth(month);
-					exp.setValue("02");
-				} else if (month.toString().equals("MARCH")) {
-					month = "Mars";
-					exp.setMonth(month);
-					exp.setValue("03");
-				} else if (month.toString().equals("APRIL")) {
-					month = "Avril";
-					exp.setMonth(month);
-					exp.setValue("04");
-				} else if (month.toString().equals("MAY")) {
-					month = "Mai";
-					exp.setMonth(month);
-					exp.setValue("05");
-				} else if (month.toString().equals("JUNE")) {
-					month = "Juin";
-					exp.setMonth(month);
-					exp.setValue("06");
-				} else if (month.toString().equals("JULY")) {
-					month = "Juillet";
-					exp.setMonth(month);
-					exp.setValue("07");
-				} else if (month.toString().equals("AUGUST")) {
-					month = "Aout";
-					exp.setMonth(month);
-					exp.setValue("08");
-				} else if (month.toString().equals("SEPTEMBER")) {
-					month = "Septembre";
-					exp.setMonth(month);
-					exp.setValue("09");
-				} else if (month.toString().equals("OCTOBER")) {
-					month = "Octobre";
-					exp.setMonth(month);
-					exp.setValue("10");
-				} else if (month.toString().equals("NOVEMBER")) {
-					month = "Novembre";
-					exp.setMonth(month);
-					exp.setValue("11");
-				} else if (month.toString().equals("DECEMBER")) {
-					month = "Décembre";
-					exp.setMonth(month);
-					exp.setValue("12");
-				}
+	public void formatDateExp(String expirationDate, Cartes carte) {
+		try {
+			LocalDate localDate = LocalDate.parse(expirationDate);
+			Month mois = localDate.getMonth();
+			Integer year = localDate.getYear();
+			carte.setYear(year);
+			// String formattedMonth = mapToFrenchMonth(month);
+			String moisStr = String.format("%s", mois);
+			List<String> list = new ArrayList<>();
+			list.add(moisStr);
+			MonthDto month = mapToFrenchMonth(moisStr);
+			carte.setMois(month.getMonth());
+			carte.setMoisValue(month.getValue());
 			
-			return exp;
+			Calendar dateCalendar = Calendar.getInstance();
+			Date dateToken = dateCalendar.getTime();
+			// get year from date
+			// format date to "yyyy-MM-dd"
+			String expirydateFormated = carte.getYear() + "-" + carte.getMoisValue() + "-" + "01";
+			// exp
+			//String expirydateFormated = "2020" + "-" + "05" + "-" + "01";
+			System.out.println("cardtokenDto expirydate : " + expirydateFormated);
+			Util.writeInFileTransaction(folder, file,
+					"cardtokenDto expirydate formated : " + expirydateFormated);
+			Date dateExp = dateFormatSimple.parse(expirydateFormated);
+			if(dateExp.before(dateToken)) {
+				System.out.println("date exiration est inferieur à l adate systeme : " + dateExp + " < " + dateToken);
+				Util.writeInFileTransaction(folder, file, "date exiration est inferieur à l adate systeme : " + dateExp + " < " + dateToken);
+				carte.setMoisValue("xxxx");
+				carte.setMois("xxxx");
+				carte.setYear(1111);
+			}
+			if(dateExp.after(dateToken)) {
+				System.out.println("date exiration est superieur à l adate systeme : " + dateExp + " < " + dateToken);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-	 private String mapToFrenchMonth(Month month) {
-	        // Simple mapping from English to French month names.
-	        switch (month) {
-	            case JANUARY:
-	                return "Janvier";
-	            case FEBRUARY:
-	                return "Février";
-	            case MARCH:
-	                return "Mars";
-	            case APRIL:
-	                return "Avril";
-	            case MAY:
-	                return "Mai";
-	            case JUNE:
-	                return "Juin";
-	            case JULY:
-	                return "Juillet";
-	            case AUGUST:
-	                return "Août";
-	            case SEPTEMBER:
-	                return "Septembre";
-	            case OCTOBER:
-	                return "Octobre";
-	            case NOVEMBER:
-	                return "Novembre";
-	            case DECEMBER:
-	                return "Décembre";
-	            default:
-	                return ""; // Handle unknown month
-	        }
-	  }
+	}
+
+	private MonthDto mapToFrenchMonth(String month) {
+
+		MonthDto exp = new MonthDto();
+		if (month.equals("JANUARY")) {
+			month = "Janvier";
+			exp.setMonth(month);
+			exp.setValue("01");
+		} else if (month.toString().equals("FEBRUARY")) {
+			month = "Février";
+			exp.setMonth(month);
+			exp.setValue("02");
+		} else if (month.toString().equals("MARCH")) {
+			month = "Mars";
+			exp.setMonth(month);
+			exp.setValue("03");
+		} else if (month.toString().equals("APRIL")) {
+			month = "Avril";
+			exp.setMonth(month);
+			exp.setValue("04");
+		} else if (month.toString().equals("MAY")) {
+			month = "Mai";
+			exp.setMonth(month);
+			exp.setValue("05");
+		} else if (month.toString().equals("JUNE")) {
+			month = "Juin";
+			exp.setMonth(month);
+			exp.setValue("06");
+		} else if (month.toString().equals("JULY")) {
+			month = "Juillet";
+			exp.setMonth(month);
+			exp.setValue("07");
+		} else if (month.toString().equals("AUGUST")) {
+			month = "Aout";
+			exp.setMonth(month);
+			exp.setValue("08");
+		} else if (month.toString().equals("SEPTEMBER")) {
+			month = "Septembre";
+			exp.setMonth(month);
+			exp.setValue("09");
+		} else if (month.toString().equals("OCTOBER")) {
+			month = "Octobre";
+			exp.setMonth(month);
+			exp.setValue("10");
+		} else if (month.toString().equals("NOVEMBER")) {
+			month = "Novembre";
+			exp.setMonth(month);
+			exp.setValue("11");
+		} else if (month.toString().equals("DECEMBER")) {
+			month = "Décembre";
+			exp.setMonth(month);
+			exp.setValue("12");
+		}
+
+		return exp;
+	}
+
+	private String mapToFrenchMonth(Month month) {
+		// Simple mapping from English to French month names.
+		switch (month) {
+		case JANUARY:
+			return "Janvier";
+		case FEBRUARY:
+			return "Février";
+		case MARCH:
+			return "Mars";
+		case APRIL:
+			return "Avril";
+		case MAY:
+			return "Mai";
+		case JUNE:
+			return "Juin";
+		case JULY:
+			return "Juillet";
+		case AUGUST:
+			return "Août";
+		case SEPTEMBER:
+			return "Septembre";
+		case OCTOBER:
+			return "Octobre";
+		case NOVEMBER:
+			return "Novembre";
+		case DECEMBER:
+			return "Décembre";
+		default:
+			return ""; // Handle unknown month
+		}
+	}
 }

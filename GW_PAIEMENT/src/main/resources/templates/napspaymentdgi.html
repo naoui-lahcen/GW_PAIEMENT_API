@@ -38,12 +38,12 @@
     font-weight: 760;
 	}
 	.tr2 {
-	color: #DF6537;
+	color: #f27a45f2;
     font-size: larger !important;
     font-weight: 700;
 	}
 	.tr3 {
-	color: #DF6537;
+	color: #f27a45f2;
     font-size: larger !important;
     font-weight: 700;
 	}
@@ -64,22 +64,25 @@
 	}
 	.tr1 {
 	color: #DF6537;
-    font-size: large !important;
+    font-size: medium !important;
     font-weight: 760;
 	}
 	.tr2 {
-	color: #DF6537;
+	color: #f27a45f2;
     font-size: larger !important;
     font-weight: 700;
 	}
 	.tr3 {
-	color: #DF6537;
+	color: #f27a45f2;
     font-size: larger !important;
     font-weight: 700;
 	}
 	 .mobile-hide {
         display: none;
     }
+    .dgidata {
+		overflow: auto;
+	}
     }
 	table {
 		width: 100%;
@@ -115,8 +118,8 @@
                      en ligne
                   </p>
 <!--                  <br class="mobile-hide">-->
-                  <div class="row">
-                     <p class="text-right tr2" style="color: #DF6537;font-size: x-large;font-weight: 700;">. Détails factures
+                  <div class="row dgidata">
+                     <p class="text-right tr2" style="color: #f27a45f2;font-size: x-large;font-weight: 700;">. Détails factures
                      </p>
                   </div>
                   <div class="row">
@@ -169,7 +172,7 @@
             <article class="card">
             <div class="card-body p-5">
                <div class="row">
-                  <p class="text-left tr3" style="color: #DF6537;font-size: x-large;font-weight: 700;">. Informations de votre carte
+                  <p class="text-left tr3" style="color: #f27a45f2;font-size: x-large;font-weight: 700;">. Informations de votre carte
                   </p>
                </div>
                <form role="form" method="POST" th:action="@{/payer}" th:object="${demandeDto}">

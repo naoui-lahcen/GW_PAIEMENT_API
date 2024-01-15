@@ -1623,7 +1623,7 @@ public class APIController {
 
 		String orderid, amount, merchantid, merchantname, websiteName, websiteid, recurring, country, phone, city,
 				state, zipcode, address, expirydate, transactiondate, transactiontime, callbackUrl, fname, lname,
-				email = "", securtoken24, mac_value, successURL, failURL, idDemande;
+				email = "", securtoken24, mac_value, successURL, failURL, idDemande, id_client = "", token = "";
 		try {
 			// Transaction info
 			orderid = (String) jsonOrequest.get("orderid");
@@ -1655,6 +1655,16 @@ public class APIController {
 		} catch (Exception jerr) {
 			Util.writeInFileTransaction(folder, file, "getLink 500 malformed json expression " + linkP + jerr);
 			return getMsgError(folder, file, null, "getLink 500 malformed json expression " + jerr.getMessage(), null);
+		}
+		try {
+			id_client = (String) jsonOrequest.get("id_client");
+		} catch (Exception jerr) {
+			Util.writeInFileTransaction(folder, file, "getLink 500 malformed json expression " + linkP + jerr);
+		}
+		try {
+			token = (String) jsonOrequest.get("token");
+		} catch (Exception jerr) {
+			Util.writeInFileTransaction(folder, file, "getLink 500 malformed json expression " + linkP + jerr);
 		}
 
 		CommercantDto current_merchant = null;
@@ -1732,6 +1742,8 @@ public class APIController {
 
 				dmd.setComid(merchantid);
 				dmd.setCommande(orderid);
+				dmd.setId_client(id_client);
+				dmd.setToken(token);
 				dmd.setGalid(websiteid);
 				dmd.setSuccessURL(successURL);
 				dmd.setFailURL(failURL);
@@ -1762,11 +1774,11 @@ public class APIController {
 				// dmd.setDem_date_time(transactiondate + transactiontime);
 				dmd.setDem_date_time(dateFormat.format(new Date()));
 
-				if (recurring.equalsIgnoreCase("Y"))
+				if (!id_client.equalsIgnoreCase("") || !token.equalsIgnoreCase("")) {
 					dmd.setIs_cof("Y");
-				if (recurring.equalsIgnoreCase("N"))
+				}else {
 					dmd.setIs_cof("N");
-
+				}
 				dmd.setIs_addcard("N");
 				dmd.setIs_tokenized("N");
 				dmd.setIs_whitelist("N");
@@ -4990,7 +5002,7 @@ public class APIController {
 
 					CardtokenDto cardtokenSaved = cardtokenService.save(cardtokenDto);
 
-					Util.writeInFileTransaction(folder, file, "Insert into table CARDTOKEN OK");
+					Util.writeInFileTransaction(folder, file, "Saving CARDTOKEN OK");
 
 					// Card info
 					jso.put("token", cardtokenSaved.getToken());
@@ -5443,7 +5455,7 @@ public class APIController {
 			jso.put("statuscode", "00");
 			jso.put("status", "saving token successfully");
 
-			Util.writeInFileTransaction(folder, file, "Insert into table CARDTOKEN OK");
+			Util.writeInFileTransaction(folder, file, "Saving CARDTOKEN OK");
 
 		} catch (Exception ex) {
 			Util.writeInFileTransaction(folder, file,
