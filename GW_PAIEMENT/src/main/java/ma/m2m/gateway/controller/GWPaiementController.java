@@ -1318,6 +1318,15 @@ public class GWPaiementController {
 			page = "result";
 			return page;
 		}
+		
+		if (demandeDto.getEtat_demande().equals("SW_PAYE") || demandeDto.getEtat_demande().equals("PAYE")) {
+			Util.writeInFileTransaction(folder, file, "Opération déjà effectuée");
+			demandeDto.setMsgRefus(
+					"La transaction en cours n’a pas abouti (Opération déjà effectuée), votre compte ne sera pas débité, merci de réessayer .");
+			model.addAttribute("demandeDto", demandeDto);
+			page = "operationEffectue";
+			return page;
+		}
 
 		// for test control risk
 		GWRiskAnalysis riskAnalysis = new GWRiskAnalysis(folder, file);
@@ -1391,6 +1400,21 @@ public class GWPaiementController {
 						cardnumber);
 				
 				CardtokenDto cardtokenDto = new CardtokenDto();
+				Calendar dateCalendar = Calendar.getInstance();
+				Date dateToken = dateCalendar.getTime();
+
+				Util.writeInFileTransaction(folder, file, "cardtokenDto expirydate input : " + expirydate);
+				String anne = String.valueOf(dateCalendar.get(Calendar.YEAR));
+				// get year from date
+				String xx = anne.substring(0, 2) + expirydate.substring(0, 2);
+				String MM = expirydate.substring(2, expirydate.length());
+				// format date to "yyyy-MM-dd"
+				String expirydateFormated = xx + "-" + MM + "-" + "01";
+				System.out.println("cardtokenDto expirydate : " + expirydateFormated);
+				Util.writeInFileTransaction(folder, file,
+						"cardtokenDto expirydate formated : " + expirydateFormated);
+				Date dateExp;
+				dateExp = dateFormatSimple.parse(expirydateFormated);
 
 				if (checkCardNumber.size() == 0) {
 					// insert new cardToken
@@ -1408,24 +1432,6 @@ public class GWPaiementController {
 					}
 					System.out.println("tokencard : " + tokencard);
 					Util.writeInFileTransaction(folder, file, "tokencard : " + tokencard);
-
-					int dateint = Integer.valueOf(expirydate);
-
-					Calendar dateCalendar = Calendar.getInstance();
-					Date dateToken = dateCalendar.getTime();
-
-					Util.writeInFileTransaction(folder, file, "cardtokenDto expirydate input : " + expirydate);
-					String anne = String.valueOf(dateCalendar.get(Calendar.YEAR));
-					// get year from date
-					String xx = anne.substring(0, 2) + expirydate.substring(0, 2);
-					String MM = expirydate.substring(2, expirydate.length());
-					// format date to "yyyy-MM-dd"
-					String expirydateFormated = xx + "-" + MM + "-" + "01";
-					System.out.println("cardtokenDto expirydate : " + expirydateFormated);
-					Util.writeInFileTransaction(folder, file,
-							"cardtokenDto expirydate formated : " + expirydateFormated);
-					Date dateExp;
-					dateExp = dateFormatSimple.parse(expirydateFormated);
 
 					cardtokenDto.setToken(tokencard);
 					String tokenid = UUID.randomUUID().toString();
@@ -1447,6 +1453,20 @@ public class GWPaiementController {
 					Util.writeInFileTransaction(folder, file, "Saving CARDTOKEN OK");
 				} else {
 					Util.writeInFileTransaction(folder, file, "Carte deja enregistrée");
+					for(CardtokenDto crd : checkCardNumber) {
+						if(crd.getExprDate() != null) {
+							if(crd.getCardNumber().equals(cardnumber)) {
+								if(crd.getExprDate().before(dateToken)) {
+									Util.writeInFileTransaction(folder, file, "Encienne date expiration est expirée : " + dateFormatSimple.format(crd.getExprDate()));
+									Util.writeInFileTransaction(folder, file, "Update par nv date expiration saisie : "+ expirydateFormated);
+									crd.setExprDate(dateExp);
+									CardtokenDto cardSaved = cardtokenService.save(crd);
+									System.out.println("Update CARDTOKEN OK");
+									Util.writeInFileTransaction(folder, file, "Update CARDTOKEN OK");
+								}
+							}				
+						}	
+					}
 				}
 
 			} catch (ParseException e) {
