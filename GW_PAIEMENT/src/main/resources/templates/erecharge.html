@@ -241,12 +241,11 @@
                            border-top-right-radius: 10px;
                            border-bottom-right-radius: 10px;
                            font-size: 15px;"
-                           class="subscribe btn btn-primary btn-block"
-                           onclick="window.history.back();">Annuler
+                           class="subscribe btn btn-primary btn-block">Payer
                         </button>
                      </div>
                      <div class="col-sm-3 float-right">
-                        <button type="submit" style="color: #FFF;background: #DF6537;
+                        <button type="button" style="color: #FFF;background: #DF6537;
                            border-radius: 10px;
                            margin-left: auto;
                            width: 160px;
@@ -254,7 +253,8 @@
                            border-top-right-radius: 10px;
                            border-bottom-right-radius: 10px;
                            font-size: 15px;"
-                           class="subscribe btn btn-primary btn-block">Payer
+                           class="subscribe btn btn-primary btn-block"
+                           onclick="cancelPayment()">Annuler
                          </button>
                      </div>
                   </div>
@@ -373,7 +373,16 @@
          document.getElementById("closeDialog").addEventListener("click", function () {
             document.getElementById("dialog").style.display = "none";
          });
-                  // Add an event listener to the input field
+         function cancelPayment() {
+        	if (window.history.length > 1) {
+            // If there is a previous page, go back
+            window.history.back();
+        	} else {
+            // If there is no previous page, redirect to another page
+            window.location.href = 'https://agent.naps.ma/RCB/FCB.html'; 
+        	}
+   		 }
+         // Add an event listener to the input field
         document.getElementById('cvv').addEventListener('input', function() {
             var maxLength = 3; // Change this to your desired maximum length
             if (this.value.length > maxLength) {
