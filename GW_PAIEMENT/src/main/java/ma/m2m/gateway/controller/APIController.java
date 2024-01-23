@@ -4308,7 +4308,7 @@ public class APIController {
 
 			DemandePaiementDto dmd = null;
 			DemandePaiementDto dmdSaved = null;
-			amount = "1";
+			amount = "0";
 			currency = "504";
 			try {
 
