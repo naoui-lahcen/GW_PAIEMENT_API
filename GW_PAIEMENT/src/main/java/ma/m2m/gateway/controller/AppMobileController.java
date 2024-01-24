@@ -1993,9 +1993,12 @@ public class AppMobileController {
 			if (check_dmd != null) {
 				// generer token
 				tokencommande = Util.genTokenCom(check_dmd.getCommande(), check_dmd.getComid());
-				url = link_ccb + check_dmd.getTokencommande();
-				statuscode = "00";
-				status = "OK";
+				//url = link_ccb + check_dmd.getTokencommande();
+				//statuscode = "00";
+				//status = "OK";
+				url = "";
+				statuscode = "17";
+				status = "PaiementRequest Already exist orderid:[" + orderid + "]";
 				idDemande = String.valueOf(check_dmd.getIddemande());
 			} else {
 				dmd = new DemandePaiementDto();
