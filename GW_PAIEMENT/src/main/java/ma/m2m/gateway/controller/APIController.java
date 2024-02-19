@@ -5941,7 +5941,7 @@ public class APIController {
 
 		String codrep = "", motif, merchnatidauth, dtdem = "";
 		try {
-			codrep = current_hist.getHatNautemt();
+			codrep = current_hist.getHatCoderep();
 			motif = current_hist.getHatMtfref1();
 			merchnatidauth = current_hist.getHatNumcmr();
 			dtdem = check_dmd.getDem_pan();
