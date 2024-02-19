@@ -13,7 +13,7 @@ public class TransactionDto {
 	private long trs_id;
 	private String   trs_commande;
 	private Double trs_numtrait;
-	private String trs_numcmr;
+	private String trsnumcmr;
 	private Double trs_numtlcolcte;
 	private Double  trs_codtpe;
 	private Double  trs_numfact;
@@ -33,7 +33,7 @@ public class TransactionDto {
 	private String  trs_codbqe;
 	private String  trs_groupe;
 	private Date   trs_dattrans;
-	private String  trs_numaut;
+	private String  trsnumaut;
 	private Double   trs_numreleveport;
 	private Double trs_numrelevecmr;
 	private Double   trs_numedition;
@@ -84,11 +84,11 @@ public class TransactionDto {
 	public void setTrs_numtrait(Double trs_numtrait) {
 		this.trs_numtrait = trs_numtrait;
 	}
-	public String getTrs_numcmr() {
-		return trs_numcmr;
+	public String getTrsnumcmr() {
+		return trsnumcmr;
 	}
-	public void setTrs_numcmr(String trs_numcmr) {
-		this.trs_numcmr = trs_numcmr;
+	public void setTrsnumcmr(String trsnumcmr) {
+		this.trsnumcmr = trsnumcmr;
 	}
 	public Double getTrs_numtlcolcte() {
 		return trs_numtlcolcte;
@@ -204,11 +204,11 @@ public class TransactionDto {
 	public void setTrs_dattrans(Date trs_dattrans) {
 		this.trs_dattrans = trs_dattrans;
 	}
-	public String getTrs_numaut() {
-		return trs_numaut;
+	public String getTrsnumaut() {
+		return trsnumaut;
 	}
-	public void setTrs_numaut(String trs_numaut) {
-		this.trs_numaut = trs_numaut;
+	public void setTrsnumaut(String trsnumaut) {
+		this.trsnumaut = trsnumaut;
 	}
 	public Double getTrs_numreleveport() {
 		return trs_numreleveport;
@@ -402,11 +402,11 @@ public class TransactionDto {
 	public void setTrs_ordrecarte(String trs_ordrecarte) {
 		this.trs_ordrecarte = trs_ordrecarte;
 	}
-	public TransactionDto(long trs_id, String trs_commande, Double trs_numtrait, String trs_numcmr,
+	public TransactionDto(long trs_id, String trs_commande, Double trs_numtrait, String trsnumcmr,
 			Double trs_numtlcolcte, Double trs_codtpe, Double trs_numfact, Double trs_numbloc, Double trs_numseq,
 			String trs_codporteur, String trs_nocompte, String trs_typtop, String trs_procod, Double trs_montant,
 			Double trs_ecart, String trs_typcarte, String trs_syspay, String trs_modval, String trs_mapreleas,
-			String trs_originpor, String trs_codbqe, String trs_groupe, Date trs_dattrans, String trs_numaut,
+			String trs_originpor, String trs_codbqe, String trs_groupe, Date trs_dattrans, String trsnumaut,
 			Double trs_numreleveport, Double trs_numrelevecmr, Double trs_numedition, String trs_annule,
 			String trs_etat, String trs_arn, String trs_devise, String trs_ica, String trs_bqcmr, String trs_origine,
 			String trs_chgreas, String trs_poscapbi, String trs_cdhlidmt, String trs_posentry, String trs_mailin,
@@ -418,7 +418,7 @@ public class TransactionDto {
 		this.trs_id = trs_id;
 		this.trs_commande = trs_commande;
 		this.trs_numtrait = trs_numtrait;
-		this.trs_numcmr = trs_numcmr;
+		this.trsnumcmr = trsnumcmr;
 		this.trs_numtlcolcte = trs_numtlcolcte;
 		this.trs_codtpe = trs_codtpe;
 		this.trs_numfact = trs_numfact;
@@ -438,7 +438,7 @@ public class TransactionDto {
 		this.trs_codbqe = trs_codbqe;
 		this.trs_groupe = trs_groupe;
 		this.trs_dattrans = trs_dattrans;
-		this.trs_numaut = trs_numaut;
+		this.trsnumaut = trsnumaut;
 		this.trs_numreleveport = trs_numreleveport;
 		this.trs_numrelevecmr = trs_numrelevecmr;
 		this.trs_numedition = trs_numedition;

@@ -1161,12 +1161,15 @@ public class AppMobileController {
 									long lidtelc = 0;
 
 									if (n_tlc == null) {
+										Util.writeInFileTransaction(folder, file, "getMAXTLC_N n_tlc = null");
 										Integer idtelc = null;
 
 										TelecollecteDto tlc = null;
 
 										// insert into telec
 										idtelc = telecollecteService.getMAX_ID();
+										Util.writeInFileTransaction(folder, file, "getMAX_ID idtelc : " + idtelc);
+										
 										lidtelc = idtelc.longValue() + 1;
 										tlc = new TelecollecteDto();
 										tlc.setTlc_numtlcolcte(lidtelc);
@@ -1191,7 +1194,7 @@ public class AppMobileController {
 										telecollecteService.save(tlc);
 
 									} else {
-										Util.writeInFileTransaction(folder, file, "n_tlc !null ");
+										Util.writeInFileTransaction(folder, file, "n_tlc !=null ");
 
 										lidtelc = n_tlc.getTlc_numtlcolcte();
 										double nbr_trs = n_tlc.getTlc_nbrtrans();
@@ -1206,7 +1209,7 @@ public class AppMobileController {
 
 									// insert into transaction
 									TransactionDto trs = new TransactionDto();
-									trs.setTrs_numcmr(merchantid);
+									trs.setTrsnumcmr(merchantid);
 									trs.setTrs_numtlcolcte(Double.valueOf(lidtelc));
 
 									String frmt_cardnumber = Util.formatagePan(cardnumber);
@@ -1223,7 +1226,7 @@ public class AppMobileController {
 									Date current_date_1 = getDateWithoutTime(current_date);
 									trs.setTrs_dattrans(current_date_1);
 
-									trs.setTrs_numaut(authnumber);
+									trs.setTrsnumaut(authnumber);
 									trs.setTrs_etat("N");
 									trs.setTrs_devise(hist.getHatDevise());
 									trs.setTrs_certif("N");
@@ -3399,12 +3402,15 @@ public class AppMobileController {
 							long lidtelc = 0;
 
 							if (n_tlc == null) {
+								Util.writeInFileTransaction(folder, file, "getMAXTLC_N n_tlc = null");
 								Integer idtelc = null;
 
 								TelecollecteDto tlc = null;
 
 								// insert into telec
 								idtelc = telecollecteService.getMAX_ID();
+								Util.writeInFileTransaction(folder, file, "getMAX_ID idtelc : " + idtelc);
+								
 								lidtelc = idtelc.longValue() + 1;
 								tlc = new TelecollecteDto();
 								tlc.setTlc_numtlcolcte(lidtelc);
@@ -3443,7 +3449,7 @@ public class AppMobileController {
 
 							// insert into transaction
 							TransactionDto trs = new TransactionDto();
-							trs.setTrs_numcmr(merchantid);
+							trs.setTrsnumcmr(merchantid);
 							trs.setTrs_numtlcolcte(Double.valueOf(lidtelc));
 
 							String frmt_cardnumber = Util.formatagePan(cardnumber);
@@ -3460,7 +3466,7 @@ public class AppMobileController {
 							Date current_date_1 = getDateWithoutTime(current_date);
 							trs.setTrs_dattrans(current_date_1);
 
-							trs.setTrs_numaut(authnumber);
+							trs.setTrsnumaut(authnumber);
 							trs.setTrs_etat("N");
 							trs.setTrs_devise(hist.getHatDevise());
 							trs.setTrs_certif("N");

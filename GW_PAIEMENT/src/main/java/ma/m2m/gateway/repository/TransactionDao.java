@@ -18,7 +18,7 @@ public interface TransactionDao extends JpaRepository<Transaction, Long> {
 	
 	Transaction findByTrsnumautAndTrsnumcmr(String numAuth, String cumCmr);
 	
-	@Query(value="select max(trs_id)  FROM  Transaction", nativeQuery = true)
+	@Query(value="select max(TRS_ID)  FROM  MXGATEWAY.TRANSACTION", nativeQuery = true)
 	Integer getMAX_ID();
 
 }

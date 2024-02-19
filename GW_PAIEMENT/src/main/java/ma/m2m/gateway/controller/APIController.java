@@ -1180,12 +1180,15 @@ public class APIController {
 								long lidtelc = 0;
 
 								if (n_tlc == null) {
+									Util.writeInFileTransaction(folder, file, "getMAXTLC_N n_tlc = null");
 									Integer idtelc = null;
 
 									TelecollecteDto tlc = null;
 
 									// insert into telec
 									idtelc = telecollecteService.getMAX_ID();
+									Util.writeInFileTransaction(folder, file, "getMAX_ID idtelc : " + idtelc);
+									
 									lidtelc = idtelc.longValue() + 1;
 									tlc = new TelecollecteDto();
 									tlc.setTlc_numtlcolcte(lidtelc);
@@ -1210,7 +1213,7 @@ public class APIController {
 									telecollecteService.save(tlc);
 
 								} else {
-									Util.writeInFileTransaction(folder, file, "n_tlc !null ");
+									Util.writeInFileTransaction(folder, file, "n_tlc !=null ");
 
 									lidtelc = n_tlc.getTlc_numtlcolcte();
 									double nbr_trs = n_tlc.getTlc_nbrtrans();
@@ -1225,7 +1228,7 @@ public class APIController {
 
 								// insert into transaction
 								TransactionDto trs = new TransactionDto();
-								trs.setTrs_numcmr(merchantid);
+								trs.setTrsnumcmr(merchantid);
 								trs.setTrs_numtlcolcte(Double.valueOf(lidtelc));
 
 								String frmt_cardnumber = Util.formatagePan(cardnumber);
@@ -1242,7 +1245,7 @@ public class APIController {
 								Date current_date_1 = getDateWithoutTime(current_date);
 								trs.setTrs_dattrans(current_date_1);
 
-								trs.setTrs_numaut(authnumber);
+								trs.setTrsnumaut(authnumber);
 								trs.setTrs_etat("N");
 								trs.setTrs_devise(hist.getHatDevise());
 								trs.setTrs_certif("N");
@@ -2733,6 +2736,7 @@ public class APIController {
 		long lidtelc = 0;
 
 		if (n_tlc == null) {
+			Util.writeInFileTransaction(folder, file, "getMAXTLC_N n_tlc = null");
 			Integer idtelc = null;
 
 			TelecollecteDto tlc = null;
@@ -2741,6 +2745,8 @@ public class APIController {
 				// insert into telec
 				// idtelc = tlcservice.getMAX_ID("TELECOLLECTE", "TLC_NUMTLCOLCTE");
 				idtelc = telecollecteService.getMAX_ID();
+				Util.writeInFileTransaction(folder, file, "getMAX_ID idtelc : " + idtelc);
+				
 				lidtelc = idtelc.longValue() + 1;
 				tlc = new TelecollecteDto();
 				tlc.setTlc_numtlcolcte(lidtelc);
@@ -2800,7 +2806,7 @@ public class APIController {
 		// insert into transaction
 		try {
 			trs = new TransactionDto();
-			trs.setTrs_numcmr(merchantid);
+			trs.setTrsnumcmr(merchantid);
 			trs.setTrs_numtlcolcte(Double.valueOf(lidtelc));
 			frmt_cardnumber = Util.formatagePan(cardnumber);
 			trs.setTrs_codporteur(frmt_cardnumber);
@@ -2810,7 +2816,7 @@ public class APIController {
 			current_date = new Date();
 			Date current_date_1 = getDateWithoutTime(current_date);
 			trs.setTrs_dattrans(current_date_1);
-			trs.setTrs_numaut(authnumber);
+			trs.setTrsnumaut(authnumber);
 			trs.setTrs_etat("N");
 			trs.setTrs_devise(current_hist.getHatDevise());
 			trs.setTrs_certif("N");
@@ -3272,12 +3278,15 @@ public class APIController {
 				long lidtelc = 0;
 
 				if (n_tlc == null) {
+					Util.writeInFileTransaction(folder, file, "getMAXTLC_N n_tlc = null");
 					Integer idtelc = null;
 
 					TelecollecteDto tlc = null;
 
 					// insert into telec
 					idtelc = telecollecteService.getMAX_ID();
+					Util.writeInFileTransaction(folder, file, "getMAX_ID idtelc : " + idtelc);
+					
 					if (idtelc != null) {
 						lidtelc = idtelc.longValue() + 1;
 					} else {
@@ -3323,7 +3332,7 @@ public class APIController {
 				long lidtrs = 0;
 				// insert into transaction
 				trs = new TransactionDto();
-				trs.setTrs_numcmr(merchantid);
+				trs.setTrsnumcmr(merchantid);
 				trs.setTrs_numtlcolcte(Double.valueOf(lidtelc));
 				frmt_cardnumber = Util.formatagePan(cardnumber);
 				trs.setTrs_codporteur(frmt_cardnumber);
@@ -3333,7 +3342,7 @@ public class APIController {
 				current_date = new Date();
 				Date current_date_1 = getDateWithoutTime(current_date);
 				trs.setTrs_dattrans(current_date_1);
-				trs.setTrs_numaut("000000"); // trs.setTrs_numaut(authnumber);
+				trs.setTrsnumaut("000000"); // trs.setTrs_numaut(authnumber);
 				trs.setTrs_etat("N");
 				trs.setTrs_devise(current_hist.getHatDevise());
 				trs.setTrs_certif("N");
@@ -5945,6 +5954,9 @@ public class APIController {
 			motif = current_hist.getHatMtfref1();
 			merchnatidauth = current_hist.getHatNumcmr();
 			dtdem = check_dmd.getDem_pan();
+			if(cardnumber.equals("")) {
+				cardnumber = current_hist.getHatPorteur();
+			}
 		} catch (Exception e) {
 			Util.writeInFileTransaction(folder, file,
 					"cpautorisation 500 Error during authdata preparation orderid:[" + orderid + "]" + e);
@@ -5997,12 +6009,15 @@ public class APIController {
 						long lidtelc = 0;
 
 						if (n_tlc == null) {
+							Util.writeInFileTransaction(folder, file, "getMAXTLC_N n_tlc = null");
 							Integer idtelc = null;
 
 							TelecollecteDto tlc = null;
 
 							// insert into telec
 							idtelc = telecollecteService.getMAX_ID();
+							Util.writeInFileTransaction(folder, file, "getMAX_ID idtelc : " + idtelc);
+							
 							lidtelc = idtelc.longValue() + 1;
 							tlc = new TelecollecteDto();
 							tlc.setTlc_numtlcolcte(lidtelc);
@@ -6027,7 +6042,7 @@ public class APIController {
 							telecollecteService.save(tlc);
 
 						} else {
-							Util.writeInFileTransaction(folder, file, "n_tlc !null ");
+							Util.writeInFileTransaction(folder, file, "n_tlc !=null ");
 
 							lidtelc = n_tlc.getTlc_numtlcolcte();
 							double nbr_trs = n_tlc.getTlc_nbrtrans();
@@ -6042,7 +6057,7 @@ public class APIController {
 
 						// insert into transaction
 						TransactionDto trs = new TransactionDto();
-						trs.setTrs_numcmr(merchantid);
+						trs.setTrsnumcmr(merchantid);
 						trs.setTrs_numtlcolcte(Double.valueOf(lidtelc));
 
 						String frmt_cardnumber = Util.formatagePan(cardnumber);
@@ -6059,7 +6074,7 @@ public class APIController {
 						Date current_date_1 = getDateWithoutTime(current_date);
 						trs.setTrs_dattrans(current_date_1);
 
-						trs.setTrs_numaut(authnumber);
+						trs.setTrsnumaut(authnumber);
 						trs.setTrs_etat("N");
 						trs.setTrs_devise(current_hist.getHatDevise());
 						trs.setTrs_certif("N");
@@ -6090,7 +6105,9 @@ public class APIController {
 
 					} catch (Exception e) {
 						exp_flag = 1;
-						Util.writeInFileTransaction(folder, file, "inserting into telec ko..do nothing" + e);
+						Util.writeInFileTransaction(folder, file, "inserting into telec ko..do nothing " + e);
+						codrep = "96";
+						motif = "cpautorisation failed";
 					}
 				}
 				if (capture_status.equalsIgnoreCase("Y") && exp_flag == 1)
@@ -6106,7 +6123,7 @@ public class APIController {
 
 		// JSONObject jso = new JSONObject();
 
-		Util.writeInFileTransaction(folder, file, "Preparing autorization api response");
+		Util.writeInFileTransaction(folder, file, "Preparing cpautorisation api response");
 
 		// reccurent transaction processing
 
@@ -6151,9 +6168,9 @@ public class APIController {
 					codrep);
 		}
 
-		System.out.println("cpautorisation api response cpautorisation :  [" + jso.toString() + "]");
+		System.out.println("cpautorisation api response :  [" + jso.toString() + "]");
 		Util.writeInFileTransaction(folder, file,
-				"cpautorisation api response cpautorisation :  [" + jso.toString() + "]");
+				"cpautorisation api response :  [" + jso.toString() + "]");
 
 		Util.writeInFileTransaction(folder, file, "*********** Fin cpautorisation() ************** ");
 		System.out.println("*********** Fin cpautorisation() ************** ");

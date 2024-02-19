@@ -27,7 +27,7 @@ public class Telecollecte implements Serializable {
 
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	//@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "TLC_NUMTLCOLCTE")
 	private Long tlc_numtlcolcte;
 
