@@ -66,6 +66,7 @@
 	color: #DF6537;
     font-size: medium !important;
     font-weight: 760;
+    margin-top: -40px;
 	}
 	.tr2 {
 	color: #f27a45f2;
@@ -76,10 +77,27 @@
 	color: #f27a45f2;
     font-size: larger !important;
     font-weight: 700;
+    margin-top: -40px;
 	}
 	 .mobile-hide {
         display: none;
     }
+    .xxx {
+          max-height: 160px;
+      }
+    .yyy {
+           max-height: 600px;
+      }
+    .cmr {
+        display: none;
+    }
+    .gl {
+        display: none;
+    }
+    .cp {
+       font-size: 12px;
+    }
+        
     }
   </style>
    </head>
@@ -100,7 +118,7 @@
          <div class="row" style="margin-bottom: 5px;">
             <aside class="col-sm-12">
             <article class="card">
-               <div class="card-body p-5">
+               <div class="card-body xxx p-5">
                   <p class="text-center tr1" style="color: #DF6537; font-size: xx-large;font-weight: 760;">Espace de paiement
                      en ligne
                   </p>
@@ -113,10 +131,10 @@
                      <label for="commande" class="col-sm-6 col-form-label">Commande : 
                      <span th:text="${demandeDto.commande}"></span>
                      </label>
-                     <label for="comid" class="col-sm-6 col-form-label">Commerçant : 
+                     <label for="comid" class="col-sm-6 col-form-label cmr">Commerçant : 
                      <span th:if="${demandeDto.commercantDto != null}" th:text="${demandeDto.commercantDto.cmrNom}"></span>
                      </label>
-                     <label for="galid" class="col-sm-6 col-form-label">Site web commerçant : 
+                     <label for="galid" class="col-sm-6 col-form-label gl">Site web commerçant : 
                      <span th:if="${demandeDto.galerieDto != null}" th:text="${demandeDto.galerieDto.urlGal}"></span>
                      </label>
                      <label for="montant" class="col-sm-6 col-form-label">Montant à recharger : 
@@ -131,7 +149,7 @@
          <div class="row" style="margin-bottom: 5px;">
             <aside class="col-sm-12">
             <article class="card">
-            <div class="card-body p-5">
+            <div class="card-body yyy p-5">
                <div class="row">
                   <p class="text-left tr3" style="color: #f27a45f2;font-size: x-large;font-weight: 700;">. Informations de votre carte
                   </p>
@@ -358,7 +376,7 @@
       <div class="container my-2" align="center">
          <footer class="bg-light text-center text-lg-start">
             <!-- Copyright -->
-            <div class="text-center p-3" style="    border: 0.1px solid #d6d2d2;color: black;">
+            <div class="text-center cp p-3" style="    border: 0.1px solid #d6d2d2;color: black;">
                Copyright © 2023 NAPS all rights reserved
                <a href="https://naps.ma/">naps.ma</a>
             </div>

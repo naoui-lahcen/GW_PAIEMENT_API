@@ -133,6 +133,9 @@ public class AppMobileController {
 
 	@Value("${key.JWT_TOKEN_VALIDITY}")
 	private long jwt_token_validity;
+	
+	@Value("${key.ENVIRONEMENT}")
+	private String environement;
 
 	@Autowired
 	AutorisationService autorisationService;
@@ -235,7 +238,6 @@ public class AppMobileController {
 				 * ------------ DEBUT MPI RESPONSE PARAMS ------------
 				 */
 				String reponseMPI = "";
-				String natbin = "";
 				String eci = "";
 				String cavv = "";
 				String threeDSServerTransID = "";
@@ -243,27 +245,6 @@ public class AppMobileController {
 				String errmpi = "";
 				String idDemande = "";
 				String expiry = ""; // YYMM
-
-				/*
-				 * ------------ DEBUT COF INSTANCES ------------
-				 */
-				// TokenProcessor tk = new TokenProcessor();
-				// Param_COF current_pcof = null;
-				/*
-				 * ------------ END COF INSTANCES ------------
-				 */
-				String link = "";
-				String ref = "";
-				String idService = "";
-				String IdTxMTC = "";
-				String statut = "";
-				String retourWSKey5 = "";
-				String Sec;
-				String idTxSysPmt = "";
-				String dateTX = "";
-				int idsysPmt;
-				String numTrans = "";
-				//
 				String processing_code = "";
 				String acq_type = "";
 				String merchant_city = "";
@@ -311,8 +292,6 @@ public class AppMobileController {
 				String num_trs = "";
 				String successURL = "";
 				String failURL;
-
-				// long numTransaction;
 
 				if (threeDsecureResponse.getReponseMPI() != null) {
 					reponseMPI = threeDsecureResponse.getReponseMPI();
@@ -533,12 +512,12 @@ public class AppMobileController {
 				if (reponseMPI.equals("Y")) {
 					// ********************* Frictionless responseMPI equal Y *********************
 					Util.writeInFileTransaction(folder, file,
-							"********************* responseMPI equal Y *********************");
-
-					dmd.setDem_xid(threeDSServerTransID);
-					dmd.setEtat_demande("RETOUR_ACS_AUTH_OK");
-					demandePaiementService.save(dmd);
-
+							"********************* Cas frictionless responseMPI equal Y *********************");
+					if(!threeDSServerTransID.equals("")) {
+						dmd.setDem_xid(threeDSServerTransID);
+						dmd.setEtat_demande("RETOUR_ACS_AUTH_OK");
+						demandePaiementService.save(dmd);
+					}
 					try {
 						montanttrame = "";
 						mm = new String[2];
@@ -2695,13 +2674,20 @@ public class AppMobileController {
 			page = "result";
 			return page;
 		}
-
-		JSONObject jso = new JSONObject();
+		
+		ThreeDSecureResponse threeDsecureResponse = new ThreeDSecureResponse();
 
 		// appel 3DSSecure ***********************************************************
 
-		ThreeDSecureResponse threeDsecureResponse = autorisationService.preparerReqMobileThree3DSS(demandeDto, folder,
-				file);
+		/** dans la preprod les tests sans 3DSS on commente l'appel 3DSS et on mj reponseMPI="Y" */
+		
+		if(environement.equals("PREPROD")) {
+			//threeDsecureResponse = autorisationService.preparerReqThree3DSS(demandeDto, folder, file);
+		
+			threeDsecureResponse.setReponseMPI("Y");
+		} else {
+			threeDsecureResponse = autorisationService.preparerReqThree3DSS(demandeDto, folder, file);
+		}
 		// fin 3DSSecure ***********************************************************
 
 		/*
@@ -2713,37 +2699,15 @@ public class AppMobileController {
 		String threeDSServerTransID = "";
 		String xid = "";
 		String errmpi = "";
-		String idDemande = "";
+		String idDemande = String.valueOf(demandeDto.getIddemande() == null ? "" : demandeDto.getIddemande());
 		String expiry = ""; // YYMM
-
-		/*
-		 * ------------ DEBUT COF INSTANCES ------------
-		 */
-		// TokenProcessor tk = new TokenProcessor();
-		// Param_COF current_pcof = null;
-		/*
-		 * ------------ END COF INSTANCES ------------
-		 */
-		String link = "";
-		String ref = "";
-		String idService = "";
-		String IdTxMTC = "";
-		String statut = "";
-		String retourWSKey5 = "";
-		String Sec;
-		String idTxSysPmt = "";
-		String dateTX = "";
-		int idsysPmt;
-		String numTrans = "";
-
-		// long numTransaction;
 
 		if (threeDsecureResponse.getReponseMPI() != null) {
 			reponseMPI = threeDsecureResponse.getReponseMPI();
 		}
-		if (threeDsecureResponse.getIdDemande() != null) {
+		/*if (threeDsecureResponse.getIdDemande() != null) {
 			idDemande = threeDsecureResponse.getIdDemande();
-		}
+		}*/
 		if (threeDsecureResponse.getThreeDSServerTransID() != null) {
 			threeDSServerTransID = threeDsecureResponse.getThreeDSServerTransID();
 		}
@@ -2811,10 +2775,10 @@ public class AppMobileController {
 			// ********************* Frictionless responseMPI equal Y *********************
 			Util.writeInFileTransaction(folder, file,
 					"********************* Cas frictionless responseMPI equal Y *********************");
-
-			dmd.setDem_xid(threeDSServerTransID);
-			demandePaiementService.save(dmd);
-
+			if(!threeDSServerTransID.equals("")) {
+				dmd.setDem_xid(threeDSServerTransID);
+				demandePaiementService.save(dmd);
+			}
 			cartenaps = dmd.getCartenaps();
 			dateExnaps = dmd.getDateexpnaps();
 

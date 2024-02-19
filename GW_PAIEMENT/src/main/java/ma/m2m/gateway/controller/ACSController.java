@@ -146,6 +146,9 @@ public class ACSController {
 
 	@Value("${key.LIEN_ENVOIE_EMAIL_DGI}")
 	private String LIEN_ENVOIE_EMAIL_DGI;
+	
+	@Value("${key.ENVIRONEMENT}")
+	private String environement;
 
 	@Autowired
 	private DemandePaiementService demandePaiementService;
@@ -252,13 +255,12 @@ public class ACSController {
 				JSONObject jso = new JSONObject();
 				String[] mm;
 				String[] m;
-				SimpleDateFormat formatter_1, formatter_2, formatheure, formatdate = null;
+				SimpleDateFormat formatheure, formatdate = null;
 
 				/*
 				 * ------------ DEBUT MPI RESPONSE PARAMS ------------
 				 */
 				String reponseMPI = "";
-				String natbin = "";
 				String eci = "";
 				String cavv = "";
 				String threeDSServerTransID = "";
@@ -266,27 +268,6 @@ public class ACSController {
 				String errmpi = "";
 				String idDemande = "";
 				String expiry = ""; // YYMM
-
-				/*
-				 * ------------ DEBUT COF INSTANCES ------------
-				 */
-				// TokenProcessor tk = new TokenProcessor();
-				// Param_COF current_pcof = null;
-				/*
-				 * ------------ END COF INSTANCES ------------
-				 */
-				String link = "";
-				String ref = "";
-				String idService = "";
-				String IdTxMTC = "";
-				String statut = "";
-				String retourWSKey5 = "";
-				String Sec;
-				String idTxSysPmt = "";
-				String dateTX = "";
-				int idsysPmt;
-				String numTrans = "";
-				//
 				String processing_code = "";
 				String acq_type = "";
 				String merchant_city = "";
@@ -2587,7 +2568,7 @@ public class ACSController {
 				try {
 					Thread.sleep(10000);
 					// tentative 3 après 10s
-					Util.writeInFileTransaction(folder, file, idcommande + "Recall URL tentative 3");
+					Util.writeInFileTransaction(folder, file, idcommande + " Recall URL tentative 3");
 					try (CloseableHttpClient httpClient = HttpClients.createDefault();
 							CloseableHttpResponse response = httpClient.execute(post)) {
 
@@ -3025,7 +3006,9 @@ public class ACSController {
 			public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType) {
 			}
 		} };
-		SSLContext context = SSLContext.getInstance("SSL");
+		// modified 2024-0-30
+		//SSLContext context = SSLContext.getInstance("SSL");
+		SSLContext context = SSLContext.getInstance("TLSv1.2");
 		context.init(null, trustAllCerts, null);
 
 		HttpClientBuilder builder = HttpClientBuilder.create();

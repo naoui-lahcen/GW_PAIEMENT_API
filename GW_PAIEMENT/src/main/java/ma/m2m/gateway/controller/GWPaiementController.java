@@ -145,6 +145,15 @@ public class GWPaiementController {
 
 	@Value("${key.LYDEC_PROD}")
 	private String LYDEC_PROD;
+	
+	@Value("${key.DGI_PREPROD}")
+	private String DGI_PREPROD;
+
+	@Value("${key.DGI_PROD}")
+	private String DGI_PROD;
+	
+	@Value("${key.ENVIRONEMENT}")
+	private String environement;
 
 	@Autowired
 	CommercantService commercantService;
@@ -706,8 +715,26 @@ public class GWPaiementController {
 					demandeDto.setFactures(null);
 				}
 				model.addAttribute("demandeDto", demandeDto);
-				// page = "napspaymentlydec";
+				page = "napspaymentlydec";
 			}
+			if (demandeDto.getComid().equals(DGI_PREPROD) || demandeDto.getComid().equals(DGI_PROD)) {
+				System.out.println("Si le commercant est DGI : " + demandeDto.getComid());
+				Util.writeInFileTransaction(folder, file, "Si le commercant est DGI : " + demandeDto.getComid());
+				List<ArticleDGIDto> articles = new ArrayList<>();
+				articles = articleDGIService.findArticleByIddemande(demandeDto.getIddemande());
+				if (articles != null && articles.size() > 0) {
+					System.out.println("articles : " + articles.size());
+					Util.writeInFileTransaction(folder, file, "articles : " + articles.size());
+					demandeDto.setArticles(articles);
+				} else {
+					System.out.println("articles vide ");
+					Util.writeInFileTransaction(folder, file, "articles vide ");
+					demandeDto.setArticles(null);
+				}
+				model.addAttribute("demandeDto", demandeDto);
+				page = "napspaymentdgi";
+			}
+			
 		}
 
 		Util.writeInFileTransaction(folder, file, "*********** Fin affichage page ************** ");
@@ -1491,11 +1518,19 @@ public class GWPaiementController {
 			return page;
 		}
 
-		JSONObject jso = new JSONObject();
+		ThreeDSecureResponse threeDsecureResponse = new ThreeDSecureResponse();
 
 		// appel 3DSSecure ***********************************************************
 
-		ThreeDSecureResponse threeDsecureResponse = autorisationService.preparerReqThree3DSS(demandeDto, folder, file);
+		/** dans la preprod les tests sans 3DSS on commente l'appel 3DSS et on mj reponseMPI="Y" */
+		if(environement.equals("PREPROD")) {
+			//threeDsecureResponse = autorisationService.preparerReqThree3DSS(demandeDto, folder, file);
+		
+			threeDsecureResponse.setReponseMPI("Y");
+		} else {
+			threeDsecureResponse = autorisationService.preparerReqThree3DSS(demandeDto, folder, file);
+		}
+
 		// fin 3DSSecure ***********************************************************
 
 		/*
@@ -1507,37 +1542,15 @@ public class GWPaiementController {
 		String threeDSServerTransID = "";
 		String xid = "";
 		String errmpi = "";
-		String idDemande = "";
+		String idDemande = String.valueOf(demandeDto.getIddemande() == null ? "" : demandeDto.getIddemande());
 		String expiry = ""; // YYMM
-
-		/*
-		 * ------------ DEBUT COF INSTANCES ------------
-		 */
-		// TokenProcessor tk = new TokenProcessor();
-		// Param_COF current_pcof = null;
-		/*
-		 * ------------ END COF INSTANCES ------------
-		 */
-		String link = "";
-		String ref = "";
-		String idService = "";
-		String IdTxMTC = "";
-		String statut = "";
-		String retourWSKey5 = "";
-		String Sec;
-		String idTxSysPmt = "";
-		String dateTX = "";
-		int idsysPmt;
-		String numTrans = "";
-
-		// long numTransaction;
 
 		if (threeDsecureResponse.getReponseMPI() != null) {
 			reponseMPI = threeDsecureResponse.getReponseMPI();
 		}
-		if (threeDsecureResponse.getIdDemande() != null) {
+		/*if (threeDsecureResponse.getIdDemande() != null) {
 			idDemande = threeDsecureResponse.getIdDemande();
-		}
+		}*/
 		if (threeDsecureResponse.getThreeDSServerTransID() != null) {
 			threeDSServerTransID = threeDsecureResponse.getThreeDSServerTransID();
 		}
@@ -1600,16 +1613,15 @@ public class GWPaiementController {
 			page = "result";
 			return page;
 		}
-		// dans la preprod les tests sans 3DSS reponseMPI="Y"
-		reponseMPI = "Y";
+
 		if (reponseMPI.equals("Y")) {
 			// ********************* Frictionless responseMPI equal Y *********************
 			Util.writeInFileTransaction(folder, file,
 					"********************* Cas frictionless responseMPI equal Y *********************");
-
-			dmd.setDem_xid(threeDSServerTransID);
-			demandePaiementService.save(dmd);
-
+			if(!threeDSServerTransID.equals("")) {
+				dmd.setDem_xid(threeDSServerTransID);
+				demandePaiementService.save(dmd);
+			}
 			try {
 				montanttrame = "";
 

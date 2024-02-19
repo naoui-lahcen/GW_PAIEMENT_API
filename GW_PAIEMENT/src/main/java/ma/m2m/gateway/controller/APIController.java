@@ -122,6 +122,9 @@ public class APIController {
 
 	@Value("${key.JWT_TOKEN_VALIDITY}")
 	private long jwt_token_validity;
+	
+	@Value("${key.ENVIRONEMENT}")
+	private String environement;
 
 	@Autowired
 	AutorisationService autorisationService;
@@ -547,10 +550,18 @@ public class APIController {
 		}
 
 		JSONObject jso = new JSONObject();
+		ThreeDSecureResponse threeDsecureResponse = new ThreeDSecureResponse();
 
 		// appel 3DSSecure ***********************************************************
 
-		ThreeDSecureResponse threeDsecureResponse = autorisationService.preparerReqThree3DSS(dmdSaved, folder, file);
+		/** dans la preprod les tests sans 3DSS on commente l'appel 3DSS et on mj reponseMPI="Y" */
+		if(environement.equals("PREPROD")) {
+			//threeDsecureResponse = autorisationService.preparerReqThree3DSS(dmdSaved, folder, file);
+		
+			threeDsecureResponse.setReponseMPI("Y");
+		} else {
+			threeDsecureResponse = autorisationService.preparerReqThree3DSS(dmdSaved, folder, file);
+		}
 		// fin 3DSSecure ***********************************************************
 
 		/*
@@ -562,37 +573,15 @@ public class APIController {
 		String threeDSServerTransID = "";
 		String xid = "";
 		String errmpi = "";
-		String idDemande = "";
+		String idDemande = String.valueOf(dmdSaved.getIddemande() == null ? "" : dmdSaved.getIddemande());
 		String expiry = ""; // YYMM
-
-		/*
-		 * ------------ DEBUT COF INSTANCES ------------
-		 */
-		// TokenProcessor tk = new TokenProcessor();
-		// Param_COF current_pcof = null;
-		/*
-		 * ------------ END COF INSTANCES ------------
-		 */
-		String link = "";
-		String ref = "";
-		String idService = "";
-		String IdTxMTC = "";
-		String statut = "";
-		String retourWSKey5 = "";
-		String Sec;
-		String idTxSysPmt = "";
-		String dateTX = "";
-		int idsysPmt;
-		String numTrans = "";
-
-		// long numTransaction;
 
 		if (threeDsecureResponse.getReponseMPI() != null) {
 			reponseMPI = threeDsecureResponse.getReponseMPI();
 		}
-		if (threeDsecureResponse.getIdDemande() != null) {
+		/*if (threeDsecureResponse.getIdDemande() != null) {
 			idDemande = threeDsecureResponse.getIdDemande();
-		}
+		}*/
 		if (threeDsecureResponse.getThreeDSServerTransID() != null) {
 			threeDSServerTransID = threeDsecureResponse.getThreeDSServerTransID();
 		}
@@ -643,17 +632,15 @@ public class APIController {
 			Util.writeInFileTransaction(folder, file, "Response 3DS is null");
 			return getMsgError(folder, file, jsonOrequest, "Response 3DS is null", "96");
 		}
-		// dans la preprod les tests Coca sans 3DSS reponseMPI="Y"
-		reponseMPI = "Y";
 
 		if (reponseMPI.equals("Y")) {
 			// ********************* Frictionless responseMPI equal Y *********************
 			Util.writeInFileTransaction(folder, file,
 					"********************* Cas frictionless responseMPI equal Y *********************");
-
-			dmd.setDem_xid(threeDSServerTransID);
-			demandePaiementService.save(dmd);
-
+			if(!threeDSServerTransID.equals("")) {
+				dmd.setDem_xid(threeDSServerTransID);
+				demandePaiementService.save(dmd);
+			}
 			try {
 				montanttrame = "";
 
@@ -4392,10 +4379,18 @@ public class APIController {
 				return getMsgErrorV1(folder, file, jsonOrequest, "savingCardToken 500 Error during  date formatting", null);
 			}
 
+			ThreeDSecureResponse threeDsecureResponse = new ThreeDSecureResponse();
 			// appel 3DSSecure ***********************************************************
 
-			ThreeDSecureResponse threeDsecureResponse = autorisationService.preparerReqThree3DSS(dmdSaved, folder,
-					file);
+			/** dans la preprod les tests Coca sans 3DSS on commente l'appel 3DSS et on mj reponseMPI="Y" */
+			if(environement.equals("PREPROD")) {
+				//threeDsecureResponse = autorisationService.preparerReqThree3DSS(dmdSaved, folder, file);
+			
+				threeDsecureResponse.setReponseMPI("Y");
+			} else {
+				threeDsecureResponse = autorisationService.preparerReqThree3DSS(dmdSaved, folder, file);
+			}
+			
 			// fin 3DSSecure ***********************************************************
 
 			/*
@@ -4407,15 +4402,16 @@ public class APIController {
 			String threeDSServerTransID = "";
 			String xid = "";
 			String errmpi = "";
-			String idDemande = "";
+			//String idDemande = "";
+			String idDemande = String.valueOf(dmdSaved.getIddemande() == null ? "" : dmdSaved.getIddemande());
 			String expiry = ""; // YYMM
 
 			if (threeDsecureResponse.getReponseMPI() != null) {
 				reponseMPI = threeDsecureResponse.getReponseMPI();
 			}
-			if (threeDsecureResponse.getIdDemande() != null) {
+			/*if (threeDsecureResponse.getIdDemande() != null) {
 				idDemande = threeDsecureResponse.getIdDemande();
-			}
+			}*/
 			if (threeDsecureResponse.getThreeDSServerTransID() != null) {
 				threeDSServerTransID = threeDsecureResponse.getThreeDSServerTransID();
 			}
@@ -4466,11 +4462,15 @@ public class APIController {
 				Util.writeInFileTransaction(folder, file, "Response 3DS is null");
 				return getMsgErrorV1(folder, file, jsonOrequest, "Response 3DS is null", "96");
 			}
-			// dans la preprod les tests Coca sans 3DSS reponseMPI="Y"
-			reponseMPI = "Y";
 
 			if (reponseMPI.equals("Y")) {
-				// add payment 1 dh test
+				Util.writeInFileTransaction(folder, file,
+						"********************* Cas frictionless responseMPI equal Y *********************");
+				if(!threeDSServerTransID.equals("")) {
+					dmd.setDem_xid(threeDSServerTransID);
+					demandePaiementService.save(dmd);
+				}
+				// add payment 0 dh test
 				try {
 					montanttrame = "";
 
