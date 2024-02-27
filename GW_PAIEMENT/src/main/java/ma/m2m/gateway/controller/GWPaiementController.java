@@ -1523,6 +1523,7 @@ public class GWPaiementController {
 		// appel 3DSSecure ***********************************************************
 
 		/** dans la preprod les tests sans 3DSS on commente l'appel 3DSS et on mj reponseMPI="Y" */
+		Util.writeInFileTransaction(folder, file, "environement : " + environement);
 		if(environement.equals("PREPROD")) {
 			//threeDsecureResponse = autorisationService.preparerReqThree3DSS(demandeDto, folder, file);
 		
@@ -2317,10 +2318,9 @@ public class GWPaiementController {
 
 					dmd.setEtat_demande("SW_REJET");
 					demandePaiementService.save(dmd);
-
-					hist.setHatEtat('A');
-					histoAutoGateService.save(hist);
-
+					// old
+					//hist.setHatEtat('A');
+					//histoAutoGateService.save(hist);
 				} catch (Exception e) {
 					Util.writeInFileTransaction(folder, file,
 							"payer 500 Error during  DemandePaiement update SW_REJET for given orderid:[" + orderid
@@ -2331,7 +2331,27 @@ public class GWPaiementController {
 					page = "result";
 					return page;
 				}
-				Util.writeInFileTransaction(folder, file, "update Demandepaiement status to RE OK.");
+				Util.writeInFileTransaction(folder, file, "update Demandepaiement status to SW_REJET OK.");
+				// 2024-02-27
+				try {
+					// get histoauto check if exist
+					HistoAutoGateDto histToAnnulle = histoAutoGateService.findByHatNumCommandeAndHatNumcmr(orderid, merchantid);
+					if(histToAnnulle !=null) {
+						Util.writeInFileTransaction(folder, file,
+								"transaction declinded ==> update HistoAutoGateDto etat to A ...");
+						histToAnnulle.setHatEtat('A');
+						histoAutoGateService.save(histToAnnulle);
+					} else {
+						hist.setHatEtat('A');
+						histoAutoGateService.save(hist);
+					}
+				} catch (Exception err2) {
+					Util.writeInFileTransaction(folder, file,
+							"payer 500 Error during HistoAutoGate findByNumAuthAndNumCommercant orderid:[" + orderid
+									+ "] and merchantid:[" + merchantid + "]" + err2);
+				}
+				Util.writeInFileTransaction(folder, file, "update HistoAutoGateDto etat to A OK.");
+				// 2024-02-27
 			}
 
 			Util.writeInFileTransaction(folder, file, "Generating paymentid...");
