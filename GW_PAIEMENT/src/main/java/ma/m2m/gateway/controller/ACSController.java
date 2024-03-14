@@ -554,7 +554,7 @@ public class ACSController {
 							dmd.setEtat_demande("RETOUR_ACS_AUTH_OK");
 							demandePaiementService.save(dmd);
 
-							try {
+							/*try {
 								montanttrame = "";
 
 								mm = new String[2];
@@ -596,7 +596,9 @@ public class ACSController {
 								Util.writeInFileTransaction(folder, file, "Fin processRequest ()");
 								System.out.println("Fin processRequest ()");
 								return page;
-							}
+							}*/
+							// 2024-03-05
+							montanttrame = formatMontantTrame(folder, file, amount, orderid, merchantid, page, model);
 
 							boolean cvv_present = check_cvv_presence(cvv);
 							boolean is_reccuring = is_reccuring_check(recurring);
@@ -1314,7 +1316,7 @@ public class ACSController {
 										Util.writeInFileTransaction(folder, file, "reponseRegelemnt KO ");
 										Util.writeInFileTransaction(folder, file, "Annulation auto LYDEC Start ... ");
 
-										String repAnnu = AnnulationAuto(dmd, current_merchant, hist, folder, file);
+										String repAnnu = AnnulationAuto(dmd, current_merchant, hist,model, folder, file);
 
 										Util.writeInFileTransaction(folder, file, "Annulation auto LYDEC end");
 										s_status = "";
@@ -1388,12 +1390,41 @@ public class ACSController {
 
 									String resultcallback = envoyerConfirmation(dmd, response, hist.getHatNautemt(),
 											folder, file);
+									String resultFormat= "";
 									if (!resultcallback.equals("")) {
-										JSONObject json = new JSONObject(resultcallback);
-										String msg = (String) json.get("msg");
-										String refReglement = (String) json.get("refReglement");
-										String codeRetour = (String) json.get("codeRetour");
-										String refcanal = (String) json.get("refcanal");
+										//JSONObject json = new JSONObject(resultcallback);
+										//String msg = (String) json.get("msg");
+										//String refReglement = (String) json.get("refReglement");
+										//String codeRetour = (String) json.get("codeRetour");
+										//String refcanal = (String) json.get("refcanal");
+										String msg = "";
+										String refReglement = "";
+										String codeRetour = "";
+										String refcanal = "";
+										resultFormat = resultcallback.substring(1, resultcallback.length());
+										JSONObject json = new JSONObject(resultFormat);
+										// JSONObject json = new JSONObject(result);
+
+										try {
+											msg = (String) json.get("msg");
+										} catch (Exception ex) {
+											Util.writeInFileTransaction(folder, file, "msg : " + ex);
+										}
+										try {
+											codeRetour = (String) json.get("codeRetour");
+										} catch (Exception ex) {
+											Util.writeInFileTransaction(folder, file, "codeRetour : " + ex);
+										}
+										try {
+											refcanal = (String) json.get("refcanal");
+										} catch (Exception ex) {
+											Util.writeInFileTransaction(folder, file, "refcanal : " + ex);
+										}
+										try {
+											refReglement = (String) json.get("refReglement");
+										} catch (Exception ex) {
+											Util.writeInFileTransaction(folder, file, "refReglement : " + ex);
+										}
 
 										// fin enregistrement des infos de retour WS de la DGI
 										if (codeRetour.equals("000")) {
@@ -1428,7 +1459,7 @@ public class ACSController {
 										} else {
 											Util.writeInFileTransaction(folder, file, "Annulation auto DGI start ...");
 
-											String repAnnu = AnnulationAuto(dmd, current_merchant, hist, folder, file);
+											String repAnnu = AnnulationAuto(dmd, current_merchant, hist, model, folder, file);
 
 											Util.writeInFileTransaction(folder, file, "Annulation auto DGI end");
 											s_status = "";
@@ -1471,7 +1502,7 @@ public class ACSController {
 								String callbackURL = dmd.getCallbackURL();
 								Util.writeInFileTransaction(folder, file, "Call Back URL: " + callbackURL);
 								if (dmd.getCallbackURL() != null && !dmd.getCallbackURL().equals("")
-										&& dmd.getCallbackURL().equals("NA")) {
+										&& !dmd.getCallbackURL().equals("NA")) {
 									String clesigne = infoCommercantDto.getClePub();
 
 									String montanttrx = String.format("%.2f", dmd.getMontant()).replaceAll(",", ".");
@@ -1487,7 +1518,7 @@ public class ACSController {
 											Util.formatCard(cardnumber), dmd.getType_carte(), folder, file);
 
 									Util.writeInFileTransaction(folder, file,
-											"resultcallback :[+" + resultcallback + "]");
+											"resultcallback :[" + resultcallback + "]");
 
 									boolean repsucces = resultcallback.indexOf("GATESUCCESS") != -1 ? true : false;
 
@@ -1506,11 +1537,12 @@ public class ACSController {
 													"Reponse recallURL KO => GATEFAILED");
 											dmd.setRecallRep("N");
 											demandePaiementService.save(dmd);
-										} else {
+										} 
+										//else {
 											if (!DGI_PREPROD.equals(merchantid) && !DGI_PROD.equals(merchantid)) {
 												Util.writeInFileTransaction(folder, file, "Annulation auto start ...");
 
-												String repAnnu = AnnulationAuto(dmd, current_merchant, hist, folder,
+												String repAnnu = AnnulationAuto(dmd, current_merchant, hist, model, folder,
 														file);
 
 												Util.writeInFileTransaction(folder, file, "Annulation auto end");
@@ -1547,7 +1579,7 @@ public class ACSController {
 												return page;
 
 											}
-										}
+										//}
 									}
 								}
 
@@ -2194,7 +2226,7 @@ public class ACSController {
 	}
 
 	public String AnnulationAuto(DemandePaiementDto current_dmd, CommercantDto current_merchant,
-			HistoAutoGateDto current_hist, String folder, String file) {
+			HistoAutoGateDto current_hist, Model model, String folder, String file) {
 
 		SimpleDateFormat formatheure, formatdate = null;
 		String date, heure, jul = "";
@@ -2205,6 +2237,8 @@ public class ACSController {
 		String amount = String.valueOf(current_dmd.getMontant());
 		String orderid = current_dmd.getCommande();
 		String merchantid = current_dmd.getComid();
+		String page = "index";
+		
 		try {
 			formatheure = new SimpleDateFormat("HHmmss");
 			formatdate = new SimpleDateFormat("ddMMyy");
@@ -2220,7 +2254,7 @@ public class ACSController {
 					+ "] and merchantid:[" + merchantid + "]" + err3;
 		}
 
-		try {
+		/*try {
 			montanttrame = "";
 
 			mm = new String[2];
@@ -2258,7 +2292,9 @@ public class ACSController {
 							+ "] and merchantid:[" + merchantid + "]" + err4);
 
 			return "annulation auto 500 Error during amount formatting";
-		}
+		}*/
+		// 2024-03-05
+		montanttrame = formatMontantTrame(folder, file, amount, orderid, merchantid, page, model);
 
 		Util.writeInFileTransaction(folder, file, "Switch processing start ...");
 
@@ -2578,6 +2614,58 @@ public class ACSController {
 		return d_notime;
 
 	}
+	
+	private String formatMontantTrame(String folder, String file, String amount, String orderid, String merchantid, 
+			String page, Model model) {
+		String montanttrame;
+		String[] mm;
+		String[] m;
+		DemandePaiementDto demandeDtoMsg = new DemandePaiementDto();
+		try {
+			montanttrame = "";
+
+			mm = new String[2];
+
+			if (amount.contains(",")) {
+				amount = amount.replace(",", ".");
+			}
+			if (!amount.contains(".") && !amount.contains(",")) {
+				amount = amount + "." + "00";
+			}
+			System.out.println("montant : [" + amount + "]");
+			Util.writeInFileTransaction(folder, file, "montant : [" + amount + "]");
+
+			String montantt = amount + "";
+
+			mm = montantt.split("\\.");
+			if (mm[1].length() == 1) {
+				montanttrame = amount + "0";
+			} else {
+				montanttrame = amount + "";
+			}
+
+			m = new String[2];
+			m = montanttrame.split("\\.");
+			if (m[1].equals("0")) {
+				montanttrame = montanttrame.replace(".", "0");
+			} else
+				montanttrame = montanttrame.replace(".", "");
+			montanttrame = Util.formatageCHamps(montanttrame, 12);
+			System.out.println("montanttrame : [" + montanttrame + "]");
+			Util.writeInFileTransaction(folder, file, "montanttrame : [" + montanttrame + "]");
+		} catch (Exception err3) {
+			Util.writeInFileTransaction(folder, file,
+					"authorization 500 Error during  amount formatting for given orderid:["
+							+ orderid + "] and merchantid:[" + merchantid + "]" + err3);
+			demandeDtoMsg.setMsgRefus("Erreur lors du formatage du montant");
+			model.addAttribute("demandeDto", demandeDtoMsg);
+			page = "result";
+			Util.writeInFileTransaction(folder, file, "Fin processRequest ()");
+			System.out.println("Fin processRequest ()");
+			return page;
+		}
+		return montanttrame;
+	}
 
 	public static String sendPOST(String urlcalback, String clepub, String idcommande, String repauto, String montant,
 			String numAuto, Long numTrans, String token_gen, String pan_trame, String typecarte, String folder,
@@ -2823,34 +2911,51 @@ public class ACSController {
 
 		Util.writeInFileTransaction(folder, file,
 				"envoyerConfirmation resultcallbackDGI : " + resultcallback.toString());
+		String msg = "";
+		String refReglement = "";
+		String codeRetour = "";
+		String refcanal = "";
+		String resultFormat = "";
 		if (!resultcallback.equals("")) {
-			JSONObject json = new JSONObject(resultcallback);
-			String msg = (String) json.get("msg");
-			String refReglement = (String) json.get("refReglement");
-			String codeRetour = (String) json.get("codeRetour");
-			String refcanal = (String) json.get("refcanal");
-			Util.writeInFileTransaction(folder, file,
-					"envoyerConfirmation resultcallbackDGI => codeRetour/refReglement/msg/refcanal : " + codeRetour
-							+ "/" + refReglement + "/" + msg + "/" + refcanal);
-			// enregistrement des infos de retour WS de la DGI
-			cfDGI.setRefReglement(refReglement);
-			cfDGI.setCodeRtour(codeRetour);
-			cfDGI.setMsg(msg);
-			cfDGI.setRefcanal(refcanal);
-			cfdgiService.save(cfDGI);
-			Util.writeInFileTransaction(folder, file, "update cfDGI apres retour WS de la DGI : " + cfDGI.toString());
+			if (!resultcallback.equals("ko")) {				
+				resultFormat = resultcallback.substring(1, resultcallback.length());
+				JSONObject json = new JSONObject(resultFormat);
+				// JSONObject json = new JSONObject(resultcallback);
+				try {
+					msg = (String) json.get("msg");
+				} catch (Exception ex) {
+					Util.writeInFileTransaction(folder, file, "envoyerConfirmation result 1 msg : " + ex);
+				}
+				try {
+					codeRetour = (String) json.get("codeRetour");
+				} catch (Exception ex) {
+					Util.writeInFileTransaction(folder, file, "envoyerConfirmation result 1 codeRetour : " + ex);
+				}
+				try {
+					refcanal = (String) json.get("refcanal");
+				} catch (Exception ex) {
+					Util.writeInFileTransaction(folder, file, "envoyerConfirmation result 1 refcanal : " + ex);
+				}
+				try {
+					refReglement = (String) json.get("refReglement");
+				} catch (Exception ex) {
+					Util.writeInFileTransaction(folder, file, "envoyerConfirmation result 1 refReglement : " + ex);
+				}
+				Util.writeInFileTransaction(folder, file,
+						"envoyerConfirmation resultcallbackDGI => codeRetour/refReglement/msg/refcanal : " + codeRetour
+								+ "/" + refReglement + "/" + msg + "/" + refcanal);
+				// enregistrement des infos de retour WS de la DGI
+				cfDGI.setRefReglement(refReglement);
+				cfDGI.setCodeRtour(codeRetour);
+				cfDGI.setMsg(msg);
+				cfDGI.setRefcanal(refcanal);
+				cfdgiService.save(cfDGI);
+				Util.writeInFileTransaction(folder, file, "update cfDGI apres retour WS de la DGI : " + cfDGI.toString());
 
-			// fin enregistrement des infos de retour WS de la DGI
-			/*
-			 * if(codeRetour.equals("000")) { Util.writeInFileTransaction(folder,
-			 * file," *************************************** coreRetour 000 : Envoyer email au client *************************************** "
-			 * ); // pour envoyer un email au client
-			 * envoyerEmail(demandePaiementDto,response, folder, file); // envoyer le lien
-			 * de recu au client Util.writeInFileTransaction(folder,
-			 * file," *************************************** coreRetour 000 : envoyer le lien de recu au client *************************************** "
-			 * ); confirmerTrs(demandePaiementDto, response, numAuto, folder, file); } else
-			 * { // annulation a developper -------------------- ????? }
-			 */
+				// fin enregistrement des infos de retour WS de la DGI
+
+			}
+
 
 		}
 		Util.writeInFileTransaction(folder, file,
@@ -2868,6 +2973,11 @@ public class ACSController {
 		String cf = new Gson().toJson(cfDGI);
 		String result = "";
 		HttpPost post = new HttpPost(urlcalback);
+		String msg = "";
+		String refReglement = "";
+		String codeRetour = "";
+		String refcanal = "";
+		String resultFormat = "";
 
 		// add request parameters or form parameters
 		List<NameValuePair> urlParameters = new ArrayList<>();
@@ -2885,68 +2995,147 @@ public class ACSController {
 		Util.writeInFileTransaction(folder, file,
 				"sendPOSTDGIInsert commande / urlParameters :" + cfDGI.getcF_R_OINReference() + " / " + urlParameters);
 		try {
-			try (CloseableHttpClient httpClient = HttpClients.createDefault();
+			CloseableHttpClient httpClient = HttpClients.createDefault();
 
-					CloseableHttpResponse response = httpClient.execute(post)) {
-
-				result = EntityUtils.toString(response.getEntity());
-				Util.writeInFileTransaction(folder, file, "sendPOSTDGIInsert result : " + result);
+			try {
+				httpClient = (CloseableHttpClient) getAllSSLClient();
+			} catch (KeyManagementException | KeyStoreException | NoSuchAlgorithmException e1) {
+				Util.writeInFileTransaction(folder, file,
+						"[GW-EXCEPTION-KeyManagementException] sendPOSTDGIInsert " + e1);
 			}
+
+			CloseableHttpResponse response = httpClient.execute(post);
+
+			result = EntityUtils.toString(response.getEntity());
+			Util.writeInFileTransaction(folder, file, "sendPOSTDGIInsert result 1 : " + result);
+
 		} catch (Exception ex) {
 			result = "ko";
 			Util.writeInFileTransaction(folder, file, "sendPOSTDGIInsert result 1 : " + result + ex);
 		}
-		JSONObject json = new JSONObject(result);
-		String msg = (String) json.get("msg");
-		String refReglement = (String) json.get("refReglement");
-		String codeRetour = (String) json.get("codeRetour");
-		String refcanal = (String) json.get("refcanal");
-		Util.writeInFileTransaction(folder, file,
-				"sendPOSTDGIInsert resultcallbackDGI => codeRetour/refReglement/msg/refcanal : " + codeRetour + "/"
-						+ refReglement + "/" + msg + "/" + refcanal);
+		if (!result.equals("ko")) {
+			resultFormat = result.substring(1, result.length());
+			JSONObject json = new JSONObject(resultFormat);
+			// JSONObject json = new JSONObject(result);
+
+			try {
+				msg = (String) json.get("msg");
+			} catch (Exception ex) {
+				Util.writeInFileTransaction(folder, file, "sendPOSTDGIInsert result 1 msg : " + ex);
+			}
+			try {
+				codeRetour = (String) json.get("codeRetour");
+			} catch (Exception ex) {
+				Util.writeInFileTransaction(folder, file, "sendPOSTDGIInsert result 1 codeRetour : " + ex);
+			}
+			try {
+				refcanal = (String) json.get("refcanal");
+			} catch (Exception ex) {
+				Util.writeInFileTransaction(folder, file, "sendPOSTDGIInsert result 1 refcanal : " + ex);
+			}
+			try {
+				refReglement = (String) json.get("refReglement");
+			} catch (Exception ex) {
+				Util.writeInFileTransaction(folder, file, "sendPOSTDGIInsert result 1 refReglement : " + ex);
+			}
+			Util.writeInFileTransaction(folder, file,
+					"sendPOSTDGIInsert resultcallbackDGI => codeRetour/refReglement/msg/refcanal : " + codeRetour + "/"
+							+ refReglement + "/" + msg + "/" + refcanal);
+		}
 		if (!codeRetour.equals("000")) {
 			try {
 				Thread.sleep(10000);
 
 				// tentative 2 apès 10 s
 				Util.writeInFileTransaction(folder, file, "sendPOSTDGIInsert tentative 2 apès 10 s: ");
-				try (CloseableHttpClient httpClient = HttpClients.createDefault();
-						CloseableHttpResponse response = httpClient.execute(post)) {
+				try {
+					CloseableHttpClient httpClient = HttpClients.createDefault();
+
+					try {
+						httpClient = (CloseableHttpClient) getAllSSLClient();
+					} catch (KeyManagementException | KeyStoreException | NoSuchAlgorithmException e1) {
+						Util.writeInFileTransaction(folder, file,
+								"[GW-EXCEPTION-KeyManagementException] sendPOSTDGIInsert " + e1);
+					}
+
+					CloseableHttpResponse response = httpClient.execute(post);
 
 					result = EntityUtils.toString(response.getEntity());
-					Util.writeInFileTransaction(folder, file,
-							"sendPOSTDGIInsert tentative 2 apès 10 s result: " + result);
+					Util.writeInFileTransaction(folder, file, "sendPOSTDGIInsert result 2 : " + result);
+
+				} catch (Exception ex) {
+					result = "ko";
+					Util.writeInFileTransaction(folder, file, "sendPOSTDGIInsert result 2 : " + result + ex);
 				}
-			} catch (Exception ex) {
+			} catch (Exception e) {
 				result = "ko";
-				Util.writeInFileTransaction(folder, file, "sendPOSTDGIInsert result 2 : " + result + ex);
+				Util.writeInFileTransaction(folder, file, "sendPOSTDGIInsert result 2 : " + result + e);
+			}
+			if (!result.equals("ko")) {
+				resultFormat = result.substring(1, result.length());
+				JSONObject json = new JSONObject(resultFormat);
+				// JSONObject json = new JSONObject(result);
+				try {
+					msg = (String) json.get("msg");
+				} catch (Exception ex) {
+					Util.writeInFileTransaction(folder, file, "sendPOSTDGIInsert result 2 msg : " + ex);
+				}
+				try {
+					codeRetour = (String) json.get("codeRetour");
+				} catch (Exception ex) {
+					Util.writeInFileTransaction(folder, file, "sendPOSTDGIInsert result 2 codeRetour : " + ex);
+				}
+				try {
+					refcanal = (String) json.get("refcanal");
+				} catch (Exception ex) {
+					Util.writeInFileTransaction(folder, file, "sendPOSTDGIInsert result 2 refcanal : " + ex);
+				}
+				try {
+					refReglement = (String) json.get("refReglement");
+				} catch (Exception ex) {
+					Util.writeInFileTransaction(folder, file, "sendPOSTDGIInsert result 2 refReglement : " + ex);
+				}
+				Util.writeInFileTransaction(folder, file,
+						"sendPOSTDGIInsert resultcallbackDGI => codeRetour/refReglement/msg/refcanal : " + codeRetour
+								+ "/" + refReglement + "/" + msg + "/" + refcanal);
+			}
+
+			if (!codeRetour.equals("000")) {
+				try {
+					Thread.sleep(10000);
+
+					// tentative 3 apès 10 s
+					Util.writeInFileTransaction(folder, file, "sendPOSTDGIInsert tentative 3 apès 10 s: ");
+					try {
+						CloseableHttpClient httpClient = HttpClients.createDefault();
+
+						try {
+							httpClient = (CloseableHttpClient) getAllSSLClient();
+						} catch (KeyManagementException | KeyStoreException | NoSuchAlgorithmException e1) {
+							Util.writeInFileTransaction(folder, file,
+									"[GW-EXCEPTION-KeyManagementException] sendPOSTDGIInsert " + e1);
+						}
+
+						CloseableHttpResponse response = httpClient.execute(post);
+
+						result = EntityUtils.toString(response.getEntity());
+						Util.writeInFileTransaction(folder, file, "sendPOSTDGIInsert result 3 : " + result);
+
+					} catch (Exception ex) {
+						result = "ko";
+						Util.writeInFileTransaction(folder, file, "sendPOSTDGIInsert result 3 : " + result + ex);
+					}
+				} catch (Exception e) {
+					result = "ko";
+					Util.writeInFileTransaction(folder, file, "sendPOSTDGIInsert result 3 : " + result + e);
+				}
 			}
 		}
-		json = new JSONObject(result);
-		msg = (String) json.get("msg");
-		refReglement = (String) json.get("refReglement");
-		codeRetour = (String) json.get("codeRetour");
-		if (!codeRetour.equals("000")) {
-			try {
-				Thread.sleep(10000);
-
-				// tentative 3 après 10s
-				Util.writeInFileTransaction(folder, file, "sendPOSTDGIInsert tentative 3 apès 10 s: ");
-				try (CloseableHttpClient httpClient = HttpClients.createDefault();
-						CloseableHttpResponse response = httpClient.execute(post)) {
-
-					result = EntityUtils.toString(response.getEntity());
-					Util.writeInFileTransaction(folder, file,
-							"sendPOSTDGIInsert tentative 3 apès 10 s result: " + result);
-				}
-			} catch (Exception ex) {
-				result = "ko";
-				Util.writeInFileTransaction(folder, file, "sendPOSTDGIInsert result 3 : " + result + ex);
-			}
+		if (result.equals("ko")) {
+			result = "{\"msg\":\"GATEFAILED\",\"refReglement\":\"\",\"codeRetour\":\"\",\"refcanal\":\"\"}";
 		}
 		Util.writeInFileTransaction(folder, file,
 				" *************************************** Fin sendPOSTDGIInsert DGI *************************************** ");
-
 		return result;
 	}
 

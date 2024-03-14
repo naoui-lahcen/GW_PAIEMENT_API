@@ -534,7 +534,7 @@ public class AppMobileController {
 								dmd.setEtat_demande("RETOUR_ACS_AUTH_OK");
 								demandePaiementService.save(dmd);
 							}
-							try {
+							/*try {
 								montanttrame = "";
 								mm = new String[2];
 								amount = calculMontantTotalOperation(dmd);
@@ -578,9 +578,11 @@ public class AppMobileController {
 								Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
 								System.out.println("Fin processRequestMobile ()");
 								return page;
-							}
+							}*/
+							// 2024-03-05
+							montanttrame = formatMontantTrame(folder, file, amount, orderid, merchantid, dmd, page, model);
 
-							try {
+							/*try {
 								montantRechgtrame = "";
 
 								mm = new String[2];
@@ -623,7 +625,9 @@ public class AppMobileController {
 								model.addAttribute("demandeDto", demandeDtoMsg);
 								page = "result";
 								return page;
-							}
+							}*/					
+							// 2024-03-05
+							montantRechgtrame = formatMontantRechargeTrame(folder, file, amount, orderid, merchantid, dmd, page, model);
 
 							boolean cvv_present = check_cvv_presence(cvv);
 							boolean is_reccuring = is_reccuring_check(recurring);
@@ -1064,6 +1068,8 @@ public class AppMobileController {
 										"formatting pan Ok pan_auto :[" + pan_auto + "]");
 
 								Util.writeInFileTransaction(folder, file, "HistoAutoGate data filling start ...");
+								
+								Util.writeInFileTransaction(folder, file, "websiteid : " + websiteid);
 
 								Date current_date_1 = getDateWithoutTime(curren_date_hist);
 								hist.setHatDatdem(current_date_1);
@@ -2051,6 +2057,7 @@ public class AppMobileController {
 				dmd.setGalid(websiteid);
 				dmd.setSuccessURL(successURL);
 				dmd.setFailURL(failURL);
+				dmd.setCallbackURL(callbackUrl);
 				if (amount.equals("") || amount == null) {
 					amount = "0";
 				}
@@ -2849,7 +2856,7 @@ public class AppMobileController {
 			cartenaps = dmd.getCartenaps();
 			dateExnaps = dmd.getDateexpnaps();
 
-			try {
+			/*try {
 				montanttrame = "";
 
 				mm = new String[2];
@@ -2891,9 +2898,11 @@ public class AppMobileController {
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				return page;
-			}
+			}*/
+			// 2024-03-05
+			montanttrame = formatMontantTrame(folder, file, amount, orderid, merchantid, dmd, page, model);
 
-			try {
+			/*try {
 				montantRechgtrame = "";
 
 				mm = new String[2];
@@ -2934,7 +2943,9 @@ public class AppMobileController {
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				return page;
-			}
+			}*/
+			// 2024-03-05
+			montantRechgtrame = formatMontantRechargeTrame(folder, file, amount, orderid, merchantid, dmd, page, model);
 
 			merchantname = current_merchant.getCmrNom();
 			websiteName = "";
@@ -3330,6 +3341,8 @@ public class AppMobileController {
 				Util.writeInFileTransaction(folder, file, "formatting pan Ok pan_auto :[" + pan_auto + "]");
 
 				Util.writeInFileTransaction(folder, file, "HistoAutoGate data filling start ...");
+				
+				Util.writeInFileTransaction(folder, file, "websiteid : " + websiteid);
 
 				Date current_date_1 = getDateWithoutTime(curren_date_hist);
 				hist.setHatDatdem(current_date_1);
@@ -4108,6 +4121,113 @@ public class AppMobileController {
 		}
 		return d_notime;
 
+	}
+	
+	private String formatMontantTrame(String folder, String file, String amount, String orderid, String merchantid, 
+			DemandePaiementDto dmd, String page, Model model) {
+		String montanttrame;
+		String[] mm;
+		String[] m;
+		DemandePaiementDto demandeDtoMsg = new DemandePaiementDto();
+		try {
+			montanttrame = "";
+			mm = new String[2];
+			amount = calculMontantTotalOperation(dmd);
+
+			if (amount.contains(",")) {
+				amount = amount.replace(",", ".");
+			}
+			if (!amount.contains(".") && !amount.contains(",")) {
+				amount = amount + "." + "00";
+			}
+			System.out.println("montant recharge avec frais : [" + amount + "]");
+			Util.writeInFileTransaction(folder, file,
+					"montant recharge avec frais : [" + amount + "]");
+
+			String montantt = amount + "";
+
+			mm = montantt.split("\\.");
+			if (mm[1].length() == 1) {
+				montanttrame = amount + "0";
+			} else {
+				montanttrame = amount + "";
+			}
+
+			m = new String[2];
+			m = montanttrame.split("\\.");
+			if (m[1].equals("0")) {
+				montanttrame = montanttrame.replace(".", "0");
+			} else
+				montanttrame = montanttrame.replace(".", "");
+			montanttrame = Util.formatageCHamps(montanttrame, 12);
+			System.out.println("montanttrame avec frais : [" + montanttrame + "]");
+			Util.writeInFileTransaction(folder, file,
+					"montanttrame avec frais : [" + montanttrame + "]");
+		} catch (Exception err3) {
+			Util.writeInFileTransaction(folder, file,
+					"authorization 500 Error during  amount formatting for given orderid:["
+							+ orderid + "] and merchantid:[" + merchantid + "]" + err3);
+			demandeDtoMsg.setMsgRefus("Erreur lors du formatage du montant");
+			model.addAttribute("demandeDto", demandeDtoMsg);
+			page = "result";
+			Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
+			System.out.println("Fin processRequestMobile ()");
+			return page;
+		}
+		return montanttrame;
+	}
+	
+	private String formatMontantRechargeTrame(String folder, String file, String amount, String orderid, String merchantid, 
+			DemandePaiementDto dmd, String page, Model model) {
+		String montantRechgtrame;
+		String[] mm;
+		String[] m;
+		DemandePaiementDto demandeDtoMsg = new DemandePaiementDto();
+		try {
+			montantRechgtrame = "";
+
+			mm = new String[2];
+			String amount1 = calculMontantSansOperation(dmd);
+
+			if (amount1.contains(",")) {
+				amount1 = amount1.replace(",", ".");
+			}
+			if (!amount1.contains(".") && !amount1.contains(",")) {
+				amount1 = amount1 + "." + "00";
+			}
+			System.out.println("montant recharge sans frais : [" + amount1 + "]");
+			Util.writeInFileTransaction(folder, file,
+					"montant recharge sans frais : [" + amount1 + "]");
+
+			String montantt = amount1 + "";
+
+			mm = montantt.split("\\.");
+			if (mm[1].length() == 1) {
+				montantRechgtrame = amount1 + "0";
+			} else {
+				montantRechgtrame = amount1 + "";
+			}
+
+			m = new String[2];
+			m = montantRechgtrame.split("\\.");
+			if (m[1].equals("0")) {
+				montantRechgtrame = montantRechgtrame.replace(".", "0");
+			} else
+				montantRechgtrame = montantRechgtrame.replace(".", "");
+			montantRechgtrame = Util.formatageCHamps(montantRechgtrame, 12);
+			System.out.println("montantRechgtrame sans frais: [" + montantRechgtrame + "]");
+			Util.writeInFileTransaction(folder, file,
+					"montantRechgtrame sans frais : [" + montantRechgtrame + "]");
+		} catch (Exception err3) {
+			Util.writeInFileTransaction(folder, file,
+					"recharger 500 Error during  amount formatting for given orderid:[" + orderid
+							+ "] and merchantid:[" + merchantid + "]" + err3);
+			demandeDtoMsg.setMsgRefus("Erreur lors du formatage du montant");
+			model.addAttribute("demandeDto", demandeDtoMsg);
+			page = "result";
+			return page;
+		}
+		return montantRechgtrame;
 	}
 
 	private List<Integer> generateYearList(int startYear, int endYear) {

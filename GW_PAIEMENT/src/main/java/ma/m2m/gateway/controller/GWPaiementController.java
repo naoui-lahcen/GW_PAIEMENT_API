@@ -9,6 +9,9 @@ import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.rmi.RemoteException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.ParseException;
@@ -26,10 +29,26 @@ import java.util.Date;
 import java.util.List;
 import java.util.SplittableRandom;
 import java.util.UUID;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.namespace.QName;
 
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -91,6 +110,7 @@ import ma.m2m.gateway.service.HistoAutoGateService;
 import ma.m2m.gateway.service.InfoCommercantService;
 import ma.m2m.gateway.service.TelecollecteService;
 import ma.m2m.gateway.service.TransactionService;
+import ma.m2m.gateway.switching.SwitchTCPClient;
 import ma.m2m.gateway.switching.SwitchTCPClientV2;
 import ma.m2m.gateway.threedsecure.ThreeDSecureResponse;
 import ma.m2m.gateway.tlv.TLVEncoder;
@@ -1119,7 +1139,7 @@ public class GWPaiementController {
 
 	@PostMapping("/payer")
 	public String payer(Model model, @ModelAttribute("demandeDto") DemandePaiementDto dto, HttpServletRequest request,
-			HttpServletResponse response) {
+			HttpServletResponse response) throws IOException {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "GW_PAYE_" + randomWithSplittableRandom;
 		// create file log
@@ -1623,7 +1643,7 @@ public class GWPaiementController {
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 			}
-			try {
+			/*try {
 				montanttrame = "";
 
 				mm = new String[2];
@@ -1663,7 +1683,9 @@ public class GWPaiementController {
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				return page;
-			}
+			}*/
+			// 2024-03-05
+			montanttrame = formatMontantTrame(folder, file, amount, orderid, merchantid, page, model);
 
 			merchantname = current_merchant.getCmrNom();
 			websiteName = "";
@@ -2306,6 +2328,93 @@ public class GWPaiementController {
 
 					Util.writeInFileTransaction(folder, file, "Automatic capture end.");
 				}
+				
+				// 2023-01-03 confirmation par Callback URL
+				String resultcallback = "";
+				String callbackURL = dmd.getCallbackURL();
+				Util.writeInFileTransaction(folder, file, "Call Back URL: " + callbackURL);
+				if (dmd.getCallbackURL() != null && !dmd.getCallbackURL().equals("")
+						&& !dmd.getCallbackURL().equals("NA")) {
+					String clesigne = current_infoCommercant.getClePub();
+
+					String montanttrx = String.format("%.2f", dmd.getMontant()).replaceAll(",", ".");
+					String token_gen = "";
+
+					Util.writeInFileTransaction(folder, file,
+							"sendPOST(" + callbackURL + "," + clesigne + "," + dmd.getCommande() + ","
+									+ tag20_resp + "," + montanttrx + "," + hist.getHatNautemt() + ","
+									+ hist.getHatNumdem() + ")");
+
+					resultcallback = sendPOST(callbackURL, clesigne, dmd.getCommande(), tag20_resp,
+							montanttrx, hist.getHatNautemt(), hist.getHatNumdem(), token_gen,
+							Util.formatCard(cardnumber), dmd.getType_carte(), folder, file);
+
+					Util.writeInFileTransaction(folder, file,
+							"resultcallback :[" + resultcallback + "]");
+
+					boolean repsucces = resultcallback.indexOf("GATESUCCESS") != -1 ? true : false;
+
+					boolean repfailed = resultcallback.indexOf("GATEFAILED") != -1 ? true : false;
+
+					Util.writeInFileTransaction(folder, file, "repsucces : " + repsucces);
+					Util.writeInFileTransaction(folder, file, "repfailed : " + repfailed);
+					if (repsucces) {
+						Util.writeInFileTransaction(folder, file,
+								"Reponse recallURL OK => GATESUCCESS");
+						dmd.setRecallRep("Y");
+						demandePaiementService.save(dmd);
+					} else {
+						if (repfailed) {
+							Util.writeInFileTransaction(folder, file,
+									"Reponse recallURL KO => GATEFAILED");
+							dmd.setRecallRep("N");
+							demandePaiementService.save(dmd);
+						} 
+						//else {
+							if (!DGI_PREPROD.equals(merchantid) && !DGI_PROD.equals(merchantid)) {
+								Util.writeInFileTransaction(folder, file, "Annulation auto start ...");
+
+								String repAnnu = AnnulationAuto(dmd, current_merchant, hist, model, folder,
+										file);
+
+								Util.writeInFileTransaction(folder, file, "Annulation auto end");
+								s_status = "";
+								try {
+									CodeReponseDto codeReponseDto = codeReponseService
+											.findByRpcCode(repAnnu);
+									System.out.println("codeReponseDto annulation : " + codeReponseDto);
+									Util.writeInFileTransaction(folder, file,
+											"codeReponseDto annulation : " + codeReponseDto);
+									if (codeReponseDto != null) {
+										s_status = codeReponseDto.getRpcLibelle();
+									}
+								} catch (Exception ee) {
+									Util.writeInFileTransaction(folder, file,
+											"Annulation auto 500 Error codeReponseDto null");
+									ee.printStackTrace();
+								}
+								Util.writeInFileTransaction(folder, file,
+										"Switch status annulation : [" + s_status + "]");
+								if (repAnnu.equals("00")) {
+									dmd.setEtat_demande("SW_ANNUL_AUTO");
+									demandePaiementService.save(dmd);
+									demandeDtoMsg.setMsgRefus(
+											"La transaction en cours n’a pas abouti (Web service CallBack Hors service), votre compte ne sera pas débité, merci de réessayer .");
+									model.addAttribute("demandeDto", demandeDtoMsg);
+									page = "operationAnnulee";
+								} else {
+									page = "error";
+								}
+
+								Util.writeInFileTransaction(folder, file, "Fin processRequest ()");
+								System.out.println("Fin processRequest ()");
+								return page;
+
+							}
+						//}
+					}
+				}
+				// 2024-02-28 confirmation par Callback URL
 
 			} else {
 
@@ -2827,7 +2936,392 @@ public class GWPaiementController {
 
 		return "User information saved successfully ::.";
 	}
+	
+	public String AnnulationAuto(DemandePaiementDto current_dmd, CommercantDto current_merchant,
+			HistoAutoGateDto current_hist, Model model, String folder, String file) {
 
+		SimpleDateFormat formatheure, formatdate = null;
+		String date, heure, jul = "";
+
+		String[] mm;
+		String[] m;
+		String montanttrame = "";
+		String amount = String.valueOf(current_dmd.getMontant());
+		String orderid = current_dmd.getCommande();
+		String merchantid = current_dmd.getComid();
+		String page = "index";
+		try {
+			formatheure = new SimpleDateFormat("HHmmss");
+			formatdate = new SimpleDateFormat("ddMMyy");
+			date = formatdate.format(new Date());
+			heure = formatheure.format(new Date());
+			jul = Util.convertToJulian(new Date()) + "";
+		} catch (Exception err3) {
+			Util.writeInFileTransaction(folder, file,
+					"annulation auto 500 Error during date formatting for given orderid:[" + orderid
+							+ "] and merchantid:[" + merchantid + "]" + err3);
+
+			return "annulation auto 500 Error during date formatting for given orderid:[" + orderid
+					+ "] and merchantid:[" + merchantid + "]" + err3;
+		}
+
+		/*try {
+			montanttrame = "";
+
+			mm = new String[2];
+
+			if (amount.contains(",")) {
+				amount = amount.replace(",", ".");
+			}
+			if (!amount.contains(".") && !amount.contains(",")) {
+				amount = amount + "." + "00";
+			}
+			System.out.println("montant : [" + amount + "]");
+			Util.writeInFileTransaction(folder, file, "montant : [" + amount + "]");
+
+			String montantt = amount + "";
+
+			mm = montantt.split("\\.");
+			if (mm[1].length() == 1) {
+				montanttrame = amount + "0";
+			} else {
+				montanttrame = amount + "";
+			}
+
+			m = new String[2];
+			m = montanttrame.split("\\.");
+			if (m[1].equals("0")) {
+				montanttrame = montanttrame.replace(".", "0");
+			} else
+				montanttrame = montanttrame.replace(".", "");
+			montanttrame = Util.formatageCHamps(montanttrame, 12);
+			System.out.println("montanttrame : [" + montanttrame + "]");
+			Util.writeInFileTransaction(folder, file, "montanttrame : [" + montanttrame + "]");
+		} catch (Exception err4) {
+			Util.writeInFileTransaction(folder, file,
+					"annulation auto 500 Error during amount formatting for given orderid:[" + orderid
+							+ "] and merchantid:[" + merchantid + "]" + err4);
+
+			return "annulation auto 500 Error during amount formatting";
+		}*/
+		// 2024-03-05
+		montanttrame = formatMontantTrame(folder, file, amount, orderid, merchantid, page, model);
+
+		Util.writeInFileTransaction(folder, file, "Switch processing start ...");
+
+		String tlv = "";
+		Util.writeInFileTransaction(folder, file, "Preparing Switch TLV Request start ...");
+
+		// controls
+		String merc_codeactivite = current_merchant.getCmrCodactivite();
+		String acqcode = current_merchant.getCmrCodbqe();
+
+		String merchantname = current_merchant.getCmrAbrvnom();
+		String cardnumber = current_dmd.getDem_pan();
+		String authnumber = current_hist.getHatNautemt();
+		String merchant_name = merchantname;
+
+		String mesg_type = "2";
+		String acq_type = "0000";
+		String processing_code = "0";
+		String reason_code = "H";
+		String transaction_condition = "6";
+		String transactionnumber = current_hist.getHatNautemt();
+		merchant_name = Util.pad_merchant(merchantname, 19, ' ');
+		String merchant_city = "MOROCCO        ";
+
+		try {
+
+			String currency = current_hist.getHatDevise();
+			String expirydate = current_hist.getHatExpdate();
+			String rrn = current_hist.getHatRrn();
+			transactionnumber = rrn;
+			tlv = new TLVEncoder().withField(Tags.tag0, mesg_type).withField(Tags.tag1, cardnumber)
+					.withField(Tags.tag3, processing_code).withField(Tags.tag22, transaction_condition)
+					.withField(Tags.tag49, acq_type).withField(Tags.tag14, montanttrame).withField(Tags.tag15, currency)
+					.withField(Tags.tag18, "761454").withField(Tags.tag42, expirydate).withField(Tags.tag16, date)
+					.withField(Tags.tag17, heure).withField(Tags.tag10, merc_codeactivite)
+					.withField(Tags.tag8, "0" + merchantid).withField(Tags.tag9, merchantid)
+					.withField(Tags.tag66, transactionnumber).withField(Tags.tag11, merchant_name)
+					.withField(Tags.tag12, merchant_city).withField(Tags.tag13, "MAR")
+					.withField(Tags.tag23, reason_code).withField(Tags.tag90, acqcode).withField(Tags.tag19, authnumber)
+					.encode();
+
+			Util.writeInFileTransaction(folder, file, "tag0_request : [" + mesg_type + "]");
+			Util.writeInFileTransaction(folder, file, "tag1_request : [" + cardnumber + "]");
+			Util.writeInFileTransaction(folder, file, "tag3_request : [" + processing_code + "]");
+			Util.writeInFileTransaction(folder, file, "tag22_request : [" + transaction_condition + "]");
+			Util.writeInFileTransaction(folder, file, "tag49_request : [" + acq_type + "]");
+			Util.writeInFileTransaction(folder, file, "tag14_request : [" + montanttrame + "]");
+			Util.writeInFileTransaction(folder, file, "tag15_request : [" + currency + "]");
+			Util.writeInFileTransaction(folder, file, "tag23_request : [" + reason_code + "]");
+			Util.writeInFileTransaction(folder, file, "tag18_request : [761454]");
+			Util.writeInFileTransaction(folder, file, "tag42_request : [" + expirydate + "]");
+			Util.writeInFileTransaction(folder, file, "tag16_request : [" + date + "]");
+			Util.writeInFileTransaction(folder, file, "tag17_request : [" + heure + "]");
+			Util.writeInFileTransaction(folder, file, "tag10_request : [" + merc_codeactivite + "]");
+			Util.writeInFileTransaction(folder, file, "tag8_request : [0+" + merchantid + "]");
+			Util.writeInFileTransaction(folder, file, "tag9_request : [" + merchantid + "]");
+			Util.writeInFileTransaction(folder, file, "tag66_request : [" + transactionnumber + "]");
+			Util.writeInFileTransaction(folder, file, "tag11_request : [" + merchant_name + "]");
+			Util.writeInFileTransaction(folder, file, "tag12_request : [" + merchant_city + "]");
+			Util.writeInFileTransaction(folder, file, "tag13_request : [MAR]");
+			Util.writeInFileTransaction(folder, file, "tag90_request : [" + acqcode + "]");
+			Util.writeInFileTransaction(folder, file, "tag19_request : [" + authnumber + "]");
+
+		} catch (Exception err4) {
+			Util.writeInFileTransaction(folder, file,
+					"annulation auto 500 Error during switch tlv buildu for given orderid:[" + orderid
+							+ "] and merchantid:[" + merchantid + "]" + err4);
+
+			return "annulation auto 500 Error during switch tlv buildu";
+		}
+
+		Util.writeInFileTransaction(folder, file, "Switch TLV Request :[" + tlv + "]");
+
+		Util.writeInFileTransaction(folder, file, "Preparing Switch TLV Request end.");
+
+		Util.writeInFileTransaction(folder, file, "Switch Connecting ...");
+
+		String resp_tlv = "";
+		SwitchTCPClient sw = SwitchTCPClient.getInstance();
+
+		int port = 0;
+		String sw_s = "", s_port = "";
+		try {
+
+			s_port = portSwitch;
+			sw_s = ipSwitch;
+
+			Util.writeInFileTransaction(folder, file, "Switch IP / Switch PORT : " + sw_s + "/" + s_port);
+
+			port = Integer.parseInt(s_port);
+
+			boolean s_conn = sw.startConnection(sw_s, port);
+			Util.writeInFileTransaction(folder, file, "Switch Connecting ...");
+
+			if (s_conn) {
+				Util.writeInFileTransaction(folder, file, "Switch Connected.");
+				Util.writeInFileTransaction(folder, file, "Switch Sending TLV Request ...");
+
+				resp_tlv = sw.sendMessage(tlv);
+
+				Util.writeInFileTransaction(folder, file, "Switch TLV Request end.");
+				sw.stopConnection();
+
+			} else {
+				Util.writeInFileTransaction(folder, file, "Switch  malfunction !!!");
+
+				return "annulation auto 500 Error Switch communication s_conn false";
+			}
+
+		} catch (SocketTimeoutException e) {
+			Util.writeInFileTransaction(folder, file, "Switch  malfunction !!!");
+			return "annulation auto 500 Error Switch communication SocketTimeoutException";
+		} catch (UnknownHostException e) {
+			Util.writeInFileTransaction(folder, file, "Switch  malfunction !!!");
+			return "annulation auto 500 Error Switch communication UnknownHostException";
+		}
+
+		catch (IOException e) {
+			Util.writeInFileTransaction(folder, file, "Switch  malfunction !!!" + e);
+			return "annulation auto 500 Error Switch communication IOException";
+		} catch (Exception e) {
+			Util.writeInFileTransaction(folder, file, "Switch  malfunction !!!" + e);
+			return "annulation auto 500 Error Switch communication General Exception switch";
+		}
+
+		String resp = resp_tlv;
+		if (resp == null) {
+			Util.writeInFileTransaction(folder, file, "Switch  malfunction !!!");
+			return "annulation auto 500 Error Switch null response switch";
+		}
+
+		if (resp.length() < 3) {
+			Util.writeInFileTransaction(folder, file, "Switch  malfunction !!!");
+			return "annulation auto 500 Error Switch short response length() < 3 switch";
+		}
+
+		Util.writeInFileTransaction(folder, file, "Switch TLV Respnose :[" + resp + "]");
+
+		Util.writeInFileTransaction(folder, file, "Processing Switch TLV Respnose ...");
+
+		// resp debug =
+		// "000001300101652345658188287990030010008008011800920090071180092014012000000051557015003504016006200721017006152650066012120114619926018006143901019006797535023001H020002000210026108000621072009800299";
+
+		TLVParser tlvp = null;
+
+		// resp debug =
+		// "000001300101652345658188287990030010008008011800920090071180092014012000000051557015003504016006200721017006152650066012120114619926018006143901019006797535023001H020002000210026108000621072009800299";
+
+		String tag0_resp, tag1_resp, tag3_resp, tag8_resp, tag9_resp, tag14_resp, tag15_resp, tag16_resp, tag17_resp,
+				tag66_resp, tag18_resp, tag19_resp, tag23_resp, tag20_resp, tag21_resp, tag22_resp, tag80_resp,
+				tag98_resp = "";
+
+		try {
+			tlvp = new TLVParser(resp);
+
+			tag0_resp = tlvp.getTag(Tags.tag0);
+			tag1_resp = tlvp.getTag(Tags.tag1);
+			tag3_resp = tlvp.getTag(Tags.tag3);
+			tag8_resp = tlvp.getTag(Tags.tag8);
+			tag9_resp = tlvp.getTag(Tags.tag9);
+			tag14_resp = tlvp.getTag(Tags.tag14);
+			tag15_resp = tlvp.getTag(Tags.tag15);
+			tag16_resp = tlvp.getTag(Tags.tag16);
+			tag17_resp = tlvp.getTag(Tags.tag17);
+			tag66_resp = tlvp.getTag(Tags.tag66); // f1
+			tag18_resp = tlvp.getTag(Tags.tag18);
+			tag19_resp = tlvp.getTag(Tags.tag19); // f2
+			tag23_resp = tlvp.getTag(Tags.tag23);
+			tag20_resp = tlvp.getTag(Tags.tag20);
+			tag21_resp = tlvp.getTag(Tags.tag21);
+			tag22_resp = tlvp.getTag(Tags.tag22);
+			tag80_resp = tlvp.getTag(Tags.tag80);
+			tag98_resp = tlvp.getTag(Tags.tag98);
+
+		} catch (Exception e) {
+			Util.writeInFileTransaction(folder, file, "Switch  malfunction !!!" + e);
+			return "annulation auto 500 Error during tlv Switch response parse switch";
+		}
+
+		// controle switch
+		if (tag1_resp == null) {
+			Util.writeInFileTransaction(folder, file, "Switch  malfunction !!!");
+			return "annulation auto 500 Error during tlv Switch response parse tag1_resp tag null";
+		}
+
+		if (tag1_resp.length() < 3) {
+			Util.writeInFileTransaction(folder, file, "Switch  malfunction !!!");
+			return "annulation auto 500 Error during tlv Switch response parse tag1_resp length tag  < 3 switch";
+		}
+
+		Util.writeInFileTransaction(folder, file, "Switch TLV Respnose Processed");
+		Util.writeInFileTransaction(folder, file, "Switch TLV Respnose :[" + resp + "]");
+
+		Util.writeInFileTransaction(folder, file, "tag0_resp : [" + tag0_resp + "]");
+		Util.writeInFileTransaction(folder, file, "tag1_resp : [" + tag1_resp + "]");
+		Util.writeInFileTransaction(folder, file, "tag3_resp : [" + tag3_resp + "]");
+		Util.writeInFileTransaction(folder, file, "tag8_resp : [" + tag8_resp + "]");
+		Util.writeInFileTransaction(folder, file, "tag9_resp : [" + tag9_resp + "]");
+		Util.writeInFileTransaction(folder, file, "tag14_resp : [" + tag14_resp + "]");
+		Util.writeInFileTransaction(folder, file, "tag15_resp : [" + tag15_resp + "]");
+		Util.writeInFileTransaction(folder, file, "tag16_resp : [" + tag16_resp + "]");
+		Util.writeInFileTransaction(folder, file, "tag17_resp : [" + tag17_resp + "]");
+		Util.writeInFileTransaction(folder, file, "tag66_resp : [" + tag66_resp + "]");
+		Util.writeInFileTransaction(folder, file, "tag18_resp : [" + tag18_resp + "]");
+		Util.writeInFileTransaction(folder, file, "tag19_resp : [" + tag19_resp + "]");
+		Util.writeInFileTransaction(folder, file, "tag23_resp : [" + tag23_resp + "]");
+		Util.writeInFileTransaction(folder, file, "tag20_resp : [" + tag20_resp + "]");
+		Util.writeInFileTransaction(folder, file, "tag21_resp : [" + tag21_resp + "]");
+		Util.writeInFileTransaction(folder, file, "tag22_resp : [" + tag22_resp + "]");
+		Util.writeInFileTransaction(folder, file, "tag80_resp : [" + tag80_resp + "]");
+		Util.writeInFileTransaction(folder, file, "tag98_resp : [" + tag98_resp + "]");
+
+		if (tag20_resp == null) {
+			return "annulation auto 500 Switch malfunction response code not present";
+		}
+		if (tag20_resp.length() < 1) {
+			return "annulation auto 500 Switch malfunction response code length incorrect";
+		}
+
+		if (tag20_resp.equalsIgnoreCase("00"))
+
+		{
+			Util.writeInFileTransaction(folder, file, "Switch CODE REP : [00]");
+
+			Util.writeInFileTransaction(folder, file, "Transaction reversed.");
+
+			try {
+				Util.writeInFileTransaction(folder, file, "Setting DemandePaiement status A ...");
+
+				current_dmd.setEtat_demande("A");
+				demandePaiementService.save(current_dmd);
+			} catch (Exception e) {
+				Util.writeInFileTransaction(folder, file,
+						"annulation auto 500 Error during  demandepaiement update  A for given orderid:[" + orderid
+								+ "]" + e);
+
+				return "annulation auto 500 Error during  demandepaiement update A";
+			}
+
+			Util.writeInFileTransaction(folder, file, "Setting DemandePaiement status OK.");
+
+			Util.writeInFileTransaction(folder, file, "Setting HistoAutoGate status A ...");
+
+			try {
+				current_hist.setHatEtat('A');
+				histoAutoGateService.save(current_hist);
+			} catch (Exception e) {
+				e.printStackTrace();
+				Util.writeInFileTransaction(folder, file,
+						"annulation auto 500 Error during  HistoAutoGate update  A for given orderid:[" + orderid + "]"
+								+ e);
+
+				return "annulation auto 500 Error during  HistoAutoGate update A";
+			}
+
+			Util.writeInFileTransaction(folder, file, "Setting HistoAutoGate status OK.");
+		} else {
+
+			Util.writeInFileTransaction(folder, file, "Transaction annulation auto declined.");
+			Util.writeInFileTransaction(folder, file, "Switch CODE REP : [" + tag20_resp + "]");
+		}
+
+		return tag20_resp;
+	}
+
+	private String formatMontantTrame(String folder, String file, String amount, String orderid, String merchantid, 
+			String page, Model model) {
+		String montanttrame;
+		String[] mm;
+		String[] m;
+		DemandePaiementDto demandeDtoMsg = new DemandePaiementDto();
+		try {
+			montanttrame = "";
+
+			mm = new String[2];
+
+			if (amount.contains(",")) {
+				amount = amount.replace(",", ".");
+			}
+			if (!amount.contains(".") && !amount.contains(",")) {
+				amount = amount + "." + "00";
+			}
+			System.out.println("montant : [" + amount + "]");
+			Util.writeInFileTransaction(folder, file, "montant : [" + amount + "]");
+
+			String montantt = amount + "";
+
+			mm = montantt.split("\\.");
+			if (mm[1].length() == 1) {
+				montanttrame = amount + "0";
+			} else {
+				montanttrame = amount + "";
+			}
+
+			m = new String[2];
+			m = montanttrame.split("\\.");
+			if (m[1].equals("0")) {
+				montanttrame = montanttrame.replace(".", "0");
+			} else
+				montanttrame = montanttrame.replace(".", "");
+			montanttrame = Util.formatageCHamps(montanttrame, 12);
+			System.out.println("montanttrame : [" + montanttrame + "]");
+			Util.writeInFileTransaction(folder, file, "montanttrame : [" + montanttrame + "]");
+		} catch (Exception err3) {
+			Util.writeInFileTransaction(folder, file,
+					"authorization 500 Error during  amount formatting for given orderid:["
+							+ orderid + "] and merchantid:[" + merchantid + "]" + err3);
+			demandeDtoMsg.setMsgRefus("Erreur lors du formatage du montant");
+			model.addAttribute("demandeDto", demandeDtoMsg);
+			page = "result";
+			Util.writeInFileTransaction(folder, file, "Fin processRequest ()");
+			System.out.println("Fin processRequest ()");
+			return page;
+		}
+		return montanttrame;
+	}
 	private List<Integer> generateYearList(int startYear, int endYear) {
 		List<Integer> years = new ArrayList<>();
 		for (int year = startYear; year <= endYear; year++) {
@@ -2945,6 +3439,120 @@ public class GWPaiementController {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public static String sendPOST(String urlcalback, String clepub, String idcommande, String repauto, String montant,
+			String numAuto, Long numTrans, String token_gen, String pan_trame, String typecarte, String folder,
+			String file) throws IOException {
+
+		String result = "";
+		HttpPost post = new HttpPost(urlcalback);
+
+		String reqenvoi = idcommande + repauto + clepub + montant;
+		String signature = Util.hachInMD5(reqenvoi);
+		Util.writeInFileTransaction(folder, file, "Signature : " + signature);
+		// add request parameters or form parameters
+		List<NameValuePair> urlParameters = new ArrayList<>();
+		urlParameters.add(new BasicNameValuePair("repauto", repauto));
+		urlParameters.add(new BasicNameValuePair("montant", montant));
+		urlParameters.add(new BasicNameValuePair("signature", signature));
+		urlParameters.add(new BasicNameValuePair("numAuto", numAuto));
+		urlParameters.add(new BasicNameValuePair("numTrans", String.valueOf(numTrans)));
+		urlParameters.add(new BasicNameValuePair("idcommande", idcommande));
+		urlParameters.add(new BasicNameValuePair("token", token_gen));
+		urlParameters.add(new BasicNameValuePair("carte", pan_trame));
+		urlParameters.add(new BasicNameValuePair("typecarte", typecarte));
+		post.setEntity(new UrlEncodedFormEntity(urlParameters));
+
+		try {
+			CloseableHttpClient httpClient = HttpClients.createDefault();
+			try {
+				httpClient = (CloseableHttpClient) getAllSSLClient();
+			} catch (KeyManagementException | KeyStoreException | NoSuchAlgorithmException e1) {
+				Util.writeInFileTransaction(folder, file, "[GW-EXCEPTION-KeyManagementException] sendPOST " + e1);
+			}
+			Util.writeInFileTransaction(folder, file, idcommande + " Recall URL tentative 1");
+			CloseableHttpResponse response = httpClient.execute(post);
+
+			result = EntityUtils.toString(response.getEntity());
+
+		} catch (Exception ex) {
+			Util.writeInFileTransaction(folder, file,
+					" sendPOST Exception => {} tv 1 :" + ex.getMessage() + "ex : " + ex);
+			result = "ko";
+		}
+		boolean repsucces = result.indexOf("GATESUCCESS") != -1 ? true : false;
+		boolean repfailed = result.indexOf("GATEFAILED") != -1 ? true : false;
+		if (!repsucces && !repfailed) {
+			try {
+				Thread.sleep(10000);
+				Util.writeInFileTransaction(folder, file, idcommande + " Recall URL tentative 2");
+				// tentative 2 apès 10 s
+				try (CloseableHttpClient httpClient = HttpClients.createDefault();
+						CloseableHttpResponse response = httpClient.execute(post)) {
+
+					result = EntityUtils.toString(response.getEntity());
+				}
+			} catch (Exception ex) {
+				Util.writeInFileTransaction(folder, file,
+						" sendPOST Exception => {} tv 2 :" + ex.getMessage() + "ex : " + ex);
+				result = "ko";
+			}
+			boolean repsucces2 = result.indexOf("GATESUCCESS") != -1 ? true : false;
+			boolean repfailed2 = result.indexOf("GATEFAILED") != -1 ? true : false;
+			if (!repsucces2 && !repfailed2) {
+				try {
+					Thread.sleep(10000);
+					// tentative 3 après 10s
+					Util.writeInFileTransaction(folder, file, idcommande + " Recall URL tentative 3");
+					try (CloseableHttpClient httpClient = HttpClients.createDefault();
+							CloseableHttpResponse response = httpClient.execute(post)) {
+
+						result = EntityUtils.toString(response.getEntity());
+					}
+				} catch (Exception ex) {
+					Util.writeInFileTransaction(folder, file,
+							" sendPOST Exception => {} tv 3 :" + ex.getMessage() + "ex : " + ex);
+					result = "ko";
+				}
+			}
+		}
+
+		return result;
+	}
+	
+	public static HttpClient getAllSSLClient()
+			throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
+
+		TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
+
+			@Override
+			public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+				return null;
+			}
+
+			@Override
+			public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType) {
+			}
+
+			@Override
+			public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType) {
+			}
+		} };
+		// modified 2024-0-30
+		// SSLContext context = SSLContext.getInstance("SSL");
+		SSLContext context = SSLContext.getInstance("TLSv1.2");
+		context.init(null, trustAllCerts, null);
+
+		HttpClientBuilder builder = HttpClientBuilder.create();
+		SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory(context,
+				SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+		builder.setSSLSocketFactory(sslConnectionFactory);
+
+		PlainConnectionSocketFactory plainConnectionSocketFactory = new PlainConnectionSocketFactory();
+
+		return builder.build();
+
 	}
 
 	private MonthDto mapToFrenchMonth(String month) {
