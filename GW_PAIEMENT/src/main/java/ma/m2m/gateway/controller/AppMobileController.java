@@ -1129,6 +1129,8 @@ public class AppMobileController {
 								Util.writeInFileTransaction(folder, file, "HistoAutoGate Saving ...");
 
 								histoAutoGateService.save(hist);
+								
+								Util.writeInFileTransaction(folder, file, "hatNomdeandeur : " + hist.getHatNomdeandeur());
 
 							} catch (Exception e) {
 								Util.writeInFileTransaction(folder, file,
@@ -3402,6 +3404,8 @@ public class AppMobileController {
 				Util.writeInFileTransaction(folder, file, "HistoAutoGate Saving ...");
 
 				histoAutoGateService.save(hist);
+				
+				Util.writeInFileTransaction(folder, file, "hatNomdeandeur : " + hist.getHatNomdeandeur());
 
 			} catch (Exception e) {
 				Util.writeInFileTransaction(folder, file,

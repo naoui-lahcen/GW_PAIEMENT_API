@@ -2085,6 +2085,8 @@ public class GWPaiementController {
 				Util.writeInFileTransaction(folder, file, "formatting pan Ok pan_auto :[" + pan_auto + "]");
 
 				Util.writeInFileTransaction(folder, file, "HistoAutoGate data filling start ...");
+				
+				Util.writeInFileTransaction(folder, file, "websiteid : " + websiteid);
 
 				Date current_date_1 = getDateWithoutTime(curren_date_hist);
 				hist.setHatDatdem(current_date_1);
@@ -2148,6 +2150,8 @@ public class GWPaiementController {
 				Util.writeInFileTransaction(folder, file, "HistoAutoGate Saving ...");
 
 				histoAutoGateService.save(hist);
+				
+				Util.writeInFileTransaction(folder, file, "hatNomdeandeur : " + hist.getHatNomdeandeur());
 
 			} catch (Exception e) {
 				Util.writeInFileTransaction(folder, file,
