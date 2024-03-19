@@ -1023,7 +1023,9 @@ public class ACSController {
 											"authorization 500 Error codeReponseDto null");
 									ee.printStackTrace();
 								}
-
+								
+								websiteid = dmd.getGalid();
+								
 								Util.writeInFileTransaction(folder, file,
 										"get status Switch status : [" + s_status + "]");
 
@@ -1877,7 +1879,7 @@ public class ACSController {
 										ee.printStackTrace();
 									}
 									demandeDtoMsg.setMsgRefus(
-											"La transaction en cours n’a pas abouti (Error during response Switch coderep "
+											"La transaction en cours n’a pas abouti (Coderep "
 													+ coderep + ":" + libelle + "),"
 													+ " votre compte ne sera pas débité, merci de réessayer .");
 									model.addAttribute("demandeDto", demandeDtoMsg);
@@ -2542,17 +2544,26 @@ public class ACSController {
 
 			Util.writeInFileTransaction(folder, file, "Setting HistoAutoGate status A ...");
 
+			// 2024-03-15
 			try {
-				current_hist.setHatEtat('A');
-				histoAutoGateService.save(current_hist);
-			} catch (Exception e) {
-				e.printStackTrace();
+				// get histoauto check if exist
+				HistoAutoGateDto histToAnnulle = histoAutoGateService.findByHatNumCommandeAndHatNumcmr(orderid, merchantid);
+				if(histToAnnulle !=null) {
+					Util.writeInFileTransaction(folder, file,
+							"transaction declinded ==> update HistoAutoGateDto etat to A ...");
+					histToAnnulle.setHatEtat('A');
+					histoAutoGateService.save(histToAnnulle);
+				} else {
+					current_hist.setHatEtat('A');
+					histoAutoGateService.save(current_hist);
+				}
+			} catch (Exception err2) {
 				Util.writeInFileTransaction(folder, file,
-						"annulation auto 500 Error during  HistoAutoGate update  A for given orderid:[" + orderid + "]"
-								+ e);
-
-				return "annulation auto 500 Error during  HistoAutoGate update A";
+						"annulation auto 500 Error during HistoAutoGate findByNumAuthAndNumCommercant orderid:[" + orderid
+								+ "] and merchantid:[" + merchantid + "]" + err2);
 			}
+			Util.writeInFileTransaction(folder, file, "update HistoAutoGateDto etat to A OK.");
+			// 2024-03-15
 
 			Util.writeInFileTransaction(folder, file, "Setting HistoAutoGate status OK.");
 		} else {

@@ -1071,72 +1071,6 @@ public class GWPaiementController {
 		return page;
 	}
 
-	@RequestMapping(path = "/napspayment/linkpayment1", produces = "application/json; charset=UTF-8")
-	public ResponseEntity<responseDto> getLink1(@RequestBody DemandePaiementDto demandeDto) {
-		// Traces traces = new Traces();
-		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		String file = "GW_" + randomWithSplittableRandom;
-
-		System.out.println("*********** Start getLink ************** ");
-		System.out.println("demandeDto commerçant recupérée : " + demandeDto.getComid());
-		System.out.println("demandeDto Commande recupérée : " + demandeDto.getCommande());
-		System.out.println("DemandeDto montant recupérée : " + demandeDto.getMontant());
-
-		String urlRetour = "";
-		String result = "";
-		responseDto response = new responseDto();
-
-		// pour faciliter le test : result = ""
-		// String result = autorisationService.controllerDataRequest(demandeDto);
-		String tokencommande = "HLNDI25454205VRZR2104202";
-		demandeDto.setTokencommande(tokencommande);
-
-		if (result.equals("")) {
-
-//			DemandePaiementDto demandeSaved = demandePaiementService.save(demandeDto);
-//			
-//			Util.writeInFileTransaction(folder, file, "*********** demandeSaved apres save ************** ");
-//			System.out.println("*********** demandeSaved apres save ************** ");
-//			
-//			Util.writeInFileTransaction(folder, file, "demandeSaved apres save idDemande : " + demandeSaved.getIddemande());
-//			System.out.println(" demandeSaved apres save idDemande : " + demandeSaved.getIddemande());
-//			
-//			Objects.copyProperties(demandeDto, demandeSaved);
-
-//			String tokencommande = Util.genTokenCom(demandeDto.getCommande(), demandeDto.getComid());
-//			demandeDto.setTokencommande(tokencommande);
-
-			urlRetour = link_success + demandeDto.getTokencommande();
-
-			response.setErrorNb("000");
-			response.setMsgRetour("Valide");
-			response.setUrl(urlRetour);
-			Util.writeInFileTransaction(folder, file, "Link response success : " + urlRetour);
-			System.out.println("Link response Success: " + response.toString());
-
-		} else {
-			urlRetour = link_fail + demandeDto.getTokencommande();
-
-			Util.writeInFileTransaction(folder, file, "Manque d'information dans la demande : ");
-			Util.writeInFileTransaction(folder, file, "message : " + result);
-			System.out.println("Manque d'information dans la demande : ");
-
-			response.setErrorNb("900");
-			response.setMsgRetour("Erreur");
-			response.setUrl(urlRetour);
-			Util.writeInFileTransaction(folder, file, "Link response error : " + urlRetour);
-			System.out.println("Link response error : " + response.toString());
-		}
-
-		// Return the link in the response
-		// Map<String, String> response = new HashMap();
-		// response.put("url", urlRetour);
-
-		System.out.println("*********** Fin getLink ************** ");
-
-		return ResponseEntity.ok().body(response);
-	}
-
 	@PostMapping("/payer")
 	public String payer(Model model, @ModelAttribute("demandeDto") DemandePaiementDto dto, HttpServletRequest request,
 			HttpServletResponse response) throws IOException {
@@ -1689,7 +1623,7 @@ public class GWPaiementController {
 
 			merchantname = current_merchant.getCmrNom();
 			websiteName = "";
-			websiteid = "";
+			websiteid = dmd.getGalid();
 			String url = "", status = "", statuscode = "";
 
 			merc_codeactivite = current_merchant.getCmrCodactivite();
@@ -2067,6 +2001,8 @@ public class GWPaiementController {
 					Util.writeInFileTransaction(folder, file, "authorization 500 Error codeReponseDto null");
 					ee.printStackTrace();
 				}
+				
+				websiteid = dmd.getGalid();
 
 				Util.writeInFileTransaction(folder, file, "get status Switch status : [" + s_status + "]");
 
@@ -2586,7 +2522,7 @@ public class GWPaiementController {
 						ee.printStackTrace();
 					}
 					demandeDtoMsg.setMsgRefus(
-							"La transaction en cours n’a pas abouti (Error during response Switch coderep " + coderep
+							"La transaction en cours n’a pas abouti (Coderep " + coderep
 									+ ":" + libelle + ")," + " votre compte ne sera pas débité, merci de réessayer .");
 					model.addAttribute("demandeDto", demandeDtoMsg);
 					page = "result";
@@ -2816,7 +2752,7 @@ public class GWPaiementController {
 	public String chlenge(Model model) {
 		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		String file = "GW_" + randomWithSplittableRandom;
+		String file = "GW_CHALENGE_" + randomWithSplittableRandom;
 		// create file log
 		Util.creatFileTransaction(file);
 		DemandePaiementDto dem = new DemandePaiementDto();
@@ -2846,7 +2782,7 @@ public class GWPaiementController {
 	public String error(@PathVariable(value = "token") String token, Model model) {
 		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		String file = "GW_" + randomWithSplittableRandom;
+		String file = "GW_ERROR_" + randomWithSplittableRandom;
 		// create file log
 		Util.creatFileTransaction(file);
 		Util.writeInFileTransaction(folder, file, "*********** Start error ************** ");
@@ -2899,7 +2835,7 @@ public class GWPaiementController {
 	public String index2() {
 		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		String file = "GW_" + randomWithSplittableRandom;
+		String file = "GW_INDEX2_" + randomWithSplittableRandom;
 		Util.creatFileTransaction(file);
 		Util.writeInFileTransaction(folder, file, "*********** Start index2 () ************** ");
 		System.out.println("*********** Start index2 () ************** ");
@@ -2917,7 +2853,7 @@ public class GWPaiementController {
 	public String result() {
 		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		String file = "GW_" + randomWithSplittableRandom;
+		String file = "GW_RESULT_" + randomWithSplittableRandom;
 		Util.creatFileTransaction(file);
 
 		Util.writeInFileTransaction(folder, file, "*********** Start result () ************** ");
@@ -3253,17 +3189,26 @@ public class GWPaiementController {
 
 			Util.writeInFileTransaction(folder, file, "Setting HistoAutoGate status A ...");
 
+			// 2024-03-15
 			try {
-				current_hist.setHatEtat('A');
-				histoAutoGateService.save(current_hist);
-			} catch (Exception e) {
-				e.printStackTrace();
+				// get histoauto check if exist
+				HistoAutoGateDto histToAnnulle = histoAutoGateService.findByHatNumCommandeAndHatNumcmr(orderid, merchantid);
+				if(histToAnnulle !=null) {
+					Util.writeInFileTransaction(folder, file,
+							"transaction declinded ==> update HistoAutoGateDto etat to A ...");
+					histToAnnulle.setHatEtat('A');
+					histoAutoGateService.save(histToAnnulle);
+				} else {
+					current_hist.setHatEtat('A');
+					histoAutoGateService.save(current_hist);
+				}
+			} catch (Exception err2) {
 				Util.writeInFileTransaction(folder, file,
-						"annulation auto 500 Error during  HistoAutoGate update  A for given orderid:[" + orderid + "]"
-								+ e);
-
-				return "annulation auto 500 Error during  HistoAutoGate update A";
+						"annulation auto 500 Error during HistoAutoGate findByNumAuthAndNumCommercant orderid:[" + orderid
+								+ "] and merchantid:[" + merchantid + "]" + err2);
 			}
+			Util.writeInFileTransaction(folder, file, "update HistoAutoGateDto etat to A OK.");
+			// 2024-03-15
 
 			Util.writeInFileTransaction(folder, file, "Setting HistoAutoGate status OK.");
 		} else {

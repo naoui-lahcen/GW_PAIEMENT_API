@@ -161,7 +161,7 @@ public class APIController {
 
 	public APIController() {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		String file = "API_" + randomWithSplittableRandom;
+		//String file = "API_" + randomWithSplittableRandom;
 		// date of folder logs
 		dateF = LocalDateTime.now(ZoneId.systemDefault());
 		folder = dateF.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
@@ -1041,6 +1041,8 @@ public class APIController {
 					Util.writeInFileTransaction(folder, file, "authorization 500 Error codeReponseDto null");
 					ee.printStackTrace();
 				}
+				
+				websiteid = dmd.getGalid();
 
 				Util.writeInFileTransaction(folder, file, "get status Switch status : [" + s_status + "]");
 
@@ -1873,7 +1875,7 @@ public class APIController {
 	public String generateToken(@RequestHeader MultiValueMap<String, String> header, @RequestBody String token24,
 			HttpServletResponse response) {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		String file = "API_" + randomWithSplittableRandom;
+		String file = "API_TOKEN24_" + randomWithSplittableRandom;
 		// create file log
 		Util.creatFileTransaction(file);
 		Util.writeInFileTransaction(folder, file, "*********** Start generateToken() ************** ");
@@ -2077,7 +2079,7 @@ public class APIController {
 	@RequestMapping(value = "/napspayment/chalenge/token/{token}", method = RequestMethod.GET)
 	public String chalengeapi(@PathVariable(value = "token") String token, Model model) {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		String file = "API_" + randomWithSplittableRandom;
+		String file = "API_CHALENGE_" + randomWithSplittableRandom;
 		// create file log
 		Util.creatFileTransaction(file);
 		Util.writeInFileTransaction(folder, file, "*********** Start chalengeapi ************** ");
@@ -2149,7 +2151,7 @@ public class APIController {
 	public String status(@RequestHeader MultiValueMap<String, String> header, @RequestBody String status,
 			HttpServletResponse response) {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		String file = "API_" + randomWithSplittableRandom;
+		String file = "API_STATUS_" + randomWithSplittableRandom;
 		// create file log
 		Util.creatFileTransaction(file);
 		Util.writeInFileTransaction(folder, file, "*********** Start status() ************** ");
@@ -2555,7 +2557,7 @@ public class APIController {
 	public String capture(@RequestHeader MultiValueMap<String, String> header, @RequestBody String capture,
 			HttpServletResponse response) {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		String file = "API_" + randomWithSplittableRandom;
+		String file = "API_CAPTURE_" + randomWithSplittableRandom;
 		// create file log
 		Util.creatFileTransaction(file);
 		Util.writeInFileTransaction(folder, file, "*********** Start capture() ************** ");
@@ -2953,7 +2955,7 @@ public class APIController {
 	public String refund(@RequestHeader MultiValueMap<String, String> header, @RequestBody String refund,
 			HttpServletResponse response) {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		String file = "API_" + randomWithSplittableRandom;
+		String file = "API_REFUND_" + randomWithSplittableRandom;
 		// create file log
 		Util.creatFileTransaction(file);
 		Util.writeInFileTransaction(folder, file, "*********** Start refund() ************** ");
@@ -3465,7 +3467,7 @@ public class APIController {
 	public String reversal(@RequestHeader MultiValueMap<String, String> header, @RequestBody String reversal,
 			HttpServletResponse response) {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		String file = "API_" + randomWithSplittableRandom;
+		String file = "API_REVERSAL_" + randomWithSplittableRandom;
 		// create file log
 		Util.creatFileTransaction(file);
 		Util.writeInFileTransaction(folder, file, "*********** Start reversal() ************** ");
@@ -3629,7 +3631,7 @@ public class APIController {
 			date = formatdate.format(new Date());
 			heure = formatheure.format(new Date());
 			jul = Util.convertToJulian(new Date()) + "";
-
+			cardnumber = current_dmd.getDem_pan();
 		} catch (Exception err3) {
 			Util.writeInFileTransaction(folder, file, "reversal 500 Error during date formatting for given orderid:["
 					+ orderid + "] and merchantid:[" + merchantid + "]" + err3);
@@ -4068,7 +4070,7 @@ public class APIController {
 	public String savingCardToken(@RequestHeader MultiValueMap<String, String> header,
 			@RequestBody String savingcardtoken, HttpServletResponse response) {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		String file = "API_" + randomWithSplittableRandom;
+		String file = "API_SAVINGCARD_" + randomWithSplittableRandom;
 		// create file log
 		Util.creatFileTransaction(file);
 		Util.writeInFileTransaction(folder, file, "*********** Start savingCardToken() ************** ");
@@ -4862,6 +4864,8 @@ public class APIController {
 					Util.writeInFileTransaction(folder, file, "savingcardtoken 500 Error codeReponseDto null");
 					ee.printStackTrace();
 				}
+				
+				websiteid = dmd.getGalid();
 
 				Util.writeInFileTransaction(folder, file, "get status Switch status : [" + s_status + "]");
 
@@ -5261,7 +5265,7 @@ public class APIController {
 	public String getCardTkenOld(@RequestHeader MultiValueMap<String, String> header, @RequestBody String cardtoken,
 			HttpServletResponse response) {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		String file = "API_" + randomWithSplittableRandom;
+		String file = "API_SAVINGCARD_" + randomWithSplittableRandom;
 		// create file log
 		Util.creatFileTransaction(file);
 		Util.writeInFileTransaction(folder, file, "*********** Start getCardTken() ************** ");
@@ -5525,7 +5529,7 @@ public class APIController {
 	public String deleteCardTken(@RequestHeader MultiValueMap<String, String> header, @RequestBody String cardtoken,
 			HttpServletResponse response) {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		String file = "API_" + randomWithSplittableRandom;
+		String file = "API_DELETECRDTKN_" + randomWithSplittableRandom;
 		// create file log
 		Util.creatFileTransaction(file);
 		Util.writeInFileTransaction(folder, file, "*********** Start deleteCardTken() ************** ");
@@ -5700,7 +5704,7 @@ public class APIController {
 	public void exportToExcel(@RequestHeader MultiValueMap<String, String> header, @RequestBody String req,
 			HttpServletResponse response) throws IOException {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		String file = "API_" + randomWithSplittableRandom;
+		String file = "API_EXPORTE_EXCEL_" + randomWithSplittableRandom;
 		// create file log
 		Util.creatFileTransaction(file);
 		Util.writeInFileTransaction(folder, file, "*********** Start exportToExcel() ************** ");
@@ -5760,7 +5764,7 @@ public class APIController {
 	public String cpautorisation(@RequestHeader MultiValueMap<String, String> header, @RequestBody String cpauths,
 			HttpServletResponse response) {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		String file = "API_" + randomWithSplittableRandom;
+		String file = "API_CPAUTORISATION_" + randomWithSplittableRandom;
 		// create file log
 		Util.creatFileTransaction(file);
 		Util.writeInFileTransaction(folder, file, "*********** Start cpautorisation() ************** ");
@@ -6913,7 +6917,7 @@ public class APIController {
 	public String cpautorisationOLD(@RequestHeader MultiValueMap<String, String> header, @RequestBody String cpauths,
 			HttpServletResponse response) {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		String file = "API_" + randomWithSplittableRandom;
+		String file = "API_CPAUTORISATION" + randomWithSplittableRandom;
 		// create file log
 		Util.creatFileTransaction(file);
 		Util.writeInFileTransaction(folder, file, "*********** Start cpautorisation() ************** ");
@@ -7356,103 +7360,6 @@ public class APIController {
 		Util.writeInFileTransaction(folder, file, "*********** Fin cpautorisation() ************** ");
 		System.out.println("*********** Fin cpautorisation() ************** ");
 
-		return jso.toString();
-	}
-
-	@RequestMapping(path = "/napspayment/cpautorisationTest", produces = "application/json; charset=UTF-8")
-	public ResponseEntity<responseDto> cpautorisation1(@RequestBody RequestDto requestDto) {
-		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		String file = "API_" + randomWithSplittableRandom;
-		// create file log
-		Util.creatFileTransaction(file);
-		Util.writeInFileTransaction(folder, file, "*********** Start cpautorisation() ************** ");
-		System.out.println("*********** Start cpautorisation() ************** ");
-
-		System.out.println("*********** Start cpautorisation ************** ");
-		System.out.println("requestDto commerçant recupérée : " + requestDto.getMerchantid());
-		System.out.println("requestDto Commande recupérée : " + requestDto.getOrderid());
-		System.out.println("requestDto montant recupérée : " + requestDto.getAmount());
-
-		responseDto response = new responseDto();
-
-		Util.writeInFileTransaction(folder, file, "*********** Fin cpautorisation() ************** ");
-		System.out.println("*********** Fin cpautorisation() ************** ");
-
-		return ResponseEntity.ok().body(response);
-	}
-
-	@PostMapping(value = "/napspayment/testapi", consumes = "application/json", produces = "application/json")
-	@ResponseBody
-	public String testapi(@RequestHeader MultiValueMap<String, String> header, @RequestBody String req,
-			HttpServletResponse response, Model model) throws IOException {
-		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		String file = "API_" + randomWithSplittableRandom;
-		// create file log
-		Util.creatFileTransaction(file);
-		Util.writeInFileTransaction(folder, file, "*********** Start testapi ************** ");
-		System.out.println("*********** Start testapi ************** ");
-
-		JSONObject jsonOrequest = null;
-		try {
-			jsonOrequest = new JSONObject(req);
-		}
-
-		catch (JSONException jserr) {
-			Util.writeInFileTransaction(folder, file, "testapi 500 malformed json expression " + req + jserr);
-			return getMsgError(folder, file, null, "testapi 500 malformed json expression", null);
-		}
-
-		String capture, currency, orderid, recurring, amount, promoCode, transactionid, capture_id, merchantid,
-				merchantname, websiteName, websiteid, callbackUrl, cardnumber, token, expirydate, holdername, cvv,
-				fname, lname, email, country, phone, city, state, zipcode, address, mesg_type, merc_codeactivite,
-				acqcode, merchant_name, merchant_city, acq_type, processing_code, reason_code, transaction_condition,
-				transactiondate, transactiontime, date, rrn, heure, montanttrame, num_trs = "", successURL, failURL,
-				transactiontype;
-
-		JSONObject jso = new JSONObject();
-
-		try {
-			DemandePaiementDto dmd = new DemandePaiementDto();
-
-			dmd.setMsgRefus("testapi");
-			dmd.setTokencommande("6B3FZ2015425468441HH67V1210500");
-			// String htmlCreq = "<form action='https://acs2.bankofafrica.ma:443/lacs2'
-			// method='post'enctype='application/x-www-form-urlencoded'><input
-			// type='hidden'name='creq'value='ewogICJtZXNzYWdlVmVyc2lvbiI6ICIyLjEuMCIsCiAgInRocmVlRFNTZXJ2ZXJUcmFuc0lEIjogIjllZjUwNjk3LWRiMTctNGZmMy04MDYzLTc0ZTAwMTk0N2I4YiIsCiAgImFjc1RyYW5zSUQiOiAiZjM2ZDA3ZWQtZGJhOS00ZTkzLWE2OGMtMzNmYjAyMDgxZDVmIiwKICAiY2hhbGxlbmdlV2luZG93U2l6ZSI6ICIwNSIsCiAgIm1lc3NhZ2VUeXBlIjogIkNSZXEiCn0='/></form>";
-			// dmd.setCreq(htmlCreq);
-
-			model.addAttribute("demandeDto", dmd);
-
-			String linkacs = link_chalenge + dmd.getTokencommande();
-
-			// Transaction info
-			jso.put("orderid", "12345678912546");
-			jso.put("amount", "100");
-			jso.put("transactionid", "1122554466");
-			jso.put("statuscode", "00");
-			jso.put("status", "OK");
-
-			// Link ACS chalenge info
-			jso.put("linkacs", linkacs);
-
-			Util.writeInFileTransaction(folder, file, "testapi json : " + jso.toString());
-			System.out.println("testapi json : " + jso.toString());
-
-			// response.sendRedirect(link_index);
-			response.sendRedirect(linkacs);
-
-		} catch (Exception ex) {
-			// Transaction info
-			jso.put("statuscode", "17");
-			jso.put("status", "failed");
-			System.out.println("testapi error json : " + jso.toString());
-			Util.writeInFileTransaction(folder, file, "testapi error json : " + jso.toString());
-			Util.writeInFileTransaction(folder, file, "testapi exception : " + ex);
-			System.out.println("testapi exception : " + ex);
-		}
-
-		Util.writeInFileTransaction(folder, file, "*********** Fin testapi ************** ");
-		System.out.println("*********** Fin testapi ************** ");
 		return jso.toString();
 	}
 

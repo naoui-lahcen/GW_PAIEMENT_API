@@ -136,6 +136,9 @@ public class AppMobileController {
 
 	@Value("${key.ENVIRONEMENT}")
 	private String environement;
+	
+	@Value("${key.FRAIS_CCB}")
+	private String fraisCCB;
 
 	@Autowired
 	AutorisationService autorisationService;
@@ -1057,6 +1060,8 @@ public class AppMobileController {
 											"authorization 500 Error codeReponseDto null");
 									ee.printStackTrace();
 								}
+								
+								websiteid = dmd.getGalid();								
 
 								Util.writeInFileTransaction(folder, file,
 										"get status Switch status : [" + s_status + "]");
@@ -1083,6 +1088,9 @@ public class AppMobileController {
 								hist.setHatBqcmr(acqcode);
 								hist.setHatPorteur(pan_auto);
 								hist.setHatMtfref1(s_status);
+								if(websiteid.equals("")) {
+									websiteid = "0066";
+								}
 								hist.setHatNomdeandeur(websiteid);
 								hist.setHatNautemt(tag19_res_verified); // f2
 								tag19_resp = tag19_res_verified;
@@ -1505,7 +1513,7 @@ public class AppMobileController {
 										ee.printStackTrace();
 									}
 									demandeDtoMsg.setMsgRefus(
-											"La transaction en cours n’a pas abouti (Error during response Switch coderep "
+											"La transaction en cours n’a pas abouti (Coderep "
 													+ coderep + ":" + libelle + "),"
 													+ " votre compte ne sera pas débité, merci de réessayer .");
 									model.addAttribute("demandeDto", demandeDtoMsg);
@@ -2040,9 +2048,6 @@ public class AppMobileController {
 			if (check_dmd != null) {
 				// generer token
 				tokencommande = Util.genTokenCom(check_dmd.getCommande(), check_dmd.getComid());
-				// url = link_ccb + check_dmd.getTokencommande();
-				// statuscode = "00";
-				// status = "OK";
 				url = "";
 				statuscode = "17";
 				status = "PaiementRequest Already exist orderid:[" + orderid + "]";
@@ -2068,9 +2073,18 @@ public class AppMobileController {
 				}
 				dmd.setMontant(Double.parseDouble(amount));
 				// calcule des frais de recharge
-				Double montantrecharge = (0 + (Double.parseDouble(amount) * 0.65) / 100);
+				String frais = fraisCCB;
+				if(frais.equals("") || frais == null) {
+					frais = "0.00";
+				}
+				Util.writeInFileTransaction(folder, file, "fraisCCB : " + frais +"%");
+				Double fraisD = Double.valueOf(frais);
+				
+				Double montantrecharge = ((Double.parseDouble(amount) * fraisD) / 100);
+				//Double montantrecharge = (0 + (Double.parseDouble(amount) * 0.65) / 100);
 				String fraistr = String.format("%.2f", montantrecharge).replaceAll(",", ".");
-
+				Util.writeInFileTransaction(folder, file, "FraisMontantRecharge : " + fraistr);
+				
 				dmd.setFrais(Double.parseDouble(fraistr));
 				dmd.setNom(lname);
 				dmd.setPrenom(fname);
@@ -2343,7 +2357,7 @@ public class AppMobileController {
 	public String recharger(Model model, @ModelAttribute("demandeDto") DemandePaiementDto dto,
 			HttpServletRequest request, HttpServletResponse response) {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		String file = "MB_PAYE_" + randomWithSplittableRandom;
+		String file = "MB_RECHARGER_" + randomWithSplittableRandom;
 		// create file log
 		Util.creatFileTransaction(file);
 		Util.writeInFileTransaction(folder, file, "*********** Start recharger () ************** ");
@@ -2951,7 +2965,7 @@ public class AppMobileController {
 
 			merchantname = current_merchant.getCmrNom();
 			websiteName = "";
-			websiteid = "";
+			websiteid = dmd.getGalid();
 			String url = "", status = "", statuscode = "";
 
 			merc_codeactivite = current_merchant.getCmrCodactivite();
@@ -3334,6 +3348,8 @@ public class AppMobileController {
 					Util.writeInFileTransaction(folder, file, "recharger 500 Error codeReponseDto null");
 					ee.printStackTrace();
 				}
+				
+				websiteid = dmd.getGalid();
 
 				Util.writeInFileTransaction(folder, file, "get status Switch status : [" + s_status + "]");
 
@@ -3358,6 +3374,9 @@ public class AppMobileController {
 				hist.setHatBqcmr(acqcode);
 				hist.setHatPorteur(pan_auto);
 				hist.setHatMtfref1(s_status);
+				if(websiteid.equals("")) {
+					websiteid = "0066";
+				}
 				hist.setHatNomdeandeur(websiteid);
 				hist.setHatNautemt(tag19_res_verified); // f2
 				tag19_resp = tag19_res_verified;
@@ -3756,7 +3775,7 @@ public class AppMobileController {
 						ee.printStackTrace();
 					}
 					demandeDtoMsg.setMsgRefus(
-							"La transaction en cours n’a pas abouti (Error during response Switch coderep " + coderep
+							"La transaction en cours n’a pas abouti (Coderep " + coderep
 									+ ":" + libelle + ")," + " votre compte ne sera pas débité, merci de réessayer .");
 					model.addAttribute("demandeDto", demandeDtoMsg);
 					page = "result";
@@ -4043,7 +4062,6 @@ public class AppMobileController {
 	}
 
 	public String getMsgError(String folder, String file, JSONObject jsonOrequest, String msg, String coderep) {
-		Traces traces = new Traces();
 		Util.writeInFileTransaction(folder, file, "*********** Start getMsgError() ************** ");
 		System.out.println("*********** Start getMsgError() ************** ");
 
