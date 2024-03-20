@@ -1024,8 +1024,13 @@ public class AppMobileController {
 							tag19_res_verified = tag19_resp;
 							tag66_resp_verified = tag66_resp;
 							String s_status, pan_auto = "";
-
-							// SWHistoAutoDto swhist = null;
+							
+							try {
+								// calcule du montant avec les frais
+								amount = calculMontantTotalOperation(dmd);
+							} catch (Exception ex){
+								Util.writeInFileTransaction(folder, file,"calcule du montant avec les frais : " + ex);
+							}
 
 							if (switch_ko == 1) {
 								pan_auto = Util.formatagePan(cardnumber);
@@ -3321,7 +3326,12 @@ public class AppMobileController {
 			tag66_resp_verified = tag66_resp;
 			String s_status, pan_auto = "";
 
-			// SWHistoAutoDto swhist = null;
+			try {
+				// calcule du montant avec les frais
+				amount = calculMontantTotalOperation(dmd);
+			} catch (Exception ex){
+				Util.writeInFileTransaction(folder, file,"calcule du montant avec les frais : " + ex);
+			}
 
 			if (switch_ko == 1) {
 				pan_auto = Util.formatagePan(cardnumber);

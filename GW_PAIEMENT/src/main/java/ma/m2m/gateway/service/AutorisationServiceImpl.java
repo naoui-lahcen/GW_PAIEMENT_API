@@ -230,9 +230,10 @@ public class AutorisationServiceImpl implements AutorisationService {
 			System.out.println("typeCarte ni 1 ni 2 => on donne par defaut Master Card ");
 			authInitRequest.setUrlThreeDSS(urlThreeDSS_M);
 		}
-		
+		// calcule du montant avec les frais
+		String montantTotal = calculMontantTotalOperation(demandeDto);
 		authInitRequest.setPan(demandeDto.getDem_pan());
-		authInitRequest.setAmount(demandeDto.getMontant());				
+		authInitRequest.setAmount(Double.valueOf(montantTotal == null ? "" : montantTotal));			
 		authInitRequest.setCurrency(infoCommercantDto.getCmrCurrency().trim());				
 		authInitRequest.setIdCommercant(demandeDto.getComid());
 		authInitRequest.setIdDemande(demandeDto.getIddemande());					
@@ -316,6 +317,18 @@ public class AutorisationServiceImpl implements AutorisationService {
 
 		Util.writeInFileTransaction(folder, file, "*********** FIN callThree3DSSAfterACS ***********");
 		return threeDsecureResponse;
+	}
+	
+	public String calculMontantTotalOperation(DemandePaiementDto dto) {
+		if(dto.getMontant() == null) {
+			dto.setMontant(0.00);
+		}
+		if(dto.getFrais() == null) {
+			dto.setFrais(0.00);
+		}
+		double mnttotalopp = dto.getMontant() + dto.getFrais();
+		String mntttopp = String.format("%.2f", mnttotalopp).replaceAll(",", ".");
+		return mntttopp;
 	}
 	
 	public static HttpClient getAllSSLClient()
