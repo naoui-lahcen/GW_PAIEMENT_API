@@ -1786,7 +1786,13 @@ public class APIController {
 					amount = amount.replace(",", ".");
 				}
 				dmd.setMontant(Double.parseDouble(amount));
+				if(lname.length() > 25) {
+					lname = lname.substring(0, 25);
+				}
 				dmd.setNom(lname);
+				if(fname.length() > 20) {
+					fname = fname.substring(0, 20);
+				}
 				dmd.setPrenom(fname);
 				dmd.setEmail(email);
 				dmd.setTel(phone);

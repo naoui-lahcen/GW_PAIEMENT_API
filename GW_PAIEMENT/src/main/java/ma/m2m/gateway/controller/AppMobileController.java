@@ -2086,7 +2086,13 @@ public class AppMobileController {
 				Util.writeInFileTransaction(folder, file, "FraisMontantRecharge : " + fraistr);
 				
 				dmd.setFrais(Double.parseDouble(fraistr));
+				if(lname.length() > 25) {
+					lname = lname.substring(0, 25);
+				}
 				dmd.setNom(lname);
+				if(fname.length() > 20) {
+					fname = fname.substring(0, 20);
+				}
 				dmd.setPrenom(fname);
 				dmd.setEmail(email);
 				dmd.setTel(phone);
