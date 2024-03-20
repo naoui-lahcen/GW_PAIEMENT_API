@@ -487,7 +487,29 @@ public class APIController {
 		}
 
 		// for test control risk
-		GWRiskAnalysis riskAnalysis = new GWRiskAnalysis(folder, file);
+		// refactoring code 2024-03-20
+		Util.writeInFileTransaction(folder, file, "Debut controlleRisk");
+		try {
+			String msg = autorisationService.controlleRisk(dmdSaved, folder, file);
+			if (!msg.equalsIgnoreCase("OK")) {
+				dmdSaved.setEtat_demande("REJET_RISK_CTRL");
+				demandePaiementService.save(dmdSaved);
+				Util.writeInFileTransaction(folder, file, "authorization 500 " + msg);
+				return getMsgError(folder, file, jsonOrequest, "authorization 500 " + msg, null);
+			}
+		} catch (Exception e) {
+			dmdSaved.setEtat_demande("REJET_RISK_CTRL");
+			demandePaiementService.save(dmdSaved);
+			Util.writeInFileTransaction(folder, file,
+					"authorization 500 ControlRiskCmr misconfigured in DB or not existing merchantid:["
+							+ dmdSaved.getComid() + e);
+			return getMsgError(folder, file, jsonOrequest, "authorization 500 Error Opération rejetée: Contrôle risque",
+					null);
+		}
+		Util.writeInFileTransaction(folder, file, "Fin controlleRisk");
+		
+		// old
+		/*GWRiskAnalysis riskAnalysis = new GWRiskAnalysis(folder, file);
 		try {
 			ControlRiskCmrDto controlRiskCmr = controlRiskCmrService.findByNumCommercant(dmdSaved.getComid());
 			List<HistoAutoGateDto> porteurFlowPerDay = null;
@@ -495,11 +517,9 @@ public class APIController {
 			Double globalFlowPerDay = 0.00;
 			List<EmetteurDto> listBin = null;
 
-			if (controlRiskCmr != null) {
-				/*
-				 * --------------------------------- Controle des cartes internationales
-				 * -----------------------------------------
-				 */
+			if (controlRiskCmr != null) {				
+				// -------- Controle des cartes internationales --------
+				 
 				if (isNullOrEmpty(controlRiskCmr.getAcceptInternational())
 						|| (controlRiskCmr.getAcceptInternational() != null && !ACTIVE.getFlag()
 								.equalsIgnoreCase(controlRiskCmr.getAcceptInternational().trim()))) {
@@ -508,15 +528,13 @@ public class APIController {
 					Util.writeInFileTransaction(folder, file, "controlRiskCmr ici 1");
 					listBin = emetteurService.findByBindebut(binDebutCarte);
 				}
-				// --------------------------------- Controle de flux journalier autorisé par
-				// commerçant ----------------------------------
+				// -------- Controle de flux journalier autorisé par commerçant --------
 				if (!isNullOrEmpty(controlRiskCmr.getIsGlobalFlowControlActive())
 						&& ACTIVE.getFlag().equalsIgnoreCase(controlRiskCmr.getIsGlobalFlowControlActive())) {
 					Util.writeInFileTransaction(folder, file, "controlRiskCmr ici 2");
 					globalFlowPerDay = histoAutoGateService.getCommercantGlobalFlowPerDay(merchantid);
 				}
-				// ------------------------- Controle de flux journalier autorisé par client
-				// (porteur de carte) ----------------------------
+				// -------- Controle de flux journalier autorisé par client (porteur de carte) --------
 				if ((controlRiskCmr.getFlowCardPerDay() != null && controlRiskCmr.getFlowCardPerDay() > 0)
 						|| (controlRiskCmr.getNumberOfTransactionCardPerDay() != null
 								&& controlRiskCmr.getNumberOfTransactionCardPerDay() > 0)) {
@@ -543,7 +561,7 @@ public class APIController {
 							+ dmdSaved.getComid() + e);
 			return getMsgError(folder, file, jsonOrequest, "authorization 500 Error Opération rejetée: Contrôle risque",
 					null);
-		}
+		}*/
 
 		try {
 			formatheure = new SimpleDateFormat("HHmmss");

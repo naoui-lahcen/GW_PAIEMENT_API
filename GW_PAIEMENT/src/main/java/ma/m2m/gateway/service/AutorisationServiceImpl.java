@@ -1,9 +1,14 @@
 package ma.m2m.gateway.service;
 
+import static ma.m2m.gateway.Utils.StringUtils.isNullOrEmpty;
+import static ma.m2m.gateway.config.FlagActivation.ACTIVE;
+
 import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
+
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
@@ -25,12 +30,16 @@ import com.google.gson.GsonBuilder;
 
 import ma.m2m.gateway.Utils.Traces;
 import ma.m2m.gateway.Utils.Util;
+import ma.m2m.gateway.dto.ControlRiskCmrDto;
 import ma.m2m.gateway.dto.DemandePaiementDto;
+import ma.m2m.gateway.dto.EmetteurDto;
+import ma.m2m.gateway.dto.HistoAutoGateDto;
 import ma.m2m.gateway.dto.InfoCommercantDto;
 import ma.m2m.gateway.model.Commercant;
 import ma.m2m.gateway.model.Galerie;
 import ma.m2m.gateway.repository.CommercantDao;
 import ma.m2m.gateway.repository.GalerieDao;
+import ma.m2m.gateway.risk.GWRiskAnalysis;
 import ma.m2m.gateway.threedsecure.AuthInitRequest;
 import ma.m2m.gateway.threedsecure.ThreeDSecureRequestor;
 import ma.m2m.gateway.threedsecure.ThreeDSecureRequestorException;
@@ -44,115 +53,120 @@ import ma.m2m.gateway.threedsecure.ThreeDSecureResponse;
 
 @Service
 public class AutorisationServiceImpl implements AutorisationService {
-		
+
 	private Gson gson;
-	
+
 	@Value("${key.LIEN_3DSS_V}")
 	private String urlThreeDSS_V;
-	
+
 	@Value("${key.LIEN_3DSS_M}")
 	private String urlThreeDSS_M;
-	
+
 	@Value("${key.LIEN_NOTIFICATION_ACS}")
 	private String notificationACS;
-	
+
 	@Value("${key.LIEN_NOTIFICATION_CCB_ACS}")
 	private String notificationCCBACS;
-	
+
+	@Autowired
+	private DemandePaiementService demandePaiementService;
+
+	@Autowired
+	private ControlRiskCmrService controlRiskCmrService;
+
+	@Autowired
+	private EmetteurService emetteurService;
+
+	@Autowired
+	HistoAutoGateService histoAutoGateService;
+
 	private String typeCarte;
-	
+
 	private Galerie galerie = new Galerie();
 	private Commercant commercant = new Commercant();
 	private InfoCommercantDto infoCommercantDto = new InfoCommercantDto();
-	
+
 	@Autowired
 	private InfoCommercantService infoCommercantService;
-	
+
 	@Autowired
 	private GalerieDao galerieDao;
-	
+
 	@Autowired
 	private CommercantDao commercantDao;
-	
+
 	public AutorisationServiceImpl() {
 		this.gson = new GsonBuilder().serializeNulls().create();
 	}
-	
-	
+
 	@Override
 	public String controllerDataRequest(DemandePaiementDto demandeDto) {
 		String message = "";
-		
-		if(demandeDto.getComid().equals("")) {
-			message="Commerçant inexistant dans la demande";
-		}
-		else if(demandeDto.getCommande().equals("")) {
-			message="Commande inexistant dans la demande";
-		}
-		else if(demandeDto.getMontant() <= 0) {
-			message="Montant inferieur ou égale à 0";
+
+		if (demandeDto.getComid().equals("")) {
+			message = "Commerçant inexistant dans la demande";
+		} else if (demandeDto.getCommande().equals("")) {
+			message = "Commande inexistant dans la demande";
+		} else if (demandeDto.getMontant() <= 0) {
+			message = "Montant inferieur ou égale à 0";
 		}
 		commercant = commercantDao.findByCmrCode(demandeDto.getComid());
 
 		if (commercant == null) {
-			message="Commerçant inexistant dans la BD";
-		}
-		else if (commercant.getCmrEtat() == "0") {
-			message="L'état du commérçant est 0";
+			message = "Commerçant inexistant dans la BD";
+		} else if (commercant.getCmrEtat() == "0") {
+			message = "L'état du commérçant est 0";
 		}
 
 		infoCommercantDto = infoCommercantService.findByCmrCode(demandeDto.getComid());
 
 		if (infoCommercantDto == null) {
-			message="InfoCommerçant inexistant dans la BD";
-		}
-		else if (infoCommercantDto.getCmrCurrency() == null) {
-			message="La devise n'est pas renseigne dans la table INFO_COMMERCANT";
+			message = "InfoCommerçant inexistant dans la BD";
+		} else if (infoCommercantDto.getCmrCurrency() == null) {
+			message = "La devise n'est pas renseigne dans la table INFO_COMMERCANT";
 		}
 
 		galerie = galerieDao.findByCodeGalAndCodeCmr(demandeDto.getGalid(), demandeDto.getComid());
 
 		if (galerie == null || galerie.getEtat() == "N") {
-			message="La galerie inexistant dans la BD ou l'etat égale à N";
+			message = "La galerie inexistant dans la BD ou l'etat égale à N";
+		} else if (galerie.getDateActivation() == null) {
+			message = "La galerie inactive";
 		}
-		else if (galerie.getDateActivation() == null) {
-			message="La galerie inactive";
-		}
-		
+
 		return message;
 	}
 
 	@Override
 	public ThreeDSecureResponse autoriser(ThreeDSecureResponse reponse, String folder, String file) {
-		
+
 		ThreeDSecureResponse threeDSecureResponse = new ThreeDSecureResponse();
-		
+
 		return threeDSecureResponse;
 	}
-	
 
 	@Override
-	public ThreeDSecureResponse preparerReqThree3DSS(DemandePaiementDto demandeDto,String folder,String file) {
-		//Util.creatFileTransaction(file);
+	public ThreeDSecureResponse preparerReqThree3DSS(DemandePaiementDto demandeDto, String folder, String file) {
+		// Util.creatFileTransaction(file);
 		Util.writeInFileTransaction(folder, file, "Debut preparerReqThree3DSS()");
 		System.out.println("Start preparerReqThree3DSS()");
 
 		typeCarte = demandeDto.getType_carte();
-		
-		//demandeDto.setExpery(demandeDto.getAnnee().concat(demandeDto.getMois()));
-		//demandeDto.setExpery(demandeDto.getDateexpnaps());
 
-		ThreeDSecureRequestor threeDSecureRequestor = new ThreeDSecureRequestor(folder,file);
-		AuthInitRequest authInitRequest= new AuthInitRequest();
+		// demandeDto.setExpery(demandeDto.getAnnee().concat(demandeDto.getMois()));
+		// demandeDto.setExpery(demandeDto.getDateexpnaps());
+
+		ThreeDSecureRequestor threeDSecureRequestor = new ThreeDSecureRequestor(folder, file);
+		AuthInitRequest authInitRequest = new AuthInitRequest();
 		ThreeDSecureResponse threeDsecureResponse = new ThreeDSecureResponse();
 
 		infoCommercantDto = infoCommercantService.findByCmrCode(demandeDto.getComid());
-		
-		if(typeCarte.equals("2")) {
+
+		if (typeCarte.equals("2")) {
 			Util.writeInFileTransaction(folder, file, "typeCarte 2 => Master Card ");
 			System.out.println("typeCarte 2 => Master Card ");
-			authInitRequest.setUrlThreeDSS(urlThreeDSS_M);		
-		} else if(typeCarte.equals("1")) {
+			authInitRequest.setUrlThreeDSS(urlThreeDSS_M);
+		} else if (typeCarte.equals("1")) {
 			Util.writeInFileTransaction(folder, file, "typeCarte 1 => Visa ");
 			System.out.println("typeCarte 1 => Visa ");
 			authInitRequest.setUrlThreeDSS(urlThreeDSS_V);
@@ -161,67 +175,66 @@ public class AutorisationServiceImpl implements AutorisationService {
 			System.out.println("typeCarte ni 1 ni 2 => on donne par defaut Master Card ");
 			authInitRequest.setUrlThreeDSS(urlThreeDSS_M);
 		}
-		
+
 		authInitRequest.setPan(demandeDto.getDem_pan());
-		authInitRequest.setAmount(demandeDto.getMontant());				
-		authInitRequest.setCurrency(infoCommercantDto.getCmrCurrency().trim());				
+		authInitRequest.setAmount(demandeDto.getMontant());
+		authInitRequest.setCurrency(infoCommercantDto.getCmrCurrency().trim());
 		authInitRequest.setIdCommercant(demandeDto.getComid());
-		authInitRequest.setIdDemande(demandeDto.getIddemande());					
+		authInitRequest.setIdDemande(demandeDto.getIddemande());
 		authInitRequest.setExpiry(demandeDto.getExpery());
-		//authInitRequest.setAcquirerBIN("11010");
+		// authInitRequest.setAcquirerBIN("11010");
 		authInitRequest.setBrowserAcceptHeader("test");
 		authInitRequest.setBrowserUserAgent("test");
-		if(demandeDto.getEmail() == null || demandeDto.getEmail().equals("")) {
+		if (demandeDto.getEmail() == null || demandeDto.getEmail().equals("")) {
 			authInitRequest.setEmail(infoCommercantDto.getCmrEmail());
 		} else {
 			authInitRequest.setEmail(demandeDto.getEmail());
 		}
 		authInitRequest.setMcc(commercant.getCmrCodactivite());
 		authInitRequest.setMerchantCountryCode(infoCommercantDto.getCmrCurrency().trim());
-		authInitRequest.setNomCommercant(infoCommercantDto.getCmrNom());	
+		authInitRequest.setNomCommercant(infoCommercantDto.getCmrNom());
 		authInitRequest.setNotificationURL(notificationACS);
-		
-		Util.writeInFileTransaction(folder, file,"" + authInitRequest);
-		
+
+		Util.writeInFileTransaction(folder, file, "" + authInitRequest);
+
 		threeDSecureRequestor.threeDSecureRequest(authInitRequest);
-		
-		//Util.writeInFileTransaction(folder, file,"Debut appel ThreeDSecure ");
-		
+
+		// Util.writeInFileTransaction(folder, file,"Debut appel ThreeDSecure ");
+
 		try {
 			threeDsecureResponse = threeDSecureRequestor.initAuth(folder, file);
 		} catch (ThreeDSecureRequestorException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		Util.writeInFileTransaction(folder, file,"fin preparerReqThree3DSS ");
 
-		
+		Util.writeInFileTransaction(folder, file, "fin preparerReqThree3DSS ");
+
 		return threeDsecureResponse;
 	}
-	
+
 	@Override
-	public ThreeDSecureResponse preparerReqMobileThree3DSS(DemandePaiementDto demandeDto,String folder,String file) {
-		//Util.creatFileTransaction(file);
+	public ThreeDSecureResponse preparerReqMobileThree3DSS(DemandePaiementDto demandeDto, String folder, String file) {
+		// Util.creatFileTransaction(file);
 		Util.writeInFileTransaction(folder, file, "Debut preparerReqMobileThree3DSS()");
 		System.out.println("Start preparerReqMobileThree3DSS()");
 
 		typeCarte = demandeDto.getType_carte();
-		
-		//demandeDto.setExpery(demandeDto.getAnnee().concat(demandeDto.getMois()));
-		//demandeDto.setExpery(demandeDto.getDateexpnaps());
 
-		ThreeDSecureRequestor threeDSecureRequestor = new ThreeDSecureRequestor(folder,file);
-		AuthInitRequest authInitRequest= new AuthInitRequest();
+		// demandeDto.setExpery(demandeDto.getAnnee().concat(demandeDto.getMois()));
+		// demandeDto.setExpery(demandeDto.getDateexpnaps());
+
+		ThreeDSecureRequestor threeDSecureRequestor = new ThreeDSecureRequestor(folder, file);
+		AuthInitRequest authInitRequest = new AuthInitRequest();
 		ThreeDSecureResponse threeDsecureResponse = new ThreeDSecureResponse();
 
 		infoCommercantDto = infoCommercantService.findByCmrCode(demandeDto.getComid());
-		
-		if(typeCarte.equals("2")) {
+
+		if (typeCarte.equals("2")) {
 			Util.writeInFileTransaction(folder, file, "typeCarte 2 => Master Card ");
 			System.out.println("typeCarte 2 => Master Card ");
-			authInitRequest.setUrlThreeDSS(urlThreeDSS_M);		
-		} else if(typeCarte.equals("1")) {
+			authInitRequest.setUrlThreeDSS(urlThreeDSS_M);
+		} else if (typeCarte.equals("1")) {
 			Util.writeInFileTransaction(folder, file, "typeCarte 1 => Visa ");
 			System.out.println("typeCarte 1 => Visa ");
 			authInitRequest.setUrlThreeDSS(urlThreeDSS_V);
@@ -233,53 +246,52 @@ public class AutorisationServiceImpl implements AutorisationService {
 		// calcule du montant avec les frais
 		String montantTotal = calculMontantTotalOperation(demandeDto);
 		authInitRequest.setPan(demandeDto.getDem_pan());
-		authInitRequest.setAmount(Double.valueOf(montantTotal == null ? "" : montantTotal));			
-		authInitRequest.setCurrency(infoCommercantDto.getCmrCurrency().trim());				
+		authInitRequest.setAmount(Double.valueOf(montantTotal == null ? "" : montantTotal));
+		authInitRequest.setCurrency(infoCommercantDto.getCmrCurrency().trim());
 		authInitRequest.setIdCommercant(demandeDto.getComid());
-		authInitRequest.setIdDemande(demandeDto.getIddemande());					
+		authInitRequest.setIdDemande(demandeDto.getIddemande());
 		authInitRequest.setExpiry(demandeDto.getExpery());
-		//authInitRequest.setAcquirerBIN("11010");
+		// authInitRequest.setAcquirerBIN("11010");
 		authInitRequest.setBrowserAcceptHeader("test");
 		authInitRequest.setBrowserUserAgent("test");
-		if(demandeDto.getEmail() == null || demandeDto.getEmail().equals("")) {
+		if (demandeDto.getEmail() == null || demandeDto.getEmail().equals("")) {
 			authInitRequest.setEmail(infoCommercantDto.getCmrEmail());
 		} else {
 			authInitRequest.setEmail(demandeDto.getEmail());
 		}
 		authInitRequest.setMcc(commercant.getCmrCodactivite());
 		authInitRequest.setMerchantCountryCode(infoCommercantDto.getCmrCurrency().trim());
-		authInitRequest.setNomCommercant(infoCommercantDto.getCmrNom());	
+		authInitRequest.setNomCommercant(infoCommercantDto.getCmrNom());
 		authInitRequest.setNotificationURL(notificationCCBACS);
-		
-		Util.writeInFileTransaction(folder, file,"" + authInitRequest);
-		
+
+		Util.writeInFileTransaction(folder, file, "" + authInitRequest);
+
 		threeDSecureRequestor.threeDSecureRequest(authInitRequest);
-		
-		//Util.writeInFileTransaction(folder, file,"Debut appel ThreeDSecure ");
-		
+
+		// Util.writeInFileTransaction(folder, file,"Debut appel ThreeDSecure ");
+
 		try {
 			threeDsecureResponse = threeDSecureRequestor.initAuth(folder, file);
 		} catch (ThreeDSecureRequestorException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		Util.writeInFileTransaction(folder, file,"fin preparerReqMobileThree3DSS ");
+
+		Util.writeInFileTransaction(folder, file, "fin preparerReqMobileThree3DSS ");
 		System.out.println("Fin preparerReqMobileThree3DSS()");
 
-		
 		return threeDsecureResponse;
 	}
-	
+
 	@Override
 	public ThreeDSecureResponse callThree3DSSAfterACS(String decodedCres, String folder, String file) {
 		ThreeDSecureResponse threeDsecureResponse = new ThreeDSecureResponse();
-		
+
 		Util.writeInFileTransaction(folder, file, "*********** DEBUT callThree3DSSAfterACS ***********");
-		
+
 		// soit visa soit mastercard il a aucun impact apres auth
 		Util.writeInFileTransaction(folder, file, "UrlThreeDSS : " + urlThreeDSS_M);
-		
+
 		System.out.println("UrlThreeDSS : " + urlThreeDSS_M);
 		HttpClient httpClient = HttpClientBuilder.create().build();
 		try {
@@ -298,10 +310,10 @@ public class AutorisationServiceImpl implements AutorisationService {
 
 		try {
 			HttpResponse responseTheeDs = httpClient.execute(httpPost);
-			//HttpResponse responseTheeDs=null;
+			// HttpResponse responseTheeDs=null;
 			StatusLine responseStatusLine = responseTheeDs.getStatusLine();
 			Util.writeInFileTransaction(folder, file, "Response StatusCode : " + responseStatusLine.getStatusCode());
-			
+
 			String responseStr = EntityUtils.toString(responseTheeDs.getEntity());
 
 			Util.writeInFileTransaction(folder, file, "Rreq String : " + responseStr);
@@ -309,7 +321,7 @@ public class AutorisationServiceImpl implements AutorisationService {
 
 			threeDsecureResponse = gson.fromJson(responseStr, ThreeDSecureResponse.class);
 
-			Util.writeInFileTransaction(folder, file,"" + threeDsecureResponse);
+			Util.writeInFileTransaction(folder, file, "" + threeDsecureResponse);
 
 		} catch (Exception e) {
 			Util.writeInFileTransaction(folder, file, "[GW-EXCEPTION-ClientProtocolException] " + e);
@@ -318,19 +330,67 @@ public class AutorisationServiceImpl implements AutorisationService {
 		Util.writeInFileTransaction(folder, file, "*********** FIN callThree3DSSAfterACS ***********");
 		return threeDsecureResponse;
 	}
-	
+
+	@Override
+	public String controlleRisk(DemandePaiementDto demandeDto, String folder, String file) {
+		GWRiskAnalysis riskAnalysis = new GWRiskAnalysis(folder, file);
+		String msg = "OK";
+		String cardnumber = demandeDto.getDem_pan();
+		try {
+			ControlRiskCmrDto controlRiskCmr = controlRiskCmrService.findByNumCommercant(demandeDto.getComid());
+			List<HistoAutoGateDto> porteurFlowPerDay = null;
+
+			Double globalFlowPerDay = 0.00;
+			List<EmetteurDto> listBin = null;
+
+			if (controlRiskCmr != null) {				
+				// -------- Controle des cartes internationales --------
+				if (isNullOrEmpty(controlRiskCmr.getAcceptInternational())
+						|| (controlRiskCmr.getAcceptInternational() != null && !ACTIVE.getFlag()
+								.equalsIgnoreCase(controlRiskCmr.getAcceptInternational().trim()))) {
+					String binDebutCarte = cardnumber.substring(0, 9);
+					// binDebutCarte = binDebutCarte + "000";
+					
+					listBin = emetteurService.findByBindebut(binDebutCarte);
+				}
+				// -------- Controle de flux journalier autorisé par commerçant --------
+				if (!isNullOrEmpty(controlRiskCmr.getIsGlobalFlowControlActive())
+						&& ACTIVE.getFlag().equalsIgnoreCase(controlRiskCmr.getIsGlobalFlowControlActive())) {
+					globalFlowPerDay = histoAutoGateService.getCommercantGlobalFlowPerDay(demandeDto.getComid());
+				}
+				// -------- Controle de flux journalier autorisé par client (porteur de carte) --------
+				if ((controlRiskCmr.getFlowCardPerDay() != null && controlRiskCmr.getFlowCardPerDay() > 0)
+						|| (controlRiskCmr.getNumberOfTransactionCardPerDay() != null
+								&& controlRiskCmr.getNumberOfTransactionCardPerDay() > 0)) {
+					porteurFlowPerDay = histoAutoGateService.getPorteurMerchantFlowPerDay(demandeDto.getComid(),
+							demandeDto.getDem_pan());
+				}
+			}
+			msg = riskAnalysis.executeRiskControls(demandeDto.getComid(), demandeDto.getMontant(),
+					demandeDto.getDem_pan(), controlRiskCmr, globalFlowPerDay, porteurFlowPerDay, listBin);
+
+		} catch (Exception e) {
+			Util.writeInFileTransaction(folder, file,
+					"ControlRiskCmr misconfigured in DB or not existing merchantid:["
+							+ demandeDto.getComid() + e);
+			msg = "KO";
+		}
+		
+		return msg;
+	}
+
 	public String calculMontantTotalOperation(DemandePaiementDto dto) {
-		if(dto.getMontant() == null) {
+		if (dto.getMontant() == null) {
 			dto.setMontant(0.00);
 		}
-		if(dto.getFrais() == null) {
+		if (dto.getFrais() == null) {
 			dto.setFrais(0.00);
 		}
 		double mnttotalopp = dto.getMontant() + dto.getFrais();
 		String mntttopp = String.format("%.2f", mnttotalopp).replaceAll(",", ".");
 		return mntttopp;
 	}
-	
+
 	public static HttpClient getAllSSLClient()
 			throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
 
@@ -368,7 +428,5 @@ public class AutorisationServiceImpl implements AutorisationService {
 		return builder.build();
 
 	}
-
-
 
 }

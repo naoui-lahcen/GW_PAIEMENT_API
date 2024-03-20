@@ -1310,7 +1310,36 @@ public class GWPaiementController {
 		}
 
 		// for test control risk
-		GWRiskAnalysis riskAnalysis = new GWRiskAnalysis(folder, file);
+		// refactoring code 2024-03-20
+		Util.writeInFileTransaction(folder, file, "Debut controlleRisk");
+		try {
+			String msg = autorisationService.controlleRisk(demandeDto, folder, file);
+			if (!msg.equalsIgnoreCase("OK")) {
+				demandeDto.setEtat_demande("REJET_RISK_CTRL");
+				demandePaiementService.save(demandeDto);
+				Util.writeInFileTransaction(folder, file, "payer 500 Error " + msg);
+				demandeDto = new DemandePaiementDto();
+				demandeDtoMsg.setMsgRefus(msg);
+				model.addAttribute("demandeDto", demandeDtoMsg);
+				page = "result";
+				return page;
+			}
+		} catch (Exception e) {
+			demandeDto.setEtat_demande("REJET_RISK_CTRL");
+			demandePaiementService.save(demandeDto);
+			Util.writeInFileTransaction(folder, file,
+					"payer 500 ControlRiskCmr misconfigured in DB or not existing merchantid:[" + demandeDto.getComid()
+							+ e);
+			demandeDto = new DemandePaiementDto();
+			demandeDtoMsg.setMsgRefus("Error 500 Opération rejetée: Contrôle risque");
+			model.addAttribute("demandeDto", demandeDtoMsg);
+			page = "result";
+			return page;
+		}
+		Util.writeInFileTransaction(folder, file, "Fin controlleRisk");
+		
+		// old
+		/*GWRiskAnalysis riskAnalysis = new GWRiskAnalysis(folder, file);
 		try {
 			ControlRiskCmrDto controlRiskCmr = controlRiskCmrService.findByNumCommercant(demandeDto.getComid());
 			List<HistoAutoGateDto> porteurFlowPerDay = null;
@@ -1318,11 +1347,9 @@ public class GWPaiementController {
 			Double globalFlowPerDay = 0.00;
 			List<EmetteurDto> listBin = null;
 
-			if (controlRiskCmr != null) {
-				/*
-				 * --------------------------------- Controle des cartes internationales
-				 * -----------------------------------------
-				 */
+			if (controlRiskCmr != null) {				
+				// -------- Controle des cartes internationales --------
+				 
 				if (isNullOrEmpty(controlRiskCmr.getAcceptInternational())
 						|| (controlRiskCmr.getAcceptInternational() != null && !ACTIVE.getFlag()
 								.equalsIgnoreCase(controlRiskCmr.getAcceptInternational().trim()))) {
@@ -1331,15 +1358,13 @@ public class GWPaiementController {
 					Util.writeInFileTransaction(folder, file, "controlRiskCmr ici 1");
 					listBin = emetteurService.findByBindebut(binDebutCarte);
 				}
-				// --------------------------------- Controle de flux journalier autorisé par
-				// commerçant ----------------------------------
+				// -------- Controle de flux journalier autorisé par commerçant --------
 				if (!isNullOrEmpty(controlRiskCmr.getIsGlobalFlowControlActive())
 						&& ACTIVE.getFlag().equalsIgnoreCase(controlRiskCmr.getIsGlobalFlowControlActive())) {
 					Util.writeInFileTransaction(folder, file, "controlRiskCmr ici 2");
 					globalFlowPerDay = histoAutoGateService.getCommercantGlobalFlowPerDay(merchantid);
 				}
-				// ------------------------- Controle de flux journalier autorisé par client
-				// (porteur de carte) ----------------------------
+				// -------- Controle de flux journalier autorisé par client (porteur de carte) --------
 				if ((controlRiskCmr.getFlowCardPerDay() != null && controlRiskCmr.getFlowCardPerDay() > 0)
 						|| (controlRiskCmr.getNumberOfTransactionCardPerDay() != null
 								&& controlRiskCmr.getNumberOfTransactionCardPerDay() > 0)) {
@@ -1373,7 +1398,8 @@ public class GWPaiementController {
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			return page;
-		}
+		}*/
+		
 		// saving card if flagSaveCarte true
 		if (demandeDto.isFlagSaveCarte()) {
 			try {

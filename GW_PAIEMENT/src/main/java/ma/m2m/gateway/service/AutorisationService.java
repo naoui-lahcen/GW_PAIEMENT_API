@@ -20,4 +20,6 @@ public interface AutorisationService {
 	 ThreeDSecureResponse autoriser(ThreeDSecureResponse reponse, String folder, String file);
 	 
 	 ThreeDSecureResponse preparerReqMobileThree3DSS(DemandePaiementDto demandeDto,String folder,String file);
+	 
+	 String controlleRisk(DemandePaiementDto demandeDto,String folder,String file);
 }
