@@ -664,34 +664,7 @@ public class APIController {
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 			}
-			/*
-			 * try { montanttrame = "";
-			 * 
-			 * mm = new String[2];
-			 * 
-			 * if (amount.contains(",")) { amount = amount.replace(",", "."); } if
-			 * (!amount.contains(".") && !amount.contains(",")) { amount = amount + "." +
-			 * "00"; } System.out.println("montant : [" + amount + "]");
-			 * Util.writeInFileTransaction(folder, file, "montant : [" + amount + "]");
-			 * 
-			 * String montantt = amount + "";
-			 * 
-			 * mm = montantt.split("\\."); if (mm[1].length() == 1) { montanttrame = amount
-			 * + "0"; } else { montanttrame = amount + ""; }
-			 * 
-			 * m = new String[2]; m = montanttrame.split("\\."); if (m[1].equals("0")) {
-			 * montanttrame = montanttrame.replace(".", "0"); } else montanttrame =
-			 * montanttrame.replace(".", ""); montanttrame =
-			 * Util.formatageCHamps(montanttrame, 12); System.out.println("montanttrame : ["
-			 * + montanttrame + "]"); Util.writeInFileTransaction(folder, file,
-			 * "montanttrame : [" + montanttrame + "]"); } catch (Exception err3) {
-			 * Util.writeInFileTransaction(folder, file,
-			 * "authorization 500 Error during  amount formatting for given orderid:[" +
-			 * orderid + "] and merchantid:[" + merchantid + "]" + err3);
-			 * 
-			 * return getMsgError(folder, file, jsonOrequest,
-			 * "authorization 500 Error during  amount formatting", null); }
-			 */
+			
 			// 2024-03-05
 			montanttrame = formatMontantTrame(folder, file, amount, orderid, merchantid, jsonOrequest);
 
@@ -3200,34 +3173,6 @@ public class APIController {
 		String[] m;
 		String montanttrame = "";
 
-		/*
-		 * try { montanttrame = "";
-		 * 
-		 * mm = new String[2];
-		 * 
-		 * if (amount.contains(",")) { amount = amount.replace(",", "."); } if
-		 * (!amount.contains(".") && !amount.contains(",")) { amount = amount + "." +
-		 * "00"; } System.out.println("montant : [" + amount + "]");
-		 * Util.writeInFileTransaction(folder, file, "montant : [" + amount + "]");
-		 * 
-		 * String montantt = amount + "";
-		 * 
-		 * mm = montantt.split("\\."); if (mm[1].length() == 1) { montanttrame = amount
-		 * + "0"; } else { montanttrame = amount + ""; }
-		 * 
-		 * m = new String[2]; m = montanttrame.split("\\."); if (m[1].equals("0")) {
-		 * montanttrame = montanttrame.replace(".", "0"); } else montanttrame =
-		 * montanttrame.replace(".", ""); montanttrame =
-		 * Util.formatageCHamps(montanttrame, 12); System.out.println("montanttrame : ["
-		 * + montanttrame + "]"); Util.writeInFileTransaction(folder, file,
-		 * "montanttrame : [" + montanttrame + "]"); } catch (Exception err4) {
-		 * Util.writeInFileTransaction(folder, file,
-		 * "refund 500 Error during amount formatting for given orderid:[" + orderid +
-		 * "] and merchantid:[" + merchantid + "]" + err4);
-		 * 
-		 * return getMsgError(folder, file, jsonOrequest,
-		 * "refund 500 Error during amount formatting", null); }
-		 */
 		// 2024-03-05
 		montanttrame = formatMontantTrame(folder, file, amount, orderid, merchantid, jsonOrequest);
 
@@ -3649,34 +3594,6 @@ public class APIController {
 		String[] m;
 		String montanttrame = "";
 
-		/*
-		 * try { montanttrame = "";
-		 * 
-		 * mm = new String[2];
-		 * 
-		 * if (amount.contains(",")) { amount = amount.replace(",", "."); } if
-		 * (!amount.contains(".") && !amount.contains(",")) { amount = amount + "." +
-		 * "00"; } System.out.println("montant : [" + amount + "]");
-		 * Util.writeInFileTransaction(folder, file, "montant : [" + amount + "]");
-		 * 
-		 * String montantt = amount + "";
-		 * 
-		 * mm = montantt.split("\\."); if (mm[1].length() == 1) { montanttrame = amount
-		 * + "0"; } else { montanttrame = amount + ""; }
-		 * 
-		 * m = new String[2]; m = montanttrame.split("\\."); if (m[1].equals("0")) {
-		 * montanttrame = montanttrame.replace(".", "0"); } else montanttrame =
-		 * montanttrame.replace(".", ""); montanttrame =
-		 * Util.formatageCHamps(montanttrame, 12); System.out.println("montanttrame : ["
-		 * + montanttrame + "]"); Util.writeInFileTransaction(folder, file,
-		 * "montanttrame : [" + montanttrame + "]"); } catch (Exception err4) {
-		 * Util.writeInFileTransaction(folder, file,
-		 * "reversal 500 Error during amount formatting for given orderid:[" + orderid +
-		 * "] and merchantid:[" + merchantid + "]" + err4);
-		 * 
-		 * return getMsgError(folder, file, jsonOrequest,
-		 * "reversal 500 Error during amount formatting", null); }
-		 */
 		// 2024-03-05
 		montanttrame = formatMontantTrame(folder, file, amount, orderid, merchantid, jsonOrequest);
 
@@ -4516,34 +4433,7 @@ public class APIController {
 					demandePaiementService.save(dmd);
 				}
 				// add payment 0 dh test
-				/*
-				 * try { montanttrame = "";
-				 * 
-				 * mm = new String[2];
-				 * 
-				 * if (amount.contains(",")) { amount = amount.replace(",", "."); } if
-				 * (!amount.contains(".") && !amount.contains(",")) { amount = amount + "." +
-				 * "00"; } System.out.println("montant : [" + amount + "]");
-				 * Util.writeInFileTransaction(folder, file, "montant : [" + amount + "]");
-				 * 
-				 * String montantt = amount + "";
-				 * 
-				 * mm = montantt.split("\\."); if (mm[1].length() == 1) { montanttrame = amount
-				 * + "0"; } else { montanttrame = amount + ""; }
-				 * 
-				 * m = new String[2]; m = montanttrame.split("\\."); if (m[1].equals("0")) {
-				 * montanttrame = montanttrame.replace(".", "0"); } else montanttrame =
-				 * montanttrame.replace(".", ""); montanttrame =
-				 * Util.formatageCHamps(montanttrame, 12); System.out.println("montanttrame : ["
-				 * + montanttrame + "]"); Util.writeInFileTransaction(folder, file,
-				 * "montanttrame : [" + montanttrame + "]"); } catch (Exception err3) {
-				 * Util.writeInFileTransaction(folder, file,
-				 * "savingcardtoken 500 Error during  amount formatting for given merchantid:["
-				 * + merchantid + "]" + err3);
-				 * 
-				 * return getMsgErrorV1(folder, file, jsonOrequest,
-				 * "savingcardtoken 500 Error during  amount formatting", null); }
-				 */
+				
 				// 2024-03-05
 				montanttrame = formatMontantTrame(folder, file, amount, orderid, merchantid, jsonOrequest);
 

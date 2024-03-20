@@ -537,98 +537,10 @@ public class AppMobileController {
 								dmd.setEtat_demande("RETOUR_ACS_AUTH_OK");
 								demandePaiementService.save(dmd);
 							}
-							/*try {
-								montanttrame = "";
-								mm = new String[2];
-								amount = calculMontantTotalOperation(dmd);
-
-								if (amount.contains(",")) {
-									amount = amount.replace(",", ".");
-								}
-								if (!amount.contains(".") && !amount.contains(",")) {
-									amount = amount + "." + "00";
-								}
-								System.out.println("montant recharge avec frais : [" + amount + "]");
-								Util.writeInFileTransaction(folder, file,
-										"montant recharge avec frais : [" + amount + "]");
-
-								String montantt = amount + "";
-
-								mm = montantt.split("\\.");
-								if (mm[1].length() == 1) {
-									montanttrame = amount + "0";
-								} else {
-									montanttrame = amount + "";
-								}
-
-								m = new String[2];
-								m = montanttrame.split("\\.");
-								if (m[1].equals("0")) {
-									montanttrame = montanttrame.replace(".", "0");
-								} else
-									montanttrame = montanttrame.replace(".", "");
-								montanttrame = Util.formatageCHamps(montanttrame, 12);
-								System.out.println("montanttrame avec frais : [" + montanttrame + "]");
-								Util.writeInFileTransaction(folder, file,
-										"montanttrame avec frais : [" + montanttrame + "]");
-							} catch (Exception err3) {
-								Util.writeInFileTransaction(folder, file,
-										"authorization 500 Error during  amount formatting for given orderid:["
-												+ orderid + "] and merchantid:[" + merchantid + "]" + err3);
-								demandeDtoMsg.setMsgRefus("Erreur lors du formatage du montant");
-								model.addAttribute("demandeDto", demandeDtoMsg);
-								page = "result";
-								Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
-								System.out.println("Fin processRequestMobile ()");
-								return page;
-							}*/
+							
 							// 2024-03-05
 							montanttrame = formatMontantTrame(folder, file, amount, orderid, merchantid, dmd, page, model);
-
-							/*try {
-								montantRechgtrame = "";
-
-								mm = new String[2];
-								String amount1 = calculMontantSansOperation(dmd);
-
-								if (amount1.contains(",")) {
-									amount1 = amount1.replace(",", ".");
-								}
-								if (!amount1.contains(".") && !amount1.contains(",")) {
-									amount1 = amount1 + "." + "00";
-								}
-								System.out.println("montant recharge sans frais : [" + amount1 + "]");
-								Util.writeInFileTransaction(folder, file,
-										"montant recharge sans frais : [" + amount1 + "]");
-
-								String montantt = amount1 + "";
-
-								mm = montantt.split("\\.");
-								if (mm[1].length() == 1) {
-									montantRechgtrame = amount1 + "0";
-								} else {
-									montantRechgtrame = amount1 + "";
-								}
-
-								m = new String[2];
-								m = montantRechgtrame.split("\\.");
-								if (m[1].equals("0")) {
-									montantRechgtrame = montantRechgtrame.replace(".", "0");
-								} else
-									montantRechgtrame = montantRechgtrame.replace(".", "");
-								montantRechgtrame = Util.formatageCHamps(montantRechgtrame, 12);
-								System.out.println("montantRechgtrame sans frais: [" + montantRechgtrame + "]");
-								Util.writeInFileTransaction(folder, file,
-										"montantRechgtrame sans frais : [" + montantRechgtrame + "]");
-							} catch (Exception err3) {
-								Util.writeInFileTransaction(folder, file,
-										"recharger 500 Error during  amount formatting for given orderid:[" + orderid
-												+ "] and merchantid:[" + merchantid + "]" + err3);
-								demandeDtoMsg.setMsgRefus("Erreur lors du formatage du montant");
-								model.addAttribute("demandeDto", demandeDtoMsg);
-								page = "result";
-								return page;
-							}*/					
+						
 							// 2024-03-05
 							montantRechgtrame = formatMontantRechargeTrame(folder, file, amount, orderid, merchantid, dmd, page, model);
 
@@ -2883,94 +2795,9 @@ public class AppMobileController {
 			cartenaps = dmd.getCartenaps();
 			dateExnaps = dmd.getDateexpnaps();
 
-			/*try {
-				montanttrame = "";
-
-				mm = new String[2];
-
-				amount = calculMontantTotalOperation(dmd);
-
-				if (amount.contains(",")) {
-					amount = amount.replace(",", ".");
-				}
-				if (!amount.contains(".") && !amount.contains(",")) {
-					amount = amount + "." + "00";
-				}
-				System.out.println("montant recharge avec frais : [" + amount + "]");
-				Util.writeInFileTransaction(folder, file, "montant recharge avec frais : [" + amount + "]");
-
-				String montantt = amount + "";
-
-				mm = montantt.split("\\.");
-				if (mm[1].length() == 1) {
-					montanttrame = amount + "0";
-				} else {
-					montanttrame = amount + "";
-				}
-
-				m = new String[2];
-				m = montanttrame.split("\\.");
-				if (m[1].equals("0")) {
-					montanttrame = montanttrame.replace(".", "0");
-				} else
-					montanttrame = montanttrame.replace(".", "");
-				montanttrame = Util.formatageCHamps(montanttrame, 12);
-				System.out.println("montanttrame : [" + montanttrame + "]");
-				Util.writeInFileTransaction(folder, file, "montanttrame : [" + montanttrame + "]");
-			} catch (Exception err3) {
-				Util.writeInFileTransaction(folder, file,
-						"recharger 500 Error during  amount formatting for given orderid:[" + orderid
-								+ "] and merchantid:[" + merchantid + "]" + err3);
-				demandeDtoMsg.setMsgRefus("Erreur lors du formatage du montant");
-				model.addAttribute("demandeDto", demandeDtoMsg);
-				page = "result";
-				return page;
-			}*/
 			// 2024-03-05
 			montanttrame = formatMontantTrame(folder, file, amount, orderid, merchantid, dmd, page, model);
-
-			/*try {
-				montantRechgtrame = "";
-
-				mm = new String[2];
-				String amount1 = calculMontantSansOperation(dmd);
-
-				if (amount1.contains(",")) {
-					amount1 = amount1.replace(",", ".");
-				}
-				if (!amount1.contains(".") && !amount1.contains(",")) {
-					amount1 = amount1 + "." + "00";
-				}
-				System.out.println("montant recharge sans frais : [" + amount1 + "]");
-				Util.writeInFileTransaction(folder, file, "montant recharge sans frais : [" + amount1 + "]");
-
-				String montantt = amount1 + "";
-
-				mm = montantt.split("\\.");
-				if (mm[1].length() == 1) {
-					montantRechgtrame = amount1 + "0";
-				} else {
-					montantRechgtrame = amount1 + "";
-				}
-
-				m = new String[2];
-				m = montantRechgtrame.split("\\.");
-				if (m[1].equals("0")) {
-					montantRechgtrame = montantRechgtrame.replace(".", "0");
-				} else
-					montantRechgtrame = montantRechgtrame.replace(".", "");
-				montantRechgtrame = Util.formatageCHamps(montantRechgtrame, 12);
-				System.out.println("montantRechgtrame : [" + montantRechgtrame + "]");
-				Util.writeInFileTransaction(folder, file, "montantRechgtrame : [" + montantRechgtrame + "]");
-			} catch (Exception err3) {
-				Util.writeInFileTransaction(folder, file,
-						"recharger 500 Error during  amount formatting for given orderid:[" + orderid
-								+ "] and merchantid:[" + merchantid + "]" + err3);
-				demandeDtoMsg.setMsgRefus("Erreur lors du formatage du montant");
-				model.addAttribute("demandeDto", demandeDtoMsg);
-				page = "result";
-				return page;
-			}*/
+		
 			// 2024-03-05
 			montantRechgtrame = formatMontantRechargeTrame(folder, file, amount, orderid, merchantid, dmd, page, model);
 

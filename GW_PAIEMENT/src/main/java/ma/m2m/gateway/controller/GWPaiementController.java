@@ -1577,47 +1577,7 @@ public class GWPaiementController {
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 			}
-			/*try {
-				montanttrame = "";
-
-				mm = new String[2];
-
-				if (amount.contains(",")) {
-					amount = amount.replace(",", ".");
-				}
-				if (!amount.contains(".") && !amount.contains(",")) {
-					amount = amount + "." + "00";
-				}
-				System.out.println("montant : [" + amount + "]");
-				Util.writeInFileTransaction(folder, file, "montant : [" + amount + "]");
-
-				String montantt = amount + "";
-
-				mm = montantt.split("\\.");
-				if (mm[1].length() == 1) {
-					montanttrame = amount + "0";
-				} else {
-					montanttrame = amount + "";
-				}
-
-				m = new String[2];
-				m = montanttrame.split("\\.");
-				if (m[1].equals("0")) {
-					montanttrame = montanttrame.replace(".", "0");
-				} else
-					montanttrame = montanttrame.replace(".", "");
-				montanttrame = Util.formatageCHamps(montanttrame, 12);
-				System.out.println("montanttrame : [" + montanttrame + "]");
-				Util.writeInFileTransaction(folder, file, "montanttrame : [" + montanttrame + "]");
-			} catch (Exception err3) {
-				Util.writeInFileTransaction(folder, file,
-						"payer 500 Error during  amount formatting for given orderid:[" + orderid + "] and merchantid:["
-								+ merchantid + "]" + err3);
-				demandeDtoMsg.setMsgRefus("Erreur lors du formatage du montant");
-				model.addAttribute("demandeDto", demandeDtoMsg);
-				page = "result";
-				return page;
-			}*/
+			
 			// 2024-03-05
 			montanttrame = formatMontantTrame(folder, file, amount, orderid, merchantid, page, model);
 
@@ -2905,45 +2865,6 @@ public class GWPaiementController {
 					+ "] and merchantid:[" + merchantid + "]" + err3;
 		}
 
-		/*try {
-			montanttrame = "";
-
-			mm = new String[2];
-
-			if (amount.contains(",")) {
-				amount = amount.replace(",", ".");
-			}
-			if (!amount.contains(".") && !amount.contains(",")) {
-				amount = amount + "." + "00";
-			}
-			System.out.println("montant : [" + amount + "]");
-			Util.writeInFileTransaction(folder, file, "montant : [" + amount + "]");
-
-			String montantt = amount + "";
-
-			mm = montantt.split("\\.");
-			if (mm[1].length() == 1) {
-				montanttrame = amount + "0";
-			} else {
-				montanttrame = amount + "";
-			}
-
-			m = new String[2];
-			m = montanttrame.split("\\.");
-			if (m[1].equals("0")) {
-				montanttrame = montanttrame.replace(".", "0");
-			} else
-				montanttrame = montanttrame.replace(".", "");
-			montanttrame = Util.formatageCHamps(montanttrame, 12);
-			System.out.println("montanttrame : [" + montanttrame + "]");
-			Util.writeInFileTransaction(folder, file, "montanttrame : [" + montanttrame + "]");
-		} catch (Exception err4) {
-			Util.writeInFileTransaction(folder, file,
-					"annulation auto 500 Error during amount formatting for given orderid:[" + orderid
-							+ "] and merchantid:[" + merchantid + "]" + err4);
-
-			return "annulation auto 500 Error during amount formatting";
-		}*/
 		// 2024-03-05
 		montanttrame = formatMontantTrame(folder, file, amount, orderid, merchantid, page, model);
 
