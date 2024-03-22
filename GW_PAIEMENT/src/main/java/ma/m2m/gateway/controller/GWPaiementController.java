@@ -2269,7 +2269,7 @@ public class GWPaiementController {
 					Util.writeInFileTransaction(folder, file,
 							"sendPOST(" + callbackURL + "," + clesigne + "," + dmd.getCommande() + ","
 									+ tag20_resp + "," + montanttrx + "," + hist.getHatNautemt() + ","
-									+ hist.getHatNumdem() + ")");
+									+ hist.getHatNumdem() + "," + dmd.getType_carte() + ")");
 
 					resultcallback = sendPOST(callbackURL, clesigne, dmd.getCommande(), tag20_resp,
 							montanttrx, hist.getHatNautemt(), hist.getHatNumdem(), token_gen,
