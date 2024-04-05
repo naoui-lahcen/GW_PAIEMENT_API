@@ -374,6 +374,8 @@ public class AppMobileController {
 						try {
 							current_merchant = commercantService.findByCmrNumcmr(merchantid);
 						} catch (Exception e) {
+							dmd.setDem_cvv("");
+							demandePaiementService.save(dmd);
 							Util.writeInFileTransaction(folder, file,
 									"authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 											+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]"
@@ -387,6 +389,8 @@ public class AppMobileController {
 						}
 
 						if (current_merchant == null) {
+							dmd.setDem_cvv("");
+							demandePaiementService.save(dmd);
 							Util.writeInFileTransaction(folder, file,
 									"authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 											+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid
@@ -400,6 +404,8 @@ public class AppMobileController {
 						}
 
 						if (current_merchant.getCmrCodactivite() == null) {
+							dmd.setDem_cvv("");
+							demandePaiementService.save(dmd);
 							Util.writeInFileTransaction(folder, file,
 									"authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 											+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid
@@ -413,6 +419,8 @@ public class AppMobileController {
 						}
 
 						if (current_merchant.getCmrCodbqe() == null) {
+							dmd.setDem_cvv("");
+							demandePaiementService.save(dmd);
 							Util.writeInFileTransaction(folder, file,
 									"authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 											+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid
@@ -429,6 +437,8 @@ public class AppMobileController {
 						try {
 							current_infoCommercant = infoCommercantService.findByCmrCode(merchantid);
 						} catch (Exception e) {
+							dmd.setDem_cvv("");
+							demandePaiementService.save(dmd);
 							Util.writeInFileTransaction(folder, file,
 									"authorization 500 InfoCommercant misconfigured in DB or not existing orderid:["
 											+ orderid + "] and merchantid:[" + merchantid + "] and websiteid:["
@@ -443,6 +453,8 @@ public class AppMobileController {
 						}
 
 						if (current_infoCommercant == null) {
+							dmd.setDem_cvv("");
+							demandePaiementService.save(dmd);
 							Util.writeInFileTransaction(folder, file,
 									"authorization 500 InfoCommercantDto misconfigured in DB or not existing orderid:["
 											+ orderid + "] and merchantid:[" + merchantid + "] and websiteid:["
@@ -502,6 +514,8 @@ public class AppMobileController {
 							heure = formatheure.format(new Date());
 							rrn = Util.getGeneratedRRN();
 						} catch (Exception err2) {
+							dmd.setDem_cvv("");
+							demandePaiementService.save(dmd);
 							Util.writeInFileTransaction(folder, file,
 									"authorization 500 Error during  date formatting for given orderid:[" + orderid
 											+ "] and merchantid:[" + merchantid + "]" + err2);
@@ -515,6 +529,7 @@ public class AppMobileController {
 
 						if (reponseMPI.equals("") || reponseMPI == null) {
 							dmd.setEtat_demande("MPI_KO");
+							dmd.setDem_cvv("");
 							demandePaiementService.save(dmd);
 							Util.writeInFileTransaction(folder, file,
 									"demandePaiement after update MPI_KO reponseMPI null : " + dmd.toString());
@@ -582,6 +597,8 @@ public class AppMobileController {
 							Util.writeInFileTransaction(folder, file, "Preparing Switch TLV Request start ...");
 
 							if (!cvv_present && !is_reccuring) {
+								dmd.setDem_cvv("");
+								demandePaiementService.save(dmd);
 								Util.writeInFileTransaction(folder, file,
 										"authorization 500 cvv not set , reccuring flag set to N, cvv must be present in normal transaction");
 								demandeDtoMsg.setMsgRefus(
@@ -647,6 +664,8 @@ public class AppMobileController {
 									Util.writeInFileTransaction(folder, file, "tag46_request : [" + tlvCCB + "]");
 
 								} catch (Exception err4) {
+									dmd.setDem_cvv("");
+									demandePaiementService.save(dmd);
 									Util.writeInFileTransaction(folder, file,
 											"authorization 500 Error during switch tlv buildup for given orderid:["
 													+ orderid + "] and merchantid:[" + merchantid + "]" + err4);
@@ -689,6 +708,8 @@ public class AppMobileController {
 								boolean s_conn = switchTCPClient.isConnected();
 
 								if (!s_conn) {
+									dmd.setDem_cvv("");
+									demandePaiementService.save(dmd);
 									Util.writeInFileTransaction(folder, file, "Switch  malfunction cannot connect!!!");
 									Util.writeInFileTransaction(folder, file,
 											"authorization 500 Error Switch communication s_conn false switch ip:["
@@ -714,6 +735,8 @@ public class AppMobileController {
 								}
 
 							} catch (UnknownHostException e) {
+								dmd.setDem_cvv("");
+								demandePaiementService.save(dmd);
 								Util.writeInFileTransaction(folder, file,
 										"Switch  malfunction UnknownHostException !!!" + e);
 								switch_ko = 1;
@@ -725,6 +748,8 @@ public class AppMobileController {
 								System.out.println("Fin processRequestMobile ()");
 								return page;
 							} catch (java.net.ConnectException e) {
+								dmd.setDem_cvv("");
+								demandePaiementService.save(dmd);
 								Util.writeInFileTransaction(folder, file,
 										"Switch  malfunction ConnectException !!!" + e);
 								switch_ko = 1;
@@ -738,6 +763,8 @@ public class AppMobileController {
 							}
 
 							catch (SocketTimeoutException e) {
+								dmd.setDem_cvv("");
+								demandePaiementService.save(dmd);
 								Util.writeInFileTransaction(folder, file,
 										"Switch  malfunction  SocketTimeoutException !!!" + e);
 								switch_ko = 1;
@@ -756,6 +783,8 @@ public class AppMobileController {
 							}
 
 							catch (IOException e) {
+								dmd.setDem_cvv("");
+								demandePaiementService.save(dmd);
 								Util.writeInFileTransaction(folder, file, "Switch  malfunction IOException !!!" + e);
 								switch_ko = 1;
 								e.printStackTrace();
@@ -773,6 +802,8 @@ public class AppMobileController {
 							}
 
 							catch (Exception e) {
+								dmd.setDem_cvv("");
+								demandePaiementService.save(dmd);
 								Util.writeInFileTransaction(folder, file, "Switch  malfunction Exception!!!" + e);
 								switch_ko = 1;
 								e.printStackTrace();
@@ -792,6 +823,8 @@ public class AppMobileController {
 							// "000001300101652345658188287990030010008008011800920090071180092014012000000051557015003504016006200721017006152650066012120114619926018006143901019006797535023001H020002000210026108000621072009800299";
 
 							if (switch_ko == 0 && resp == null) {
+								dmd.setDem_cvv("");
+								demandePaiementService.save(dmd);
 								Util.writeInFileTransaction(folder, file, "Switch  malfunction resp null!!!");
 								switch_ko = 1;
 								Util.writeInFileTransaction(folder, file,
@@ -807,6 +840,8 @@ public class AppMobileController {
 							}
 
 							if (switch_ko == 0 && resp.length() < 3) {
+								dmd.setDem_cvv("");
+								demandePaiementService.save(dmd);
 								switch_ko = 1;
 
 								Util.writeInFileTransaction(folder, file, "Switch  malfunction resp < 3 !!!");
@@ -859,6 +894,8 @@ public class AppMobileController {
 									tag98_resp = tlvp.getTag(Tags.tag98);
 
 								} catch (Exception e) {
+									dmd.setDem_cvv("");
+									demandePaiementService.save(dmd);
 									Util.writeInFileTransaction(folder, file,
 											"Switch  malfunction tlv parsing !!!" + e);
 									switch_ko = 1;
@@ -1087,6 +1124,7 @@ public class AppMobileController {
 									Util.writeInFileTransaction(folder, file, "udapate etat demande : SW_PAYE ...");
 
 									dmd.setEtat_demande("SW_PAYE");
+									dmd.setDem_cvv("");
 									demandePaiementService.save(dmd);
 
 								} catch (Exception e) {
@@ -1258,11 +1296,14 @@ public class AppMobileController {
 											"transaction declinded ==> update Demandepaiement status to SW_REJET ...");
 
 									dmd.setEtat_demande("SW_REJET");
+									dmd.setDem_cvv("");
 									demandePaiementService.save(dmd);
 									// old
 									//hist.setHatEtat('A');
 									//histoAutoGateService.save(hist);
 								} catch (Exception e) {
+									dmd.setDem_cvv("");
+									demandePaiementService.save(dmd);
 									Util.writeInFileTransaction(folder, file,
 											"authorization 500 Error during  DemandePaiement update SW_REJET for given orderid:["
 													+ orderid + "]" + e);
@@ -1528,6 +1569,7 @@ public class AppMobileController {
 								Util.writeInFileTransaction(folder, file, "COMMERCANT NON PARAMETRE : " + idDemande);
 								dmd.setDem_xid(threeDSServerTransID);
 								dmd.setEtat_demande("MPI_CMR_INEX");
+								dmd.setDem_cvv("");
 								demandePaiementService.save(dmd);
 								demandeDtoMsg.setMsgRefus(
 										"La transaction en cours n’a pas abouti (COMMERCANT NON PARAMETRE), votre compte ne sera pas débité, merci de réessayer .");
@@ -1539,6 +1581,7 @@ public class AppMobileController {
 							case "BIN NON PARAMETRE":
 								Util.writeInFileTransaction(folder, file, "BIN NON PARAMETRE : " + idDemande);
 								dmd.setEtat_demande("MPI_BIN_NON_PAR");
+								dmd.setDem_cvv("");
 								dmd.setDem_xid(threeDSServerTransID);
 								demandePaiementService.save(dmd);
 								demandeDtoMsg.setMsgRefus(
@@ -1551,6 +1594,7 @@ public class AppMobileController {
 							case "DIRECTORY SERVER":
 								Util.writeInFileTransaction(folder, file, "DIRECTORY SERVER : " + idDemande);
 								dmd.setEtat_demande("MPI_DS_ERR");
+								dmd.setDem_cvv("");
 								dmd.setDem_xid(threeDSServerTransID);
 								demandePaiementService.save(dmd);
 								demandeDtoMsg.setMsgRefus(
@@ -1563,6 +1607,7 @@ public class AppMobileController {
 							case "CARTE ERRONEE":
 								Util.writeInFileTransaction(folder, file, "CARTE ERRONEE : " + idDemande);
 								dmd.setEtat_demande("MPI_CART_ERROR");
+								dmd.setDem_cvv("");
 								dmd.setDem_xid(threeDSServerTransID);
 								demandePaiementService.save(dmd);
 								demandeDtoMsg.setMsgRefus(
@@ -1575,6 +1620,7 @@ public class AppMobileController {
 							case "CARTE NON ENROLEE":
 								Util.writeInFileTransaction(folder, file, "CARTE NON ENROLEE : " + idDemande);
 								dmd.setEtat_demande("MPI_CART_NON_ENR");
+								dmd.setDem_cvv("");
 								dmd.setDem_xid(threeDSServerTransID);
 								demandePaiementService.save(dmd);
 								demandeDtoMsg.setMsgRefus(
@@ -1587,6 +1633,7 @@ public class AppMobileController {
 							case "ERROR REPONSE ACS":
 								Util.writeInFileTransaction(folder, file, "ERROR REPONSE ACS : " + idDemande);
 								dmd.setEtat_demande("MPI_ERR_RS_ACS");
+								dmd.setDem_cvv("");
 								dmd.setDem_xid(threeDSServerTransID);
 								demandePaiementService.save(dmd);
 								demandeDtoMsg.setMsgRefus(
@@ -1599,6 +1646,7 @@ public class AppMobileController {
 							case "Error 3DSS":
 								Util.writeInFileTransaction(folder, file, "Error 3DSS : " + idDemande);
 								dmd.setEtat_demande("MPI_ERR_3DSS");
+								dmd.setDem_cvv("");
 								dmd.setDem_xid(threeDSServerTransID);
 								demandePaiementService.save(dmd);
 								demandeDtoMsg.setMsgRefus(
@@ -1615,6 +1663,7 @@ public class AppMobileController {
 								Util.writeInFileTransaction(folder, file, "COMMERCANT NON PARAMETRE : " + idDemande);
 								dmd.setDem_xid(threeDSServerTransID);
 								dmd.setEtat_demande("MPI_CMR_INEX");
+								dmd.setDem_cvv("");
 								demandePaiementService.save(dmd);
 								demandeDtoMsg.setMsgRefus(
 										"La transaction en cours n’a pas abouti (COMMERCANT NON PARAMETRE), votre compte ne sera pas débité, merci de réessayer .");
@@ -1626,6 +1675,7 @@ public class AppMobileController {
 							case "BIN NON PARAMETRE":
 								Util.writeInFileTransaction(folder, file, "BIN NON PARAMETRE : " + idDemande);
 								dmd.setEtat_demande("MPI_BIN_NON_PAR");
+								dmd.setDem_cvv("");
 								dmd.setDem_xid(threeDSServerTransID);
 								demandePaiementService.save(dmd);
 								demandeDtoMsg.setMsgRefus(
@@ -1638,6 +1688,7 @@ public class AppMobileController {
 							case "DIRECTORY SERVER":
 								Util.writeInFileTransaction(folder, file, "DIRECTORY SERVER : " + idDemande);
 								dmd.setEtat_demande("MPI_DS_ERR");
+								dmd.setDem_cvv("");
 								dmd.setDem_xid(threeDSServerTransID);
 								demandePaiementService.save(dmd);
 								demandeDtoMsg.setMsgRefus(
@@ -1650,6 +1701,7 @@ public class AppMobileController {
 							case "CARTE ERRONEE":
 								Util.writeInFileTransaction(folder, file, "CARTE ERRONEE : " + idDemande);
 								dmd.setEtat_demande("MPI_CART_ERROR");
+								dmd.setDem_cvv("");
 								dmd.setDem_xid(threeDSServerTransID);
 								demandePaiementService.save(dmd);
 								demandeDtoMsg.setMsgRefus(
@@ -1662,6 +1714,7 @@ public class AppMobileController {
 							case "CARTE NON ENROLEE":
 								Util.writeInFileTransaction(folder, file, "CARTE NON ENROLEE : " + idDemande);
 								dmd.setEtat_demande("MPI_CART_NON_ENR");
+								dmd.setDem_cvv("");
 								dmd.setDem_xid(threeDSServerTransID);
 								demandePaiementService.save(dmd);
 								demandeDtoMsg.setMsgRefus(
@@ -1674,6 +1727,7 @@ public class AppMobileController {
 							case "ERROR REPONSE ACS":
 								Util.writeInFileTransaction(folder, file, "ERROR REPONSE ACS : " + idDemande);
 								dmd.setEtat_demande("MPI_ERR_RS_ACS");
+								dmd.setDem_cvv("");
 								dmd.setDem_xid(threeDSServerTransID);
 								demandePaiementService.save(dmd);
 								demandeDtoMsg.setMsgRefus(
@@ -1686,6 +1740,7 @@ public class AppMobileController {
 							case "Error 3DSS":
 								Util.writeInFileTransaction(folder, file, "Error 3DSS : " + idDemande);
 								dmd.setEtat_demande("MPI_ERR_3DSS");
+								dmd.setDem_cvv("");
 								dmd.setDem_xid(threeDSServerTransID);
 								demandePaiementService.save(dmd);
 								demandeDtoMsg.setMsgRefus(
@@ -1698,6 +1753,8 @@ public class AppMobileController {
 							}
 						}
 					} else {
+						dmd.setDem_cvv("");
+						demandePaiementService.save(dmd);
 						Util.writeInFileTransaction(folder, file,
 								"if(eci!=05) || eci!=02|| eci!=06 || eci!=01) : arret du processus ");
 						demandeDtoMsg.setMsgRefus(
@@ -2512,6 +2569,8 @@ public class AppMobileController {
 		}
 
 		if (demandeDto.getEtat_demande().equals("SW_PAYE") || demandeDto.getEtat_demande().equals("PAYE")) {
+			demandeDto.setDem_cvv("");
+			demandePaiementService.save(demandeDto);
 			Util.writeInFileTransaction(folder, file, "Opération déjà effectuée");
 			demandeDto.setMsgRefus(
 					"La transaction en cours n’a pas abouti (Opération déjà effectuée), votre compte ne sera pas débité, merci de réessayer .");
@@ -2526,6 +2585,7 @@ public class AppMobileController {
 		try {
 			String msg = autorisationService.controlleRisk(demandeDto, folder, file);
 			if (!msg.equalsIgnoreCase("OK")) {
+				demandeDto.setDem_cvv("");
 				demandeDto.setEtat_demande("REJET_RISK_CTRL");
 				demandePaiementService.save(demandeDto);
 				Util.writeInFileTransaction(folder, file, "recharger 500 Error " + msg);
@@ -2536,6 +2596,7 @@ public class AppMobileController {
 				return page;
 			}
 		} catch (Exception e) {
+			demandeDto.setDem_cvv("");
 			demandeDto.setEtat_demande("REJET_RISK_CTRL");
 			demandePaiementService.save(demandeDto);
 			Util.writeInFileTransaction(folder, file,
@@ -2701,6 +2762,8 @@ public class AppMobileController {
 			heure = formatheure.format(new Date());
 			rrn = Util.getGeneratedRRN();
 		} catch (Exception err2) {
+			demandeDto.setDem_cvv("");
+			demandePaiementService.save(demandeDto);
 			Util.writeInFileTransaction(folder, file, "recharger 500 Error during  date formatting for given orderid:["
 					+ orderid + "] and merchantid:[" + merchantid + "]" + err2);
 			demandeDtoMsg.setMsgRefus("Erreur lors du formatage de la date");
@@ -2773,6 +2836,7 @@ public class AppMobileController {
 
 		if (idDemande == null || idDemande.equals("")) {
 			Util.writeInFileTransaction(folder, file, "received idDemande from MPI is Null or Empty");
+			demandeDto.setDem_cvv("");
 			demandeDto.setEtat_demande("MPI_KO");
 			demandePaiementService.save(demandeDto);
 			Util.writeInFileTransaction(folder, file,
@@ -2787,6 +2851,8 @@ public class AppMobileController {
 		dmd = demandePaiementService.findByIdDemande(Integer.parseInt(idDemande));
 
 		if (dmd == null) {
+			demandeDto.setDem_cvv("");
+			demandePaiementService.save(demandeDto);
 			Util.writeInFileTransaction(folder, file,
 					"demandePaiement not found !!!! demandePaiement = null  / received idDemande from MPI => "
 							+ idDemande);
@@ -2798,6 +2864,7 @@ public class AppMobileController {
 		}
 
 		if (reponseMPI.equals("") || reponseMPI == null) {
+			dmd.setDem_cvv("");
 			dmd.setEtat_demande("MPI_KO");
 			demandePaiementService.save(dmd);
 			Util.writeInFileTransaction(folder, file,
@@ -2883,6 +2950,8 @@ public class AppMobileController {
 			Util.writeInFileTransaction(folder, file, "Preparing Switch TLV Request start ...");
 
 			if (!cvv_present && !is_reccuring) {
+				dmd.setDem_cvv("");
+				demandePaiementService.save(dmd);
 				Util.writeInFileTransaction(folder, file,
 						"recharger 500 cvv not set , reccuring flag set to N, cvv must be present in normal transaction");
 
@@ -2938,6 +3007,8 @@ public class AppMobileController {
 					Util.writeInFileTransaction(folder, file, "tag46_request : [" + tlvCCB + "]");
 
 				} catch (Exception err4) {
+					dmd.setDem_cvv("");
+					demandePaiementService.save(dmd);
 					Util.writeInFileTransaction(folder, file,
 							"recharger 500 Error during switch tlv buildup for given orderid:[" + orderid
 									+ "] and merchantid:[" + merchantid + "]" + err4);
@@ -2978,6 +3049,8 @@ public class AppMobileController {
 				boolean s_conn = switchTCPClient.isConnected();
 
 				if (!s_conn) {
+					dmd.setDem_cvv("");
+					demandePaiementService.save(dmd);
 					Util.writeInFileTransaction(folder, file, "Switch  malfunction cannot connect!!!");
 
 					Util.writeInFileTransaction(folder, file,
@@ -3000,6 +3073,8 @@ public class AppMobileController {
 				}
 
 			} catch (UnknownHostException e) {
+				dmd.setDem_cvv("");
+				demandePaiementService.save(dmd);
 				Util.writeInFileTransaction(folder, file, "Switch  malfunction UnknownHostException !!!" + e);
 
 				demandeDtoMsg.setMsgRefus("Un dysfonctionnement du switch ne peut pas se connecter !!!");
@@ -3008,6 +3083,8 @@ public class AppMobileController {
 				return page;
 
 			} catch (java.net.ConnectException e) {
+				dmd.setDem_cvv("");
+				demandePaiementService.save(dmd);
 				Util.writeInFileTransaction(folder, file, "Switch  malfunction ConnectException !!!" + e);
 				switch_ko = 1;
 				demandeDtoMsg.setMsgRefus(
@@ -3018,6 +3095,8 @@ public class AppMobileController {
 			}
 
 			catch (SocketTimeoutException e) {
+				dmd.setDem_cvv("");
+				demandePaiementService.save(dmd);
 				Util.writeInFileTransaction(folder, file, "Switch  malfunction  SocketTimeoutException !!!" + e);
 				switch_ko = 1;
 				e.printStackTrace();
@@ -3032,6 +3111,8 @@ public class AppMobileController {
 			}
 
 			catch (IOException e) {
+				dmd.setDem_cvv("");
+				demandePaiementService.save(dmd);
 				Util.writeInFileTransaction(folder, file, "Switch  malfunction IOException !!!" + e);
 				switch_ko = 1;
 				e.printStackTrace();
@@ -3045,6 +3126,8 @@ public class AppMobileController {
 			}
 
 			catch (Exception e) {
+				dmd.setDem_cvv("");
+				demandePaiementService.save(dmd);
 				Util.writeInFileTransaction(folder, file, "Switch  malfunction Exception!!!" + e);
 				switch_ko = 1;
 				e.printStackTrace();
@@ -3058,6 +3141,8 @@ public class AppMobileController {
 			String resp = resp_tlv;
 
 			if (switch_ko == 0 && resp == null) {
+				dmd.setDem_cvv("");
+				demandePaiementService.save(dmd);
 				Util.writeInFileTransaction(folder, file, "Switch  malfunction resp null!!!");
 				switch_ko = 1;
 				Util.writeInFileTransaction(folder, file, "recharger 500 Error Switch null response" + "switch ip:["
@@ -3070,6 +3155,8 @@ public class AppMobileController {
 			}
 
 			if (switch_ko == 0 && resp.length() < 3) {
+				dmd.setDem_cvv("");
+				demandePaiementService.save(dmd);
 				switch_ko = 1;
 
 				Util.writeInFileTransaction(folder, file, "Switch  malfunction resp < 3 !!!");
@@ -3323,6 +3410,7 @@ public class AppMobileController {
 					Util.writeInFileTransaction(folder, file, "udapate etat demande : SW_PAYE ...");
 
 					dmd.setEtat_demande("SW_PAYE");
+					dmd.setDem_cvv("");
 					demandePaiementService.save(dmd);
 
 				} catch (Exception e) {
@@ -3485,11 +3573,14 @@ public class AppMobileController {
 							"transaction declinded ==> update Demandepaiement status to SW_REJET ...");
 
 					dmd.setEtat_demande("SW_REJET");
+					dmd.setDem_cvv("");
 					demandePaiementService.save(dmd);
 					// old
 					//hist.setHatEtat('A');
 					//histoAutoGateService.save(hist);
 				} catch (Exception e) {
+					dmd.setDem_cvv("");
+					demandePaiementService.save(dmd);
 					Util.writeInFileTransaction(folder, file,
 							"recharger 500 Error during  DemandePaiement update SW_REJET for given orderid:[" + orderid
 									+ "]" + e);
@@ -3701,6 +3792,7 @@ public class AppMobileController {
 			case "COMMERCANT NON PARAMETRE":
 				Util.writeInFileTransaction(folder, file, "COMMERCANT NON PARAMETRE : " + idDemande);
 				dmd.setDem_xid(threeDSServerTransID);
+				dmd.setDem_cvv("");
 				dmd.setEtat_demande("MPI_CMR_INEX");
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
@@ -3713,6 +3805,7 @@ public class AppMobileController {
 			case "BIN NON PARAMETRE":
 				Util.writeInFileTransaction(folder, file, "BIN NON PARAMETRE : " + idDemande);
 				dmd.setEtat_demande("MPI_BIN_NON_PAR");
+				dmd.setDem_cvv("");
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
@@ -3725,6 +3818,7 @@ public class AppMobileController {
 			case "DIRECTORY SERVER":
 				Util.writeInFileTransaction(folder, file, "DIRECTORY SERVER : " + idDemande);
 				dmd.setEtat_demande("MPI_DS_ERR");
+				dmd.setDem_cvv("");
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
@@ -3737,6 +3831,7 @@ public class AppMobileController {
 			case "CARTE ERRONEE":
 				Util.writeInFileTransaction(folder, file, "CARTE ERRONEE : " + idDemande);
 				dmd.setEtat_demande("MPI_CART_ERROR");
+				dmd.setDem_cvv("");
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
@@ -3749,6 +3844,7 @@ public class AppMobileController {
 			case "CARTE NON ENROLEE":
 				Util.writeInFileTransaction(folder, file, "CARTE NON ENROLEE : " + idDemande);
 				dmd.setEtat_demande("MPI_CART_NON_ENR");
+				dmd.setDem_cvv("");
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
@@ -3761,6 +3857,7 @@ public class AppMobileController {
 			case "ERROR REPONSE ACS":
 				Util.writeInFileTransaction(folder, file, "ERROR REPONSE ACS : " + idDemande);
 				dmd.setEtat_demande("MPI_ERR_RS_ACS");
+				dmd.setDem_cvv("");
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
@@ -3773,6 +3870,7 @@ public class AppMobileController {
 			case "Error 3DSS":
 				Util.writeInFileTransaction(folder, file, "Error 3DSS : " + idDemande);
 				dmd.setEtat_demande("MPI_ERR_3DSS");
+				dmd.setDem_cvv("");
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
@@ -3788,6 +3886,7 @@ public class AppMobileController {
 			case "COMMERCANT NON PARAMETRE":
 				Util.writeInFileTransaction(folder, file, "COMMERCANT NON PARAMETRE : " + idDemande);
 				dmd.setDem_xid(threeDSServerTransID);
+				dmd.setDem_cvv("");
 				dmd.setEtat_demande("MPI_CMR_INEX");
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
@@ -3798,6 +3897,7 @@ public class AppMobileController {
 			case "BIN NON PARAMETRE":
 				Util.writeInFileTransaction(folder, file, "BIN NON PARAMETRE : " + idDemande);
 				dmd.setEtat_demande("MPI_BIN_NON_PAR");
+				dmd.setDem_cvv("");
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
@@ -3808,6 +3908,7 @@ public class AppMobileController {
 			case "DIRECTORY SERVER":
 				Util.writeInFileTransaction(folder, file, "DIRECTORY SERVER : " + idDemande);
 				dmd.setEtat_demande("MPI_DS_ERR");
+				dmd.setDem_cvv("");
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
@@ -3818,6 +3919,7 @@ public class AppMobileController {
 			case "CARTE ERRONEE":
 				Util.writeInFileTransaction(folder, file, "CARTE ERRONEE : " + idDemande);
 				dmd.setEtat_demande("MPI_CART_ERROR");
+				dmd.setDem_cvv("");
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
@@ -3828,6 +3930,7 @@ public class AppMobileController {
 			case "CARTE NON ENROLEE":
 				Util.writeInFileTransaction(folder, file, "CARTE NON ENROLEE : " + idDemande);
 				dmd.setEtat_demande("MPI_CART_NON_ENR");
+				dmd.setDem_cvv("");
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
@@ -3838,6 +3941,7 @@ public class AppMobileController {
 			case "ERROR REPONSE ACS":
 				Util.writeInFileTransaction(folder, file, "ERROR REPONSE ACS : " + idDemande);
 				dmd.setEtat_demande("MPI_ERR_RS_ACS");
+				dmd.setDem_cvv("");
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
@@ -3850,6 +3954,7 @@ public class AppMobileController {
 			case "Error 3DSS":
 				Util.writeInFileTransaction(folder, file, "Error 3DSS : " + idDemande);
 				dmd.setEtat_demande("MPI_ERR_3DSS");
+				dmd.setDem_cvv("");
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(

@@ -1301,6 +1301,8 @@ public class GWPaiementController {
 		}
 		
 		if (demandeDto.getEtat_demande().equals("SW_PAYE") || demandeDto.getEtat_demande().equals("PAYE")) {
+			demandeDto.setDem_cvv("");
+			demandePaiementService.save(demandeDto);
 			Util.writeInFileTransaction(folder, file, "Opération déjà effectuée");
 			demandeDto.setMsgRefus(
 					"La transaction en cours n’a pas abouti (Opération déjà effectuée), votre compte ne sera pas débité, merci de réessayer .");
@@ -1315,6 +1317,7 @@ public class GWPaiementController {
 		try {
 			String msg = autorisationService.controlleRisk(demandeDto, folder, file);
 			if (!msg.equalsIgnoreCase("OK")) {
+				demandeDto.setDem_cvv("");
 				demandeDto.setEtat_demande("REJET_RISK_CTRL");
 				demandePaiementService.save(demandeDto);
 				Util.writeInFileTransaction(folder, file, "payer 500 Error " + msg);
@@ -1325,6 +1328,7 @@ public class GWPaiementController {
 				return page;
 			}
 		} catch (Exception e) {
+			demandeDto.setDem_cvv("");
 			demandeDto.setEtat_demande("REJET_RISK_CTRL");
 			demandePaiementService.save(demandeDto);
 			Util.writeInFileTransaction(folder, file,
@@ -1490,6 +1494,8 @@ public class GWPaiementController {
 			heure = formatheure.format(new Date());
 			rrn = Util.getGeneratedRRN();
 		} catch (Exception err2) {
+			demandeDto.setDem_cvv("");
+			demandePaiementService.save(demandeDto);
 			Util.writeInFileTransaction(folder, file, "payer 500 Error during  date formatting for given orderid:["
 					+ orderid + "] and merchantid:[" + merchantid + "]" + err2);
 			demandeDtoMsg.setMsgRefus("Erreur lors du formatage de la date");
@@ -1557,9 +1563,10 @@ public class GWPaiementController {
 		}
 
 		if (idDemande == null || idDemande.equals("")) {
-			Util.writeInFileTransaction(folder, file, "received idDemande from MPI is Null or Empty");
+			demandeDto.setDem_cvv("");
 			demandeDto.setEtat_demande("MPI_KO");
 			demandePaiementService.save(demandeDto);
+			Util.writeInFileTransaction(folder, file, "received idDemande from MPI is Null or Empty");
 			Util.writeInFileTransaction(folder, file,
 					"demandePaiement after update MPI_KO idDemande null : " + demandeDto.toString());
 			demandeDtoMsg.setMsgRefus(
@@ -1572,6 +1579,8 @@ public class GWPaiementController {
 		dmd = demandePaiementService.findByIdDemande(Integer.parseInt(idDemande));
 
 		if (dmd == null) {
+			demandeDto.setDem_cvv("");
+			demandePaiementService.save(demandeDto);
 			Util.writeInFileTransaction(folder, file,
 					"demandePaiement not found !!!! demandePaiement = null  / received idDemande from MPI => "
 							+ idDemande);
@@ -1583,6 +1592,7 @@ public class GWPaiementController {
 		}
 
 		if (reponseMPI.equals("") || reponseMPI == null) {
+			dmd.setDem_cvv("");
 			dmd.setEtat_demande("MPI_KO");
 			demandePaiementService.save(dmd);
 			Util.writeInFileTransaction(folder, file,
@@ -1663,6 +1673,8 @@ public class GWPaiementController {
 			Util.writeInFileTransaction(folder, file, "Preparing Switch TLV Request start ...");
 
 			if (!cvv_present && !is_reccuring) {
+				dmd.setDem_cvv("");
+				demandePaiementService.save(dmd);
 				Util.writeInFileTransaction(folder, file,
 						"payer 500 cvv not set , reccuring flag set to N, cvv must be present in normal transaction");
 
@@ -1714,6 +1726,8 @@ public class GWPaiementController {
 					Util.writeInFileTransaction(folder, file, "tag168_request : [" + xid + "]");
 
 				} catch (Exception err4) {
+					dmd.setDem_cvv("");
+					demandePaiementService.save(dmd);
 					Util.writeInFileTransaction(folder, file,
 							"payer 500 Error during switch tlv buildup for given orderid:[" + orderid
 									+ "] and merchantid:[" + merchantid + "]" + err4);
@@ -1754,6 +1768,8 @@ public class GWPaiementController {
 				boolean s_conn = switchTCPClient.isConnected();
 
 				if (!s_conn) {
+					dmd.setDem_cvv("");
+					demandePaiementService.save(dmd);
 					Util.writeInFileTransaction(folder, file, "Switch  malfunction cannot connect!!!");
 
 					Util.writeInFileTransaction(folder, file,
@@ -1776,6 +1792,8 @@ public class GWPaiementController {
 				}
 
 			} catch (UnknownHostException e) {
+				dmd.setDem_cvv("");
+				demandePaiementService.save(dmd);
 				Util.writeInFileTransaction(folder, file, "Switch  malfunction UnknownHostException !!!" + e);
 
 				demandeDtoMsg.setMsgRefus("Un dysfonctionnement du switch ne peut pas se connecter !!!");
@@ -1784,6 +1802,8 @@ public class GWPaiementController {
 				return page;
 
 			} catch (java.net.ConnectException e) {
+				dmd.setDem_cvv("");
+				demandePaiementService.save(dmd);
 				Util.writeInFileTransaction(folder, file, "Switch  malfunction ConnectException !!!" + e);
 				switch_ko = 1;
 				demandeDtoMsg.setMsgRefus(
@@ -1794,6 +1814,8 @@ public class GWPaiementController {
 			}
 
 			catch (SocketTimeoutException e) {
+				dmd.setDem_cvv("");
+				demandePaiementService.save(dmd);
 				Util.writeInFileTransaction(folder, file, "Switch  malfunction  SocketTimeoutException !!!" + e);
 				switch_ko = 1;
 				e.printStackTrace();
@@ -1807,6 +1829,8 @@ public class GWPaiementController {
 			}
 
 			catch (IOException e) {
+				dmd.setDem_cvv("");
+				demandePaiementService.save(dmd);
 				Util.writeInFileTransaction(folder, file, "Switch  malfunction IOException !!!" + e);
 				switch_ko = 1;
 				e.printStackTrace();
@@ -1820,6 +1844,8 @@ public class GWPaiementController {
 			}
 
 			catch (Exception e) {
+				dmd.setDem_cvv("");
+				demandePaiementService.save(dmd);
 				Util.writeInFileTransaction(folder, file, "Switch  malfunction Exception!!!" + e);
 				switch_ko = 1;
 				e.printStackTrace();
@@ -1833,6 +1859,8 @@ public class GWPaiementController {
 			String resp = resp_tlv;
 
 			if (switch_ko == 0 && resp == null) {
+				dmd.setDem_cvv("");
+				demandePaiementService.save(dmd);
 				Util.writeInFileTransaction(folder, file, "Switch  malfunction resp null!!!");
 				switch_ko = 1;
 				Util.writeInFileTransaction(folder, file, "payer 500 Error Switch null response" + "switch ip:[" + sw_s
@@ -1845,6 +1873,8 @@ public class GWPaiementController {
 			}
 
 			if (switch_ko == 0 && resp.length() < 3) {
+				dmd.setDem_cvv("");
+				demandePaiementService.save(dmd);
 				switch_ko = 1;
 
 				Util.writeInFileTransaction(folder, file, "Switch  malfunction resp < 3 !!!");
@@ -2103,6 +2133,7 @@ public class GWPaiementController {
 					Util.writeInFileTransaction(folder, file, "udapate etat demande : SW_PAYE ...");
 
 					dmd.setEtat_demande("SW_PAYE");
+					dmd.setDem_cvv(dmd.getTransactiontype() == "0" ? "" : dmd.getDem_cvv());
 					demandePaiementService.save(dmd);
 
 				} catch (Exception e) {
@@ -2352,11 +2383,14 @@ public class GWPaiementController {
 							"transaction declinded ==> update Demandepaiement status to SW_REJET ...");
 
 					dmd.setEtat_demande("SW_REJET");
+					dmd.setDem_cvv("");
 					demandePaiementService.save(dmd);
 					// old
 					//hist.setHatEtat('A');
 					//histoAutoGateService.save(hist);
 				} catch (Exception e) {
+					dmd.setDem_cvv("");
+					demandePaiementService.save(dmd);
 					Util.writeInFileTransaction(folder, file,
 							"payer 500 Error during  DemandePaiement update SW_REJET for given orderid:[" + orderid
 									+ "]" + e);
@@ -2565,6 +2599,7 @@ public class GWPaiementController {
 				Util.writeInFileTransaction(folder, file, "COMMERCANT NON PARAMETRE : " + idDemande);
 				dmd.setDem_xid(threeDSServerTransID);
 				dmd.setEtat_demande("MPI_CMR_INEX");
+				dmd.setDem_cvv("");
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
 						"La transaction en cours n’a pas abouti (COMMERCANT NON PARAMETRE), votre compte ne sera pas débité, merci de réessayer .");
@@ -2576,6 +2611,7 @@ public class GWPaiementController {
 			case "BIN NON PARAMETRE":
 				Util.writeInFileTransaction(folder, file, "BIN NON PARAMETRE : " + idDemande);
 				dmd.setEtat_demande("MPI_BIN_NON_PAR");
+				dmd.setDem_cvv("");
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
@@ -2588,6 +2624,7 @@ public class GWPaiementController {
 			case "DIRECTORY SERVER":
 				Util.writeInFileTransaction(folder, file, "DIRECTORY SERVER : " + idDemande);
 				dmd.setEtat_demande("MPI_DS_ERR");
+				dmd.setDem_cvv("");
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
@@ -2600,6 +2637,7 @@ public class GWPaiementController {
 			case "CARTE ERRONEE":
 				Util.writeInFileTransaction(folder, file, "CARTE ERRONEE : " + idDemande);
 				dmd.setEtat_demande("MPI_CART_ERROR");
+				dmd.setDem_cvv("");
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
@@ -2612,6 +2650,7 @@ public class GWPaiementController {
 			case "CARTE NON ENROLEE":
 				Util.writeInFileTransaction(folder, file, "CARTE NON ENROLEE : " + idDemande);
 				dmd.setEtat_demande("MPI_CART_NON_ENR");
+				dmd.setDem_cvv("");
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
@@ -2624,6 +2663,7 @@ public class GWPaiementController {
 			case "ERROR REPONSE ACS":
 				Util.writeInFileTransaction(folder, file, "ERROR REPONSE ACS : " + idDemande);
 				dmd.setEtat_demande("MPI_ERR_RS_ACS");
+				dmd.setDem_cvv("");
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
@@ -2636,6 +2676,7 @@ public class GWPaiementController {
 			case "Error 3DSS":
 				Util.writeInFileTransaction(folder, file, "Error 3DSS : " + idDemande);
 				dmd.setEtat_demande("MPI_ERR_3DSS");
+				dmd.setDem_cvv("");
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
@@ -2652,6 +2693,7 @@ public class GWPaiementController {
 				Util.writeInFileTransaction(folder, file, "COMMERCANT NON PARAMETRE : " + idDemande);
 				dmd.setDem_xid(threeDSServerTransID);
 				dmd.setEtat_demande("MPI_CMR_INEX");
+				dmd.setDem_cvv("");
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
 						"La transaction en cours n’a pas abouti (COMMERCANT NON PARAMETRE), votre compte ne sera pas débité, merci de réessayer .");
@@ -2661,6 +2703,7 @@ public class GWPaiementController {
 			case "BIN NON PARAMETRE":
 				Util.writeInFileTransaction(folder, file, "BIN NON PARAMETRE : " + idDemande);
 				dmd.setEtat_demande("MPI_BIN_NON_PAR");
+				dmd.setDem_cvv("");
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
@@ -2671,6 +2714,7 @@ public class GWPaiementController {
 			case "DIRECTORY SERVER":
 				Util.writeInFileTransaction(folder, file, "DIRECTORY SERVER : " + idDemande);
 				dmd.setEtat_demande("MPI_DS_ERR");
+				dmd.setDem_cvv("");
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
@@ -2681,6 +2725,7 @@ public class GWPaiementController {
 			case "CARTE ERRONEE":
 				Util.writeInFileTransaction(folder, file, "CARTE ERRONEE : " + idDemande);
 				dmd.setEtat_demande("MPI_CART_ERROR");
+				dmd.setDem_cvv("");
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
@@ -2691,6 +2736,7 @@ public class GWPaiementController {
 			case "CARTE NON ENROLEE":
 				Util.writeInFileTransaction(folder, file, "CARTE NON ENROLEE : " + idDemande);
 				dmd.setEtat_demande("MPI_CART_NON_ENR");
+				dmd.setDem_cvv("");
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
@@ -2701,6 +2747,7 @@ public class GWPaiementController {
 			case "ERROR REPONSE ACS":
 				Util.writeInFileTransaction(folder, file, "ERROR REPONSE ACS : " + idDemande);
 				dmd.setEtat_demande("MPI_ERR_RS_ACS");
+				dmd.setDem_cvv("");
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
@@ -2713,6 +2760,7 @@ public class GWPaiementController {
 			case "Error 3DSS":
 				Util.writeInFileTransaction(folder, file, "Error 3DSS : " + idDemande);
 				dmd.setEtat_demande("MPI_ERR_3DSS");
+				dmd.setDem_cvv("");
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
