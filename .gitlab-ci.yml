@@ -1,26 +1,74 @@
-# You can override the included template(s) by including variable overrides
-# SAST customization: https://docs.gitlab.com/ee/user/application_security/sast/#customizing-the-sast-settings
-# Secret Detection customization: https://docs.gitlab.com/ee/user/application_security/secret_detection/#customizing-settings
-# Dependency Scanning customization: https://docs.gitlab.com/ee/user/application_security/dependency_scanning/#customizing-the-dependency-scanning-settings
-# Container Scanning customization: https://docs.gitlab.com/ee/user/application_security/container_scanning/#customizing-the-container-scanning-settings
-# Note that environment variables can be set in several places
-# See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
 stages:
-- build
-- test
-- deploy
-- review
-- dast
-- staging
-- canary
-- production
-- incremental rollout 10%
-- incremental rollout 25%
-- incremental rollout 50%
-- incremental rollout 100%
-- performance
-- cleanup
-sast:
-  stage: test
-include:
-- template: Auto-DevOps.gitlab-ci.yml
+  - build
+  - code-quality
+  - deploy-artifact-to-nexus
+
+variables:
+  NEXUS_SERVER: $CI_SERVER_HOST:8014
+  NEXUS_REPOSITORY: NAPS
+maven-build:
+  image: maven:3-jdk-8
+  stage: build
+  script: "mvn package -B -Dmaven.test.skip=true"
+  artifacts:
+    paths:
+      - target/GW_PAIEMENT.jar
+  allow_failure: false
+
+sonarqube:
+  image: maven:3.8.7-eclipse-temurin-11-alpine
+  stage: code-quality
+  before_script:
+    - bash
+    - apk update
+    - apk upgrade
+    - apk add curl
+    - apk add jq
+    - apk add coreutils
+  script:
+    - mvn -Dmaven.compiler.source=1.8 -Dmaven.compiler.target=1.8 clean install -Dmaven.test.skip=true  sonar:sonar -Dsonar.java.source=1.8  -Dsonar.java.target=1.8  -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_LOGIN -Dsonar.working.directory=./target/.sonar
+    - cat ./target/.sonar/report-task.txt
+    - export url=$(cat ./target/.sonar/report-task.txt | grep ceTaskUrl | cut -c11- ) #URL where report gets stored
+    - sleep 120s #Wait time for the report
+    - curl -k -u "$SONAR_LOGIN":"" $url -o analysis.txt
+    #store results in analysis.txt
+    - export status=$(cat analysis.txt | jq -r '.task.status') #Status as SUCCESS, CANCELED or FAILED
+    - export analysisId=$(cat analysis.txt | jq -r '.task.analysisId') #Get the analysis Id
+    - |
+      if [ "$status" = "SUCCESS" ];then
+        echo -e "SONAR ANALYSIS SUCCESSFUL…ANALYSING RESULTS";
+        curl -k -u $SONAR_LOGIN:"" $SONAR_URL/api/qualitygates/project_status?analysisId=$analysisId -o result.txt; #Analysis result like critical, major and minor issues
+        export result=$(cat result.txt | jq -r '.projectStatus.status');
+        if [ "$result" = "ERROR" ];then
+          echo -e "91mSONAR RESULTS FAILED";
+          echo "$(cat result.txt | jq -r '.projectStatus.conditions')";
+          #prints the critical, major and minor violations
+          exit 1 #breaks the build for violations
+        else
+          echo -e "SONAR RESULTS SUCCESSFUL";
+          echo "$(cat result.txt | jq -r '.projectStatus.conditions')";
+          exit 0
+        fi
+      else
+        echo -e "SONAR ANALYSIS FAILED";
+        exit 1 #breaks the build for failure in Step2
+      fi
+  allow_failure: true
+  when: manual
+
+
+nexus:
+  stage: deploy-artifact-to-nexus
+  script:
+    - DATE=$(date +%Y%m%d%H%M)
+    - ls -l
+    - cat /etc/*release*
+    - apk add curl
+    - mv target/GW_PAIEMENT.jar target/GW_PAIEMENT.$DATE.jar
+    - UPLOAD_FILE1="target/GW_PAIEMENT.$DATE.jar"
+    - echo $UPLOAD_FILE1
+    - echo "Sending builds $UPLOAD_FILE1 to server Nexus http://$CI_SERVER_HOST:8014 "
+    - echo "Envoi du fichier $EXE_NAME.$EXE_EXT  Nexus"
+    - echo "curl -v -u ${NEXUS_USERNAME}:${NEXUS_PASSWORD} --upload-file ${UPLOAD_FILE1} http://${NEXUS_SERVER}/repository/${NEXUS_REPOSITORY}/${UPLOAD_FILE1}"
+    - curl -v -u ${NEXUS_USERNAME}:${NEXUS_PASSWORD} --upload-file ${UPLOAD_FILE1} http://${NEXUS_SERVER}/repository/${NEXUS_REPOSITORY}/${UPLOAD_FILE1}
+  when: manual
