@@ -716,10 +716,12 @@ public class GWPaiementController {
 		}
 
 		if (page.equals("napspayment")) {
-			demandeDto.setEtat_demande("P_CHRG_OK");
-			demandePaiementService.save(demandeDto);
-			System.out.println("update Demandepaiement status to P_CHRG_OK");
-			Util.writeInFileTransaction(folder, file, "update Demandepaiement status to P_CHRG_OK");
+			if(demandeDto.getEtat_demande().equals("INIT")) {
+				demandeDto.setEtat_demande("P_CHRG_OK");
+				demandePaiementService.save(demandeDto);
+				System.out.println("update Demandepaiement status to P_CHRG_OK");
+				Util.writeInFileTransaction(folder, file, "update Demandepaiement status to P_CHRG_OK");
+			}
 			if (demandeDto.getComid().equals(LYDEC_PREPROD) || demandeDto.getComid().equals(LYDEC_PROD)) {
 				System.out.println("Si le commercant est LYDEC : " + demandeDto.getComid());
 				Util.writeInFileTransaction(folder, file, "Si le commercant est LYDEC : " + demandeDto.getComid());

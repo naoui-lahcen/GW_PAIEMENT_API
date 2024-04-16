@@ -2321,10 +2321,12 @@ public class AppMobileController {
 		}
 
 		if (page.equals("erecharge")) {
-			demandeDto.setEtat_demande("P_CHRG_OK");
-			demandePaiementService.save(demandeDto);
-			System.out.println("update Demandepaiement status to P_CHRG_OK");
-			Util.writeInFileTransaction(folder, file, "update Demandepaiement status to P_CHRG_OK");
+			if(demandeDto.getEtat_demande().equals("INIT")) {
+				demandeDto.setEtat_demande("P_CHRG_OK");
+				demandePaiementService.save(demandeDto);
+				System.out.println("update Demandepaiement status to P_CHRG_OK");
+				Util.writeInFileTransaction(folder, file, "update Demandepaiement status to P_CHRG_OK");
+			}
 		}
 
 		Util.writeInFileTransaction(folder, file, "*********** Fin affichage page ccb ************** ");

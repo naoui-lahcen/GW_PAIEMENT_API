@@ -1722,7 +1722,7 @@ public class ACSController {
 								if (coderep.equals("00")) {
 									if (dmd.getSuccessURL() != null) {
 										// generation et envoie du token de la carte enregitré dans le successURL
-										// apres le paiment de 1 DH de check porteur carte
+										// apres le paiment de 0 DH de check porteur carte
 										if (dmd.getIs_addcard().equals("Y") && dmd.getIs_tokenized().equals("Y")
 												&& dmd.getIs_withsave().equals("Y") && dmd.getIs_cof().equals("Y")) {
 											Util.writeInFileTransaction(folder, file,
