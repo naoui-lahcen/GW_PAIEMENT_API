@@ -1795,6 +1795,7 @@ public class GWPaiementController {
 
 			} catch (UnknownHostException e) {
 				dmd.setDem_cvv("");
+				dmd.setEtat_demande("SW_KO");
 				demandePaiementService.save(dmd);
 				Util.writeInFileTransaction(folder, file, "Switch  malfunction UnknownHostException !!!" + e);
 
@@ -1805,6 +1806,7 @@ public class GWPaiementController {
 
 			} catch (java.net.ConnectException e) {
 				dmd.setDem_cvv("");
+				dmd.setEtat_demande("SW_KO");
 				demandePaiementService.save(dmd);
 				Util.writeInFileTransaction(folder, file, "Switch  malfunction ConnectException !!!" + e);
 				switch_ko = 1;
@@ -1817,6 +1819,7 @@ public class GWPaiementController {
 
 			catch (SocketTimeoutException e) {
 				dmd.setDem_cvv("");
+				dmd.setEtat_demande("SW_KO");
 				demandePaiementService.save(dmd);
 				Util.writeInFileTransaction(folder, file, "Switch  malfunction  SocketTimeoutException !!!" + e);
 				switch_ko = 1;
@@ -1832,6 +1835,7 @@ public class GWPaiementController {
 
 			catch (IOException e) {
 				dmd.setDem_cvv("");
+				dmd.setEtat_demande("SW_KO");
 				demandePaiementService.save(dmd);
 				Util.writeInFileTransaction(folder, file, "Switch  malfunction IOException !!!" + e);
 				switch_ko = 1;
@@ -1847,6 +1851,7 @@ public class GWPaiementController {
 
 			catch (Exception e) {
 				dmd.setDem_cvv("");
+				dmd.setEtat_demande("SW_KO");
 				demandePaiementService.save(dmd);
 				Util.writeInFileTransaction(folder, file, "Switch  malfunction Exception!!!" + e);
 				switch_ko = 1;
@@ -1862,6 +1867,7 @@ public class GWPaiementController {
 
 			if (switch_ko == 0 && resp == null) {
 				dmd.setDem_cvv("");
+				dmd.setEtat_demande("SW_KO");
 				demandePaiementService.save(dmd);
 				Util.writeInFileTransaction(folder, file, "Switch  malfunction resp null!!!");
 				switch_ko = 1;
@@ -1876,6 +1882,7 @@ public class GWPaiementController {
 
 			if (switch_ko == 0 && resp.length() < 3) {
 				dmd.setDem_cvv("");
+				dmd.setEtat_demande("SW_KO");
 				demandePaiementService.save(dmd);
 				switch_ko = 1;
 
@@ -2132,10 +2139,12 @@ public class GWPaiementController {
 				Util.writeInFileTransaction(folder, file, "SWITCH RESONSE CODE :[00]");
 
 				try {
-					Util.writeInFileTransaction(folder, file, "udapate etat demande : SW_PAYE ...");
+					Util.writeInFileTransaction(folder, file, "update etat demande : SW_PAYE ...");
 
 					dmd.setEtat_demande("SW_PAYE");
-					dmd.setDem_cvv(dmd.getTransactiontype() == "0" ? "" : dmd.getDem_cvv());
+					if(dmd.getTransactiontype().equals("0")) {
+						dmd.setDem_cvv("");
+					}	
 					demandePaiementService.save(dmd);
 
 				} catch (Exception e) {
@@ -2144,7 +2153,7 @@ public class GWPaiementController {
 									+ "]" + e);
 				}
 
-				Util.writeInFileTransaction(folder, file, "udapate etat demande : SW_PAYE OK");
+				Util.writeInFileTransaction(folder, file, "update etat demande : SW_PAYE OK");
 
 				String capture_status = "N";
 				int exp_flag = 0;

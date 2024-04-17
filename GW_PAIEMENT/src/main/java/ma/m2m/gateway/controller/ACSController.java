@@ -771,6 +771,7 @@ public class ACSController {
 
 							catch (SocketTimeoutException e) {
 								dmd.setDem_cvv("");
+								dmd.setEtat_demande("SW_KO");
 								demandePaiementService.save(dmd);
 								Util.writeInFileTransaction(folder, file,
 										"Switch  malfunction  SocketTimeoutException !!!" + e);
@@ -791,6 +792,7 @@ public class ACSController {
 
 							catch (IOException e) {
 								dmd.setDem_cvv("");
+								dmd.setEtat_demande("SW_KO");
 								demandePaiementService.save(dmd);
 								Util.writeInFileTransaction(folder, file, "Switch  malfunction IOException !!!" + e);
 								switch_ko = 1;
@@ -810,6 +812,7 @@ public class ACSController {
 
 							catch (Exception e) {
 								dmd.setDem_cvv("");
+								dmd.setEtat_demande("SW_KO");
 								demandePaiementService.save(dmd);
 								Util.writeInFileTransaction(folder, file, "Switch  malfunction Exception!!!" + e);
 								switch_ko = 1;
@@ -831,6 +834,7 @@ public class ACSController {
 
 							if (switch_ko == 0 && resp == null) {
 								dmd.setDem_cvv("");
+								dmd.setEtat_demande("SW_KO");
 								demandePaiementService.save(dmd);
 								Util.writeInFileTransaction(folder, file, "Switch  malfunction resp null!!!");
 								switch_ko = 1;
@@ -848,6 +852,7 @@ public class ACSController {
 
 							if (switch_ko == 0 && resp.length() < 3) {
 								dmd.setDem_cvv("");
+								dmd.setEtat_demande("SW_KO");
 								demandePaiementService.save(dmd);
 								switch_ko = 1;
 
@@ -902,6 +907,7 @@ public class ACSController {
 
 								} catch (Exception e) {
 									dmd.setDem_cvv("");
+									dmd.setEtat_demande("SW_KO");
 									demandePaiementService.save(dmd);
 									Util.writeInFileTransaction(folder, file,
 											"Switch  malfunction tlv parsing !!!" + e);
@@ -1133,10 +1139,12 @@ public class ACSController {
 								Util.writeInFileTransaction(folder, file, "SWITCH RESONSE CODE :[00]");
 
 								try {
-									Util.writeInFileTransaction(folder, file, "udapate etat demande : SW_PAYE ...");
+									Util.writeInFileTransaction(folder, file, "update etat demande : SW_PAYE ...");
 
 									dmd.setEtat_demande("SW_PAYE");
-									dmd.setDem_cvv(dmd.getTransactiontype() == "0" ? "" : dmd.getDem_cvv());
+									if(dmd.getTransactiontype().equals("0")) {
+										dmd.setDem_cvv("");
+									}									
 									demandePaiementService.save(dmd);
 
 								} catch (Exception e) {
@@ -1145,7 +1153,7 @@ public class ACSController {
 													+ orderid + "]" + e);
 								}
 
-								Util.writeInFileTransaction(folder, file, "udapate etat demande : SW_PAYE OK");
+								Util.writeInFileTransaction(folder, file, "update etat demande : SW_PAYE OK");
 
 								String capture_status = "N";
 								int exp_flag = 0;
@@ -1503,7 +1511,7 @@ public class ACSController {
 								Util.writeInFileTransaction(folder, file, "Call Back URL: " + callbackURL);
 								if (dmd.getCallbackURL() != null && !dmd.getCallbackURL().equals("")
 										&& !dmd.getCallbackURL().equals("NA")) {
-									String clesigne = infoCommercantDto.getClePub();
+									String clesigne = current_infoCommercant.getClePub();
 
 									String montanttrx = String.format("%.2f", dmd.getMontant()).replaceAll(",", ".");
 									String token_gen = "";

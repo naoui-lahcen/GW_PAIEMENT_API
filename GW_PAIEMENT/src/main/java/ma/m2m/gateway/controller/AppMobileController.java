@@ -765,6 +765,7 @@ public class AppMobileController {
 							catch (SocketTimeoutException e) {
 								dmd.setDem_cvv("");
 								demandePaiementService.save(dmd);
+								dmd.setEtat_demande("SW_KO");
 								Util.writeInFileTransaction(folder, file,
 										"Switch  malfunction  SocketTimeoutException !!!" + e);
 								switch_ko = 1;
@@ -784,6 +785,7 @@ public class AppMobileController {
 
 							catch (IOException e) {
 								dmd.setDem_cvv("");
+								dmd.setEtat_demande("SW_KO");
 								demandePaiementService.save(dmd);
 								Util.writeInFileTransaction(folder, file, "Switch  malfunction IOException !!!" + e);
 								switch_ko = 1;
@@ -803,6 +805,7 @@ public class AppMobileController {
 
 							catch (Exception e) {
 								dmd.setDem_cvv("");
+								dmd.setEtat_demande("SW_KO");
 								demandePaiementService.save(dmd);
 								Util.writeInFileTransaction(folder, file, "Switch  malfunction Exception!!!" + e);
 								switch_ko = 1;
@@ -824,6 +827,7 @@ public class AppMobileController {
 
 							if (switch_ko == 0 && resp == null) {
 								dmd.setDem_cvv("");
+								dmd.setEtat_demande("SW_KO");
 								demandePaiementService.save(dmd);
 								Util.writeInFileTransaction(folder, file, "Switch  malfunction resp null!!!");
 								switch_ko = 1;
@@ -841,6 +845,7 @@ public class AppMobileController {
 
 							if (switch_ko == 0 && resp.length() < 3) {
 								dmd.setDem_cvv("");
+								dmd.setEtat_demande("SW_KO");
 								demandePaiementService.save(dmd);
 								switch_ko = 1;
 
@@ -895,6 +900,7 @@ public class AppMobileController {
 
 								} catch (Exception e) {
 									dmd.setDem_cvv("");
+									dmd.setEtat_demande("SW_KO");
 									demandePaiementService.save(dmd);
 									Util.writeInFileTransaction(folder, file,
 											"Switch  malfunction tlv parsing !!!" + e);
@@ -1121,7 +1127,7 @@ public class AppMobileController {
 								Util.writeInFileTransaction(folder, file, "SWITCH RESONSE CODE :[00]");
 
 								try {
-									Util.writeInFileTransaction(folder, file, "udapate etat demande : SW_PAYE ...");
+									Util.writeInFileTransaction(folder, file, "update etat demande : SW_PAYE ...");
 
 									dmd.setEtat_demande("SW_PAYE");
 									dmd.setDem_cvv("");
@@ -1133,7 +1139,7 @@ public class AppMobileController {
 													+ orderid + "]" + e);
 								}
 
-								Util.writeInFileTransaction(folder, file, "udapate etat demande : SW_PAYE OK");
+								Util.writeInFileTransaction(folder, file, "update etat demande : SW_PAYE OK");
 
 								String capture_status = "N";
 								int exp_flag = 0;
@@ -3409,7 +3415,7 @@ public class AppMobileController {
 				Util.writeInFileTransaction(folder, file, "SWITCH RESONSE CODE :[00]");
 
 				try {
-					Util.writeInFileTransaction(folder, file, "udapate etat demande : SW_PAYE ...");
+					Util.writeInFileTransaction(folder, file, "update etat demande : SW_PAYE ...");
 
 					dmd.setEtat_demande("SW_PAYE");
 					dmd.setDem_cvv("");
@@ -3421,7 +3427,7 @@ public class AppMobileController {
 									+ orderid + "]" + e);
 				}
 
-				Util.writeInFileTransaction(folder, file, "udapate etat demande : SW_PAYE OK");
+				Util.writeInFileTransaction(folder, file, "update etat demande : SW_PAYE OK");
 
 				String capture_status = "N";
 				int exp_flag = 0;
