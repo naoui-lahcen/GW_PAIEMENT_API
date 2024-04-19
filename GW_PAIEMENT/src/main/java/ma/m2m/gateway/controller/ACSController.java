@@ -1346,6 +1346,7 @@ public class ACSController {
 
 										if (repAnnu.equals("00")) {
 											dmd.setEtat_demande("SW_ANNUL_AUTO");
+											dmd.setDem_cvv("");
 											demandePaiementService.save(dmd);
 											demandeDtoMsg.setMsgRefus(
 													"La transaction en cours n’a pas abouti (Web service LYDEC Hors service), votre compte ne sera pas débité, merci de réessayer .");

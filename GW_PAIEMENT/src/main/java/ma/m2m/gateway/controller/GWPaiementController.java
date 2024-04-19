@@ -2,6 +2,10 @@ package ma.m2m.gateway.controller;
 
 import static ma.m2m.gateway.Utils.StringUtils.isNullOrEmpty;
 import static ma.m2m.gateway.config.FlagActivation.ACTIVE;
+
+import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -25,8 +29,13 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.SplittableRandom;
 import java.util.UUID;
 
@@ -37,6 +46,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.namespace.QName;
 
+import org.apache.commons.codec.digest.XXHash32;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -49,6 +59,12 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -62,7 +78,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.ui.Model;
 import ma.m2m.gateway.Utils.Objects;
 import ma.m2m.gateway.Utils.Util;
@@ -523,7 +541,114 @@ public class GWPaiementController {
 		Util.writeInFileTransaction(folder, file, "*********** Fin exportToExcel ***********");
 		System.out.println("*********** Fin exportToExcel ***********");
 	}
+	
+	@RequestMapping(value = "/napspayment/{numCompte}", method = RequestMethod.GET)
+	@ResponseBody
+	public String getRibByNumCompte(@PathVariable(value = "numCompte") String numCompte) {
+		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
+		String file = "RIB_" + randomWithSplittableRandom;
+		// create file log
+		Util.creatFileTransaction(file);
+		Util.writeInFileTransaction(folder, file, "*********** Start getRibByNumCompte ***********");
+		System.out.println("*********** Start getRibByNumCompte ***********");
+		
+		String rib = constructRIB(numCompte);
+		Util.writeInFileTransaction(folder, file, "rib : " + rib);
+		System.out.println("rib : " + rib);
+		
+		Util.writeInFileTransaction(folder, file, "*********** Fin getRibByNumCompte ***********");
+		System.out.println("*********** Fin getRibByNumCompte ***********");
+		 
+		return rib;
+	}
+	
+	//@PostMapping("/napspayment/uploadExcel")
+	//@ResponseBody
+	@RequestMapping(value = "/napspayment/uploadExcel", method = RequestMethod.POST)
+	@ResponseBody
+    public String handleFileUpload(HttpServletResponse response, @RequestParam("file") MultipartFile file) throws FileNotFoundException, IOException {
+        if (file.isEmpty()) {
+            return "Le fichier est vide";
+        }
+    	List<String> updatedDataList = new ArrayList<>();
+        try {
+            Workbook workbook = WorkbookFactory.create(file.getInputStream());
+            Sheet sheet = workbook.getSheetAt(0);
+            Iterator<Row> rowIterator = sheet.iterator();
+            boolean firstRow = true; 
+            while (rowIterator.hasNext()) {
+                Row row = rowIterator.next();
+                if (firstRow) {
+                    firstRow = false;
+                    continue;
+                }
+                StringBuilder contentBuilder = new StringBuilder();
 
+                Iterator<Cell> cellIterator = row.cellIterator();
+                while (cellIterator.hasNext()) {
+                    Cell cell = cellIterator.next();
+                    contentBuilder.append(cell.toString()).append("\t");
+                }
+                String NUMCOmpte = row.getCell(4).toString().trim();
+                String RIB = constructRIB(NUMCOmpte);
+                contentBuilder.append(RIB);
+                updatedDataList.add(contentBuilder.toString());
+            }
+        } catch (Exception ex) {        	
+        	System.out.println("Exception Erreur lors de la lecture du fichier Excel : ");
+            //ex.getMessage();
+        }    
+		response.setContentType("application/octet-stream");
+		DateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
+		String currentDateTime = dateFormatter.format(new Date());
+		String headerKey = "Content-Disposition";
+		String headerValue = "attachment; filename=Rib_Etudiants_" + currentDateTime + ".xlsx";
+		response.setHeader(headerKey, headerValue);
+
+		try {
+			 // Filtrer les lignes vides de updatedDataList
+		    updatedDataList.removeIf(String::isEmpty);
+			GenerateExcel excelExporter = new GenerateExcel(updatedDataList, "xx");
+			excelExporter.exportRIB(response);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return "Fichier Excel traité généré avec succès ";
+    }
+	
+	// Méthode pour construire le RIB à partir du NUMCOmpte
+    private String constructRIB(String NUMCOmpte) {
+    	String CODE_NAPS = "842";
+    	String CODE_VILLE = "780";
+    	String SEPARATEUR_ESPACE = "    ";
+    	String rib1 = CODE_NAPS + CODE_VILLE + NUMCOmpte;
+		BigInteger cle = calculCle(rib1);
+
+		String cleStr = cle.toString();
+		if(cleStr.length() == 1) {
+			cleStr = "0"+cleStr;
+		}
+		String rib = CODE_NAPS + SEPARATEUR_ESPACE + CODE_VILLE
+				+ SEPARATEUR_ESPACE + NUMCOmpte + SEPARATEUR_ESPACE + cleStr;
+		
+        return rib;
+    }
+    
+	public BigInteger calculCle(String RIB) {
+		BigInteger cle = new BigInteger("0");
+		try {
+			BigInteger rib = new BigInteger(RIB);
+			BigInteger v100 = BigInteger.valueOf(100);
+			BigInteger v97 = BigInteger.valueOf(97);
+			BigInteger rib100 = rib.multiply(v100);
+			BigInteger mod = rib100.mod(v97);
+			cle = v97.subtract(mod);
+		} catch(Exception ex) {
+			//ex.printStackTrace();
+		}
+		return cle;
+	}
+	
 	@RequestMapping("/napspayment/index")
 	public String index() {
 		// Traces traces = new Traces();
@@ -2365,6 +2490,7 @@ public class GWPaiementController {
 										"Switch status annulation : [" + s_status + "]");
 								if (repAnnu.equals("00")) {
 									dmd.setEtat_demande("SW_ANNUL_AUTO");
+									dmd.setDem_cvv("");
 									demandePaiementService.save(dmd);
 									demandeDtoMsg.setMsgRefus(
 											"La transaction en cours n’a pas abouti (Web service CallBack Hors service), votre compte ne sera pas débité, merci de réessayer .");
