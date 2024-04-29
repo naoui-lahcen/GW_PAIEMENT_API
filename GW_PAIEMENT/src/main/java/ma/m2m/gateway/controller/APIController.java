@@ -161,7 +161,7 @@ public class APIController {
 
 	public APIController() {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		//String file = "API_" + randomWithSplittableRandom;
+		// String file = "API_" + randomWithSplittableRandom;
 		// date of folder logs
 		dateF = LocalDateTime.now(ZoneId.systemDefault());
 		folder = dateF.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
@@ -303,17 +303,17 @@ public class APIController {
 			return getMsgError(folder, file, null, "authorization 500 malformed json expression " + jerr.getMessage(),
 					null);
 		}
-		
+
 		try {
 			auth3ds = (String) jsonOrequest.get("auth3ds");
-			if(auth3ds.equals("")) {
+			if (auth3ds.equals("")) {
 				auth3ds = "Y";
 			}
-		} catch(Exception e) {
-			auth3ds="Y";
+		} catch (Exception e) {
+			auth3ds = "Y";
 			Util.writeInFileTransaction(folder, file, "authorization 500 malformed json expression auth3ds " + e);
 		}
-		
+
 		// get cardnumber by token
 		if (!token.equals("") && token != null && !token.equals("null")) {
 			try {
@@ -447,7 +447,7 @@ public class APIController {
 			dmd.setCountry(country);
 			dmd.setState(state);
 			dmd.setPostcode(zipcode);
-			if(transactiontype.equals("P")) {
+			if (transactiontype.equals("P")) {
 				// stokage date exp pour utiliser dans la capture (api : .../cpautorisation)
 				dmd.setDateexpnaps(expirydate);
 			}
@@ -512,61 +512,56 @@ public class APIController {
 					null);
 		}
 		Util.writeInFileTransaction(folder, file, "Fin controlleRisk");
-		
+
 		// old
-		/*GWRiskAnalysis riskAnalysis = new GWRiskAnalysis(folder, file);
-		try {
-			ControlRiskCmrDto controlRiskCmr = controlRiskCmrService.findByNumCommercant(dmdSaved.getComid());
-			List<HistoAutoGateDto> porteurFlowPerDay = null;
-
-			Double globalFlowPerDay = 0.00;
-			List<EmetteurDto> listBin = null;
-
-			if (controlRiskCmr != null) {				
-				// -------- Controle des cartes internationales --------
-				 
-				if (isNullOrEmpty(controlRiskCmr.getAcceptInternational())
-						|| (controlRiskCmr.getAcceptInternational() != null && !ACTIVE.getFlag()
-								.equalsIgnoreCase(controlRiskCmr.getAcceptInternational().trim()))) {
-					String binDebutCarte = cardnumber.substring(0, 9);
-					// binDebutCarte = binDebutCarte + "000";
-					Util.writeInFileTransaction(folder, file, "controlRiskCmr ici 1");
-					listBin = emetteurService.findByBindebut(binDebutCarte);
-				}
-				// -------- Controle de flux journalier autorisé par commerçant --------
-				if (!isNullOrEmpty(controlRiskCmr.getIsGlobalFlowControlActive())
-						&& ACTIVE.getFlag().equalsIgnoreCase(controlRiskCmr.getIsGlobalFlowControlActive())) {
-					Util.writeInFileTransaction(folder, file, "controlRiskCmr ici 2");
-					globalFlowPerDay = histoAutoGateService.getCommercantGlobalFlowPerDay(merchantid);
-				}
-				// -------- Controle de flux journalier autorisé par client (porteur de carte) --------
-				if ((controlRiskCmr.getFlowCardPerDay() != null && controlRiskCmr.getFlowCardPerDay() > 0)
-						|| (controlRiskCmr.getNumberOfTransactionCardPerDay() != null
-								&& controlRiskCmr.getNumberOfTransactionCardPerDay() > 0)) {
-					Util.writeInFileTransaction(folder, file, "controlRiskCmr ici 3");
-					porteurFlowPerDay = histoAutoGateService.getPorteurMerchantFlowPerDay(dmdSaved.getComid(),
-							dmdSaved.getDem_pan());
-				}
-			}
-			String msg = riskAnalysis.executeRiskControls(dmdSaved.getComid(), dmdSaved.getMontant(),
-					dmdSaved.getDem_pan(), controlRiskCmr, globalFlowPerDay, porteurFlowPerDay, listBin);
-
-			if (!msg.equalsIgnoreCase("OK")) {
-				dmdSaved.setEtat_demande("REJET_RISK_CTRL");
-				demandePaiementService.save(dmdSaved);
-				Util.writeInFileTransaction(folder, file, "authorization 500 " + msg);
-				return getMsgError(folder, file, jsonOrequest, "authorization 500 " + msg, null);
-			}
-			// fin control risk
-		} catch (Exception e) {
-			dmdSaved.setEtat_demande("REJET_RISK_CTRL");
-			demandePaiementService.save(dmdSaved);
-			Util.writeInFileTransaction(folder, file,
-					"authorization 500 ControlRiskCmr misconfigured in DB or not existing merchantid:["
-							+ dmdSaved.getComid() + e);
-			return getMsgError(folder, file, jsonOrequest, "authorization 500 Error Opération rejetée: Contrôle risque",
-					null);
-		}*/
+		/*
+		 * GWRiskAnalysis riskAnalysis = new GWRiskAnalysis(folder, file); try {
+		 * ControlRiskCmrDto controlRiskCmr =
+		 * controlRiskCmrService.findByNumCommercant(dmdSaved.getComid());
+		 * List<HistoAutoGateDto> porteurFlowPerDay = null;
+		 * 
+		 * Double globalFlowPerDay = 0.00; List<EmetteurDto> listBin = null;
+		 * 
+		 * if (controlRiskCmr != null) { // -------- Controle des cartes internationales
+		 * --------
+		 * 
+		 * if (isNullOrEmpty(controlRiskCmr.getAcceptInternational()) ||
+		 * (controlRiskCmr.getAcceptInternational() != null && !ACTIVE.getFlag()
+		 * .equalsIgnoreCase(controlRiskCmr.getAcceptInternational().trim()))) { String
+		 * binDebutCarte = cardnumber.substring(0, 9); // binDebutCarte = binDebutCarte
+		 * + "000"; Util.writeInFileTransaction(folder, file, "controlRiskCmr ici 1");
+		 * listBin = emetteurService.findByBindebut(binDebutCarte); } // --------
+		 * Controle de flux journalier autorisé par commerçant -------- if
+		 * (!isNullOrEmpty(controlRiskCmr.getIsGlobalFlowControlActive()) &&
+		 * ACTIVE.getFlag().equalsIgnoreCase(controlRiskCmr.getIsGlobalFlowControlActive
+		 * ())) { Util.writeInFileTransaction(folder, file, "controlRiskCmr ici 2");
+		 * globalFlowPerDay =
+		 * histoAutoGateService.getCommercantGlobalFlowPerDay(merchantid); } // --------
+		 * Controle de flux journalier autorisé par client (porteur de carte) --------
+		 * if ((controlRiskCmr.getFlowCardPerDay() != null &&
+		 * controlRiskCmr.getFlowCardPerDay() > 0) ||
+		 * (controlRiskCmr.getNumberOfTransactionCardPerDay() != null &&
+		 * controlRiskCmr.getNumberOfTransactionCardPerDay() > 0)) {
+		 * Util.writeInFileTransaction(folder, file, "controlRiskCmr ici 3");
+		 * porteurFlowPerDay =
+		 * histoAutoGateService.getPorteurMerchantFlowPerDay(dmdSaved.getComid(),
+		 * dmdSaved.getDem_pan()); } } String msg =
+		 * riskAnalysis.executeRiskControls(dmdSaved.getComid(), dmdSaved.getMontant(),
+		 * dmdSaved.getDem_pan(), controlRiskCmr, globalFlowPerDay, porteurFlowPerDay,
+		 * listBin);
+		 * 
+		 * if (!msg.equalsIgnoreCase("OK")) {
+		 * dmdSaved.setEtat_demande("REJET_RISK_CTRL");
+		 * demandePaiementService.save(dmdSaved); Util.writeInFileTransaction(folder,
+		 * file, "authorization 500 " + msg); return getMsgError(folder, file,
+		 * jsonOrequest, "authorization 500 " + msg, null); } // fin control risk }
+		 * catch (Exception e) { dmdSaved.setEtat_demande("REJET_RISK_CTRL");
+		 * demandePaiementService.save(dmdSaved); Util.writeInFileTransaction(folder,
+		 * file,
+		 * "authorization 500 ControlRiskCmr misconfigured in DB or not existing merchantid:["
+		 * + dmdSaved.getComid() + e); return getMsgError(folder, file, jsonOrequest,
+		 * "authorization 500 Error Opération rejetée: Contrôle risque", null); }
+		 */
 
 		try {
 			formatheure = new SimpleDateFormat("HHmmss");
@@ -599,11 +594,11 @@ public class APIController {
 
 			threeDsecureResponse.setReponseMPI("Y");
 		} else {
-			if(auth3ds.equals("N")) {
-				Util.writeInFileTransaction(folder, file,"Si auth3ds = N passer sans 3DS ");
+			if (auth3ds.equals("N")) {
+				Util.writeInFileTransaction(folder, file, "Si auth3ds = N passer sans 3DS ");
 				threeDsecureResponse.setReponseMPI("Y");
 			} else {
-				Util.writeInFileTransaction(folder, file,"Si auth3ds = Y passer avec 3DS ");
+				Util.writeInFileTransaction(folder, file, "Si auth3ds = Y passer avec 3DS ");
 				threeDsecureResponse = autorisationService.preparerReqThree3DSS(dmdSaved, folder, file);
 			}
 		}
@@ -692,7 +687,7 @@ public class APIController {
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 			}
-			
+
 			// 2024-03-05
 			montanttrame = formatMontantTrame(folder, file, amount, orderid, merchantid, jsonOrequest);
 
@@ -1064,7 +1059,7 @@ public class APIController {
 					Util.writeInFileTransaction(folder, file, "authorization 500 Error codeReponseDto null");
 					ee.printStackTrace();
 				}
-				
+
 				websiteid = dmd.getGalid();
 
 				Util.writeInFileTransaction(folder, file, "get status Switch status : [" + s_status + "]");
@@ -1075,7 +1070,7 @@ public class APIController {
 				Util.writeInFileTransaction(folder, file, "formatting pan Ok pan_auto :[" + pan_auto + "]");
 
 				Util.writeInFileTransaction(folder, file, "HistoAutoGate data filling start ...");
-				
+
 				Util.writeInFileTransaction(folder, file, "websiteid : " + websiteid);
 
 				Date current_date_1 = getDateWithoutTime(curren_date_hist);
@@ -1140,7 +1135,7 @@ public class APIController {
 				Util.writeInFileTransaction(folder, file, "HistoAutoGate Saving ...");
 
 				histoAutoGateService.save(hist);
-				
+
 				Util.writeInFileTransaction(folder, file, "hatNomdeandeur : " + hist.getHatNomdeandeur());
 
 			} catch (Exception e) {
@@ -1171,9 +1166,9 @@ public class APIController {
 					Util.writeInFileTransaction(folder, file, "update etat demande : SW_PAYE ...");
 
 					dmd.setEtat_demande("SW_PAYE");
-					if(dmd.getTransactiontype().equals("0")) {
+					if (dmd.getTransactiontype().equals("0")) {
 						dmd.setDem_cvv("");
-					}	
+					}
 					demandePaiementService.save(dmd);
 				} catch (Exception e) {
 					dmd.setDem_cvv("");
@@ -1823,11 +1818,11 @@ public class APIController {
 					amount = amount.replace(",", ".");
 				}
 				dmd.setMontant(Double.parseDouble(amount));
-				if(lname.length() > 25) {
+				if (lname.length() > 25) {
 					lname = lname.substring(0, 25);
 				}
 				dmd.setNom(lname);
-				if(fname.length() > 20) {
+				if (fname.length() > 20) {
 					fname = fname.substring(0, 20);
 				}
 				dmd.setPrenom(fname);
@@ -2397,41 +2392,34 @@ public class APIController {
 		if (current_hist != null)
 			rep_auto = current_hist.getHatCoderep();
 
-		if (E == 'E')
+		if (E == 'E') {
 			if (rep_auto.equalsIgnoreCase("00")) {
 				status_ = "Paid";
 				statuscode_ = "00";
 
 				String spr = pr + "";
 				if (spr.equalsIgnoreCase("4")) {
-
 					status_ = "Refunded";
 					statuscode_ = "07";
 				}
-
 			}
 
-		if (E == 'E')
 			if (!rep_auto.equalsIgnoreCase("00")) {
 				status_ = "Declinded";
-				statuscode_ = "03";
+				statuscode_ = "01";
 
 				String spr = pr + "";
 				if (spr.equalsIgnoreCase("4")) {
-
 					status_ = "Refund_Declined";
 					statuscode_ = "08";
 				}
-
 			}
-
-		if (E == 'X') {
-
+		} else if (E == 'X') {
+			// E == 'X' if trs not approuved (repauto != 00)
 			status_ = "Declinded";
-			statuscode_ = "03";
-		}
-
-		if (E == 'A') {
+			statuscode_ = "01";
+		} else if (E == 'A') {
+			// E == 'X' if trs canceled
 			status_ = "Canceled";
 			statuscode_ = "04";
 		}
@@ -2451,44 +2439,29 @@ public class APIController {
 
 				return getMsgError(folder, file, jsonOrequest, "status 500 Error during Transaction", null);
 			}
-		}
 
-		if (E == 'T')
 			if (trs_check != null) {
-
+				// E == 'T' if trs captured
 				status_ = "Captured";
-				statuscode_ = "01";
+				statuscode_ = "02";
 
-			}
-
-		if (E == 'T')
-			if (trs_check != null)
 				trs_state = trs_check.getTrs_etat();
 
-		if (E == 'T')
-			if (trs_check != null)
-				if (trs_state == null) {
-
-					status_ = "Uknown";
-					statuscode_ = "06";
-
-				}
-
-		if (E == 'T')
-			if (trs_check != null)
 				if (trs_state.equalsIgnoreCase("N")) {
-
 					status_ = "Captured";
-					statuscode_ = "01";
-				}
-
-		if (E == 'T')
-			if (trs_check != null)
-				if (trs_state.equalsIgnoreCase("E")) {
-
-					status_ = "Settled";
 					statuscode_ = "02";
 				}
+
+				if (trs_state.equalsIgnoreCase("E")) {
+					status_ = "Settled";
+					statuscode_ = "03";
+				}
+			}
+			if (trs_state == null) {
+				status_ = "Uknown";
+				statuscode_ = "06";
+			}
+		}
 
 		String dmd_status = current_dmd.getEtat_demande();
 		if (dmd_status.equalsIgnoreCase("R")) {
@@ -4503,7 +4476,7 @@ public class APIController {
 					demandePaiementService.save(dmd);
 				}
 				// add payment 0 dh test
-				
+
 				// 2024-03-05
 				montanttrame = formatMontantTrame(folder, file, amount, orderid, merchantid, jsonOrequest);
 
@@ -4856,7 +4829,7 @@ public class APIController {
 					Util.writeInFileTransaction(folder, file, "savingcardtoken 500 Error codeReponseDto null");
 					ee.printStackTrace();
 				}
-				
+
 				websiteid = dmd.getGalid();
 
 				Util.writeInFileTransaction(folder, file, "get status Switch status : [" + s_status + "]");
@@ -4878,7 +4851,7 @@ public class APIController {
 					Util.writeInFileTransaction(folder, file, "formatting pan Ok pan_auto :[" + pan_auto + "]");
 
 					Util.writeInFileTransaction(folder, file, "HistoAutoGate data filling start ...");
-					
+
 					Util.writeInFileTransaction(folder, file, "websiteid : " + websiteid);
 
 					Date current_date_1 = getDateWithoutTime(curren_date_hist);
@@ -4936,7 +4909,7 @@ public class APIController {
 					Util.writeInFileTransaction(folder, file, "HistoAutoGate Saving ...");
 
 					histoAutoGateService.save(hist);
-					
+
 					Util.writeInFileTransaction(folder, file, "hatNomdeandeur : " + hist.getHatNomdeandeur());
 
 				} catch (Exception e) {
@@ -5013,8 +4986,8 @@ public class APIController {
 
 					} catch (Exception e) {
 						Util.writeInFileTransaction(folder, file,
-								"savingcardtoken 500 Error during DEMANDE_PAIEMENT update etat demande for given orderid:[" + orderid
-										+ "]" + e);
+								"savingcardtoken 500 Error during DEMANDE_PAIEMENT update etat demande for given orderid:["
+										+ orderid + "]" + e);
 					}
 
 					Util.writeInFileTransaction(folder, file, "update etat demande : SW_PAYE OK");
@@ -5107,7 +5080,7 @@ public class APIController {
 					}
 
 					Util.writeInFileTransaction(folder, file, "update Demandepaiement status to SW_REJET OK.");
-					
+
 					Util.writeInFileTransaction(folder, file,
 							"saving token failed, coderep : [" + tag20_resp + "]" + "motif : [" + s_status + "]");
 					// Card info
@@ -6050,7 +6023,7 @@ public class APIController {
 			return getMsgError(folder, file, jsonOrequest, "cpautorisation 500 Error during authdata preparation",
 					codrep);
 		}
-		if(current_hist.getHatEtat().equals('A') || current_hist.getHatEtat() == 'A') {
+		if (current_hist.getHatEtat().equals('A') || current_hist.getHatEtat() == 'A') {
 			motif = "You can't make the capture because pre-auth is already cancelled";
 		} else {
 			Util.writeInFileTransaction(folder, file, "montantPreAuto : " + montantPreAuto);
@@ -6058,10 +6031,10 @@ public class APIController {
 			// toujours on fait la telecollecte auto dans la confirmation pre-auto (capture=
 			// "Y")
 			capture = "Y";
-			
+
 			Util.writeInFileTransaction(folder, file, "confirmer telecollecte montantPreAuto");
 			if (codrep.equalsIgnoreCase("00")) {
-				if(montantCfr <= montantPreAuto) {
+				if (montantCfr <= montantPreAuto) {
 					montantPreAuto = montantCfr;
 				}
 				String capture_status = "N";
@@ -6205,7 +6178,7 @@ public class APIController {
 				Util.writeInFileTransaction(folder, file, "transaction declined !!! ");
 				Util.writeInFileTransaction(folder, file, "SWITCH RESONSE CODE :[" + codrep + "]");
 			}
-			
+
 			if (montantCfr > montantPreAuto) {
 				Util.writeInFileTransaction(folder, file, "if(montantCfr > montantPreAuto)");
 				Double montantToDebite = 0.00;
@@ -6297,8 +6270,8 @@ public class APIController {
 					dmdSaved = demandePaiementService.save(dmd);
 				} catch (Exception err1) {
 					Util.writeInFileTransaction(folder, file,
-							"cpautorisation 500 Error during DEMANDE_PAIEMENT insertion for given orderid:[" + orderid + "]"
-									+ err1);
+							"cpautorisation 500 Error during DEMANDE_PAIEMENT insertion for given orderid:[" + orderid
+									+ "]" + err1);
 
 					return getMsgError(folder, file, jsonOrequest,
 							"cpautorisation 500 Error during DEMANDE_PAIEMENT insertion", null);
@@ -6392,11 +6365,11 @@ public class APIController {
 
 					} catch (Exception err4) {
 						Util.writeInFileTransaction(folder, file,
-								"cpautorisation 500 Error during switch tlv buildup for given orderid:[" + orderidToDebite
-										+ "] and merchantid:[" + merchantid + "]" + err4);
+								"cpautorisation 500 Error during switch tlv buildup for given orderid:["
+										+ orderidToDebite + "] and merchantid:[" + merchantid + "]" + err4);
 
-						return getMsgError(folder, file, jsonOrequest, "cpautorisation 500 Error during switch tlv buildup",
-								"96");
+						return getMsgError(folder, file, jsonOrequest,
+								"cpautorisation 500 Error during switch tlv buildup", "96");
 					}
 					Util.writeInFileTransaction(folder, file, "Switch TLV Request :[" + tlv + "]");
 				}
@@ -6422,8 +6395,8 @@ public class APIController {
 					if (!s_conn) {
 						Util.writeInFileTransaction(folder, file, "Switch  malfunction cannot connect!!!");
 
-						//return getMsgError(folder, file, jsonOrequest,
-						//		"cpautorisation 500 Error Switch communication s_conn false", "96");
+						// return getMsgError(folder, file, jsonOrequest,
+						// "cpautorisation 500 Error Switch communication s_conn false", "96");
 						motif = "cpautorisation pre-autorisation approved, but supplement amount failed";
 						codrep = "96";
 					}
@@ -6441,15 +6414,15 @@ public class APIController {
 				} catch (UnknownHostException e) {
 					Util.writeInFileTransaction(folder, file, "Switch  malfunction UnknownHostException !!!" + e);
 
-					//return getMsgError(folder, file, jsonOrequest,
-					//		"cpautorisation 500 Error Switch communication UnknownHostException", "96");
+					// return getMsgError(folder, file, jsonOrequest,
+					// "cpautorisation 500 Error Switch communication UnknownHostException", "96");
 					motif = "cpautorisation pre-autorisation approved, but supplement amount failed";
 					codrep = "96";
 				} catch (java.net.ConnectException e) {
 					Util.writeInFileTransaction(folder, file, "Switch  malfunction ConnectException !!!" + e);
 					switch_ko = 1;
-					//return getMsgError(folder, file, jsonOrequest,
-					//		"cpautorisation 500 Error Switch communication ConnectException", "96");
+					// return getMsgError(folder, file, jsonOrequest,
+					// "cpautorisation 500 Error Switch communication ConnectException", "96");
 					motif = "cpautorisation pre-autorisation approved, but supplement amount failed";
 					codrep = "96";
 				}
@@ -6459,9 +6432,10 @@ public class APIController {
 					switch_ko = 1;
 					e.printStackTrace();
 					Util.writeInFileTransaction(folder, file,
-							"cpautorisation 500 Error Switch communication SocketTimeoutException" + "switch ip:[" + sw_s
-									+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-					//return getMsgError(folder, file, jsonOrequest, "Switch  malfunction  SocketTimeoutException !!!", "96");
+							"cpautorisation 500 Error Switch communication SocketTimeoutException" + "switch ip:["
+									+ sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
+					// return getMsgError(folder, file, jsonOrequest, "Switch malfunction
+					// SocketTimeoutException !!!", "96");
 					motif = "cpautorisation pre-autorisation approved, but supplement amount failed";
 					codrep = "96";
 				}
@@ -6470,9 +6444,11 @@ public class APIController {
 					Util.writeInFileTransaction(folder, file, "Switch  malfunction IOException !!!" + e);
 					switch_ko = 1;
 					e.printStackTrace();
-					Util.writeInFileTransaction(folder, file, "cpautorisation 500 Error Switch communication IOException"
-							+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-					//return getMsgError(folder, file, jsonOrequest, "Switch  malfunction  IOException !!!", "96");
+					Util.writeInFileTransaction(folder, file,
+							"cpautorisation 500 Error Switch communication IOException" + "switch ip:[" + sw_s
+									+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
+					// return getMsgError(folder, file, jsonOrequest, "Switch malfunction
+					// IOException !!!", "96");
 					motif = "cpautorisation pre-autorisation approved, but supplement amount failed";
 					codrep = "96";
 				}
@@ -6481,8 +6457,8 @@ public class APIController {
 					Util.writeInFileTransaction(folder, file, "Switch  malfunction Exception!!!" + e);
 					switch_ko = 1;
 					e.printStackTrace();
-					//return getMsgError(folder, file, jsonOrequest,
-					//		"cpautorisation 500 Error Switch communication General Exception", "96");
+					// return getMsgError(folder, file, jsonOrequest,
+					// "cpautorisation 500 Error Switch communication General Exception", "96");
 					motif = "cpautorisation pre-autorisation approved, but supplement amount failed";
 					codrep = "96";
 				}
@@ -6494,7 +6470,8 @@ public class APIController {
 					switch_ko = 1;
 					Util.writeInFileTransaction(folder, file, "cpautorisation 500 Error Switch null response"
 							+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-					//return getMsgError(folder, file, jsonOrequest, "Switch  malfunction resp null!!!", "96");
+					// return getMsgError(folder, file, jsonOrequest, "Switch malfunction resp
+					// null!!!", "96");
 					motif = "cpautorisation pre-autorisation approved, but supplement amount failed";
 					codrep = "96";
 				}
@@ -6503,8 +6480,9 @@ public class APIController {
 					switch_ko = 1;
 
 					Util.writeInFileTransaction(folder, file, "Switch  malfunction resp < 3 !!!");
-					Util.writeInFileTransaction(folder, file, "cpautorisation 500 Error Switch short response length() < 3 "
-							+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
+					Util.writeInFileTransaction(folder, file,
+							"cpautorisation 500 Error Switch short response length() < 3 " + "switch ip:[" + sw_s
+									+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
 				}
 
 				Util.writeInFileTransaction(folder, file, "Switch TLV Respnose :[" + resp + "]");
@@ -6555,8 +6533,8 @@ public class APIController {
 						switch_ko = 1;
 						Util.writeInFileTransaction(folder, file,
 								"cpautorisation 500 Error during tlv Switch response parse tag1_resp tag null"
-										+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv
-										+ "]");
+										+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : ["
+										+ resp_tlv + "]");
 					}
 
 					if (tag1_resp != null && tag1_resp.length() < 3) {
@@ -6564,8 +6542,8 @@ public class APIController {
 						switch_ko = 1;
 						Util.writeInFileTransaction(folder, file,
 								"cpautorisation 500 Error during tlv Switch response parse tag1_resp length tag  < 3"
-										+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv
-										+ "]");
+										+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : ["
+										+ resp_tlv + "]");
 					}
 
 					if (tag20_resp == null) {
@@ -6573,8 +6551,8 @@ public class APIController {
 						switch_ko = 1;
 						Util.writeInFileTransaction(folder, file,
 								"cpautorisation 500 Error during tlv Switch response parse tag1_resp tag null"
-										+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv
-										+ "]");
+										+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : ["
+										+ resp_tlv + "]");
 					}
 				}
 				Util.writeInFileTransaction(folder, file, "Switch TLV Respnose Processed");
@@ -6632,7 +6610,7 @@ public class APIController {
 										+ orderidToDebite + "]" + e);
 					}
 					Util.writeInFileTransaction(folder, file, "update etat demande : SW_PAYE OK");
-					
+
 					Util.writeInFileTransaction(folder, file, "Insert into Histogate...");
 
 					try {
@@ -6663,14 +6641,14 @@ public class APIController {
 						Util.writeInFileTransaction(folder, file, "formatting pan Ok pan_auto :[" + pan_auto + "]");
 
 						Util.writeInFileTransaction(folder, file, "HistoAutoGate data filling start ...");
-						
+
 						Util.writeInFileTransaction(folder, file, "websiteid : " + websiteid);
 
 						Date current_date_1 = getDateWithoutTime(curren_date_hist);
 						hist.setHatDatdem(current_date_1);
 
 						hist.setHatHerdem(new SimpleDateFormat("HH:mm").format(curren_date_hist));
-						//hist.setHatMontant(Double.parseDouble(amount));
+						// hist.setHatMontant(Double.parseDouble(amount));
 						hist.setHatMontant(montantToDebite);
 						hist.setHatNumcmr(merchantid);
 						hist.setHatCoderep(tag20_resp_verified);
@@ -6727,13 +6705,13 @@ public class APIController {
 						Util.writeInFileTransaction(folder, file, "HistoAutoGate Saving ...");
 
 						histoAutoGateService.save(hist);
-						
+
 						Util.writeInFileTransaction(folder, file, "hatNomdeandeur : " + hist.getHatNomdeandeur());
 
 					} catch (Exception e) {
 						Util.writeInFileTransaction(folder, file,
-								"cpautorisation 500 Error during  insert in histoautogate for given orderid:[" + orderidToDebite
-										+ "]" + e);
+								"cpautorisation 500 Error during  insert in histoautogate for given orderid:["
+										+ orderidToDebite + "]" + e);
 						try {
 							Util.writeInFileTransaction(folder, file, "2eme tentative : HistoAutoGate Saving ... ");
 							histoAutoGateService.save(hist);
@@ -6906,10 +6884,9 @@ public class APIController {
 					Util.writeInFileTransaction(folder, file, "SWITCH RESONSE CODE :[" + codrep + "]");
 					motif = "cpautorisation pre-autorisation approved, but supplement amount failed";
 				}
-				
+
 			}
 		}
-		
 
 		Util.writeInFileTransaction(folder, file, "Preparing cpautorisation api response");
 		try {
