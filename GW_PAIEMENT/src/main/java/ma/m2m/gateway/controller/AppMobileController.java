@@ -546,7 +546,7 @@ public class AppMobileController {
 						if (reponseMPI.equals("Y")) {
 							// ********************* Frictionless responseMPI equal Y *********************
 							Util.writeInFileTransaction(folder, file,
-									"********************* Cas frictionless responseMPI equal Y *********************");
+									"********************* responseMPI equal Y *********************");
 							if (!threeDSServerTransID.equals("")) {
 								dmd.setDem_xid(threeDSServerTransID);
 								dmd.setEtat_demande("RETOUR_ACS_AUTH_OK");
@@ -1145,6 +1145,22 @@ public class AppMobileController {
 								int exp_flag = 0;
 
 								if (capture.equalsIgnoreCase("Y")) {
+									// 2024-05-17
+									HistoAutoGateDto histToCapture= null;
+									try {
+										// get histoauto check if exist
+										histToCapture = histoAutoGateService.findByHatNumCommandeAndHatNumcmr(orderid, merchantid);
+										if(histToCapture !=null) {
+											histoAutoGateService.save(histToCapture);
+										} else {
+											histToCapture = hist;
+										}
+									} catch (Exception err2) {
+										Util.writeInFileTransaction(folder, file,
+												"authorization 500 Error during HistoAutoGate findByNumAuthAndNumCommercant orderid:[" + orderid
+														+ "] and merchantid:[" + merchantid + "]" + err2);
+									}
+									// 2024-05-17
 
 									Date current_date = null;
 									current_date = new Date();
@@ -1152,7 +1168,7 @@ public class AppMobileController {
 
 									Util.writeInFileTransaction(folder, file, "Getting authnumber");
 
-									String authnumber = hist.getHatNautemt();
+									String authnumber = histToCapture.getHatNautemt();
 									Util.writeInFileTransaction(folder, file, "authnumber : [" + authnumber + "]");
 
 									Util.writeInFileTransaction(folder, file, "Getting authnumber");
@@ -1198,7 +1214,7 @@ public class AppMobileController {
 												tlc = new TelecollecteDto();
 												tlc.setTlc_numtlcolcte(lidtelc);
 
-												tlc.setTlc_numtpe(hist.getHatCodtpe());
+												tlc.setTlc_numtpe(histToCapture.getHatCodtpe());
 
 												tlc.setTlc_datcrtfich(current_date);
 												tlc.setTlc_nbrtrans(new Double(1));
@@ -1252,7 +1268,7 @@ public class AppMobileController {
 
 											trs.setTrsnumaut(authnumber);
 											trs.setTrs_etat("N");
-											trs.setTrs_devise(hist.getHatDevise());
+											trs.setTrs_devise(histToCapture.getHatDevise());
 											trs.setTrs_certif("N");
 											Integer idtrs = transactionService.getMAX_ID();
 											long lidtrs = idtrs.longValue() + 1;
@@ -1260,12 +1276,15 @@ public class AppMobileController {
 											trs.setTrs_commande(orderid);
 											trs.setTrs_procod("0");
 											trs.setTrs_groupe(websiteid);
+											trs.setTrs_codtpe(0.0);
+											trs.setTrs_numbloc(0.0);
+											trs.setTrs_numfact(0.0);
 											transactionService.save(trs);
 
-											hist.setHatEtat('T');
-											hist.setHatdatetlc(current_date);
-											hist.setOperateurtlc("mxplusapi");
-											histoAutoGateService.save(hist);
+											histToCapture.setHatEtat('T');
+											histToCapture.setHatdatetlc(current_date);
+											histToCapture.setOperateurtlc("mxplusapi");
+											histoAutoGateService.save(histToCapture);
 
 											capture_id = String.format("%040d",
 													new BigInteger(UUID.randomUUID().toString().replace("-", ""), 36));
@@ -2618,68 +2637,6 @@ public class AppMobileController {
 		}
 		Util.writeInFileTransaction(folder, file, "Fin controlleRisk");
 		
-		// old
-		/*GWRiskAnalysis riskAnalysis = new GWRiskAnalysis(folder, file);
-		try {
-			ControlRiskCmrDto controlRiskCmr = controlRiskCmrService.findByNumCommercant(demandeDto.getComid());
-			List<HistoAutoGateDto> porteurFlowPerDay = null;
-
-			Double globalFlowPerDay = 0.00;
-			List<EmetteurDto> listBin = null;
-
-			if (controlRiskCmr != null) {
-				 // -------- Controle des cartes internationales --------
-				 
-				if (isNullOrEmpty(controlRiskCmr.getAcceptInternational())
-						|| (controlRiskCmr.getAcceptInternational() != null && !ACTIVE.getFlag()
-								.equalsIgnoreCase(controlRiskCmr.getAcceptInternational().trim()))) {
-					String binDebutCarte = cardnumber.substring(0, 9);
-					// binDebutCarte = binDebutCarte+"000";
-					Util.writeInFileTransaction(folder, file, "controlRiskCmr ici 1");
-					listBin = emetteurService.findByBindebut(binDebutCarte);
-				}
-				// -------- Controle de flux journalier autorisé par commerçant --------
-				if (!isNullOrEmpty(controlRiskCmr.getIsGlobalFlowControlActive())
-						&& ACTIVE.getFlag().equalsIgnoreCase(controlRiskCmr.getIsGlobalFlowControlActive())) {
-					Util.writeInFileTransaction(folder, file, "controlRiskCmr ici 2");
-					globalFlowPerDay = histoAutoGateService.getCommercantGlobalFlowPerDay(merchantid);
-				}
-				// -------- Controle de flux journalier autorisé par client (porteur de carte) --------
-				if ((controlRiskCmr.getFlowCardPerDay() != null && controlRiskCmr.getFlowCardPerDay() > 0)
-						|| (controlRiskCmr.getNumberOfTransactionCardPerDay() != null
-								&& controlRiskCmr.getNumberOfTransactionCardPerDay() > 0)) {
-					Util.writeInFileTransaction(folder, file, "controlRiskCmr ici 3");
-					porteurFlowPerDay = histoAutoGateService.getPorteurMerchantFlowPerDay(demandeDto.getComid(),
-							demandeDto.getDem_pan());
-				}
-			}
-			String msg = riskAnalysis.executeRiskControls(demandeDto.getComid(), demandeDto.getMontant(),
-					demandeDto.getDem_pan(), controlRiskCmr, globalFlowPerDay, porteurFlowPerDay, listBin);
-
-			if (!msg.equalsIgnoreCase("OK")) {
-				demandeDto.setEtat_demande("REJET_RISK_CTRL");
-				demandePaiementService.save(demandeDto);
-				Util.writeInFileTransaction(folder, file, "recharger 500 Error " + msg);
-				demandeDto = new DemandePaiementDto();
-				demandeDtoMsg.setMsgRefus(msg);
-				model.addAttribute("demandeDto", demandeDtoMsg);
-				page = "result";
-				return page;
-			}
-			// fin control risk
-		} catch (Exception e) {
-			demandeDto.setEtat_demande("REJET_RISK_CTRL");
-			demandePaiementService.save(demandeDto);
-			Util.writeInFileTransaction(folder, file,
-					"recharger 500 ControlRiskCmr misconfigured in DB or not existing merchantid:["
-							+ demandeDto.getComid() + e);
-			demandeDto = new DemandePaiementDto();
-			demandeDtoMsg.setMsgRefus("Error 500 Opération rejetée: Contrôle risque");
-			model.addAttribute("demandeDto", demandeDtoMsg);
-			page = "result";
-			return page;
-		}*/
-		
 		// saving card if flagSaveCarte true
 		if (demandeDto.isFlagSaveCarte()) {
 			try {
@@ -3433,6 +3390,22 @@ public class AppMobileController {
 				int exp_flag = 0;
 
 				if (capture.equalsIgnoreCase("Y")) {
+					// 2024-05-17
+					HistoAutoGateDto histToCapture= null;
+					try {
+						// get histoauto check if exist
+						histToCapture = histoAutoGateService.findByHatNumCommandeAndHatNumcmr(orderid, merchantid);
+						if(histToCapture !=null) {
+							histoAutoGateService.save(histToCapture);
+						} else {
+							histToCapture = hist;
+						}
+					} catch (Exception err2) {
+						Util.writeInFileTransaction(folder, file,
+								"authorization 500 Error during HistoAutoGate findByNumAuthAndNumCommercant orderid:[" + orderid
+										+ "] and merchantid:[" + merchantid + "]" + err2);
+					}
+					// 2024-05-17
 
 					Date current_date = null;
 					current_date = new Date();
@@ -3440,7 +3413,7 @@ public class AppMobileController {
 
 					Util.writeInFileTransaction(folder, file, "Getting authnumber");
 
-					String authnumber = hist.getHatNautemt();
+					String authnumber = histToCapture.getHatNautemt();
 					Util.writeInFileTransaction(folder, file, "authnumber : [" + authnumber + "]");
 
 					Util.writeInFileTransaction(folder, file, "Getting authnumber");
@@ -3480,7 +3453,7 @@ public class AppMobileController {
 								tlc = new TelecollecteDto();
 								tlc.setTlc_numtlcolcte(lidtelc);
 
-								tlc.setTlc_numtpe(hist.getHatCodtpe());
+								tlc.setTlc_numtpe(histToCapture.getHatCodtpe());
 
 								tlc.setTlc_datcrtfich(current_date);
 								tlc.setTlc_nbrtrans(new Double(1));
@@ -3533,7 +3506,7 @@ public class AppMobileController {
 
 							trs.setTrsnumaut(authnumber);
 							trs.setTrs_etat("N");
-							trs.setTrs_devise(hist.getHatDevise());
+							trs.setTrs_devise(histToCapture.getHatDevise());
 							trs.setTrs_certif("N");
 							Integer idtrs = transactionService.getMAX_ID();
 							long lidtrs = idtrs.longValue() + 1;
@@ -3541,12 +3514,15 @@ public class AppMobileController {
 							trs.setTrs_commande(orderid);
 							trs.setTrs_procod("0");
 							trs.setTrs_groupe(websiteid);
+							trs.setTrs_codtpe(0.0);
+							trs.setTrs_numbloc(0.0);
+							trs.setTrs_numfact(0.0);
 							transactionService.save(trs);
 
-							hist.setHatEtat('T');
-							hist.setHatdatetlc(current_date);
-							hist.setOperateurtlc("mxplusapi");
-							histoAutoGateService.save(hist);
+							histToCapture.setHatEtat('T');
+							histToCapture.setHatdatetlc(current_date);
+							histToCapture.setOperateurtlc("mxplusapi");
+							histoAutoGateService.save(histToCapture);
 
 							capture_id = String.format("%040d",
 									new BigInteger(UUID.randomUUID().toString().replace("-", ""), 36));

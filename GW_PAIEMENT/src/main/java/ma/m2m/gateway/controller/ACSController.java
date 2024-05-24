@@ -1159,6 +1159,22 @@ public class ACSController {
 								int exp_flag = 0;
 
 								if (capture.equalsIgnoreCase("Y")) {
+									// 2024-05-17
+									HistoAutoGateDto histToCapture= null;
+									try {
+										// get histoauto check if exist
+										histToCapture = histoAutoGateService.findByHatNumCommandeAndHatNumcmr(orderid, merchantid);
+										if(histToCapture !=null) {
+											histoAutoGateService.save(histToCapture);
+										} else {
+											histToCapture = hist;
+										}
+									} catch (Exception err2) {
+										Util.writeInFileTransaction(folder, file,
+												"authorization 500 Error during HistoAutoGate findByNumAuthAndNumCommercant orderid:[" + orderid
+														+ "] and merchantid:[" + merchantid + "]" + err2);
+									}
+									// 2024-05-17
 
 									Date current_date = null;
 									current_date = new Date();
@@ -1166,7 +1182,7 @@ public class ACSController {
 
 									Util.writeInFileTransaction(folder, file, "Getting authnumber");
 
-									String authnumber = hist.getHatNautemt();
+									String authnumber = histToCapture.getHatNautemt();
 									Util.writeInFileTransaction(folder, file, "authnumber : [" + authnumber + "]");
 
 									Util.writeInFileTransaction(folder, file, "Getting authnumber");
@@ -1212,7 +1228,7 @@ public class ACSController {
 												tlc = new TelecollecteDto();
 												tlc.setTlc_numtlcolcte(lidtelc);
 
-												tlc.setTlc_numtpe(hist.getHatCodtpe());
+												tlc.setTlc_numtpe(histToCapture.getHatCodtpe());
 
 												tlc.setTlc_datcrtfich(current_date);
 												tlc.setTlc_nbrtrans(new Double(1));
@@ -1266,7 +1282,7 @@ public class ACSController {
 
 											trs.setTrsnumaut(authnumber);
 											trs.setTrs_etat("N");
-											trs.setTrs_devise(hist.getHatDevise());
+											trs.setTrs_devise(histToCapture.getHatDevise());
 											trs.setTrs_certif("N");
 											Integer idtrs = transactionService.getMAX_ID();
 											long lidtrs = idtrs.longValue() + 1;
@@ -1274,12 +1290,15 @@ public class ACSController {
 											trs.setTrs_commande(orderid);
 											trs.setTrs_procod("0");
 											trs.setTrs_groupe(websiteid);
+											trs.setTrs_codtpe(0.0);
+											trs.setTrs_numbloc(0.0);
+											trs.setTrs_numfact(0.0);
 											transactionService.save(trs);
 
-											hist.setHatEtat('T');
-											hist.setHatdatetlc(current_date);
-											hist.setOperateurtlc("mxplusapi");
-											histoAutoGateService.save(hist);
+											histToCapture.setHatEtat('T');
+											histToCapture.setHatdatetlc(current_date);
+											histToCapture.setOperateurtlc("mxplusapi");
+											histoAutoGateService.save(histToCapture);
 
 											capture_id = String.format("%040d",
 													new BigInteger(UUID.randomUUID().toString().replace("-", ""), 36));

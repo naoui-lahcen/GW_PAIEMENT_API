@@ -476,6 +476,8 @@ public class APIController {
 			dmd.setTokencommande(tokencommande);
 			// set transctiontype
 			dmd.setTransactiontype(transactiontype);
+			// insérer info capture dans le champ Refdemande
+			dmd.setRefdemande("capture="+capture);
 
 			dmdSaved = demandePaiementService.save(dmd);
 			dmdSaved.setExpery(expirydate);
@@ -512,56 +514,6 @@ public class APIController {
 					null);
 		}
 		Util.writeInFileTransaction(folder, file, "Fin controlleRisk");
-
-		// old
-		/*
-		 * GWRiskAnalysis riskAnalysis = new GWRiskAnalysis(folder, file); try {
-		 * ControlRiskCmrDto controlRiskCmr =
-		 * controlRiskCmrService.findByNumCommercant(dmdSaved.getComid());
-		 * List<HistoAutoGateDto> porteurFlowPerDay = null;
-		 * 
-		 * Double globalFlowPerDay = 0.00; List<EmetteurDto> listBin = null;
-		 * 
-		 * if (controlRiskCmr != null) { // -------- Controle des cartes internationales
-		 * --------
-		 * 
-		 * if (isNullOrEmpty(controlRiskCmr.getAcceptInternational()) ||
-		 * (controlRiskCmr.getAcceptInternational() != null && !ACTIVE.getFlag()
-		 * .equalsIgnoreCase(controlRiskCmr.getAcceptInternational().trim()))) { String
-		 * binDebutCarte = cardnumber.substring(0, 9); // binDebutCarte = binDebutCarte
-		 * + "000"; Util.writeInFileTransaction(folder, file, "controlRiskCmr ici 1");
-		 * listBin = emetteurService.findByBindebut(binDebutCarte); } // --------
-		 * Controle de flux journalier autorisé par commerçant -------- if
-		 * (!isNullOrEmpty(controlRiskCmr.getIsGlobalFlowControlActive()) &&
-		 * ACTIVE.getFlag().equalsIgnoreCase(controlRiskCmr.getIsGlobalFlowControlActive
-		 * ())) { Util.writeInFileTransaction(folder, file, "controlRiskCmr ici 2");
-		 * globalFlowPerDay =
-		 * histoAutoGateService.getCommercantGlobalFlowPerDay(merchantid); } // --------
-		 * Controle de flux journalier autorisé par client (porteur de carte) --------
-		 * if ((controlRiskCmr.getFlowCardPerDay() != null &&
-		 * controlRiskCmr.getFlowCardPerDay() > 0) ||
-		 * (controlRiskCmr.getNumberOfTransactionCardPerDay() != null &&
-		 * controlRiskCmr.getNumberOfTransactionCardPerDay() > 0)) {
-		 * Util.writeInFileTransaction(folder, file, "controlRiskCmr ici 3");
-		 * porteurFlowPerDay =
-		 * histoAutoGateService.getPorteurMerchantFlowPerDay(dmdSaved.getComid(),
-		 * dmdSaved.getDem_pan()); } } String msg =
-		 * riskAnalysis.executeRiskControls(dmdSaved.getComid(), dmdSaved.getMontant(),
-		 * dmdSaved.getDem_pan(), controlRiskCmr, globalFlowPerDay, porteurFlowPerDay,
-		 * listBin);
-		 * 
-		 * if (!msg.equalsIgnoreCase("OK")) {
-		 * dmdSaved.setEtat_demande("REJET_RISK_CTRL");
-		 * demandePaiementService.save(dmdSaved); Util.writeInFileTransaction(folder,
-		 * file, "authorization 500 " + msg); return getMsgError(folder, file,
-		 * jsonOrequest, "authorization 500 " + msg, null); } // fin control risk }
-		 * catch (Exception e) { dmdSaved.setEtat_demande("REJET_RISK_CTRL");
-		 * demandePaiementService.save(dmdSaved); Util.writeInFileTransaction(folder,
-		 * file,
-		 * "authorization 500 ControlRiskCmr misconfigured in DB or not existing merchantid:["
-		 * + dmdSaved.getComid() + e); return getMsgError(folder, file, jsonOrequest,
-		 * "authorization 500 Error Opération rejetée: Contrôle risque", null); }
-		 */
 
 		try {
 			formatheure = new SimpleDateFormat("HHmmss");
@@ -1182,10 +1134,27 @@ public class APIController {
 
 				String capture_status = "N";
 				int exp_flag = 0;
-
+				/* lnaoui commented le 2024-05-17 Blocage Traitement EOD 17/05/2024 // URGENT
 				if (capture.equalsIgnoreCase("Y")) {
 					// Si transactiontype = 0 (payement) on fait la telecollecte automatic
 					if (!transactiontype.equalsIgnoreCase("P")) {
+						
+						// 2024-05-16
+						HistoAutoGateDto histToCapture= null;
+						try {
+							// get histoauto check if exist
+							histToCapture = histoAutoGateService.findByHatNumCommandeAndHatNumcmr(orderid, merchantid);
+							if(histToCapture !=null) {
+								histoAutoGateService.save(histToCapture);
+							} else {
+								histToCapture = hist;
+							}
+						} catch (Exception err2) {
+							Util.writeInFileTransaction(folder, file,
+									"authorization 500 Error during HistoAutoGate findByNumAuthAndNumCommercant orderid:[" + orderid
+											+ "] and merchantid:[" + merchantid + "]" + err2);
+						}
+						// 2024-05-16
 
 						Date current_date = null;
 						current_date = new Date();
@@ -1193,7 +1162,7 @@ public class APIController {
 
 						Util.writeInFileTransaction(folder, file, "Getting authnumber");
 
-						String authnumber = hist.getHatNautemt();
+						String authnumber = histToCapture.getHatNautemt();
 						Util.writeInFileTransaction(folder, file, "authnumber : [" + authnumber + "]");
 
 						Util.writeInFileTransaction(folder, file, "Getting authnumber");
@@ -1235,7 +1204,7 @@ public class APIController {
 									tlc = new TelecollecteDto();
 									tlc.setTlc_numtlcolcte(lidtelc);
 
-									tlc.setTlc_numtpe(hist.getHatCodtpe());
+									tlc.setTlc_numtpe(histToCapture.getHatCodtpe());
 
 									tlc.setTlc_datcrtfich(current_date);
 									tlc.setTlc_nbrtrans(new Double(1));
@@ -1289,7 +1258,7 @@ public class APIController {
 
 								trs.setTrsnumaut(authnumber);
 								trs.setTrs_etat("N");
-								trs.setTrs_devise(hist.getHatDevise());
+								trs.setTrs_devise(histToCapture.getHatDevise());
 								trs.setTrs_certif("N");
 								Integer idtrs = transactionService.getMAX_ID();
 								long lidtrs = idtrs.longValue() + 1;
@@ -1297,12 +1266,15 @@ public class APIController {
 								trs.setTrs_commande(orderid);
 								trs.setTrs_procod("0");
 								trs.setTrs_groupe(websiteid);
+								trs.setTrs_codtpe(0.0);
+								trs.setTrs_numbloc(0.0);
+								trs.setTrs_numfact(0.0);
 								transactionService.save(trs);
 
-								hist.setHatEtat('T');
-								hist.setHatdatetlc(current_date);
-								hist.setOperateurtlc("mxplusapi");
-								histoAutoGateService.save(hist);
+								histToCapture.setHatEtat('T');
+								histToCapture.setHatdatetlc(current_date);
+								histToCapture.setOperateurtlc("mxplusapi");
+								histoAutoGateService.save(histToCapture);
 
 								capture_id = String.format("%040d",
 										new BigInteger(UUID.randomUUID().toString().replace("-", ""), 36));
@@ -1328,7 +1300,7 @@ public class APIController {
 					}
 					// Si transactiontype = P (pre-auto) on fait pas la telecollecte automatic,
 					// on le fait dans la confirmation de la pre-auto
-				}
+				}*/
 
 			} else {
 
@@ -2394,7 +2366,13 @@ public class APIController {
 
 		if (E == 'E') {
 			if (rep_auto.equalsIgnoreCase("00")) {
-				status_ = "Paid";
+				if(current_dmd.getTransactiontype().equals("0")) {
+					status_ = "Paid";
+				} else if(current_dmd.getTransactiontype().equals("P")) {
+					status_ = "Prepaid";
+				} else {
+					status_ = "Paid";
+				}				
 				statuscode_ = "00";
 
 				String spr = pr + "";
@@ -2882,6 +2860,9 @@ public class APIController {
 
 			trs.setTrs_procod("0");
 			trs.setTrs_groupe(websiteid);
+			trs.setTrs_codtpe(0.0);
+			trs.setTrs_numbloc(0.0);
+			trs.setTrs_numfact(0.0);
 			transactionService.save(trs);
 
 		} catch (Exception err6) {
@@ -3375,9 +3356,11 @@ public class APIController {
 
 				trs.setTrs_id(lidtrs);
 				trs.setTrs_commande(orderid);
-
 				trs.setTrs_procod("9");
 				trs.setTrs_groupe(websiteid);
+				trs.setTrs_codtpe(0.0);
+				trs.setTrs_numbloc(0.0);
+				trs.setTrs_numfact(0.0);
 				transactionService.save(trs);
 
 			} catch (Exception e) {
@@ -6143,6 +6126,9 @@ public class APIController {
 							trs.setTrs_commande(orderid);
 							trs.setTrs_procod("0");
 							trs.setTrs_groupe(websiteid);
+							trs.setTrs_codtpe(0.0);
+							trs.setTrs_numbloc(0.0);
+							trs.setTrs_numfact(0.0);
 							transactionService.save(trs);
 
 							current_hist.setHatEtat('T');
@@ -6848,6 +6834,9 @@ public class APIController {
 								trs.setTrs_commande(orderidToDebite);
 								trs.setTrs_procod("0");
 								trs.setTrs_groupe(websiteid);
+								trs.setTrs_codtpe(0.0);
+								trs.setTrs_numbloc(0.0);
+								trs.setTrs_numfact(0.0);
 								transactionService.save(trs);
 
 								hist1.setHatEtat('T');
@@ -7295,6 +7284,9 @@ public class APIController {
 						trs.setTrs_commande(orderid);
 						trs.setTrs_procod("0");
 						trs.setTrs_groupe(websiteid);
+						trs.setTrs_codtpe(0.0);
+						trs.setTrs_numbloc(0.0);
+						trs.setTrs_numfact(0.0);
 						transactionService.save(trs);
 
 						current_hist.setHatEtat('T');

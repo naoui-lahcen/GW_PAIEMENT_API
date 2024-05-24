@@ -17,13 +17,17 @@ public interface TelecollecteDao extends JpaRepository<Telecollecte, Long>{
 	
 	
 	//@Transactional
-	@Query(value="select *  FROM  MXGATEWAY.TELECOLLECTE tlc WHERE  tlc.TLC_NUMCMR = :merchantid "
-			+ " AND tlc.TLC_GEST = 'N' "
-			+ " AND tlc.TLC_NUMTLCOLCTE = (select max(tlc2.TLC_NUMTLCOLCTE) FROM  MXGATEWAY.TELECOLLECTE tlc2 WHERE"
-			+ "  tlc.TLC_NUMCMR = :merchantid "
-			+ " AND tlc2.TLC_GEST = 'N' )", nativeQuery = true)
-	Telecollecte getMAXTLC_N(String merchantid);
+//	@Query(value="select *  FROM  MXGATEWAY.TELECOLLECTE tlc WHERE  tlc.TLC_NUMCMR = :merchantid "
+//			+ " AND tlc.TLC_GEST = 'N' "
+//			+ " AND tlc.TLC_NUMTLCOLCTE = (select max(tlc2.TLC_NUMTLCOLCTE) FROM  MXGATEWAY.TELECOLLECTE tlc2 WHERE"
+//			+ "  tlc.TLC_NUMCMR = :merchantid "
+//			+ " AND tlc2.TLC_GEST = 'N' )", nativeQuery = true)
+//	Telecollecte getMAXTLC_N(String merchantid);
 	 
+	@Query(value="select *  FROM  MXGATEWAY.TELECOLLECTE tlc WHERE  tlc.TLC_NUMCMR = :merchantid "
+			+ " AND tlc.TLC_GEST = 'N' order by TLC_NUMTLCOLCTE desc limit 1", nativeQuery = true)
+	Telecollecte getMAXTLC_N(String merchantid);
+	
 	@Query(value="select max(TLC_NUMTLCOLCTE)  FROM  MXGATEWAY.TELECOLLECTE", nativeQuery = true)
 	Integer getMAX_ID();
 

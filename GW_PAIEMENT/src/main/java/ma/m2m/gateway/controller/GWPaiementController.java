@@ -72,6 +72,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -134,6 +135,9 @@ import ma.m2m.gateway.threedsecure.ThreeDSecureResponse;
 import ma.m2m.gateway.tlv.TLVEncoder;
 import ma.m2m.gateway.tlv.TLVParser;
 import ma.m2m.gateway.tlv.Tags;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /*
 * @author  LAHCEN NAOUI
@@ -385,8 +389,99 @@ public class GWPaiementController {
 		Util.writeInFileTransaction(folder, file, "*********** Fin home () ************** ");
 		System.out.println("*********** Fin home () ************** ");
 
+		String cvvNumeric = "561"; // CVV numérique
+		String cvvAlphabetic = "FGB"; // CVV alphabetique
+        String cvv_convert_alpha = Util.convertCVVNumericToAlphabetic(cvvNumeric);
+        String cvv_convert_numeric = Util.convertCVVAlphabeticToNumeric(cvvAlphabetic);
+        System.out.println("CVV numeric (561) converti alphabetic : " + cvv_convert_alpha); 
+        System.out.println("CVV alphabetic (FGB) converti numeric : " + cvv_convert_numeric);
+        Util.writeInFileTransaction(folder, file, "CVV numeric (561) converti alphabetic : " + cvv_convert_alpha); 
+        Util.writeInFileTransaction(folder, file, "CVV alphabetic (FGB) converti numeric : " + cvv_convert_numeric);
+        if(cvvNumeric.equals(cvv_convert_numeric)) {
+        	System.out.println("CVV numeric converti alphabetic OK [" + cvvNumeric +"=" +cvv_convert_numeric+"]"); 
+        	Util.writeInFileTransaction(folder, file, "CVV numeric converti alphabetic OK [" + cvvNumeric +"=" +cvv_convert_numeric+"]");
+        }
+        if(cvvAlphabetic.equals(cvv_convert_alpha)) {
+        	System.out.println("CVV alphabetic converti numeric OK [" + cvvAlphabetic +"=" +cvv_convert_alpha+"]"); 
+        	Util.writeInFileTransaction(folder, file, "CVV alphabetic converti numeric OK [" + cvvAlphabetic +"=" +cvv_convert_alpha+"]"); 
+        }
+        TelecollecteDto n_tlc = telecollecteService.getMAXTLC_N("1180092");
+        System.out.println("n_tlc [" + n_tlc +"]"); 
+        Util.writeInFileTransaction(folder, file, "n_tlc [" + n_tlc +"]"); 
+        
 		return msg;
 	}
+	
+	@GetMapping("/redirect-to-acs")
+    public void redirectToAcs(HttpServletResponse response) throws IOException {
+        // La réponse 3DS fournie dans votre exemple
+        String response3DS = "<form action='https://acs2.sgmaroc.com:443/lacs2' method='post' " +
+                             "enctype='application/x-www-form-urlencoded'><input type='hidden' name='creq' " +
+                             "value='ewogICJtZXNzYWdlVmVyc2lvbiI6ICIyLjEuMCIsCiAgInRocmVlRFNTZXJ2ZXJUcmFuc0lEIjogIjBlYmU1ODEwLTlhMDMtNGYzZi05MDgzLTJlZWNhNjhiMjY2YSIsCiAgImFjc1RyYW5zSUQiOiAiMmM5MjAxNDgtNjhiOC00ZjA0LWJhODQtY2RiYTFlOTM5MDM3IiwKICAiY2hhbGxlbmdlV2luZG93U2l6ZSI6ICIwNSIsCiAgIm1lc3NhZ2VUeXBlIjogIkNSZXEiCn0=' /></form>";
+
+        String creq = "";
+        String acsUrl = "";
+        Pattern pattern = Pattern.compile("action='(.*?)'.*value='(.*?)'");
+        Matcher matcher = pattern.matcher(response3DS);
+
+        // Si une correspondance est trouvée
+        if (matcher.find()) {
+            acsUrl = matcher.group(1);
+            creq = matcher.group(2);
+            System.out.println("L'URL ACS est : " + acsUrl);
+            System.out.println("La valeur de creq est : " + creq);
+        } else {
+            System.out.println("Aucune correspondance pour l'URL ACS et creq trouvée dans la réponse HTML.");
+        }
+        // Afficher le formulaire HTML dans la réponse
+        response.setContentType("text/html");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().println("<html><body>");
+        response.getWriter().println("<form id=\"acsForm\" action=\"" + acsUrl + "\" method=\"post\">");
+        response.getWriter().println("<input type=\"hidden\" name=\"creq\" value=\"" + creq + "\">");
+        response.getWriter().println("</form>");
+        response.getWriter().println("<script>document.getElementById('acsForm').submit();</script>");
+        response.getWriter().println("</body></html>");
+    }
+	
+	@PostMapping("/redirectACS")
+    public String redirectToAcsV1(Model model, @ModelAttribute("demandeDto") DemandePaiementDto dto,
+    		HttpServletResponse response) throws IOException {
+        // La réponse 3DS fournie dans votre exemple
+        String response3DS = "<form action='https://acs2.sgmaroc.com:443/lacs2' method='post' " +
+                             "enctype='application/x-www-form-urlencoded'><input type='hidden' name='creq' " +
+                             "value='ewogICJtZXNzYWdlVmVyc2lvbiI6ICIyLjEuMCIsCiAgInRocmVlRFNTZXJ2ZXJUcmFuc0lEIjogIjBlYmU1ODEwLTlhMDMtNGYzZi05MDgzLTJlZWNhNjhiMjY2YSIsCiAgImFjc1RyYW5zSUQiOiAiMmM5MjAxNDgtNjhiOC00ZjA0LWJhODQtY2RiYTFlOTM5MDM3IiwKICAiY2hhbGxlbmdlV2luZG93U2l6ZSI6ICIwNSIsCiAgIm1lc3NhZ2VUeXBlIjogIkNSZXEiCn0=' /></form>";
+        
+        String res3DS="<form  action='https://acsprod.cihbank.ma:443/acsauthentication/auth/customerChallenge.jsf'"
+        		+ "method='post' enctype='application/x-www-form-urlencoded'><input type='hidden' name='creq' "
+        		+ "value='ewogICJtZXNzYWdlVmVyc2lvbiI6ICIyLjEuMCIsCiAgInRocmVlRFNTZXJ2ZXJUcmFuc0lEIjogImU0NmQ4YTcwLTgwYTYtNDEyOC1hOTRlLWIyYTFmZTliODI5NCIsCiAgImFjc1RyYW5zSUQiOiAiNWMwOGRlNGUtMzljYy00MmFkLWE1NDEtZWQ3NjFkZDdiZjU3IiwKICAiY2hhbGxlbmdlV2luZG93U2l6ZSI6ICIwNSIsCiAgIm1lc3NhZ2VUeXBlIjogIkNSZXEiCn0=' /></form>";
+        
+        String creq = "";
+        String acsUrl = "";
+        Pattern pattern = Pattern.compile("action='(.*?)'.*value='(.*?)'");
+        Matcher matcher = pattern.matcher(response3DS);
+
+        // Si une correspondance est trouvée
+        if (matcher.find()) {
+            acsUrl = matcher.group(1);
+            creq = matcher.group(2);
+            System.out.println("L'URL ACS est : " + acsUrl);
+            System.out.println("La valeur de creq est : " + creq);
+        } else {
+            System.out.println("Aucune correspondance pour l'URL ACS et creq trouvée dans la réponse HTML.");
+            response.sendRedirect("");
+        }
+        // Afficher le formulaire HTML dans la réponse
+        response.setContentType("text/html");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().println("<html><body>");
+        response.getWriter().println("<form id=\"acsForm\" action=\"" + acsUrl + "\" method=\"post\">");
+        response.getWriter().println("<input type=\"hidden\" name=\"creq\" value=\"" + creq + "\">");
+        response.getWriter().println("</form>");
+        response.getWriter().println("<script>document.getElementById('acsForm').submit();</script>");
+        response.getWriter().println("</body></html>");
+        return "chalenge";
+    }
 
 	@RequestMapping(path = "/napspayment/generatetoken")
 	@ResponseBody
@@ -1469,68 +1564,6 @@ public class GWPaiementController {
 		}
 		Util.writeInFileTransaction(folder, file, "Fin controlleRisk");
 		
-		// old
-		/*GWRiskAnalysis riskAnalysis = new GWRiskAnalysis(folder, file);
-		try {
-			ControlRiskCmrDto controlRiskCmr = controlRiskCmrService.findByNumCommercant(demandeDto.getComid());
-			List<HistoAutoGateDto> porteurFlowPerDay = null;
-
-			Double globalFlowPerDay = 0.00;
-			List<EmetteurDto> listBin = null;
-
-			if (controlRiskCmr != null) {				
-				// -------- Controle des cartes internationales --------
-				 
-				if (isNullOrEmpty(controlRiskCmr.getAcceptInternational())
-						|| (controlRiskCmr.getAcceptInternational() != null && !ACTIVE.getFlag()
-								.equalsIgnoreCase(controlRiskCmr.getAcceptInternational().trim()))) {
-					String binDebutCarte = cardnumber.substring(0, 9);
-					// binDebutCarte = binDebutCarte+"000";
-					Util.writeInFileTransaction(folder, file, "controlRiskCmr ici 1");
-					listBin = emetteurService.findByBindebut(binDebutCarte);
-				}
-				// -------- Controle de flux journalier autorisé par commerçant --------
-				if (!isNullOrEmpty(controlRiskCmr.getIsGlobalFlowControlActive())
-						&& ACTIVE.getFlag().equalsIgnoreCase(controlRiskCmr.getIsGlobalFlowControlActive())) {
-					Util.writeInFileTransaction(folder, file, "controlRiskCmr ici 2");
-					globalFlowPerDay = histoAutoGateService.getCommercantGlobalFlowPerDay(merchantid);
-				}
-				// -------- Controle de flux journalier autorisé par client (porteur de carte) --------
-				if ((controlRiskCmr.getFlowCardPerDay() != null && controlRiskCmr.getFlowCardPerDay() > 0)
-						|| (controlRiskCmr.getNumberOfTransactionCardPerDay() != null
-								&& controlRiskCmr.getNumberOfTransactionCardPerDay() > 0)) {
-					Util.writeInFileTransaction(folder, file, "controlRiskCmr ici 3");
-					porteurFlowPerDay = histoAutoGateService.getPorteurMerchantFlowPerDay(demandeDto.getComid(),
-							demandeDto.getDem_pan());
-				}
-			}
-			String msg = riskAnalysis.executeRiskControls(demandeDto.getComid(), demandeDto.getMontant(),
-					demandeDto.getDem_pan(), controlRiskCmr, globalFlowPerDay, porteurFlowPerDay, listBin);
-
-			if (!msg.equalsIgnoreCase("OK")) {
-				demandeDto.setEtat_demande("REJET_RISK_CTRL");
-				demandePaiementService.save(demandeDto);
-				Util.writeInFileTransaction(folder, file, "payer 500 Error " + msg);
-				demandeDto = new DemandePaiementDto();
-				demandeDtoMsg.setMsgRefus(msg);
-				model.addAttribute("demandeDto", demandeDtoMsg);
-				page = "result";
-				return page;
-			}
-			// fin control risk
-		} catch (Exception e) {
-			demandeDto.setEtat_demande("REJET_RISK_CTRL");
-			demandePaiementService.save(demandeDto);
-			Util.writeInFileTransaction(folder, file,
-					"payer 500 ControlRiskCmr misconfigured in DB or not existing merchantid:[" + demandeDto.getComid()
-							+ e);
-			demandeDto = new DemandePaiementDto();
-			demandeDtoMsg.setMsgRefus("Error 500 Opération rejetée: Contrôle risque");
-			model.addAttribute("demandeDto", demandeDtoMsg);
-			page = "result";
-			return page;
-		}*/
-		
 		// saving card if flagSaveCarte true
 		if (demandeDto.isFlagSaveCarte()) {
 			try {
@@ -2284,6 +2317,22 @@ public class GWPaiementController {
 				int exp_flag = 0;
 
 				if (capture.equalsIgnoreCase("Y")) {
+					// 2024-05-17
+					HistoAutoGateDto histToCapture= null;
+					try {
+						// get histoauto check if exist
+						histToCapture = histoAutoGateService.findByHatNumCommandeAndHatNumcmr(orderid, merchantid);
+						if(histToCapture !=null) {
+							histoAutoGateService.save(histToCapture);
+						} else {
+							histToCapture = hist;
+						}
+					} catch (Exception err2) {
+						Util.writeInFileTransaction(folder, file,
+								"authorization 500 Error during HistoAutoGate findByNumAuthAndNumCommercant orderid:[" + orderid
+										+ "] and merchantid:[" + merchantid + "]" + err2);
+					}
+					// 2024-05-17
 
 					Date current_date = null;
 					current_date = new Date();
@@ -2291,7 +2340,7 @@ public class GWPaiementController {
 
 					Util.writeInFileTransaction(folder, file, "Getting authnumber");
 
-					String authnumber = hist.getHatNautemt();
+					String authnumber = histToCapture.getHatNautemt();
 					Util.writeInFileTransaction(folder, file, "authnumber : [" + authnumber + "]");
 
 					Util.writeInFileTransaction(folder, file, "Getting authnumber");
@@ -2331,7 +2380,7 @@ public class GWPaiementController {
 								tlc = new TelecollecteDto();
 								tlc.setTlc_numtlcolcte(lidtelc);
 
-								tlc.setTlc_numtpe(hist.getHatCodtpe());
+								tlc.setTlc_numtpe(histToCapture.getHatCodtpe());
 
 								tlc.setTlc_datcrtfich(current_date);
 								tlc.setTlc_nbrtrans(new Double(1));
@@ -2384,7 +2433,7 @@ public class GWPaiementController {
 
 							trs.setTrsnumaut(authnumber);
 							trs.setTrs_etat("N");
-							trs.setTrs_devise(hist.getHatDevise());
+							trs.setTrs_devise(histToCapture.getHatDevise());
 							trs.setTrs_certif("N");
 							Integer idtrs = transactionService.getMAX_ID();
 							long lidtrs = idtrs.longValue() + 1;
@@ -2392,12 +2441,15 @@ public class GWPaiementController {
 							trs.setTrs_commande(orderid);
 							trs.setTrs_procod("0");
 							trs.setTrs_groupe(websiteid);
+							trs.setTrs_codtpe(0.0);
+							trs.setTrs_numbloc(0.0);
+							trs.setTrs_numfact(0.0);
 							transactionService.save(trs);
 
-							hist.setHatEtat('T');
-							hist.setHatdatetlc(current_date);
-							hist.setOperateurtlc("mxplusapi");
-							histoAutoGateService.save(hist);
+							histToCapture.setHatEtat('T');
+							histToCapture.setHatdatetlc(current_date);
+							histToCapture.setOperateurtlc("mxplusapi");
+							histoAutoGateService.save(histToCapture);
 
 							capture_id = String.format("%040d",
 									new BigInteger(UUID.randomUUID().toString().replace("-", ""), 36));

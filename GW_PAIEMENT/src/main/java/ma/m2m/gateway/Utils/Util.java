@@ -519,4 +519,43 @@ public class Util {
 		    }
 
 	}
+	
+	// Méthode pour convertir un CVV numérique en une représentation alphabétique
+    public static String convertCVVNumericToAlphabetic(String cvvNumeric) {
+        StringBuilder convertedCVV = new StringBuilder();
+
+        for (int i = 0; i < cvvNumeric.length(); i++) {
+            char digitChar = cvvNumeric.charAt(i);
+            if (Character.isDigit(digitChar)) {
+                int digit = Character.getNumericValue(digitChar);
+                if (digit >= 0 && digit <= 9) {
+                    char letter = (char) ('A' + digit);
+                    convertedCVV.append(letter);
+                } else {
+                    return null;
+                }
+            } else {
+                return null;
+            }
+        }
+
+        return convertedCVV.toString();
+    }
+
+    // Méthode pour convertir un CVV alphabétique en une représentation numérique
+    public static String convertCVVAlphabeticToNumeric(String cvvAlphabetic) {
+        StringBuilder convertedCVV = new StringBuilder();
+
+        for (int i = 0; i < cvvAlphabetic.length(); i++) {
+            char letter = cvvAlphabetic.charAt(i);
+            if (Character.isLetter(letter)) {
+                int digit = letter - 'A';
+                convertedCVV.append(digit);
+            } else {
+                return null;
+            }
+        }
+
+        return convertedCVV.toString();
+    }
 }
