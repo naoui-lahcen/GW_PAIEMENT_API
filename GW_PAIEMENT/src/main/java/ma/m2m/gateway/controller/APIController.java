@@ -2253,7 +2253,7 @@ public class APIController {
 
 		DemandePaiementDto current_dmd = null;
 
-		String dcurrent_dmd, dtpattern, tmpattern, respcode, s_respcode = "";
+		String dcurrent_dmd, dtpattern, tmpattern, respcode="", s_respcode = "";
 		SimpleDateFormat sfdt, sftm = null;
 		Date datdem, datetlc = null;
 		Character E = '\0';
@@ -2342,14 +2342,16 @@ public class APIController {
 			sfdt = new SimpleDateFormat(dtpattern);
 			tmpattern = "HH:mm:ss";
 			sftm = new SimpleDateFormat(tmpattern);
-
-			datdem = current_hist.getHatDatdem();
-			datetlc = current_hist.getHatdatetlc();
-			E = current_hist.getHatEtat();
-			pr = current_hist.getHatProcode();
-			respcode = current_hist.getHatCoderep();
-			// s_respcode = histservice.getLib("RPC_LIBELLE", "CODEREPONSE", "RPC_CODE='" +
-			// respcode + "'");
+			if (current_hist != null) {
+				datdem = current_hist.getHatDatdem();
+				datetlc = current_hist.getHatdatetlc();
+				E = current_hist.getHatEtat();
+				pr = current_hist.getHatProcode();
+				respcode = current_hist.getHatCoderep();
+			} else {
+				datdem = null;
+				datetlc = null;
+			}
 			s_respcode = "";
 		} catch (Exception err2) {
 			Util.writeInFileTransaction(folder, file, "status 500 Error during status processing for given authnumber"
@@ -2394,7 +2396,7 @@ public class APIController {
 			}
 		} else if (E == 'X') {
 			// E == 'X' if trs not approuved (repauto != 00)
-			status_ = "Declinded";
+			status_ = "Declinded : " + current_dmd.getEtat_demande();
 			statuscode_ = "01";
 		} else if (E == 'A') {
 			// E == 'X' if trs canceled
