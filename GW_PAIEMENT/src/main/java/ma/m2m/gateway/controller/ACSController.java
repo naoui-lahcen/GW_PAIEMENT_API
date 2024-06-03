@@ -1108,7 +1108,7 @@ public class ACSController {
 
 								Util.writeInFileTransaction(folder, file, "HistoAutoGate Saving ...");
 
-								histoAutoGateService.save(hist);
+								hist = histoAutoGateService.save(hist);
 								
 								Util.writeInFileTransaction(folder, file, "hatNomdeandeur : " + hist.getHatNomdeandeur());
 
@@ -1119,7 +1119,7 @@ public class ACSController {
 								try {
 									Util.writeInFileTransaction(folder, file,
 											"2eme tentative : HistoAutoGate Saving ... ");
-									histoAutoGateService.save(hist);
+									hist = histoAutoGateService.save(hist);
 								} catch (Exception ex) {
 									Util.writeInFileTransaction(folder, file,
 											"2eme tentative : authorization 500 Error during  insert in histoautogate for given orderid:["
@@ -1162,16 +1162,19 @@ public class ACSController {
 									// 2024-05-17
 									HistoAutoGateDto histToCapture= null;
 									try {
-										// get histoauto check if exist
-										histToCapture = histoAutoGateService.findByHatNumCommandeAndHatNumcmr(orderid, merchantid);
-										if(histToCapture !=null) {
-											histoAutoGateService.save(histToCapture);
+										if(hist.getId() == null) {
+											// get histoauto check if exist
+											histToCapture = histoAutoGateService.findLastByHatNumCommandeAndHatNumcmr(orderid, merchantid);
+											if(histToCapture ==null) {
+												histToCapture = hist;
+											}
 										} else {
 											histToCapture = hist;
 										}
+										
 									} catch (Exception err2) {
 										Util.writeInFileTransaction(folder, file,
-												"authorization 500 Error during HistoAutoGate findByNumAuthAndNumCommercant orderid:[" + orderid
+												"authorization 500 Error during HistoAutoGate findLastByHatNumCommandeAndHatNumcmr orderid:[" + orderid
 														+ "] and merchantid:[" + merchantid + "]" + err2);
 									}
 									// 2024-05-17
@@ -1644,20 +1647,26 @@ public class ACSController {
 										"update Demandepaiement status to SW_REJET OK.");
 								// 2024-02-27
 								try {
-									// get histoauto check if exist
-									HistoAutoGateDto histToAnnulle = histoAutoGateService.findByHatNumCommandeAndHatNumcmr(orderid, merchantid);
-									if(histToAnnulle !=null) {
-										Util.writeInFileTransaction(folder, file,
-												"transaction declinded ==> update HistoAutoGateDto etat to A ...");
-										histToAnnulle.setHatEtat('A');
-										histoAutoGateService.save(histToAnnulle);
+									if(hist.getId() == null) {
+										// get histoauto check if exist
+										HistoAutoGateDto histToAnnulle = histoAutoGateService.findByHatNumCommandeAndHatNumcmrV1(orderid, merchantid);
+										if(histToAnnulle != null) {
+											Util.writeInFileTransaction(folder, file,
+													"transaction declinded ==> update HistoAutoGateDto etat to A ...");
+											histToAnnulle.setHatEtat('A');
+											histToAnnulle = histoAutoGateService.save(histToAnnulle);
+										} else {
+											hist.setHatEtat('A');
+											hist = histoAutoGateService.save(hist);
+										}
 									} else {
 										hist.setHatEtat('A');
-										histoAutoGateService.save(hist);
+										hist = histoAutoGateService.save(hist);
 									}
+									
 								} catch (Exception err2) {
 									Util.writeInFileTransaction(folder, file,
-											"payer 500 Error during HistoAutoGate findByNumAuthAndNumCommercant orderid:[" + orderid
+											"payer 500 Error during HistoAutoGate findByHatNumCommandeAndHatNumcmrV1 orderid:[" + orderid
 													+ "] and merchantid:[" + merchantid + "]" + err2);
 								}
 								Util.writeInFileTransaction(folder, file, "update HistoAutoGateDto etat to A OK.");
@@ -2548,20 +2557,26 @@ public class ACSController {
 
 			// 2024-03-15
 			try {
-				// get histoauto check if exist
-				HistoAutoGateDto histToAnnulle = histoAutoGateService.findByHatNumCommandeAndHatNumcmr(orderid, merchantid);
-				if(histToAnnulle !=null) {
-					Util.writeInFileTransaction(folder, file,
-							"transaction declinded ==> update HistoAutoGateDto etat to A ...");
-					histToAnnulle.setHatEtat('A');
-					histoAutoGateService.save(histToAnnulle);
+				if(current_hist.getId() == null) {
+					// get histoauto check if exist
+					HistoAutoGateDto histToAnnulle = histoAutoGateService.findLastByHatNumCommandeAndHatNumcmr(orderid, merchantid);
+					if(histToAnnulle !=null) {
+						Util.writeInFileTransaction(folder, file,
+								"transaction declinded ==> update HistoAutoGateDto etat to A ...");
+						histToAnnulle.setHatEtat('A');
+						histToAnnulle = histoAutoGateService.save(histToAnnulle);
+					} else {
+						current_hist.setHatEtat('A');
+						current_hist = histoAutoGateService.save(current_hist);
+					}
 				} else {
 					current_hist.setHatEtat('A');
-					histoAutoGateService.save(current_hist);
+					current_hist = histoAutoGateService.save(current_hist);
 				}
+				
 			} catch (Exception err2) {
 				Util.writeInFileTransaction(folder, file,
-						"annulation auto 500 Error during HistoAutoGate findByNumAuthAndNumCommercant orderid:[" + orderid
+						"annulation auto 500 Error during HistoAutoGate findLastByHatNumCommandeAndHatNumcmr orderid:[" + orderid
 								+ "] and merchantid:[" + merchantid + "]" + err2);
 			}
 			Util.writeInFileTransaction(folder, file, "update HistoAutoGateDto etat to A OK.");

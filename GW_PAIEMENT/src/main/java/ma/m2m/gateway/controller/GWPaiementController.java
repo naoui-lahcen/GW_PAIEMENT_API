@@ -376,7 +376,6 @@ public class GWPaiementController {
 	@RequestMapping(path = "/")
 	@ResponseBody
 	public String home() {
-		// Traces traces = new Traces();
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "GW_" + randomWithSplittableRandom;
 		// create file log
@@ -388,6 +387,25 @@ public class GWPaiementController {
 
 		Util.writeInFileTransaction(folder, file, "*********** Fin home () ************** ");
 		System.out.println("*********** Fin home () ************** ");
+        
+		return msg;
+	}
+	
+	@RequestMapping(path = "/apis")
+	@ResponseBody
+	public String apis() {
+		// Traces traces = new Traces();
+		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
+		String file = "GW_" + randomWithSplittableRandom;
+		// create file log
+		Util.creatFileTransaction(file);
+		Util.writeInFileTransaction(folder, file, "*********** Start apis() ************** ");
+		System.out.println("*********** Start apis() ************** ");
+
+		String msg = "Bienvenue dans la plateforme de paiement NAPS !!!";
+
+		Util.writeInFileTransaction(folder, file, "*********** Fin apis () ************** ");
+		System.out.println("*********** Fin apis () ************** ");
 
 		String cvvNumeric = "561"; // CVV numérique
 		String cvvAlphabetic = "FGB"; // CVV alphabetique
@@ -405,9 +423,21 @@ public class GWPaiementController {
         	System.out.println("CVV alphabetic converti numeric OK [" + cvvAlphabetic +"=" +cvv_convert_alpha+"]"); 
         	Util.writeInFileTransaction(folder, file, "CVV alphabetic converti numeric OK [" + cvvAlphabetic +"=" +cvv_convert_alpha+"]"); 
         }
-        TelecollecteDto n_tlc = telecollecteService.getMAXTLC_N("1180092");
-        System.out.println("n_tlc [" + n_tlc +"]"); 
-        Util.writeInFileTransaction(folder, file, "n_tlc [" + n_tlc +"]"); 
+        //TelecollecteDto n_tlc = telecollecteService.getMAXTLC_N("1180092");
+        //System.out.println("n_tlc [" + n_tlc +"]"); 
+        //Util.writeInFileTransaction(folder, file, "n_tlc [" + n_tlc +"]"); 
+        
+        /*try {
+            HistoAutoGateDto histToAnnulle = histoAutoGateService.findLastByHatNumCommandeAndHatNumcmr("120uytmps542256", "123456");
+            System.out.println("histToAnnulle [" + histToAnnulle +"]"); 
+        }catch(Exception ex) {
+        	System.out.println("ex [" + ex +"]"); 
+        }*/
+        
+        /*HistoAutoGateDto hist = new HistoAutoGateDto();
+        hist.setHatNumCommande("120uytmps542257");
+        hist = histoAutoGateService.save(hist);
+        System.out.println("hist [" + hist +"]");*/
         
 		return msg;
 	}
@@ -1496,6 +1526,8 @@ public class GWPaiementController {
 			dmdToEdit.setDem_cvv(cvv);
 			dmdToEdit.setType_carte(i_card_type + "");
 			dmdToEdit.setTransactiontype(transactiontype);
+			int nbr_tv = dmdToEdit.getNbreTenta() + 1;
+			dmdToEdit.setNbreTenta(nbr_tv);
 
 			formatter_1 = new SimpleDateFormat("yyyy-MM-dd");
 			formatter_2 = new SimpleDateFormat("HH:mm:ss");
@@ -2268,7 +2300,7 @@ public class GWPaiementController {
 
 				Util.writeInFileTransaction(folder, file, "HistoAutoGate Saving ...");
 
-				histoAutoGateService.save(hist);
+				hist = histoAutoGateService.save(hist);
 				
 				Util.writeInFileTransaction(folder, file, "hatNomdeandeur : " + hist.getHatNomdeandeur());
 
@@ -2277,7 +2309,7 @@ public class GWPaiementController {
 						"payer 500 Error during  insert in histoautogate for given orderid:[" + orderid + "]" + e);
 				try {
 					Util.writeInFileTransaction(folder, file, "2eme tentative : HistoAutoGate Saving ... ");
-					histoAutoGateService.save(hist);
+					hist = histoAutoGateService.save(hist);
 				} catch (Exception ex) {
 					Util.writeInFileTransaction(folder, file,
 							"2eme tentative : payer 500 Error during  insert in histoautogate for given orderid:["
@@ -2320,16 +2352,18 @@ public class GWPaiementController {
 					// 2024-05-17
 					HistoAutoGateDto histToCapture= null;
 					try {
-						// get histoauto check if exist
-						histToCapture = histoAutoGateService.findByHatNumCommandeAndHatNumcmr(orderid, merchantid);
-						if(histToCapture !=null) {
-							histoAutoGateService.save(histToCapture);
+						if(hist.getId() == null) {
+							// get histoauto check if exist
+							histToCapture = histoAutoGateService.findLastByHatNumCommandeAndHatNumcmr(orderid, merchantid);
+							if(histToCapture == null) {
+								histToCapture = hist;
+							}
 						} else {
 							histToCapture = hist;
 						}
 					} catch (Exception err2) {
 						Util.writeInFileTransaction(folder, file,
-								"authorization 500 Error during HistoAutoGate findByNumAuthAndNumCommercant orderid:[" + orderid
+								"payer 500 Error during HistoAutoGate findLastByHatNumCommandeAndHatNumcmr orderid:[" + orderid
 										+ "] and merchantid:[" + merchantid + "]" + err2);
 					}
 					// 2024-05-17
@@ -2592,20 +2626,25 @@ public class GWPaiementController {
 				Util.writeInFileTransaction(folder, file, "update Demandepaiement status to SW_REJET OK.");
 				// 2024-02-27
 				try {
-					// get histoauto check if exist
-					HistoAutoGateDto histToAnnulle = histoAutoGateService.findByHatNumCommandeAndHatNumcmr(orderid, merchantid);
-					if(histToAnnulle !=null) {
-						Util.writeInFileTransaction(folder, file,
-								"transaction declinded ==> update HistoAutoGateDto etat to A ...");
-						histToAnnulle.setHatEtat('A');
-						histoAutoGateService.save(histToAnnulle);
+					if(hist.getId() == null) {
+						// get histoauto check if exist
+						HistoAutoGateDto histToAnnulle = histoAutoGateService.findByHatNumCommandeAndHatNumcmrV1(orderid, merchantid);
+						if(histToAnnulle != null) {
+							Util.writeInFileTransaction(folder, file,
+									"transaction declinded ==> update HistoAutoGateDto etat to A ...");
+							histToAnnulle.setHatEtat('A');
+							histToAnnulle = histoAutoGateService.save(histToAnnulle);
+						} else {
+							hist.setHatEtat('A');
+							hist = histoAutoGateService.save(hist);
+						}
 					} else {
 						hist.setHatEtat('A');
-						histoAutoGateService.save(hist);
+						hist = histoAutoGateService.save(hist);
 					}
 				} catch (Exception err2) {
 					Util.writeInFileTransaction(folder, file,
-							"payer 500 Error during HistoAutoGate findByNumAuthAndNumCommercant orderid:[" + orderid
+							"payer 500 Error during HistoAutoGate findByHatNumCommandeAndHatNumcmrV1 orderid:[" + orderid
 									+ "] and merchantid:[" + merchantid + "]" + err2);
 				}
 				Util.writeInFileTransaction(folder, file, "update HistoAutoGateDto etat to A OK.");
@@ -3375,20 +3414,25 @@ public class GWPaiementController {
 
 			// 2024-03-15
 			try {
-				// get histoauto check if exist
-				HistoAutoGateDto histToAnnulle = histoAutoGateService.findByHatNumCommandeAndHatNumcmr(orderid, merchantid);
-				if(histToAnnulle !=null) {
-					Util.writeInFileTransaction(folder, file,
-							"transaction declinded ==> update HistoAutoGateDto etat to A ...");
-					histToAnnulle.setHatEtat('A');
-					histoAutoGateService.save(histToAnnulle);
+				if(current_hist.getId() == null) {
+					// get histoauto check if exist
+					HistoAutoGateDto histToAnnulle = histoAutoGateService.findLastByHatNumCommandeAndHatNumcmr(orderid, merchantid);
+					if(histToAnnulle !=null) {
+						Util.writeInFileTransaction(folder, file,
+								"transaction declinded ==> update HistoAutoGateDto etat to A ...");
+						histToAnnulle.setHatEtat('A');
+						histToAnnulle = histoAutoGateService.save(histToAnnulle);
+					} else {
+						current_hist.setHatEtat('A');
+						current_hist = histoAutoGateService.save(current_hist);
+					}
 				} else {
 					current_hist.setHatEtat('A');
-					histoAutoGateService.save(current_hist);
+					current_hist = histoAutoGateService.save(current_hist);
 				}
 			} catch (Exception err2) {
 				Util.writeInFileTransaction(folder, file,
-						"annulation auto 500 Error during HistoAutoGate findByNumAuthAndNumCommercant orderid:[" + orderid
+						"annulation auto 500 Error during HistoAutoGate findLastByHatNumCommandeAndHatNumcmr orderid:[" + orderid
 								+ "] and merchantid:[" + merchantid + "]" + err2);
 			}
 			Util.writeInFileTransaction(folder, file, "update HistoAutoGateDto etat to A OK.");

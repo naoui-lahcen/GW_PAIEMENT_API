@@ -18,6 +18,10 @@ public interface HistoAutoGateService {
 	
 	HistoAutoGateDto findByHatNumCommandeAndHatNumcmr(String commande, String numCmr);
 	
+	HistoAutoGateDto findByHatNumCommandeAndHatNumcmrV1(String commande, String numCmr);
+	
+	HistoAutoGateDto findLastByHatNumCommandeAndHatNumcmr(String commande, String numCmr);
+	
 	HistoAutoGateDto findByHatNumCommandeAndHatNautemtAndHatNumcmr(String commande, String numAuth, String numCmr);
 	
 	List<HistoAutoGateDto> findByHatNumcmr(String numCmr);

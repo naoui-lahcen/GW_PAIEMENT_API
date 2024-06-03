@@ -20,6 +20,19 @@ public interface HistoAutoGateDao extends JpaRepository<HistoAutoGate,Long> {
 	
 	HistoAutoGate findByHatNumCommandeAndHatNumcmr(String commande, String numCmr);
 	
+	@Query(value="select * FROM  MXGATEWAY.HISTOAUTO_GATE where "
+			+ "HAT_COMMANDE = (?1) "
+			+ "AND HAT_NUMCMR = (?2) "
+			+ "order by HAT_ID desc limit 1", nativeQuery = true)
+	HistoAutoGate findByHatNumCommandeAndHatNumcmrV1(String commande, String numCmr);
+	
+	@Query(value="select * FROM  MXGATEWAY.HISTOAUTO_GATE where "
+			+ "HAT_COMMANDE = (?1) "
+			+ "AND HAT_NUMCMR = (?2) "
+			+ "AND HAT_CODEREP = '00' "
+			+ "order by HAT_ID desc limit 1", nativeQuery = true)
+	HistoAutoGate findLastByHatNumCommandeAndHatNumcmr(String commande, String numCmr);
+	
 	HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmr(String commande, String numAuth, String numCmr);
 	
 	List<HistoAutoGate> findByHatNumcmr(String numCmr);
