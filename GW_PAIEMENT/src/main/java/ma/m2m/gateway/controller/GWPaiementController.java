@@ -44,6 +44,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import javax.xml.namespace.QName;
 
 import org.apache.commons.codec.digest.XXHash32;
@@ -196,6 +197,9 @@ public class GWPaiementController {
 	
 	@Value("${key.ENVIRONEMENT}")
 	private String environement;
+	
+	@Value("${key.TIMEOUT}")
+	private int timeout;
 
 	@Autowired
 	CommercantService commercantService;
@@ -430,9 +434,19 @@ public class GWPaiementController {
         /*try {
             HistoAutoGateDto histToAnnulle = histoAutoGateService.findLastByHatNumCommandeAndHatNumcmr("120uytmps542256", "123456");
             System.out.println("histToAnnulle [" + histToAnnulle +"]"); 
-        }catch(Exception ex) {
+        } catch(Exception ex) {
         	System.out.println("ex [" + ex +"]"); 
         }*/
+        
+        /*try {       	
+        	HistoAutoGateDto histToAnnulle = histoAutoGateService.findByHatNumCommandeAndHatNautemtAndHatNumcmrAndHatCoderep("120uytmps542256","123456", "123456", "00");
+        	System.out.println("histToAnnulle [" + histToAnnulle +"]"); 
+		} catch(Exception ex) {
+		    System.out.println("ex [" + ex +"]"); 
+		}
+        
+        long idtelc = telecollecteService.getMAX_ID("123456");
+        System.out.println("idtelc [" + idtelc +"]");*/ 
         
         /*HistoAutoGateDto hist = new HistoAutoGateDto();
         hist.setHatNumCommande("120uytmps542257");
@@ -788,7 +802,7 @@ public class GWPaiementController {
 	}
 
 	@RequestMapping(value = "/napspayment/authorization/token/{token}", method = RequestMethod.GET)
-	public String showPagePayment(@PathVariable(value = "token") String token, Model model) {
+	public String showPagePayment(@PathVariable(value = "token") String token, Model model, HttpSession session) {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "GW_PAGE_" + randomWithSplittableRandom;
 		// create file log
@@ -964,7 +978,12 @@ public class GWPaiementController {
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
 		}
-
+		
+		// gestion expiration de la session on stoque la date en millisecond
+	    session.setAttribute("paymentStartTime", System.currentTimeMillis());
+	    Util.writeInFileTransaction(folder, file, "paymentStartTime : " + System.currentTimeMillis());
+	    demandeDto.setTimeoutURL(String.valueOf(System.currentTimeMillis()));
+	    
 		if (page.equals("napspayment")) {
 			if(demandeDto.getEtat_demande().equals("INIT")) {
 				demandeDto.setEtat_demande("P_CHRG_OK");
@@ -1325,7 +1344,7 @@ public class GWPaiementController {
 
 	@PostMapping("/payer")
 	public String payer(Model model, @ModelAttribute("demandeDto") DemandePaiementDto dto, HttpServletRequest request,
-			HttpServletResponse response) throws IOException {
+			HttpServletResponse response, HttpSession session) throws IOException {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "GW_PAYE_" + randomWithSplittableRandom;
 		// create file log
@@ -1342,8 +1361,8 @@ public class GWPaiementController {
 
 		DemandePaiementDto demandeDto = new DemandePaiementDto();
 		Objects.copyProperties(demandeDto, dto);
-		System.out.println("demandeDto commande : " + demandeDto.getCommande());
-		Util.writeInFileTransaction(folder, file, "demandeDto commande : " + dto.getCommande());
+		System.out.println("Commande : " + demandeDto.getCommande());
+		Util.writeInFileTransaction(folder, file, "Commande : " + dto.getCommande());
 		DemandePaiementDto demandeDtoMsg = new DemandePaiementDto();
 		DemandePaiementDto dmd = new DemandePaiementDto();
 
@@ -1355,6 +1374,7 @@ public class GWPaiementController {
 		boolean flagNvCarte, flagSaveCarte;
 
 		String page = "chalenge";
+	    
 		try {
 			// Transaction info
 			orderid = demandeDto.getCommande();
@@ -1553,6 +1573,32 @@ public class GWPaiementController {
 			page = "result";
 			return page;
 		}
+		// 2024-06-03
+		// gestion expiration de la session on recupere la date en millisecond
+		Long paymentStartTime = (Long) session.getAttribute("paymentStartTime");
+		Util.writeInFileTransaction(folder, file, "paymentStartTime : " + paymentStartTime);
+
+	    if (paymentStartTime != null) {
+	        long currentTime = System.currentTimeMillis();
+	        long elapsedTime = currentTime - paymentStartTime;
+	        Util.writeInFileTransaction(folder, file, "currentTime : " + currentTime);
+	        Util.writeInFileTransaction(folder, file, "elapsedTime : " + elapsedTime);
+	        // Check if more than 5 minutes (300000 milliseconds) have passed
+	        int timeoutF = timeout;
+	        if (elapsedTime > timeoutF) {
+				Util.writeInFileTransaction(folder, file, "Page expirée Time > 5min");
+				demandeDtoMsg.setMsgRefus("Votre session de paiement a expiré. Veuillez réessayer.");
+				session.setAttribute("idDemande", demandeDto.getIddemande());				
+				model.addAttribute("demandeDto", demandeDtoMsg);
+				page = "timeout";
+				
+				Util.writeInFileTransaction(folder, file, "*********** Fin payer () ************** ");
+				System.out.println("*********** Fin payer () ************** ");
+				
+				return page;
+	        }
+	    }
+	 // 2024-06-03
 		
 		if (demandeDto.getEtat_demande().equals("SW_PAYE") || demandeDto.getEtat_demande().equals("PAYE")) {
 			demandeDto.setDem_cvv("");
@@ -2407,10 +2453,14 @@ public class GWPaiementController {
 								TelecollecteDto tlc = null;
 
 								// insert into telec
-								idtelc = telecollecteService.getMAX_ID();
+								idtelc = telecollecteService.getMAX_ID(merchantid);
 								Util.writeInFileTransaction(folder, file, "getMAX_ID idtelc : " + idtelc);
 								
-								lidtelc = idtelc.longValue() + 1;
+								if (idtelc != null) {
+									lidtelc = idtelc.longValue() + 1;
+								} else {
+									lidtelc = 1;
+								}
 								tlc = new TelecollecteDto();
 								tlc.setTlc_numtlcolcte(lidtelc);
 
@@ -3009,7 +3059,144 @@ public class GWPaiementController {
 
 		return page;
 	}
+	
+	@PostMapping("/retour")
+	public String retour(Model model, @ModelAttribute("demandeDto") DemandePaiementDto demandeDto, HttpServletRequest request,
+	                     HttpServletResponse response, HttpSession session) throws IOException {
+	    randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
+	    String file = "GW_retour_" + randomWithSplittableRandom;
+	    // create file log
+	    Util.creatFileTransaction(file);
+	    Util.writeInFileTransaction(folder, file, "*********** Start retour () ************** ");
+	    System.out.println("*********** Start retour () ************** ");
+	    
+	    String page = "timeout";
+	    String msg = "OK";
+	    Integer idDemande = null;
+	    // Récupération de l'attribut de session
+	    try {
+	    	String idDemandeStr = String.valueOf(session.getAttribute("idDemande"));
+	        if (idDemandeStr != null) {
+	            idDemande = Integer.valueOf(idDemandeStr);
+	        }
+	        idDemande = (Integer) session.getAttribute("idDemande");
+	        Util.writeInFileTransaction(folder, file, "idDemande par session : " + idDemande);
+	        System.out.println("idDemande par session : " + idDemande);            
+	    } catch (Exception e) {
+	        System.out.println("Retour getIdDemande par session " + e);
+	        Util.writeInFileTransaction(folder, file, "retour getIdDemande par session " + e);
+	        msg = "KO";
+	    }
+	    
+	    // Si l'attribut de session est nul, utilisez l'ID de la demande du DTO
+	    if (idDemande == null) {
+	        try {
+	            idDemande = demandeDto.getIddemande();
+	            Util.writeInFileTransaction(folder, file, "idDemandepar model demandeDto : " + idDemande);
+	            System.out.println("idDemande par model demandeDto : " + idDemande);    
+	        } catch (Exception ex) {
+	            System.out.println("Retour getIdDemande par demandeDto " + ex);
+	            Util.writeInFileTransaction(folder, file, "retour getIdDemande par demandeDto " + ex);
+	            msg = "KO";
+	        }
+	    }
+        System.out.println("msg : " + msg);
+        Util.writeInFileTransaction(folder, file, "msg : " + msg);
+	    // Traitement de la demande si l'ID de la demande est disponible
+	    if (msg.equals("OK") && idDemande != null) {
+	        DemandePaiementDto demandePaiement = demandePaiementService.findByIdDemande(idDemande);
 
+	        if (demandePaiement != null) {
+	            System.out.println("update Demandepaiement status to Timeout");
+	            Util.writeInFileTransaction(folder, file, "update Demandepaiement status to Timeout");
+	            demandePaiement.setEtat_demande("TimeOut");
+	            demandePaiement.setDem_cvv("");
+	            demandePaiement = demandePaiementService.save(demandePaiement);
+	            String failUrl = demandePaiement.getFailURL();
+	            String successUrl = demandePaiement.getSuccessURL();
+	            if (failUrl != null && !failUrl.equals("")) {
+	                response.sendRedirect(failUrl);
+	            } else {
+	                response.sendRedirect(successUrl);
+	            }
+	        } else {
+	            System.out.println("DemandePaiement not found ");
+	            Util.writeInFileTransaction(folder, file, "DemandePaiement not found ");
+	            response.sendRedirect(page);
+	        }
+	    } else {
+	        // Gérer le cas où idDemande est null après les tentatives
+	        System.out.println("idDemande is null");
+	        Util.writeInFileTransaction(folder, file, "idDemande is null");
+	        response.sendRedirect(page);
+	    }
+
+	    Util.writeInFileTransaction(folder, file, "*********** Fin retour () ************** ");
+	    System.out.println("*********** Fin retour () ************** ");
+
+	    return page;
+	}
+
+	
+//	@PostMapping("/retour")
+//	public String retour(Model model, @ModelAttribute("demandeDto") DemandePaiementDto dto, HttpServletRequest request,
+//			HttpServletResponse response, HttpSession session) throws IOException {
+//		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
+//		String file = "GW_retour_" + randomWithSplittableRandom;
+//		// create file log
+//		Util.creatFileTransaction(file);
+//		Util.writeInFileTransaction(folder, file, "*********** Start retour () ************** ");
+//		System.out.println("*********** Start retour () ************** ");
+//		
+//		String page = "timeout";
+//		String msg ="OK";
+//		Integer idDemande = null;
+//		try {
+//			idDemande = (Integer) session.getAttribute("idDemande");			
+//			Util.writeInFileTransaction(folder, file, "idDemande session : " + idDemande);
+//			System.out.println("idDemande session : " + idDemande);			
+//		} catch(Exception e) {
+//			System.out.println("Retour session " + e);
+//			Util.writeInFileTransaction(folder, file, "retour session " + e);
+//			msg = "KO";
+//		}
+//		try {
+//			idDemande = dto.getIddemande();
+//			Util.writeInFileTransaction(folder, file, "idDemande dto : " + idDemande);
+//			System.out.println("idDemande dto : " + idDemande);	
+//		} catch(Exception ex) {
+//			System.out.println("Retour dto " + ex);
+//			Util.writeInFileTransaction(folder, file, "retour dto " + ex);
+//			msg = "KO";
+//		}
+//		if(msg.equals("OK")) {
+//			DemandePaiementDto demandePaiement = demandePaiementService.findByIdDemande(idDemande);
+//
+//			if(demandePaiement != null) {
+//				System.out.println("update Demandepaiement status to Timeout");
+//				Util.writeInFileTransaction(folder, file, "update Demandepaiement status to Timeout");
+//				demandePaiement.setEtat_demande("TimeOut");
+//				demandePaiement = demandePaiementService.save(demandePaiement);
+//				String failUrl = demandePaiement.getFailURL();
+//				String successUrl = demandePaiement.getSuccessURL();
+//				if(failUrl != null && !failUrl.equals("")) {
+//					response.sendRedirect(failUrl);
+//				} else {
+//					response.sendRedirect(successUrl);
+//				}
+//			} else {
+//				System.out.println("DemandePaiement not found ");
+//				Util.writeInFileTransaction(folder, file, "DemandePaiement not found ");
+//				response.sendRedirect(page);
+//			}
+//		}
+//
+//		Util.writeInFileTransaction(folder, file, "*********** Fin retour () ************** ");
+//		System.out.println("*********** Fin retour () ************** ");
+//
+//		return page;
+//	}
+	
 	@RequestMapping(value = "/chalenge", method = RequestMethod.GET)
 	public String chlenge(Model model) {
 		// Traces traces = new Traces();

@@ -59,6 +59,12 @@ public class HistoAutoGateServiceImpl implements HistoAutoGateService {
 			String numCmr) {
 		return histoAutoGateMapper.model2VO(histoAutoGateDao.findByHatNumCommandeAndHatNautemtAndHatNumcmr(commande, numAuth, numCmr));
 	}
+	
+	@Override
+	public HistoAutoGateDto findByHatNumCommandeAndHatNautemtAndHatNumcmrAndHatCoderep(String commande, String numAuth,
+			String numCmr, String codeRep) {
+		return histoAutoGateMapper.model2VO(histoAutoGateDao.findByHatNumCommandeAndHatNautemtAndHatNumcmrAndHatCoderep(commande, numAuth, numCmr, codeRep));
+	}
 
 	@Override
 	public Integer getMAX_ID() {

@@ -24,6 +24,8 @@ public interface HistoAutoGateService {
 	
 	HistoAutoGateDto findByHatNumCommandeAndHatNautemtAndHatNumcmr(String commande, String numAuth, String numCmr);
 	
+	HistoAutoGateDto findByHatNumCommandeAndHatNautemtAndHatNumcmrAndHatCoderep(String commande, String numAuth, String numCmr, String codeRep);
+	
 	List<HistoAutoGateDto> findByHatNumcmr(String numCmr);
 	
 	List<HistoAutoGateDto> findAll();

@@ -35,6 +35,8 @@ public interface HistoAutoGateDao extends JpaRepository<HistoAutoGate,Long> {
 	
 	HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmr(String commande, String numAuth, String numCmr);
 	
+	HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmrAndHatCoderep(String commande, String numAuth, String numCmr, String codeRep);
+	
 	List<HistoAutoGate> findByHatNumcmr(String numCmr);
 	
 	@Query(value="select max(HAT_ID)  FROM  MXGATEWAY.HISTOAUTO_GATE", nativeQuery = true)

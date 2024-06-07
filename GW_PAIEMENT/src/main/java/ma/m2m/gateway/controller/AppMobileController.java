@@ -25,6 +25,8 @@ import java.util.SplittableRandom;
 import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -139,6 +141,9 @@ public class AppMobileController {
 	
 	@Value("${key.FRAIS_CCB}")
 	private String fraisCCB;
+	
+	@Value("${key.TIMEOUT}")
+	private int timeout;
 
 	@Autowired
 	AutorisationService autorisationService;
@@ -189,7 +194,7 @@ public class AppMobileController {
 	}
 
 	@PostMapping("/napspayment/ccb/acs")
-	public String processRequestMobile(HttpServletRequest request, HttpServletResponse response, Model model)
+	public String processRequestMobile(HttpServletRequest request, HttpServletResponse response, Model model, HttpSession session)
 			throws IOException {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "MB_R_ACS_" + randomWithSplittableRandom;
@@ -361,6 +366,34 @@ public class AppMobileController {
 							System.out.println("Fin processRequestMobile ()");
 							return page;
 						}
+						
+						// 2024-06-04
+						// gestion expiration de la session on recupere la date en millisecond
+						Long paymentStartTime = Long.parseLong(dmd.getTimeoutURL());
+						Util.writeInFileTransaction(folder, file, "paymentStartTime : " + paymentStartTime);
+
+					    if (paymentStartTime != null) {
+					        long currentTime = System.currentTimeMillis();
+					        long elapsedTime = currentTime - paymentStartTime;
+					        Util.writeInFileTransaction(folder, file, "currentTime : " + currentTime);
+					        Util.writeInFileTransaction(folder, file, "elapsedTime : " + elapsedTime);
+					        // Check if more than 5 minutes (300000 milliseconds) have passed
+					        int timeoutF = timeout;
+					        if (elapsedTime > timeoutF) {
+								Util.writeInFileTransaction(folder, file, "Page expirée Time > 5min");
+								demandeDtoMsg.setMsgRefus("Votre session de paiement a expiré. Veuillez réessayer.");
+								demandeDtoMsg.setIddemande(dmd.getIddemande());
+								session.setAttribute("idDemande", dmd.getIddemande());								
+								model.addAttribute("demandeDto", demandeDtoMsg);
+								page = "timeout";
+								
+								Util.writeInFileTransaction(folder, file, "*********** Fin processRequest () ************** ");
+								System.out.println("*********** Fin processRequest () ************** ");
+								
+								return page;
+					        }
+					    }
+					 // 2024-06-04
 
 						// Merchnat info
 						merchantid = dmd.getComid();
@@ -1208,11 +1241,15 @@ public class AppMobileController {
 												TelecollecteDto tlc = null;
 
 												// insert into telec
-												idtelc = telecollecteService.getMAX_ID();
+												idtelc = telecollecteService.getMAX_ID(merchantid);
 												Util.writeInFileTransaction(folder, file,
 														"getMAX_ID idtelc : " + idtelc);
 
-												lidtelc = idtelc.longValue() + 1;
+												if (idtelc != null) {
+													lidtelc = idtelc.longValue() + 1;
+												} else {
+													lidtelc = 1;
+												}
 												tlc = new TelecollecteDto();
 												tlc.setTlc_numtlcolcte(lidtelc);
 
@@ -2186,7 +2223,7 @@ public class AppMobileController {
 	}
 
 	@RequestMapping(value = "/napspayment/authorization/ccb/token/{token}", method = RequestMethod.GET)
-	public String showPageRchg(@PathVariable(value = "token") String token, Model model) {
+	public String showPageRchg(@PathVariable(value = "token") String token, Model model, HttpSession session) {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "MB_PAGE_CCB_" + randomWithSplittableRandom;
 		// create file log
@@ -2352,7 +2389,12 @@ public class AppMobileController {
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
 		}
-
+		
+		// gestion expiration de la session on stoque la date en millisecond
+	    session.setAttribute("paymentStartTime", System.currentTimeMillis());
+	    Util.writeInFileTransaction(folder, file, "paymentStartTime : " + System.currentTimeMillis());
+	    demandeDto.setTimeoutURL(String.valueOf(System.currentTimeMillis()));
+	    
 		if (page.equals("erecharge")) {
 			if(demandeDto.getEtat_demande().equals("INIT")) {
 				demandeDto.setEtat_demande("P_CHRG_OK");
@@ -2370,7 +2412,7 @@ public class AppMobileController {
 
 	@PostMapping("/recharger")
 	public String recharger(Model model, @ModelAttribute("demandeDto") DemandePaiementDto dto,
-			HttpServletRequest request, HttpServletResponse response) {
+			HttpServletRequest request, HttpServletResponse response, HttpSession session) {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "MB_RECHARGER_" + randomWithSplittableRandom;
 		// create file log
@@ -2387,8 +2429,8 @@ public class AppMobileController {
 
 		DemandePaiementDto demandeDto = new DemandePaiementDto();
 		Objects.copyProperties(demandeDto, dto);
-		System.out.println("demandeDto commande : " + demandeDto.getCommande());
-		Util.writeInFileTransaction(folder, file, "demandeDto commande : " + dto.getCommande());
+		System.out.println("Commande : " + demandeDto.getCommande());
+		Util.writeInFileTransaction(folder, file, "CdemandeDto commande : " + dto.getCommande());
 		DemandePaiementDto demandeDtoMsg = new DemandePaiementDto();
 		DemandePaiementDto dmd = new DemandePaiementDto();
 
@@ -2604,6 +2646,32 @@ public class AppMobileController {
 			page = "result";
 			return page;
 		}
+		// 2024-06-03
+		// gestion expiration de la session on recupere la date en millisecond
+		Long paymentStartTime = (Long) session.getAttribute("paymentStartTime");
+		Util.writeInFileTransaction(folder, file, "paymentStartTime : " + paymentStartTime);
+
+	    if (paymentStartTime != null) {
+	        long currentTime = System.currentTimeMillis();
+	        long elapsedTime = currentTime - paymentStartTime;
+	        Util.writeInFileTransaction(folder, file, "currentTime : " + currentTime);
+	        Util.writeInFileTransaction(folder, file, "elapsedTime : " + elapsedTime);
+	        // Check if more than 5 minutes (300000 milliseconds) have passed
+	        int timeoutF = timeout;
+	        if (elapsedTime > timeoutF) {
+				Util.writeInFileTransaction(folder, file, "Page expirée Time > 5min");
+				demandeDtoMsg.setMsgRefus("Votre session de paiement a expiré. Veuillez réessayer.");				
+				session.setAttribute("idDemande", demandeDto.getIddemande());				
+				model.addAttribute("demandeDto", demandeDtoMsg);
+				page = "timeout";
+				
+				Util.writeInFileTransaction(folder, file, "*********** Fin recharger () ************** ");
+				System.out.println("*********** Fin recharger () ************** ");
+				
+				return page;
+	        }
+	    }
+	 // 2024-06-03
 
 		if (demandeDto.getEtat_demande().equals("SW_PAYE") || demandeDto.getEtat_demande().equals("PAYE")) {
 			demandeDto.setDem_cvv("");
@@ -3458,10 +3526,14 @@ public class AppMobileController {
 								TelecollecteDto tlc = null;
 
 								// insert into telec
-								idtelc = telecollecteService.getMAX_ID();
+								idtelc = telecollecteService.getMAX_ID(merchantid);
 								Util.writeInFileTransaction(folder, file, "getMAX_ID idtelc : " + idtelc);
 
-								lidtelc = idtelc.longValue() + 1;
+								if (idtelc != null) {
+									lidtelc = idtelc.longValue() + 1;
+								} else {
+									lidtelc = 1;
+								}
 								tlc = new TelecollecteDto();
 								tlc.setTlc_numtlcolcte(lidtelc);
 

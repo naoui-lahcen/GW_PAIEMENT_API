@@ -30,5 +30,8 @@ public interface TelecollecteDao extends JpaRepository<Telecollecte, Long>{
 	
 	@Query(value="select max(TLC_NUMTLCOLCTE)  FROM  MXGATEWAY.TELECOLLECTE", nativeQuery = true)
 	Integer getMAX_ID();
+	
+	@Query(value="select max(tlc.TLC_NUMTLCOLCTE)  FROM  MXGATEWAY.TELECOLLECTE tlc WHERE  tlc.TLC_NUMCMR = :merchantid ", nativeQuery = true)
+	Integer getMAX_ID(String merchantid);
 
 }

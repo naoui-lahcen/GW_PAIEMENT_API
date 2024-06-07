@@ -15,5 +15,7 @@ public interface TelecollecteService {
 	TelecollecteDto save(TelecollecteDto tlcDto);
 	
 	Integer getMAX_ID();
+	
+	Integer getMAX_ID(String merchantid);
 
 }

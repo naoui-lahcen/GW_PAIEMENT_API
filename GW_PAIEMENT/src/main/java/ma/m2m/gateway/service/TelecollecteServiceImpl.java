@@ -22,12 +22,10 @@ public class TelecollecteServiceImpl implements TelecollecteService {
 	@Autowired
 	TelecollecteDao telecollecteDao;
 	
-
 	@Override
 	public TelecollecteDto getMAXTLC_N(String merchantid) {
 		return telecollecteMapper.model2VO(telecollecteDao.getMAXTLC_N(merchantid));
 	}
-
 
 	@Override
 	public TelecollecteDto save(TelecollecteDto tlcDto) {
@@ -38,9 +36,14 @@ public class TelecollecteServiceImpl implements TelecollecteService {
 		return tlctoSave;
 	}
 
-
 	@Override
 	public Integer getMAX_ID() {
+		Integer idTlc = telecollecteDao.getMAX_ID();
+		return idTlc;
+	}
+	
+	@Override
+	public Integer getMAX_ID(String merchantid) {
 		Integer idTlc = telecollecteDao.getMAX_ID();
 		return idTlc;
 	}

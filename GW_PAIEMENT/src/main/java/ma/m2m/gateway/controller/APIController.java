@@ -1199,10 +1199,14 @@ public class APIController {
 									TelecollecteDto tlc = null;
 
 									// insert into telec
-									idtelc = telecollecteService.getMAX_ID();
+									idtelc = telecollecteService.getMAX_ID(merchantid);
 									Util.writeInFileTransaction(folder, file, "getMAX_ID idtelc : " + idtelc);
 
-									lidtelc = idtelc.longValue() + 1;
+									if (idtelc != null) {
+										lidtelc = idtelc.longValue() + 1;
+									} else {
+										lidtelc = 1;
+									}
 									tlc = new TelecollecteDto();
 									tlc.setTlc_numtlcolcte(lidtelc);
 
@@ -2696,12 +2700,12 @@ public class APIController {
 		try {
 
 			// get histoauto check if exist
-			current_hist = histoAutoGateService.findByHatNumCommandeAndHatNautemtAndHatNumcmr(orderid, authnumber,
-					merchantid);
+			current_hist = histoAutoGateService.findByHatNumCommandeAndHatNautemtAndHatNumcmrAndHatCoderep(orderid, authnumber,
+					merchantid, "00");
 
 		} catch (Exception err2) {
 			Util.writeInFileTransaction(folder, file,
-					"capture 500 Error during HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmr orderid:["
+					"capture 500 Error during HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmrAndHatCoderep orderid:["
 							+ orderid + "] and merchantid:[" + merchantid + "]" + err2);
 			return getMsgError(folder, file, jsonOrequest, "capture 500 Error during HistoAutoGate", null);
 		}
@@ -2785,7 +2789,7 @@ public class APIController {
 			try {
 				// insert into telec
 				// idtelc = tlcservice.getMAX_ID("TELECOLLECTE", "TLC_NUMTLCOLCTE");
-				idtelc = telecollecteService.getMAX_ID();
+				idtelc = telecollecteService.getMAX_ID(merchantid);
 				Util.writeInFileTransaction(folder, file, "getMAX_ID idtelc : " + idtelc);
 
 				lidtelc = idtelc.longValue() + 1;
@@ -3091,12 +3095,12 @@ public class APIController {
 
 		try {
 			// get histoauto check if exist
-			current_hist = histoAutoGateService.findByHatNumCommandeAndHatNautemtAndHatNumcmr(orderid, authnumber,
-					merchantid);
+			current_hist = histoAutoGateService.findByHatNumCommandeAndHatNautemtAndHatNumcmrAndHatCoderep(orderid, authnumber,
+					merchantid, "00");
 
 		} catch (Exception err2) {
 			Util.writeInFileTransaction(folder, file,
-					"refund 500 Error during HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmr orderid:["
+					"refund 500 Error during HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmrAndHatCoderep orderid:["
 							+ orderid + "] and merchantid:[" + merchantid + "]" + err2);
 
 			return getMsgError(folder, file, jsonOrequest, "refund 500 Error during find HistoAutoGate", null);
@@ -3267,9 +3271,9 @@ public class APIController {
 				demandePaiementService.save(current_dmd);
 			} catch (Exception e) {
 				Util.writeInFileTransaction(folder, file,
-						"refund 500 Error during  demandepaiement update  A for given  orderid:[" + orderid + "]" + e);
+						"refund 500 Error during  demandepaiement update  R for given  orderid:[" + orderid + "]" + e);
 
-				return getMsgError(folder, file, jsonOrequest, "refund 500 Error during  demandepaiement update A",
+				return getMsgError(folder, file, jsonOrequest, "refund 500 Error during  demandepaiement update R",
 						null);
 			}
 
@@ -3292,7 +3296,7 @@ public class APIController {
 					TelecollecteDto tlc = null;
 
 					// insert into telec
-					idtelc = telecollecteService.getMAX_ID();
+					idtelc = telecollecteService.getMAX_ID(merchantid);
 					Util.writeInFileTransaction(folder, file, "getMAX_ID idtelc : " + idtelc);
 
 					if (idtelc != null) {
@@ -3350,7 +3354,8 @@ public class APIController {
 				current_date = new Date();
 				Date current_date_1 = getDateWithoutTime(current_date);
 				trs.setTrs_dattrans(current_date_1);
-				trs.setTrsnumaut("000000"); // trs.setTrs_numaut(authnumber);
+				trs.setTrsnumaut(authnumber);//trs.setTrsnumaut("000000");
+				//trs.setTrsnumaut("000000");
 				trs.setTrs_etat("N");
 				trs.setTrs_devise(current_hist.getHatDevise());
 				trs.setTrs_certif("N");
@@ -3581,12 +3586,12 @@ public class APIController {
 		try {
 
 			// get histoauto check if exist
-			current_hist = histoAutoGateService.findByHatNumCommandeAndHatNautemtAndHatNumcmr(orderid, authnumber,
-					merchantid);
+			current_hist = histoAutoGateService.findByHatNumCommandeAndHatNautemtAndHatNumcmrAndHatCoderep(orderid, authnumber,
+					merchantid, "00");
 
 		} catch (Exception err2) {
 			Util.writeInFileTransaction(folder, file,
-					"reversal 500 Error during HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmr orderid:["
+					"reversal 500 Error during HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmrAndHatCoderep orderid:["
 							+ orderid + "] and merchantid:[" + merchantid + "]" + err2);
 
 			return getMsgError(folder, file, jsonOrequest, "reversal 500 Error during HistoAutoGate", null);
@@ -5974,11 +5979,11 @@ public class APIController {
 
 		try {
 			// get histoauto check if exist
-			current_hist = histoAutoGateService.findByHatNumCommandeAndHatNautemtAndHatNumcmr(orderid, authnumber,
-					merchantid);
+			current_hist = histoAutoGateService.findByHatNumCommandeAndHatNautemtAndHatNumcmrAndHatCoderep(orderid, authnumber,
+					merchantid, "00");
 		} catch (Exception err2) {
 			Util.writeInFileTransaction(folder, file,
-					"Error during HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmr orderid:[" + orderid
+					"Error during HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmrAndHatCoderep orderid:[" + orderid
 							+ "] + and authnumber:[" + authnumber + "]" + "and merchantid:[" + merchantid + "]" + err2);
 			return getMsgError(folder, file, jsonOrequest,
 					"cpautorisation 500 Error during Transaction not found orderid:[" + orderid + "] + and authnumber:["
@@ -6098,10 +6103,14 @@ public class APIController {
 								TelecollecteDto tlc = null;
 
 								// insert into telec
-								idtelc = telecollecteService.getMAX_ID();
+								idtelc = telecollecteService.getMAX_ID(merchantid);
 								Util.writeInFileTransaction(folder, file, "getMAX_ID idtelc : " + idtelc);
 
-								lidtelc = idtelc.longValue() + 1;
+								if (idtelc != null) {
+									lidtelc = idtelc.longValue() + 1;
+								} else {
+									lidtelc = 1;
+								}
 								tlc = new TelecollecteDto();
 								tlc.setTlc_numtlcolcte(lidtelc);
 								tlc.setTlc_numtpe(current_hist.getHatCodtpe());
@@ -6806,10 +6815,14 @@ public class APIController {
 									TelecollecteDto tlc = null;
 
 									// insert into telec
-									idtelc = telecollecteService.getMAX_ID();
+									idtelc = telecollecteService.getMAX_ID(merchantid);
 									Util.writeInFileTransaction(folder, file, "getMAX_ID idtelc : " + idtelc);
 
-									lidtelc = idtelc.longValue() + 1;
+									if (idtelc != null) {
+										lidtelc = idtelc.longValue() + 1;
+									} else {
+										lidtelc = 1;
+									}
 									tlc = new TelecollecteDto();
 									tlc.setTlc_numtlcolcte(lidtelc);
 
@@ -7252,10 +7265,14 @@ public class APIController {
 							TelecollecteDto tlc = null;
 
 							// insert into telec
-							idtelc = telecollecteService.getMAX_ID();
+							idtelc = telecollecteService.getMAX_ID(merchantid);
 							Util.writeInFileTransaction(folder, file, "getMAX_ID idtelc : " + idtelc);
 
-							lidtelc = idtelc.longValue() + 1;
+							if (idtelc != null) {
+								lidtelc = idtelc.longValue() + 1;
+							} else {
+								lidtelc = 1;
+							}
 							tlc = new TelecollecteDto();
 							tlc.setTlc_numtlcolcte(lidtelc);
 

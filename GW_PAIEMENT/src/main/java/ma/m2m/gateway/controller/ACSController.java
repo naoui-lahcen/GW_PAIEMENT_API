@@ -27,6 +27,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import javax.xml.namespace.QName;
 
 import org.apache.http.HttpResponse;
@@ -149,6 +150,9 @@ public class ACSController {
 
 	@Value("${key.ENVIRONEMENT}")
 	private String environement;
+	
+	@Value("${key.TIMEOUT}")
+	private int timeout;
 
 	@Autowired
 	private DemandePaiementService demandePaiementService;
@@ -209,7 +213,7 @@ public class ACSController {
 	}
 
 	@PostMapping("/napspayment/acs")
-	public String processRequest(HttpServletRequest request, HttpServletResponse response, Model model)
+	public String processRequest(HttpServletRequest request, HttpServletResponse response, Model model, HttpSession session)
 			throws IOException {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "R_ACS_" + randomWithSplittableRandom;
@@ -221,6 +225,7 @@ public class ACSController {
 		String msgRefus = "";
 		DemandePaiementDto demandeDtoMsg = new DemandePaiementDto();
 		String page = "index";
+	    
 		try {
 			String encodedCres = request.getParameter("cres");
 			System.out.println("ACSController RETOUR ACS =====> encodedCres : " + encodedCres);
@@ -380,6 +385,34 @@ public class ACSController {
 							System.out.println("Fin processRequest ()");
 							return page;
 						}
+						
+						// 2024-06-04
+						// gestion expiration de la session on recupere la date en millisecond
+						Long paymentStartTime = Long.parseLong(dmd.getTimeoutURL());
+						Util.writeInFileTransaction(folder, file, "paymentStartTime : " + paymentStartTime);
+
+					    if (paymentStartTime != null) {
+					        long currentTime = System.currentTimeMillis();
+					        long elapsedTime = currentTime - paymentStartTime;
+					        Util.writeInFileTransaction(folder, file, "currentTime : " + currentTime);
+					        Util.writeInFileTransaction(folder, file, "elapsedTime : " + elapsedTime);
+					        // Check if more than 5 minutes (300000 milliseconds) have passed
+					        int timeoutF = timeout;
+					        if (elapsedTime > timeoutF) {
+								Util.writeInFileTransaction(folder, file, "Page expirée Time > 5min");
+								demandeDtoMsg.setMsgRefus("Votre session de paiement a expiré. Veuillez réessayer.");
+								demandeDtoMsg.setIddemande(dmd.getIddemande());
+								session.setAttribute("idDemande", dmd.getIddemande());								
+								model.addAttribute("demandeDto", demandeDtoMsg);
+								page = "timeout";
+								
+								Util.writeInFileTransaction(folder, file, "*********** Fin processRequest () ************** ");
+								System.out.println("*********** Fin processRequest () ************** ");
+								
+								return page;
+					        }
+					    }
+					 // 2024-06-04
 
 						// Merchnat info
 						merchantid = dmd.getComid();
@@ -1223,11 +1256,15 @@ public class ACSController {
 												TelecollecteDto tlc = null;
 
 												// insert into telec
-												idtelc = telecollecteService.getMAX_ID();
+												idtelc = telecollecteService.getMAX_ID(merchantid);
 												Util.writeInFileTransaction(folder, file,
 														"getMAX_ID idtelc : " + idtelc);
 
-												lidtelc = idtelc.longValue() + 1;
+												if (idtelc != null) {
+													lidtelc = idtelc.longValue() + 1;
+												} else {
+													lidtelc = 1;
+												}
 												tlc = new TelecollecteDto();
 												tlc.setTlc_numtlcolcte(lidtelc);
 
