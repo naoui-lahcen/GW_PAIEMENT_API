@@ -3354,8 +3354,7 @@ public class APIController {
 				current_date = new Date();
 				Date current_date_1 = getDateWithoutTime(current_date);
 				trs.setTrs_dattrans(current_date_1);
-				trs.setTrsnumaut(authnumber);//trs.setTrsnumaut("000000");
-				//trs.setTrsnumaut("000000");
+				trs.setTrsnumaut("000000");// offline mode
 				trs.setTrs_etat("N");
 				trs.setTrs_devise(current_hist.getHatDevise());
 				trs.setTrs_certif("N");
