@@ -23,6 +23,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.SplittableRandom;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -385,6 +388,9 @@ public class AppMobileController {
 								demandeDtoMsg.setIddemande(dmd.getIddemande());
 								session.setAttribute("idDemande", dmd.getIddemande());								
 								model.addAttribute("demandeDto", demandeDtoMsg);
+								dmd.setEtat_demande("TimeOut");
+								dmd.setDem_cvv("");
+								dmd = demandePaiementService.save(dmd);	            
 								page = "timeout";
 								
 								Util.writeInFileTransaction(folder, file, "*********** Fin processRequest () ************** ");
@@ -2663,6 +2669,9 @@ public class AppMobileController {
 				demandeDtoMsg.setMsgRefus("Votre session de paiement a expiré. Veuillez réessayer.");				
 				session.setAttribute("idDemande", demandeDto.getIddemande());				
 				model.addAttribute("demandeDto", demandeDtoMsg);
+				demandeDto.setEtat_demande("TimeOut");
+				demandeDto.setDem_cvv("");
+				demandeDto = demandePaiementService.save(demandeDto);	            
 				page = "timeout";
 				
 				Util.writeInFileTransaction(folder, file, "*********** Fin recharger () ************** ");
@@ -3831,30 +3840,76 @@ public class AppMobileController {
 			// *********************
 			Util.writeInFileTransaction(folder, file, "****** Cas chalenge responseMPI equal C ou D ******");
 			try {
-
-				// insertion htmlCreq dans la demandePaiement
-				// dmd.setCreq(threeDsecureResponse.getHtmlCreq());
-				// dmd.setCreq(
-				// "<form action='https://acs2.sgmaroc.com:443/lacs2' method='post'
-				// enctype='application/x-www-form-urlencoded'><input type='hidden' name='creq'
-				// value='ewogICJtZXNzYWdlVmVyc2lvbiI6ICIyLjEuMCIsCiAgInRocmVlRFNTZXJ2ZXJUcmFuc0lEIjogIjBlYmU1ODEwLTlhMDMtNGYzZi05MDgzLTJlZWNhNjhiMjY2YSIsCiAgImFjc1RyYW5zSUQiOiAiMmM5MjAxNDgtNjhiOC00ZjA0LWJhODQtY2RiYTFlOTM5MDM3IiwKICAiY2hhbGxlbmdlV2luZG93U2l6ZSI6ICIwNSIsCiAgIm1lc3NhZ2VUeXBlIjogIkNSZXEiCn0='
-				// /></form>");
 				dmd.setCreq(threeDsecureResponse.getHtmlCreq());
 				dmd.setDem_xid(threeDSServerTransID);
 				dmd.setEtat_demande("SND_TO_ACS");
 				demandeDto = demandePaiementService.save(dmd);
 				model.addAttribute("demandeDto", demandeDto);
-				page = "chalenge";
+				// 2024-06-27 old
+				/*page = "chalenge";
 
 				Util.writeInFileTransaction(folder, file, "set demandeDto model creq : " + demandeDto.getCreq());
-				Util.writeInFileTransaction(folder, file, "return page : " + page);
+				Util.writeInFileTransaction(folder, file, "return page : " + page);*/
 
-				// return page;
+				// 2024-06-27
+				// autre façon de faire la soumission automatique de formulaires ACS via le HttpServletResponse.
+	
+		        String creq = "";
+		        String acsUrl = "";
+		        String response3DS = threeDsecureResponse.getHtmlCreq();
+		        Pattern pattern = Pattern.compile("action='(.*?)'.*value='(.*?)'");
+		        Matcher matcher = pattern.matcher(response3DS);
+
+		        // Si une correspondance est trouvée
+	            if (matcher.find()) {
+	                acsUrl = matcher.group(1);
+	                creq = matcher.group(2);
+	                System.out.println("L'URL ACS est : " + acsUrl);
+	                System.out.println("La valeur de creq est : " + creq);
+	                Util.writeInFileTransaction(folder, file, "L'URL ACS est : " + acsUrl);
+	                Util.writeInFileTransaction(folder, file, "La valeur de creq est : " + creq);
+
+	                String decodedCreq = new String(Base64.decodeBase64(creq.getBytes()));
+	                System.out.println("La valeur de decodedCreq est : " + decodedCreq);
+	                Util.writeInFileTransaction(folder, file, "La valeur de decodedCreq est : " + decodedCreq);
+	                
+	                // URL de feedback après soumission ACS
+	                String feedbackUrl = request.getContextPath() + "/acsFeedback";
+
+	                // Afficher le formulaire HTML dans la réponse
+	                response.setContentType("text/html");
+	                response.setCharacterEncoding("UTF-8");
+	                response.getWriter().println("<html><body>");
+	                response.getWriter().println("<form id=\"acsForm\" action=\"" + acsUrl + "\" method=\"post\">");
+	                response.getWriter().println("<input type=\"hidden\" name=\"creq\" value=\"" + creq + "\">");
+	                response.getWriter().println("</form>");
+	                response.getWriter().println("<script>document.getElementById('acsForm').submit();</script>");
+	                
+	                /* a revoir apres pour la confirmation de l'affichage acs
+	                response.getWriter().println("document.getElementById('acsForm').submit();");
+	                response.getWriter().println("fetch('" + feedbackUrl + "', { method: 'POST' });");  // Envoi du feedback
+	                response.getWriter().println("</script>");
+	                */
+	                response.getWriter().println("</body></html>");
+	                
+	                System.out.println("Le Creq a été envoyé à l'ACS par soumission automatique du formulaire.");
+	                Util.writeInFileTransaction(folder, file, "Le Creq a été envoyé à l'ACS par soumission automatique du formulaire.");
+	                
+	                return null;  // Terminer le traitement ici après avoir envoyé le formulaire
+	            } else {
+	                System.out.println("Aucune correspondance pour l'URL ACS et creq trouvée dans la réponse HTML.");
+	                Util.writeInFileTransaction(folder, file, "Aucune correspondance pour l'URL ACS et creq trouvée dans la réponse HTML.");
+	                page = "error";  // Définir la page d'erreur appropriée
+	            }
+				
+			// 2024-06-27
 			} catch (Exception ex) {
-				Util.writeInFileTransaction(folder, file, "recharger 500 Error during jso out processing " + ex);
+				Util.writeInFileTransaction(folder, file, "Aucune correspondance pour l'URL ACS et creq trouvée dans la réponse HTML " + ex);
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Erreur lors du traitement de sortie JSON), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti (Aucune correspondance pour l'URL ACS et creq trouvée dans la réponse HTML), votre compte ne sera pas débité, merci de réessayer .");
 				model.addAttribute("demandeDto", demandeDtoMsg);
+				dmd.setDem_cvv("");
+				demandePaiementService.save(dmd);
 				page = "result";
 				return page;
 			}
@@ -4209,7 +4264,7 @@ public class AppMobileController {
 			if (!amount.contains(".") && !amount.contains(",")) {
 				amount = amount + "." + "00";
 			}
-			System.out.println("montant recharge avec frais : [" + amount + "]");
+			//System.out.println("montant recharge avec frais : [" + amount + "]");
 			Util.writeInFileTransaction(folder, file,
 					"montant recharge avec frais : [" + amount + "]");
 
@@ -4229,7 +4284,7 @@ public class AppMobileController {
 			} else
 				montanttrame = montanttrame.replace(".", "");
 			montanttrame = Util.formatageCHamps(montanttrame, 12);
-			System.out.println("montanttrame avec frais : [" + montanttrame + "]");
+			//System.out.println("montanttrame avec frais : [" + montanttrame + "]");
 			Util.writeInFileTransaction(folder, file,
 					"montanttrame avec frais : [" + montanttrame + "]");
 		} catch (Exception err3) {
@@ -4264,7 +4319,7 @@ public class AppMobileController {
 			if (!amount1.contains(".") && !amount1.contains(",")) {
 				amount1 = amount1 + "." + "00";
 			}
-			System.out.println("montant recharge sans frais : [" + amount1 + "]");
+			//System.out.println("montant recharge sans frais : [" + amount1 + "]");
 			Util.writeInFileTransaction(folder, file,
 					"montant recharge sans frais : [" + amount1 + "]");
 
@@ -4284,7 +4339,7 @@ public class AppMobileController {
 			} else
 				montantRechgtrame = montantRechgtrame.replace(".", "");
 			montantRechgtrame = Util.formatageCHamps(montantRechgtrame, 12);
-			System.out.println("montantRechgtrame sans frais: [" + montantRechgtrame + "]");
+			//System.out.println("montantRechgtrame sans frais: [" + montantRechgtrame + "]");
 			Util.writeInFileTransaction(folder, file,
 					"montantRechgtrame sans frais : [" + montantRechgtrame + "]");
 		} catch (Exception err3) {
@@ -4411,7 +4466,7 @@ public class AppMobileController {
 				carte.setYear(1111);
 			}
 			if (dateExp.after(dateToken)) {
-				System.out.println("date exiration est superieur à la date systeme : " + dateExp + " < " + dateToken);
+				//System.out.println("date exiration est superieur à la date systeme : " + dateExp + " < " + dateToken);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

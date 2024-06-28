@@ -86,7 +86,7 @@ public class HistoAutoGateServiceImpl implements HistoAutoGateService {
 	public Double getCommercantGlobalFlowPerDay(String numCmr) {
 		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 		String dateSysStr = dateFormat.format(new Date());
-		System.out.println("getCommercantGlobalFlowPerDay dateSysStr : " + dateSysStr);
+		//System.out.println("getCommercantGlobalFlowPerDay dateSysStr : " + dateSysStr);
 		dateSysStr = dateSysStr.concat("%");
 		Double montant = histoAutoGateDao.getCommercantGlobalFlowPerDay(numCmr,dateSysStr);
 		return montant;
@@ -96,7 +96,7 @@ public class HistoAutoGateServiceImpl implements HistoAutoGateService {
 	public List<HistoAutoGateDto> getPorteurMerchantFlowPerDay(String numCmr, String cardnumber) {
 		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 		String dateSysStr = dateFormat.format(new Date());
-		System.out.println("getPorteurMerchantFlowPerDay dateSysStr : " + dateSysStr);
+		//System.out.println("getPorteurMerchantFlowPerDay dateSysStr : " + dateSysStr);
 		dateSysStr = dateSysStr.concat("%");
 		String cardnumber1 = cardnumber.concat("???");
 		return histoAutoGateMapper.modelList2VOList(histoAutoGateDao.getPorteurMerchantFlowPerDay(numCmr, cardnumber, cardnumber1, dateSysStr));

@@ -404,6 +404,9 @@ public class ACSController {
 								demandeDtoMsg.setIddemande(dmd.getIddemande());
 								session.setAttribute("idDemande", dmd.getIddemande());								
 								model.addAttribute("demandeDto", demandeDtoMsg);
+								dmd.setEtat_demande("TimeOut");
+								dmd.setDem_cvv("");
+								dmd = demandePaiementService.save(dmd);	            
 								page = "timeout";
 								
 								Util.writeInFileTransaction(folder, file, "*********** Fin processRequest () ************** ");
