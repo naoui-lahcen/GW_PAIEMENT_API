@@ -17,6 +17,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.SplittableRandom;
 import java.util.UUID;
+
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -69,6 +71,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.apache.tomcat.util.codec.binary.Base64;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /*
 * @author  LAHCEN NAOUI
@@ -2095,9 +2100,134 @@ public class APIController {
 
 		return jsoVerified.toString();
 	}
-
+	
 	@RequestMapping(value = "/napspayment/chalenge/token/{token}", method = RequestMethod.GET)
-	public String chalengeapi(@PathVariable(value = "token") String token, Model model) {
+	public String chalengeapi(@PathVariable(value = "token") String token, Model model, HttpServletRequest request,
+			HttpServletResponse response) {
+		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
+		String file = "API_CHALENGE_" + randomWithSplittableRandom;
+		// create file log
+		Util.creatFileTransaction(file);
+		Util.writeInFileTransaction(folder, file, "*********** Start chalengeapi ************** ");
+		System.out.println("*********** Start chalengeapi ************** ");
+
+		String page = "chalenge";
+
+		Util.writeInFileTransaction(folder, file, "findByTokencommande token : " + token);
+		System.out.println("findByTokencommande token : " + token);
+
+		DemandePaiementDto current_dem = demandePaiementService.findByTokencommande(token);
+		String msgRefus = "Une erreur est survenue, merci de réessayer plus tard";
+
+		if (current_dem != null) {
+			Util.writeInFileTransaction(folder, file, "current_dem is exist OK");
+			System.out.println("current_dem is exist OK");
+			if (current_dem.getEtat_demande().equals("SW_PAYE") || current_dem.getEtat_demande().equals("PAYE")) {
+				msgRefus = "La transaction en cours n’a pas abouti (Opération déjà effectuée), votre compte ne sera pas débité, merci de réessayer .";
+				current_dem.setMsgRefus(msgRefus);
+				model.addAttribute("demandeDto", current_dem);
+				page = "error";
+			} else if (current_dem.getEtat_demande().equals("SW_REJET")) {
+				msgRefus = "La transaction en cours n’a pas abouti (Transaction rejetée), votre compte ne sera pas débité, merci de réessayer .";
+				current_dem.setMsgRefus(msgRefus);
+				model.addAttribute("demandeDto", current_dem);
+				page = "error";
+			} else {
+				page = "chalenge";
+
+				if (current_dem.getCreq().equals("")) {
+					msgRefus = "La transaction en cours n’a pas abouti (Le lien de chalence acs est null), votre compte ne sera pas débité, merci de réessayer .";
+					current_dem.setMsgRefus(msgRefus);
+					Util.writeInFileTransaction(folder, file, "Le lien de chalence acs est null !!!");
+
+					model.addAttribute("demandeDto", current_dem);
+					page = "error";
+				} else {
+					System.out.println("current_dem htmlCreq : " + current_dem.getCreq());
+					Util.writeInFileTransaction(folder, file, "current_dem htmlCreq : " + current_dem.getCreq());
+
+					model.addAttribute("demandeDto", current_dem);
+					
+					try {
+					// 2024-07-05
+					// autre façon de faire la soumission automatique de formulaires ACS via le HttpServletResponse.
+		
+			        String creq = "";
+			        String acsUrl = "";
+			        String response3DS = current_dem.getCreq();
+			        Pattern pattern = Pattern.compile("action='(.*?)'.*value='(.*?)'");
+			        Matcher matcher = pattern.matcher(response3DS);
+
+			        // Si une correspondance est trouvée
+		            if (matcher.find()) {
+		                acsUrl = matcher.group(1);
+		                creq = matcher.group(2);
+		                System.out.println("L'URL ACS est : " + acsUrl);
+		                System.out.println("La valeur de creq est : " + creq);
+		                Util.writeInFileTransaction(folder, file, "L'URL ACS est : " + acsUrl);
+		                Util.writeInFileTransaction(folder, file, "La valeur de creq est : " + creq);
+
+		                String decodedCreq = new String(Base64.decodeBase64(creq.getBytes()));
+		                System.out.println("La valeur de decodedCreq est : " + decodedCreq);
+		                Util.writeInFileTransaction(folder, file, "La valeur de decodedCreq est : " + decodedCreq);
+		                
+		                // URL de feedback après soumission ACS
+		                String feedbackUrl = request.getContextPath() + "/acsFeedback";
+
+		                // Afficher le formulaire HTML dans la réponse
+		                response.setContentType("text/html");
+		                response.setCharacterEncoding("UTF-8");
+		                response.getWriter().println("<html><body>");
+		                response.getWriter().println("<form id=\"acsForm\" action=\"" + acsUrl + "\" method=\"post\">");
+		                response.getWriter().println("<input type=\"hidden\" name=\"creq\" value=\"" + creq + "\">");
+		                response.getWriter().println("</form>");
+		                response.getWriter().println("<script>document.getElementById('acsForm').submit();</script>");
+		                response.getWriter().println("</body></html>");
+		                
+		                System.out.println("Le Creq a été envoyé à l'ACS par soumission automatique du formulaire.");
+		                Util.writeInFileTransaction(folder, file, "Le Creq a été envoyé à l'ACS par soumission automatique du formulaire.");
+		                
+		                return null;  // Terminer le traitement ici après avoir envoyé le formulaire
+		            } else {
+		                System.out.println("Aucune correspondance pour l'URL ACS et creq trouvée dans la réponse HTML.");
+		                Util.writeInFileTransaction(folder, file, "Aucune correspondance pour l'URL ACS et creq trouvée dans la réponse HTML.");
+		                page = "error";  // Définir la page d'erreur appropriée
+		            }
+					
+				// 2024-07-05
+				} catch (Exception ex) {
+					DemandePaiementDto demandeDtoMsg = new DemandePaiementDto();
+					Util.writeInFileTransaction(folder, file, "Aucune correspondance pour l'URL ACS et creq trouvée dans la réponse HTML " + ex);
+					demandeDtoMsg.setMsgRefus(
+							"La transaction en cours n’a pas abouti (Aucune correspondance pour l'URL ACS et creq trouvée dans la réponse HTML), votre compte ne sera pas débité, merci de réessayer .");
+					model.addAttribute("demandeDto", demandeDtoMsg);
+					current_dem.setDem_cvv("");
+					demandePaiementService.save(current_dem);
+					page = "result";
+					return page;
+					}
+				}
+			}
+		} else {
+			DemandePaiementDto demande = new DemandePaiementDto();
+			msgRefus = "Votre commande est introuvable ";
+			demande.setMsgRefus(msgRefus);
+			model.addAttribute("demandeDto", demande);
+			Util.writeInFileTransaction(folder, file, "current_dem not found ");
+			System.out.println("current_dem null ");
+			page = "error";
+		}
+
+		System.out.println("return to " + page + ".html");
+
+		Util.writeInFileTransaction(folder, file, "*********** Fin chalengeapi ************** ");
+		System.out.println("*********** Fin chalengeapi ************** ");
+
+		return page;
+	}
+
+	@RequestMapping(value = "/napspayment/chalenge/tokenOld/{token}", method = RequestMethod.GET)
+	public String chalengeapiOld(@PathVariable(value = "token") String token, Model model) {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "API_CHALENGE_" + randomWithSplittableRandom;
 		// create file log
