@@ -9,6 +9,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.UnknownHostException;
@@ -454,6 +455,35 @@ public class GWPaiementController {
         hist = histoAutoGateService.save(hist);
         System.out.println("hist [" + hist +"]");*/
         
+        /*String commande ="88385524445414";
+        DemandePaiementDto dto = demandePaiementService.findByCommande(commande);
+        
+        String montant = String.valueOf(dto.getMontant());
+        montant = montant.replace(",", ".");
+        Double montantDouble = Double.parseDouble(montant);
+        BigDecimal bd = new BigDecimal(montantDouble).setScale(4, RoundingMode.HALF_UP);
+        Double montantDb = bd.doubleValue();
+        
+        TransactionDto trs = transactionService.findByTrsnumautAndTrsnumcmrAndTrsmontant("797535", "1180092", montantDb);
+        System.out.println("trs : ");
+        System.out.println(trs !=null ? trs.toString() : null);
+        
+		try {        
+			Date dateTrss = dateFormatSimple.parse(dto.getDem_date_time());  						
+			Date current_date_1 = getDateWithoutTime(dateTrss);			
+			//trs.setTrs_dattrans(current_date_1);	
+			trs.setTrs_dattrans(dateTrss);
+			transactionService.save(trs);
+			
+			String dateTrs = dateFormatSimple.format(dateTrss);  
+	        //TransactionDto trs1 = transactionService.findByTrsnumautAndTrsnumcmrAndDateTrs("797535", "1180092", dateTrs);
+	        TransactionDto trs1 = transactionService.findByTrsnumautAndTrsnumcmrAndTrscommande("797535", "1180092", "88385524445414");
+	        System.out.println("trs1 : ");	   
+	        System.out.println(trs1 !=null ? trs1.toString() : null);	        
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}*/
+       
 		return msg;
 	}
 	
@@ -920,13 +950,13 @@ public class GWPaiementController {
 				if (demandeDto.getEtat_demande().equals("SW_PAYE") || demandeDto.getEtat_demande().equals("PAYE")) {
 					Util.writeInFileTransaction(folder, file, "Opération déjà effectuée");
 					demandeDto.setMsgRefus(
-							"La transaction en cours n’a pas abouti (Opération déjà effectuée), votre compte ne sera pas débité, merci de réessayer .");
+							"La transaction en cours n’a pas abouti (Opération déjà effectuée), votre compte ne sera pas débité, merci de réessayer.");
 					model.addAttribute("demandeDto", demandeDto);
 					page = "operationEffectue";
 				} else if (demandeDto.getEtat_demande().equals("SW_REJET")) {
 					Util.writeInFileTransaction(folder, file, "Transaction rejetée");
 					demandeDto.setMsgRefus(
-							"La transaction en cours n’a pas abouti (Transaction rejetée), votre compte ne sera pas débité, merci de réessayer .");
+							"La transaction en cours n’a pas abouti (Transaction rejetée), votre compte ne sera pas débité, merci de réessayer.");
 					model.addAttribute("demandeDto", demandeDto);
 					page = "result";
 				} else {
@@ -942,7 +972,7 @@ public class GWPaiementController {
 								"showPagePayment 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 										+ "] and merchantid:[" + merchantid + "]" + e);
 						demandeDto = new DemandePaiementDto();
-						demandeDto.setMsgRefus("Commerçant mal configuré dans la base de données ou inexistant");
+						demandeDto.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité.");
 						model.addAttribute("demandeDto", demandeDto);
 						page = "result";
 					}
@@ -958,7 +988,7 @@ public class GWPaiementController {
 								"showPagePayment 500 Galerie misconfigured in DB or not existing orderid:[" + orderid
 										+ "] and merchantid:[" + merchantid + "]" + e);
 						demandeDto = new DemandePaiementDto();
-						demandeDto.setMsgRefus("Galerie mal configuré dans la base de données ou inexistant");
+						demandeDto.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité.");
 						model.addAttribute("demandeDto", demandeDto);
 						page = "result";
 					}
@@ -967,7 +997,7 @@ public class GWPaiementController {
 				Util.writeInFileTransaction(folder, file, "demandeDto not found token : " + token);
 				System.out.println("demandeDto not found token : " + token);
 				demandeDto = new DemandePaiementDto();
-				demandeDto.setMsgRefus("Demande paiement mal configuré dans la base de données ou inexistant");
+				demandeDto.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité.");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 			}
@@ -980,7 +1010,7 @@ public class GWPaiementController {
 			Util.writeInFileTransaction(folder, file, "showPagePayment 500 exception" + e);
 			e.printStackTrace();
 			demandeDto = new DemandePaiementDto();
-			demandeDto.setMsgRefus("Demande paiement mal configuré dans la base de données ou inexistant");
+			demandeDto.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité.");
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
 		}
@@ -1106,13 +1136,13 @@ public class GWPaiementController {
 				if (demandeDto.getEtat_demande().equals("SW_PAYE") || demandeDto.getEtat_demande().equals("PAYE")) {
 					Util.writeInFileTransaction(folder, file, "Opération déjà effectuée");
 					demandeDto.setMsgRefus(
-							"La transaction en cours n’a pas abouti (Opération déjà effectuée), votre compte ne sera pas débité, merci de réessayer .");
+							"La transaction en cours n’a pas abouti (Opération déjà effectuée), votre compte ne sera pas débité, merci de réessayer.");
 					model.addAttribute("demandeDto", demandeDto);
 					page = "operationEffectue";
 				} else if (demandeDto.getEtat_demande().equals("SW_REJET")) {
 					Util.writeInFileTransaction(folder, file, "Transaction rejetée");
 					demandeDto.setMsgRefus(
-							"La transaction en cours n’a pas abouti (Transaction rejetée), votre compte ne sera pas débité, merci de réessayer .");
+							"La transaction en cours n’a pas abouti (Transaction rejetée), votre compte ne sera pas débité, merci de réessayer.");
 					model.addAttribute("demandeDto", demandeDto);
 					page = "result";
 				} else {
@@ -1128,7 +1158,7 @@ public class GWPaiementController {
 								"showPagePaymentLydec 500 Merchant misconfigured in DB or not existing orderid:["
 										+ orderid + "] and merchantid:[" + merchantid + "]" + e);
 						demandeDto = new DemandePaiementDto();
-						demandeDto.setMsgRefus("Commerçant mal configuré dans la base de données ou inexistant");
+						demandeDto.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité.");
 						model.addAttribute("demandeDto", demandeDto);
 						page = "result";
 					}
@@ -1144,7 +1174,7 @@ public class GWPaiementController {
 								"showPagePaymentLydec 500 Galerie misconfigured in DB or not existing orderid:["
 										+ orderid + "] and merchantid:[" + merchantid + "]" + e);
 						demandeDto = new DemandePaiementDto();
-						demandeDto.setMsgRefus("Galerie mal configuré dans la base de données ou inexistant");
+						demandeDto.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité.");
 						model.addAttribute("demandeDto", demandeDto);
 						page = "result";
 					}
@@ -1153,7 +1183,7 @@ public class GWPaiementController {
 				Util.writeInFileTransaction(folder, file, "demandeDto not found token : " + token);
 				System.out.println("demandeDto not found token : " + token);
 				demandeDto = new DemandePaiementDto();
-				demandeDto.setMsgRefus("Demande paiement mal configuré dans la base de données ou inexistant");
+				demandeDto.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité.");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 			}
@@ -1166,7 +1196,7 @@ public class GWPaiementController {
 			Util.writeInFileTransaction(folder, file, "showPagePaymentLdec 500 exception" + e);
 			e.printStackTrace();
 			demandeDto = new DemandePaiementDto();
-			demandeDto.setMsgRefus("Demande paiement mal configuré dans la base de données ou inexistant");
+			demandeDto.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité.");
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
 		}
@@ -1260,13 +1290,13 @@ public class GWPaiementController {
 				if (demandeDto.getEtat_demande().equals("SW_PAYE") || demandeDto.getEtat_demande().equals("PAYE")) {
 					Util.writeInFileTransaction(folder, file, "Opération déjà effectuée");
 					demandeDto.setMsgRefus(
-							"La transaction en cours n’a pas abouti (Opération déjà effectuée), votre compte ne sera pas débité, merci de réessayer .");
+							"La transaction en cours n’a pas abouti (Opération déjà effectuée), votre compte ne sera pas débité, merci de réessayer.");
 					model.addAttribute("demandeDto", demandeDto);
 					page = "operationEffectue";
 				} else if (demandeDto.getEtat_demande().equals("SW_REJET")) {
 					Util.writeInFileTransaction(folder, file, "Transaction rejetée");
 					demandeDto.setMsgRefus(
-							"La transaction en cours n’a pas abouti (Transaction rejetée), votre compte ne sera pas débité, merci de réessayer .");
+							"La transaction en cours n’a pas abouti (Transaction rejetée), votre compte ne sera pas débité, merci de réessayer.");
 					model.addAttribute("demandeDto", demandeDto);
 					page = "result";
 				} else {
@@ -1282,7 +1312,7 @@ public class GWPaiementController {
 								"showPagePaymentDGI 500 Merchant misconfigured in DB or not existing orderid:["
 										+ orderid + "] and merchantid:[" + merchantid + "]" + e);
 						demandeDto = new DemandePaiementDto();
-						demandeDto.setMsgRefus("Commerçant mal configuré dans la base de données ou inexistant");
+						demandeDto.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité.");
 						model.addAttribute("demandeDto", demandeDto);
 						page = "result";
 					}
@@ -1298,7 +1328,7 @@ public class GWPaiementController {
 								"showPagePaymentDGI 500 Galerie misconfigured in DB or not existing orderid:[" + orderid
 										+ "] and merchantid:[" + merchantid + "]" + e);
 						demandeDto = new DemandePaiementDto();
-						demandeDto.setMsgRefus("Galerie mal configuré dans la base de données ou inexistant");
+						demandeDto.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité.");
 						model.addAttribute("demandeDto", demandeDto);
 						page = "result";
 					}
@@ -1307,7 +1337,7 @@ public class GWPaiementController {
 				Util.writeInFileTransaction(folder, file, "demandeDto not found token : " + token);
 				System.out.println("demandeDto not found token : " + token);
 				demandeDto = new DemandePaiementDto();
-				demandeDto.setMsgRefus("Demande paiement mal configuré dans la base de données ou inexistant");
+				demandeDto.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité.");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 			}
@@ -1320,7 +1350,7 @@ public class GWPaiementController {
 			Util.writeInFileTransaction(folder, file, "showPagePaymentDGILdec 500 exception" + e);
 			e.printStackTrace();
 			demandeDto = new DemandePaiementDto();
-			demandeDto.setMsgRefus("Demande paiement mal configuré dans la base de données ou inexistant");
+			demandeDto.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité.");
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
 		}
@@ -1451,7 +1481,7 @@ public class GWPaiementController {
 
 		} catch (Exception jerr) {
 			Util.writeInFileTransaction(folder, file, "payer 500 malformed json expression" + jerr);
-			demandeDtoMsg.setMsgRefus("données mal formées");
+			demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			return page;
@@ -1463,7 +1493,7 @@ public class GWPaiementController {
 		} catch (Exception e) {
 			Util.writeInFileTransaction(folder, file, "payer 500 Merchant misconfigured in DB or not existing orderid:["
 					+ orderid + "] and merchantid:[" + merchantid + "]" + e);
-			demandeDtoMsg.setMsgRefus("Commerçant mal configuré dans la base de données ou inexistant");
+			demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité.");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			return page;
@@ -1472,7 +1502,7 @@ public class GWPaiementController {
 		if (current_merchant == null) {
 			Util.writeInFileTransaction(folder, file, "payer 500 Merchant misconfigured in DB or not existing orderid:["
 					+ orderid + "] and merchantid:[" + merchantid + "]");
-			demandeDtoMsg.setMsgRefus("Commerçant mal configuré dans la base de données ou inexistant");
+			demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité.");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			return page;
@@ -1481,7 +1511,7 @@ public class GWPaiementController {
 		if (current_merchant.getCmrCodactivite() == null) {
 			Util.writeInFileTransaction(folder, file, "payer 500 Merchant misconfigured in DB or not existing orderid:["
 					+ orderid + "] and merchantid:[" + merchantid + "]");
-			demandeDtoMsg.setMsgRefus("Commerçant mal configuré dans la base de données ou inexistant");
+			demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité.");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			return page;
@@ -1490,7 +1520,7 @@ public class GWPaiementController {
 		if (current_merchant.getCmrCodbqe() == null) {
 			Util.writeInFileTransaction(folder, file, "payer 500 Merchant misconfigured in DB or not existing orderid:["
 					+ orderid + "] and merchantid:[" + merchantid + "]");
-			demandeDtoMsg.setMsgRefus("Commerçant mal configuré dans la base de données ou inexistant");
+			demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité.");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			return page;
@@ -1505,7 +1535,7 @@ public class GWPaiementController {
 					"payer 500 InfoCommercant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]" + e);
 
-			demandeDtoMsg.setMsgRefus("InfoCommercant mal configuré dans la base de données ou inexistant");
+			demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité.");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			return page;
@@ -1516,7 +1546,7 @@ public class GWPaiementController {
 					"payer 500 InfoCommercantDto misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]");
 
-			demandeDtoMsg.setMsgRefus("InfoCommercant mal configuré dans la base de données ou inexistant");
+			demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité.");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			return page;
@@ -1527,7 +1557,7 @@ public class GWPaiementController {
 		if (i_card_valid == 1) {
 			Util.writeInFileTransaction(folder, file, "payer 500 Card number length is incorrect orderid:[" + orderid
 					+ "] and merchantid:[" + merchantid + "]");
-			demandeDtoMsg.setMsgRefus("La longueur du numéro de la carte est incorrecte");
+			demandeDtoMsg.setMsgRefus("Le numéro de la carte est incomplet, merci de réessayer.");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			return page;
@@ -1537,7 +1567,7 @@ public class GWPaiementController {
 			Util.writeInFileTransaction(folder, file,
 					"payer 500 Card number  is not valid incorrect luhn check orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]");
-			demandeDtoMsg.setMsgRefus("Le numéro de la carte est invalide");
+			demandeDtoMsg.setMsgRefus("Le numéro de la carte est invalide, merci de réessayer.");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			return page;
@@ -1574,7 +1604,7 @@ public class GWPaiementController {
 		} catch (Exception err1) {
 			Util.writeInFileTransaction(folder, file,
 					"payer 500 Error during DEMANDE_PAIEMENT insertion for given orderid:[" + orderid + "]" + err1);
-			demandeDtoMsg.setMsgRefus("Erreur lors de l'insertion DEMANDE_PAIEMENT");
+			demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			return page;
@@ -1614,7 +1644,7 @@ public class GWPaiementController {
 			demandePaiementService.save(demandeDto);
 			Util.writeInFileTransaction(folder, file, "Opération déjà effectuée");
 			demandeDto.setMsgRefus(
-					"La transaction en cours n’a pas abouti (Opération déjà effectuée), votre compte ne sera pas débité, merci de réessayer .");
+					"La transaction en cours est déjà effectuée, votre compte ne sera pas débité.");
 			model.addAttribute("demandeDto", demandeDto);
 			page = "operationEffectue";
 			return page;
@@ -1629,7 +1659,7 @@ public class GWPaiementController {
 				demandeDto.setDem_cvv("");
 				demandeDto.setEtat_demande("REJET_RISK_CTRL");
 				demandePaiementService.save(demandeDto);
-				Util.writeInFileTransaction(folder, file, "payer 500 Error " + msg);
+				Util.writeInFileTransaction(folder, file, msg);
 				demandeDto = new DemandePaiementDto();
 				demandeDtoMsg.setMsgRefus(msg);
 				model.addAttribute("demandeDto", demandeDtoMsg);
@@ -1644,7 +1674,7 @@ public class GWPaiementController {
 					"payer 500 ControlRiskCmr misconfigured in DB or not existing merchantid:[" + demandeDto.getComid()
 							+ e);
 			demandeDto = new DemandePaiementDto();
-			demandeDtoMsg.setMsgRefus("Error 500 Opération rejetée: Contrôle risque");
+			demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité.");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			return page;
@@ -1745,7 +1775,7 @@ public class GWPaiementController {
 			demandePaiementService.save(demandeDto);
 			Util.writeInFileTransaction(folder, file, "payer 500 Error during  date formatting for given orderid:["
 					+ orderid + "] and merchantid:[" + merchantid + "]" + err2);
-			demandeDtoMsg.setMsgRefus("Erreur lors du formatage de la date");
+			demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			return page;
@@ -1817,7 +1847,7 @@ public class GWPaiementController {
 			Util.writeInFileTransaction(folder, file,
 					"demandePaiement after update MPI_KO idDemande null : " + demandeDto.toString());
 			demandeDtoMsg.setMsgRefus(
-					"La transaction en cours n’a pas abouti (MPI_KO), votre compte ne sera pas débité, merci de réessayer .");
+					"La transaction en cours n’a pas abouti (MPI_KO), votre compte ne sera pas débité, merci de réessayer.");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			return page;
@@ -1832,7 +1862,7 @@ public class GWPaiementController {
 					"demandePaiement not found !!!! demandePaiement = null  / received idDemande from MPI => "
 							+ idDemande);
 			demandeDtoMsg.setMsgRefus(
-					"La transaction en cours n’a pas abouti (DemandePaiement introuvable), votre compte ne sera pas débité, merci de réessayer .");
+					"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			return page;
@@ -1846,7 +1876,7 @@ public class GWPaiementController {
 					"demandePaiement after update MPI_KO reponseMPI null : " + dmd.toString());
 			Util.writeInFileTransaction(folder, file, "Response 3DS is null");
 			demandeDtoMsg.setMsgRefus(
-					"La transaction en cours n’a pas abouti (MPI_KO reponseMPI null), votre compte ne sera pas débité, merci de réessayer .");
+					"La transaction en cours n’a pas abouti (MPI_KO reponseMPI null), votre compte ne sera pas débité, merci de réessayer.");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			return page;
@@ -1926,7 +1956,7 @@ public class GWPaiementController {
 						"payer 500 cvv not set , reccuring flag set to N, cvv must be present in normal transaction");
 
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (cvv doit être présent dans la transaction normale), votre compte ne sera pas débité, merci de réessayer .");
+						"Le champ CVV est vide. Veuillez saisir le code de sécurité à trois chiffres situé au dos de votre carte pour continuer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				return page;
@@ -1979,7 +2009,7 @@ public class GWPaiementController {
 							"payer 500 Error during switch tlv buildup for given orderid:[" + orderid
 									+ "] and merchantid:[" + merchantid + "]" + err4);
 					demandeDtoMsg.setMsgRefus(
-							"La transaction en cours n’a pas abouti (Erreur lors de la création du switch tlv), votre compte ne sera pas débité, merci de réessayer .");
+							"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 					model.addAttribute("demandeDto", demandeDtoMsg);
 					page = "result";
 					return page;
@@ -2022,7 +2052,7 @@ public class GWPaiementController {
 					Util.writeInFileTransaction(folder, file,
 							"payer 500 Error Switch communication s_conn false switch ip:[" + sw_s
 									+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-					demandeDtoMsg.setMsgRefus("Un dysfonctionnement du switch ne peut pas se connecter !!!");
+					demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 					model.addAttribute("demandeDto", demandeDtoMsg);
 					page = "result";
 					return page;
@@ -2056,7 +2086,7 @@ public class GWPaiementController {
 				Util.writeInFileTransaction(folder, file, "Switch  malfunction ConnectException !!!" + e);
 				switch_ko = 1;
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Un dysfonctionnement du switch), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				return page;
@@ -2072,7 +2102,7 @@ public class GWPaiementController {
 				Util.writeInFileTransaction(folder, file, "payer 500 Error Switch communication SocketTimeoutException"
 						+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Erreur de communication du switch SocketTimeoutException), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				return page;
@@ -2088,7 +2118,7 @@ public class GWPaiementController {
 				Util.writeInFileTransaction(folder, file, "payer 500 Error Switch communication IOException"
 						+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Erreur de communication du switch IOException), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				return page;
@@ -2102,7 +2132,7 @@ public class GWPaiementController {
 				switch_ko = 1;
 				e.printStackTrace();
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Dysfonctionnement du switch Exception), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				return page;
@@ -2119,7 +2149,7 @@ public class GWPaiementController {
 				Util.writeInFileTransaction(folder, file, "payer 500 Error Switch null response" + "switch ip:[" + sw_s
 						+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Dysfonctionnement du switch resp null), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				return page;
@@ -2135,7 +2165,7 @@ public class GWPaiementController {
 				Util.writeInFileTransaction(folder, file, "payer 500 Error Switch short response length() < 3 "
 						+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Dysfonctionnement du switch resp < 3 !!!), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				return page;
@@ -2391,182 +2421,13 @@ public class GWPaiementController {
 						dmd.setDem_cvv("");
 					}	
 					demandePaiementService.save(dmd);
-
+					Util.writeInFileTransaction(folder, file, "update etat demande : SW_PAYE OK");
 				} catch (Exception e) {
 					Util.writeInFileTransaction(folder, file,
 							"payer 500 Error during DEMANDE_PAIEMENT update etat demande for given orderid:[" + orderid
 									+ "]" + e);
 				}
 
-				Util.writeInFileTransaction(folder, file, "update etat demande : SW_PAYE OK");
-
-				String capture_status = "N";
-				int exp_flag = 0;
-
-				if (capture.equalsIgnoreCase("Y")) {
-					// 2024-05-17
-					HistoAutoGateDto histToCapture= null;
-					try {
-						if(hist.getId() == null) {
-							// get histoauto check if exist
-							histToCapture = histoAutoGateService.findLastByHatNumCommandeAndHatNumcmr(orderid, merchantid);
-							if(histToCapture == null) {
-								histToCapture = hist;
-							}
-						} else {
-							histToCapture = hist;
-						}
-					} catch (Exception err2) {
-						Util.writeInFileTransaction(folder, file,
-								"payer 500 Error during HistoAutoGate findLastByHatNumCommandeAndHatNumcmr orderid:[" + orderid
-										+ "] and merchantid:[" + merchantid + "]" + err2);
-					}
-					// 2024-05-17
-
-					Date current_date = null;
-					current_date = new Date();
-					Util.writeInFileTransaction(folder, file, "Automatic capture start...");
-
-					Util.writeInFileTransaction(folder, file, "Getting authnumber");
-
-					String authnumber = histToCapture.getHatNautemt();
-					Util.writeInFileTransaction(folder, file, "authnumber : [" + authnumber + "]");
-
-					Util.writeInFileTransaction(folder, file, "Getting authnumber");
-					TransactionDto trs_check = null;
-
-					try {
-						trs_check = transactionService.findByTrsnumautAndTrsnumcmr(authnumber, merchantid);
-					} catch (Exception ee) {
-
-						Util.writeInFileTransaction(folder, file,
-								"trs_check trs_check exception e : [" + ee.toString() + "]");
-					}
-
-					if (trs_check != null) {
-						// do nothing
-						Util.writeInFileTransaction(folder, file, "trs_check != null do nothing for now ...");
-					} else {
-						Util.writeInFileTransaction(folder, file, "inserting into telec start ...");
-						try {
-							// insert into telec
-
-							TelecollecteDto n_tlc = telecollecteService.getMAXTLC_N(merchantid);
-
-							long lidtelc = 0;
-
-							if (n_tlc == null) {
-								Util.writeInFileTransaction(folder, file, "getMAXTLC_N n_tlc = null");
-								Integer idtelc = null;
-
-								TelecollecteDto tlc = null;
-
-								// insert into telec
-								idtelc = telecollecteService.getMAX_ID(merchantid);
-								Util.writeInFileTransaction(folder, file, "getMAX_ID idtelc : " + idtelc);
-								
-								if (idtelc != null) {
-									lidtelc = idtelc.longValue() + 1;
-								} else {
-									lidtelc = 1;
-								}
-								tlc = new TelecollecteDto();
-								tlc.setTlc_numtlcolcte(lidtelc);
-
-								tlc.setTlc_numtpe(histToCapture.getHatCodtpe());
-
-								tlc.setTlc_datcrtfich(current_date);
-								tlc.setTlc_nbrtrans(new Double(1));
-								tlc.setTlc_gest("N");
-
-								tlc.setTlc_datremise(current_date);
-								tlc.setTlc_numremise(new Double(lidtelc));
-								// tlc.setTlc_numfich(new Double(0));
-								String tmpattern = "HH:mm";
-								SimpleDateFormat sftm = new SimpleDateFormat(tmpattern);
-								String stm = sftm.format(current_date);
-								tlc.setTlc_heuremise(stm);
-
-								tlc.setTlc_codbq(acqcode);
-								tlc.setTlc_numcmr(merchantid);
-								tlc.setTlc_numtpe(websiteid);
-								telecollecteService.save(tlc);
-
-							} else {
-								Util.writeInFileTransaction(folder, file, "n_tlc !=null ");
-
-								lidtelc = n_tlc.getTlc_numtlcolcte();
-								double nbr_trs = n_tlc.getTlc_nbrtrans();
-
-								nbr_trs = nbr_trs + 1;
-
-								n_tlc.setTlc_nbrtrans(nbr_trs);
-
-								telecollecteService.save(n_tlc);
-							}
-
-							// insert into transaction
-							TransactionDto trs = new TransactionDto();
-							trs.setTrsnumcmr(merchantid);
-							trs.setTrs_numtlcolcte(Double.valueOf(lidtelc));
-
-							String frmt_cardnumber = Util.formatagePan(cardnumber);
-							trs.setTrs_codporteur(frmt_cardnumber);
-
-							double dmnt = 0;
-
-							dmnt = Double.parseDouble(amount);
-
-							trs.setTrs_montant(dmnt);
-							// trs.setTrs_dattrans(new Date());
-
-							current_date = new Date();
-							Date current_date_1 = getDateWithoutTime(current_date);
-							trs.setTrs_dattrans(current_date_1);
-
-							trs.setTrsnumaut(authnumber);
-							trs.setTrs_etat("N");
-							trs.setTrs_devise(histToCapture.getHatDevise());
-							trs.setTrs_certif("N");
-							Integer idtrs = transactionService.getMAX_ID();
-							long lidtrs = idtrs.longValue() + 1;
-							trs.setTrs_id(lidtrs);
-							trs.setTrs_commande(orderid);
-							trs.setTrs_procod("0");
-							trs.setTrs_groupe(websiteid);
-							trs.setTrs_codtpe(0.0);
-							trs.setTrs_numbloc(0.0);
-							trs.setTrs_numfact(0.0);
-							transactionService.save(trs);
-
-							histToCapture.setHatEtat('T');
-							histToCapture.setHatdatetlc(current_date);
-							histToCapture.setOperateurtlc("mxplusapi");
-							histoAutoGateService.save(histToCapture);
-
-							capture_id = String.format("%040d",
-									new BigInteger(UUID.randomUUID().toString().replace("-", ""), 36));
-							Date dt = new Date();
-							String dtpattern = "yyyy-MM-dd";
-							SimpleDateFormat sfdt = new SimpleDateFormat(dtpattern);
-							String sdt = sfdt.format(dt);
-							String tmpattern = "HH:mm:ss";
-							SimpleDateFormat sftm = new SimpleDateFormat(tmpattern);
-							String stm = sftm.format(dt);
-							Util.writeInFileTransaction(folder, file, "inserting into telec ok");
-							capture_status = "Y";
-
-						} catch (Exception e) {
-							exp_flag = 1;
-							Util.writeInFileTransaction(folder, file, "inserting into telec ko..do nothing " + e);
-						}
-					}
-					if (capture_status.equalsIgnoreCase("Y") && exp_flag == 1)
-						capture_status.equalsIgnoreCase("N");
-
-					Util.writeInFileTransaction(folder, file, "Automatic capture end.");
-				}
-				
 				// 2023-01-03 confirmation par Callback URL
 				String resultcallback = "";
 				String callbackURL = dmd.getCallbackURL();
@@ -2638,7 +2499,7 @@ public class GWPaiementController {
 									dmd.setDem_cvv("");
 									demandePaiementService.save(dmd);
 									demandeDtoMsg.setMsgRefus(
-											"La transaction en cours n’a pas abouti (Web service CallBack Hors service), votre compte ne sera pas débité, merci de réessayer .");
+											"La transaction en cours n’a pas abouti (Web service CallBack Hors service), votre compte ne sera pas débité, merci de réessayer.");
 									model.addAttribute("demandeDto", demandeDtoMsg);
 									page = "operationAnnulee";
 								} else {
@@ -2667,9 +2528,6 @@ public class GWPaiementController {
 					dmd.setEtat_demande("SW_REJET");
 					dmd.setDem_cvv("");
 					demandePaiementService.save(dmd);
-					// old
-					//hist.setHatEtat('A');
-					//histoAutoGateService.save(hist);
 				} catch (Exception e) {
 					dmd.setDem_cvv("");
 					demandePaiementService.save(dmd);
@@ -2677,7 +2535,7 @@ public class GWPaiementController {
 							"payer 500 Error during  DemandePaiement update SW_REJET for given orderid:[" + orderid
 									+ "]" + e);
 					demandeDtoMsg.setMsgRefus(
-							"La transaction en cours n’a pas abouti (Erreur lors de la mise à jour de DemandePaiement SW_REJET), votre compte ne sera pas débité, merci de réessayer .");
+							"La transaction en cours n’a pas abouti (Erreur lors de la mise à jour de DemandePaiement SW_REJET), votre compte ne sera pas débité, merci de réessayer.");
 					model.addAttribute("demandeDto", demandeDtoMsg);
 					page = "result";
 					return page;
@@ -2721,7 +2579,7 @@ public class GWPaiementController {
 				Util.writeInFileTransaction(folder, file,
 						"payer 500 Error during  paymentid generation for given orderid:[" + orderid + "]" + e);
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Erreur lors de la génération de l'ID de paiement), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti (Erreur lors de la génération de l'ID de paiement), votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				return page;
@@ -2747,7 +2605,7 @@ public class GWPaiementController {
 				Util.writeInFileTransaction(folder, file,
 						"payer 500 Error during authdata preparation orderid:[" + orderid + "]" + e);
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Erreur lors de la préparation des données d'authentification), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti (Erreur lors de la préparation des données d'authentification), votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				return page;
@@ -2830,7 +2688,7 @@ public class GWPaiementController {
 					}
 					demandeDtoMsg.setMsgRefus(
 							"La transaction en cours n’a pas abouti (Coderep " + coderep
-									+ ":" + libelle + ")," + " votre compte ne sera pas débité, merci de réessayer .");
+									+ ":" + libelle + ")," + " votre compte ne sera pas débité, merci de réessayer.");
 					model.addAttribute("demandeDto", demandeDtoMsg);
 					page = "result";
 				}
@@ -2838,7 +2696,7 @@ public class GWPaiementController {
 				Util.writeInFileTransaction(folder, file,
 						"payer 500 Error during jso out processing given authnumber:[" + authnumber + "]" + jsouterr);
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Erreur lors du traitement de sortie JSON), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti (Erreur lors du traitement de sortie JSON), votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				return page;
@@ -2917,7 +2775,7 @@ public class GWPaiementController {
 			} catch (Exception ex) {
 				Util.writeInFileTransaction(folder, file, "Aucune correspondance pour l'URL ACS et creq trouvée dans la réponse HTML " + ex);
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Aucune correspondance pour l'URL ACS et creq trouvée dans la réponse HTML), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				dmd.setDem_cvv("");
 				demandePaiementService.save(dmd);
@@ -2935,7 +2793,7 @@ public class GWPaiementController {
 				dmd.setDem_cvv("");
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (COMMERCANT NON PARAMETRE), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti (COMMERCANT NON PARAMETRE), votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				Util.writeInFileTransaction(folder, file, "Fin processRequest ()");
@@ -2948,7 +2806,7 @@ public class GWPaiementController {
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (BIN NON PARAMETREE), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti (BIN NON PARAMETREE), votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				Util.writeInFileTransaction(folder, file, "Fin processRequest ()");
@@ -2961,7 +2819,7 @@ public class GWPaiementController {
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (MPI_DS_ERR), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				Util.writeInFileTransaction(folder, file, "Fin processRequest ()");
@@ -2974,7 +2832,7 @@ public class GWPaiementController {
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (CARTE ERRONEE), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti (CARTE ERRONEE), votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				Util.writeInFileTransaction(folder, file, "Fin processRequest ()");
@@ -2987,7 +2845,7 @@ public class GWPaiementController {
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (CARTE NON ENROLLE), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti (CARTE NON ENROLLE), votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				Util.writeInFileTransaction(folder, file, "Fin processRequest ()");
@@ -3000,7 +2858,7 @@ public class GWPaiementController {
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (ERROR REPONSE ACS), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				Util.writeInFileTransaction(folder, file, "Fin processRequest ()");
@@ -3013,7 +2871,7 @@ public class GWPaiementController {
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (ERROR 3DSS), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				Util.writeInFileTransaction(folder, file, "Fin process ()");
@@ -3029,7 +2887,7 @@ public class GWPaiementController {
 				dmd.setDem_cvv("");
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (COMMERCANT NON PARAMETRE), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti (COMMERCANT NON PARAMETRE), votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				return page;
@@ -3040,7 +2898,7 @@ public class GWPaiementController {
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (BIN NON PARAMETREE), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti (BIN NON PARAMETREE), votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				return page;
@@ -3051,7 +2909,7 @@ public class GWPaiementController {
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (MPI_DS_ERR), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				return page;
@@ -3062,7 +2920,7 @@ public class GWPaiementController {
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (CARTE ERRONEE), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti (CARTE ERRONEE), votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				return page;
@@ -3073,7 +2931,7 @@ public class GWPaiementController {
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (CARTE NON ENROLLE), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti (CARTE NON ENROLLE), votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				return page;
@@ -3084,7 +2942,7 @@ public class GWPaiementController {
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (ERROR REPONSE ACS), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				Util.writeInFileTransaction(folder, file, "Fin processRequest ()");
@@ -3097,7 +2955,7 @@ public class GWPaiementController {
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (ERROR 3DSS), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				Util.writeInFileTransaction(folder, file, "Fin process ()");
@@ -3122,1728 +2980,6 @@ public class GWPaiementController {
         Util.writeInFileTransaction(folder, file, "Feedback reçu : la page ACS a été affichée et soumise.");
         return "Feedback reçu";
     }
-	
-
-	@PostMapping("/payerOld")
-	public String payerOld(Model model, @ModelAttribute("demandeDto") DemandePaiementDto dto, HttpServletRequest request,
-			HttpServletResponse response, HttpSession session) throws IOException {
-		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		String file = "GW_PAYE_" + randomWithSplittableRandom;
-		// create file log
-		Util.creatFileTransaction(file);
-		Util.writeInFileTransaction(folder, file, "*********** Start payer () ************** ");
-		System.out.println("*********** Start payer () ************** ");
-
-		String capture, currency, orderid, recurring, amount, promoCode, transactionid, capture_id, merchantid,
-				merchantname, websiteName, websiteid, callbackUrl, cardnumber, token, expirydate, holdername, cvv,
-				fname, lname, email, country, phone, city, state, zipcode, address, mesg_type, merc_codeactivite,
-				acqcode, merchant_name, merchant_city, acq_type, processing_code, reason_code, transaction_condition,
-				transactiondate, transactiontime, date, rrn, heure, montanttrame, num_trs = "", successURL, failURL,
-				transactiontype, idclient;
-
-		DemandePaiementDto demandeDto = new DemandePaiementDto();
-		Objects.copyProperties(demandeDto, dto);
-		System.out.println("Commande : " + demandeDto.getCommande());
-		Util.writeInFileTransaction(folder, file, "Commande : " + dto.getCommande());
-		DemandePaiementDto demandeDtoMsg = new DemandePaiementDto();
-		DemandePaiementDto dmd = new DemandePaiementDto();
-
-		SimpleDateFormat formatter_1, formatter_2, formatheure, formatdate = null;
-		Date trsdate = null;
-		Integer Idmd_id = null;
-		String[] mm;
-		String[] m;
-		boolean flagNvCarte, flagSaveCarte;
-
-		String page = "chalenge";
-	    
-		try {
-			// Transaction info
-			orderid = demandeDto.getCommande();
-			if (demandeDto.getMontant() == null) {
-				demandeDto.setMontant(0.00);
-			}
-			amount = String.valueOf(demandeDto.getMontant());
-			capture = "";
-			currency = "504";
-			recurring = "N";
-			promoCode = "";
-			transactionid = "";
-			transactiontype = "0"; // 0 payment , P preauto
-
-			// Merchnat info
-			merchantid = demandeDto.getComid();
-			merchantname = "";
-			websiteName = "";
-			websiteid = "";
-			cardnumber = "";
-			expirydate = "";
-			callbackUrl = demandeDto.getCallbackURL();
-			successURL = demandeDto.getSuccessURL();
-			failURL = demandeDto.getFailURL();
-
-			// Card info
-			// if transaction not cof
-			if (demandeDto.getDem_pan() != null && !demandeDto.getDem_pan().equals("")) {
-				cardnumber = demandeDto.getDem_pan();
-				expirydate = demandeDto.getAnnee().substring(2, 4).concat(demandeDto.getMois().substring(0, 2));
-			}
-			// if transaction cof
-			if (demandeDto.getInfoCarte() != null && !demandeDto.isFlagNvCarte()
-					&& (demandeDto.getDem_pan() == null || demandeDto.getDem_pan().equals(""))) {
-				String infoCard = demandeDto.getInfoCarte().substring(8, demandeDto.getInfoCarte().length());
-				Cartes carteFormated = fromString(infoCard);
-				demandeDto.setCarte(carteFormated);
-				cardnumber = demandeDto.getCarte().getCarte();
-				String annee = String.valueOf(demandeDto.getCarte().getYear());
-				expirydate = annee.substring(2, 4).concat(demandeDto.getCarte().getMoisValue());
-			}
-			if (demandeDto.getDem_pan().equals("") && demandeDto.getInfoCarte() != null) {
-				if(!demandeDto.getAnnee().equals("") && !demandeDto.getMois().equals("")) {
-					expirydate = demandeDto.getAnnee().substring(2, 4).concat(demandeDto.getMois().substring(0, 2));
-				}
-			}
-			flagNvCarte = demandeDto.isFlagNvCarte();
-			flagSaveCarte = demandeDto.isFlagSaveCarte();
-			if (cardnumber.contains(",")) {
-				cardnumber = cardnumber.replace(",", "");
-			}
-			// cardnumber = demandeDto.getDem_pan();
-			token = "";
-			// expirydate = demandeDto.getAnnee().substring(2, 4).concat(demandeDto.getMois());
-			holdername = "";
-			cvv = demandeDto.getDem_cvv();
-
-			// Client info
-			fname = demandeDto.getPrenom();
-			lname = demandeDto.getNom();
-			email = demandeDto.getEmail();
-			country = demandeDto.getCountry();
-			phone = demandeDto.getTel();
-			city = demandeDto.getCity();
-			state = demandeDto.getState();
-			zipcode = demandeDto.getPostcode();
-			address = demandeDto.getAddress();
-
-		} catch (Exception jerr) {
-			Util.writeInFileTransaction(folder, file, "payer 500 malformed json expression" + jerr);
-			demandeDtoMsg.setMsgRefus("données mal formées");
-			model.addAttribute("demandeDto", demandeDtoMsg);
-			page = "result";
-			return page;
-		}
-
-		CommercantDto current_merchant = null;
-		try {
-			current_merchant = commercantService.findByCmrNumcmr(merchantid);
-		} catch (Exception e) {
-			Util.writeInFileTransaction(folder, file, "payer 500 Merchant misconfigured in DB or not existing orderid:["
-					+ orderid + "] and merchantid:[" + merchantid + "]" + e);
-			demandeDtoMsg.setMsgRefus("Commerçant mal configuré dans la base de données ou inexistant");
-			model.addAttribute("demandeDto", demandeDtoMsg);
-			page = "result";
-			return page;
-		}
-
-		if (current_merchant == null) {
-			Util.writeInFileTransaction(folder, file, "payer 500 Merchant misconfigured in DB or not existing orderid:["
-					+ orderid + "] and merchantid:[" + merchantid + "]");
-			demandeDtoMsg.setMsgRefus("Commerçant mal configuré dans la base de données ou inexistant");
-			model.addAttribute("demandeDto", demandeDtoMsg);
-			page = "result";
-			return page;
-		}
-
-		if (current_merchant.getCmrCodactivite() == null) {
-			Util.writeInFileTransaction(folder, file, "payer 500 Merchant misconfigured in DB or not existing orderid:["
-					+ orderid + "] and merchantid:[" + merchantid + "]");
-			demandeDtoMsg.setMsgRefus("Commerçant mal configuré dans la base de données ou inexistant");
-			model.addAttribute("demandeDto", demandeDtoMsg);
-			page = "result";
-			return page;
-		}
-
-		if (current_merchant.getCmrCodbqe() == null) {
-			Util.writeInFileTransaction(folder, file, "payer 500 Merchant misconfigured in DB or not existing orderid:["
-					+ orderid + "] and merchantid:[" + merchantid + "]");
-			demandeDtoMsg.setMsgRefus("Commerçant mal configuré dans la base de données ou inexistant");
-			model.addAttribute("demandeDto", demandeDtoMsg);
-			page = "result";
-			return page;
-		}
-
-		InfoCommercantDto current_infoCommercant = null;
-
-		try {
-			current_infoCommercant = infoCommercantService.findByCmrCode(merchantid);
-		} catch (Exception e) {
-			Util.writeInFileTransaction(folder, file,
-					"payer 500 InfoCommercant misconfigured in DB or not existing orderid:[" + orderid
-							+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]" + e);
-
-			demandeDtoMsg.setMsgRefus("InfoCommercant mal configuré dans la base de données ou inexistant");
-			model.addAttribute("demandeDto", demandeDtoMsg);
-			page = "result";
-			return page;
-		}
-
-		if (current_infoCommercant == null) {
-			Util.writeInFileTransaction(folder, file,
-					"payer 500 InfoCommercantDto misconfigured in DB or not existing orderid:[" + orderid
-							+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]");
-
-			demandeDtoMsg.setMsgRefus("InfoCommercant mal configuré dans la base de données ou inexistant");
-			model.addAttribute("demandeDto", demandeDtoMsg);
-			page = "result";
-			return page;
-		}
-
-		int i_card_valid = Util.isCardValid(cardnumber);
-
-		if (i_card_valid == 1) {
-			Util.writeInFileTransaction(folder, file, "payer 500 Card number length is incorrect orderid:[" + orderid
-					+ "] and merchantid:[" + merchantid + "]");
-			demandeDtoMsg.setMsgRefus("La longueur du numéro de la carte est incorrecte");
-			model.addAttribute("demandeDto", demandeDtoMsg);
-			page = "result";
-			return page;
-		}
-
-		if (i_card_valid == 2) {
-			Util.writeInFileTransaction(folder, file,
-					"payer 500 Card number  is not valid incorrect luhn check orderid:[" + orderid
-							+ "] and merchantid:[" + merchantid + "]");
-			demandeDtoMsg.setMsgRefus("Le numéro de la carte est invalide");
-			model.addAttribute("demandeDto", demandeDtoMsg);
-			page = "result";
-			return page;
-		}
-
-		int i_card_type = Util.getCardIss(cardnumber);
-
-		try {
-			DemandePaiementDto dmdToEdit = demandePaiementService.findByIdDemande(demandeDto.getIddemande());
-
-			dmdToEdit.setDem_pan(cardnumber);
-			dmdToEdit.setDem_cvv(cvv);
-			dmdToEdit.setType_carte(i_card_type + "");
-			dmdToEdit.setTransactiontype(transactiontype);
-			int nbr_tv = dmdToEdit.getNbreTenta() + 1;
-			dmdToEdit.setNbreTenta(nbr_tv);
-
-			formatter_1 = new SimpleDateFormat("yyyy-MM-dd");
-			formatter_2 = new SimpleDateFormat("HH:mm:ss");
-			trsdate = new Date();
-			transactiondate = formatter_1.format(trsdate);
-			transactiontime = formatter_2.format(trsdate);
-			dmdToEdit.setDem_date_time(dateFormat.format(new Date()));
-
-			demandeDto = demandePaiementService.save(dmdToEdit);
-			demandeDto.setExpery(expirydate);
-			demandeDto.setFlagNvCarte(flagNvCarte);
-			demandeDto.setFlagSaveCarte(flagSaveCarte);
-			idclient = demandeDto.getId_client();
-			if (idclient == null) {
-				idclient = "";
-			}
-
-		} catch (Exception err1) {
-			Util.writeInFileTransaction(folder, file,
-					"payer 500 Error during DEMANDE_PAIEMENT insertion for given orderid:[" + orderid + "]" + err1);
-			demandeDtoMsg.setMsgRefus("Erreur lors de l'insertion DEMANDE_PAIEMENT");
-			model.addAttribute("demandeDto", demandeDtoMsg);
-			page = "result";
-			return page;
-		}
-		// 2024-06-03
-		// gestion expiration de la session on recupere la date en millisecond
-		Long paymentStartTime = (Long) session.getAttribute("paymentStartTime");
-		Util.writeInFileTransaction(folder, file, "paymentStartTime : " + paymentStartTime);
-
-	    if (paymentStartTime != null) {
-	        long currentTime = System.currentTimeMillis();
-	        long elapsedTime = currentTime - paymentStartTime;
-	        Util.writeInFileTransaction(folder, file, "currentTime : " + currentTime);
-	        Util.writeInFileTransaction(folder, file, "elapsedTime : " + elapsedTime);
-	        // Check if more than 5 minutes (300000 milliseconds) have passed
-	        int timeoutF = timeout;
-	        if (elapsedTime > timeoutF) {
-				Util.writeInFileTransaction(folder, file, "Page expirée Time > 5min");
-				demandeDtoMsg.setMsgRefus("Votre session de paiement a expiré. Veuillez réessayer.");
-				session.setAttribute("idDemande", demandeDto.getIddemande());				
-				model.addAttribute("demandeDto", demandeDtoMsg);
-				demandeDto.setEtat_demande("TimeOut");
-				demandeDto.setDem_cvv("");
-				demandeDto = demandePaiementService.save(demandeDto);	            
-				page = "timeout";
-				
-				Util.writeInFileTransaction(folder, file, "*********** Fin payer () ************** ");
-				System.out.println("*********** Fin payer () ************** ");
-				
-				return page;
-	        }
-	    }
-	 // 2024-06-03
-		
-		if (demandeDto.getEtat_demande().equals("SW_PAYE") || demandeDto.getEtat_demande().equals("PAYE")) {
-			demandeDto.setDem_cvv("");
-			demandePaiementService.save(demandeDto);
-			Util.writeInFileTransaction(folder, file, "Opération déjà effectuée");
-			demandeDto.setMsgRefus(
-					"La transaction en cours n’a pas abouti (Opération déjà effectuée), votre compte ne sera pas débité, merci de réessayer .");
-			model.addAttribute("demandeDto", demandeDto);
-			page = "operationEffectue";
-			return page;
-		}
-
-		// for test control risk
-		// refactoring code 2024-03-20
-		Util.writeInFileTransaction(folder, file, "Debut controlleRisk");
-		try {
-			String msg = autorisationService.controlleRisk(demandeDto, folder, file);
-			if (!msg.equalsIgnoreCase("OK")) {
-				demandeDto.setDem_cvv("");
-				demandeDto.setEtat_demande("REJET_RISK_CTRL");
-				demandePaiementService.save(demandeDto);
-				Util.writeInFileTransaction(folder, file, "payer 500 Error " + msg);
-				demandeDto = new DemandePaiementDto();
-				demandeDtoMsg.setMsgRefus(msg);
-				model.addAttribute("demandeDto", demandeDtoMsg);
-				page = "result";
-				return page;
-			}
-		} catch (Exception e) {
-			demandeDto.setDem_cvv("");
-			demandeDto.setEtat_demande("REJET_RISK_CTRL");
-			demandePaiementService.save(demandeDto);
-			Util.writeInFileTransaction(folder, file,
-					"payer 500 ControlRiskCmr misconfigured in DB or not existing merchantid:[" + demandeDto.getComid()
-							+ e);
-			demandeDto = new DemandePaiementDto();
-			demandeDtoMsg.setMsgRefus("Error 500 Opération rejetée: Contrôle risque");
-			model.addAttribute("demandeDto", demandeDtoMsg);
-			page = "result";
-			return page;
-		}
-		Util.writeInFileTransaction(folder, file, "Fin controlleRisk");
-		
-		// saving card if flagSaveCarte true
-		if (demandeDto.isFlagSaveCarte()) {
-			try {
-				List<CardtokenDto> checkCardNumber = cardtokenService.findByIdMerchantClientAndCardNumber(idclient,
-						cardnumber);
-				
-				CardtokenDto cardtokenDto = new CardtokenDto();
-				Calendar dateCalendar = Calendar.getInstance();
-				Date dateToken = dateCalendar.getTime();
-
-				Util.writeInFileTransaction(folder, file, "cardtokenDto expirydate input : " + expirydate);
-				String anne = String.valueOf(dateCalendar.get(Calendar.YEAR));
-				// get year from date
-				String xx = anne.substring(0, 2) + expirydate.substring(0, 2);
-				String MM = expirydate.substring(2, expirydate.length());
-				// format date to "yyyy-MM-dd"
-				String expirydateFormated = xx + "-" + MM + "-" + "01";
-				System.out.println("cardtokenDto expirydate : " + expirydateFormated);
-				Util.writeInFileTransaction(folder, file,
-						"cardtokenDto expirydate formated : " + expirydateFormated);
-				Date dateExp;
-				dateExp = dateFormatSimple.parse(expirydateFormated);
-
-				if (checkCardNumber.size() == 0) {
-					// insert new cardToken
-					String tokencard = Util.generateCardToken(idclient);
-
-					// test if token not exist in DB
-					CardtokenDto checkCardToken = cardtokenService.findByIdMerchantAndToken(idclient, tokencard);
-
-					while (checkCardToken != null) {
-						tokencard = Util.generateCardToken(idclient);
-						System.out.println("checkCardToken exist => generate new tokencard : " + tokencard);
-						Util.writeInFileTransaction(folder, file,
-								"checkCardToken exist => generate new tokencard : " + tokencard);
-						checkCardToken = cardtokenService.findByIdMerchantAndToken(merchantid, tokencard);
-					}
-					System.out.println("tokencard : " + tokencard);
-					Util.writeInFileTransaction(folder, file, "tokencard : " + tokencard);
-
-					cardtokenDto.setToken(tokencard);
-					String tokenid = UUID.randomUUID().toString();
-					cardtokenDto.setIdToken(tokenid);
-					cardtokenDto.setExprDate(dateExp);
-					String dateTokenStr = dateFormat.format(dateToken);
-					Date dateTokenFormated = dateFormat.parse(dateTokenStr);
-					cardtokenDto.setTokenDate(dateTokenFormated);
-					cardtokenDto.setCardNumber(cardnumber);
-					cardtokenDto.setIdMerchant(merchantid);
-					cardtokenDto.setIdMerchantClient(idclient);
-					cardtokenDto.setFirst_name(fname);
-					cardtokenDto.setLast_name(lname);
-					cardtokenDto.setHolderName(holdername);
-					cardtokenDto.setMcc(merchantid);
-
-					CardtokenDto cardtokenSaved = cardtokenService.save(cardtokenDto);
-
-					Util.writeInFileTransaction(folder, file, "Saving CARDTOKEN OK");
-				} else {
-					Util.writeInFileTransaction(folder, file, "Carte deja enregistrée");
-					for(CardtokenDto crd : checkCardNumber) {
-						if(crd.getExprDate() != null) {
-							if(crd.getCardNumber().equals(cardnumber)) {
-								if(crd.getExprDate().before(dateToken)) {
-									Util.writeInFileTransaction(folder, file, "Encienne date expiration est expirée : " + dateFormatSimple.format(crd.getExprDate()));
-									Util.writeInFileTransaction(folder, file, "Update par nv date expiration saisie : "+ expirydateFormated);
-									crd.setExprDate(dateExp);
-									CardtokenDto cardSaved = cardtokenService.save(crd);
-									System.out.println("Update CARDTOKEN OK");
-									Util.writeInFileTransaction(folder, file, "Update CARDTOKEN OK");
-								}
-							}				
-						}	
-					}
-				}
-
-			} catch (ParseException e) {
-				e.printStackTrace();
-				Util.writeInFileTransaction(folder, file, "savingcardtoken 500 Error during CARDTOKEN Saving " + e);
-			}
-		}
-		
-		try {
-
-			formatheure = new SimpleDateFormat("HHmmss");
-			formatdate = new SimpleDateFormat("ddMMyy");
-			date = formatdate.format(new Date());
-			heure = formatheure.format(new Date());
-			rrn = Util.getGeneratedRRN();
-		} catch (Exception err2) {
-			demandeDto.setDem_cvv("");
-			demandePaiementService.save(demandeDto);
-			Util.writeInFileTransaction(folder, file, "payer 500 Error during  date formatting for given orderid:["
-					+ orderid + "] and merchantid:[" + merchantid + "]" + err2);
-			demandeDtoMsg.setMsgRefus("Erreur lors du formatage de la date");
-			model.addAttribute("demandeDto", demandeDtoMsg);
-			page = "result";
-			return page;
-		}
-
-		ThreeDSecureResponse threeDsecureResponse = new ThreeDSecureResponse();
-
-		// appel 3DSSecure ***********************************************************
-
-		/** dans la preprod les tests sans 3DSS on commente l'appel 3DSS et on mj reponseMPI="Y" */
-		Util.writeInFileTransaction(folder, file, "environement : " + environement);
-		if(environement.equals("PREPROD")) {
-			//threeDsecureResponse = autorisationService.preparerReqThree3DSS(demandeDto, folder, file);
-		
-			threeDsecureResponse.setReponseMPI("Y");
-		} else {
-			threeDsecureResponse = autorisationService.preparerReqThree3DSS(demandeDto, folder, file);
-		}
-
-		// fin 3DSSecure ***********************************************************
-
-		/*
-		 * ------------ DEBUT MPI RESPONSE PARAMS ------------
-		 */
-		String reponseMPI = "";
-		String eci = "";
-		String cavv = "";
-		String threeDSServerTransID = "";
-		String xid = "";
-		String errmpi = "";
-		String idDemande = String.valueOf(demandeDto.getIddemande() == null ? "" : demandeDto.getIddemande());
-		String expiry = ""; // YYMM
-
-		if (threeDsecureResponse.getReponseMPI() != null) {
-			reponseMPI = threeDsecureResponse.getReponseMPI();
-		}
-		/*if (threeDsecureResponse.getIdDemande() != null) {
-			idDemande = threeDsecureResponse.getIdDemande();
-		}*/
-		if (threeDsecureResponse.getThreeDSServerTransID() != null) {
-			threeDSServerTransID = threeDsecureResponse.getThreeDSServerTransID();
-		}
-		if (threeDsecureResponse.getEci() != null) {
-			eci = threeDsecureResponse.getEci();
-		} else {
-			eci = "";
-		}
-		if (threeDsecureResponse.getCavv() != null) {
-			cavv = threeDsecureResponse.getCavv();
-		} else {
-			cavv = "";
-		}
-		if (threeDsecureResponse.getErrmpi() != null) {
-			errmpi = threeDsecureResponse.getErrmpi();
-		} else {
-			errmpi = "";
-		}
-		if (threeDsecureResponse.getExpiry() != null) {
-			expiry = threeDsecureResponse.getExpiry();
-		} else {
-			expiry = "";
-		}
-
-		if (idDemande == null || idDemande.equals("")) {
-			demandeDto.setDem_cvv("");
-			demandeDto.setEtat_demande("MPI_KO");
-			demandePaiementService.save(demandeDto);
-			Util.writeInFileTransaction(folder, file, "received idDemande from MPI is Null or Empty");
-			Util.writeInFileTransaction(folder, file,
-					"demandePaiement after update MPI_KO idDemande null : " + demandeDto.toString());
-			demandeDtoMsg.setMsgRefus(
-					"La transaction en cours n’a pas abouti (MPI_KO), votre compte ne sera pas débité, merci de réessayer .");
-			model.addAttribute("demandeDto", demandeDtoMsg);
-			page = "result";
-			return page;
-		}
-
-		dmd = demandePaiementService.findByIdDemande(Integer.parseInt(idDemande));
-
-		if (dmd == null) {
-			demandeDto.setDem_cvv("");
-			demandePaiementService.save(demandeDto);
-			Util.writeInFileTransaction(folder, file,
-					"demandePaiement not found !!!! demandePaiement = null  / received idDemande from MPI => "
-							+ idDemande);
-			demandeDtoMsg.setMsgRefus(
-					"La transaction en cours n’a pas abouti (DemandePaiement introuvable), votre compte ne sera pas débité, merci de réessayer .");
-			model.addAttribute("demandeDto", demandeDtoMsg);
-			page = "result";
-			return page;
-		}
-
-		if (reponseMPI.equals("") || reponseMPI == null) {
-			dmd.setDem_cvv("");
-			dmd.setEtat_demande("MPI_KO");
-			demandePaiementService.save(dmd);
-			Util.writeInFileTransaction(folder, file,
-					"demandePaiement after update MPI_KO reponseMPI null : " + dmd.toString());
-			Util.writeInFileTransaction(folder, file, "Response 3DS is null");
-			demandeDtoMsg.setMsgRefus(
-					"La transaction en cours n’a pas abouti (MPI_KO reponseMPI null), votre compte ne sera pas débité, merci de réessayer .");
-			model.addAttribute("demandeDto", demandeDtoMsg);
-			page = "result";
-			return page;
-		}
-
-		if (reponseMPI.equals("Y")) {
-			// ********************* Frictionless responseMPI equal Y *********************
-			Util.writeInFileTransaction(folder, file,
-					"********************* Cas frictionless responseMPI equal Y *********************");
-			if(!threeDSServerTransID.equals("")) {
-				dmd.setDem_xid(threeDSServerTransID);
-				demandePaiementService.save(dmd);
-			}
-			
-			// 2024-03-05
-			montanttrame = formatMontantTrame(folder, file, amount, orderid, merchantid, page, model);
-
-			merchantname = current_merchant.getCmrNom();
-			websiteName = "";
-			websiteid = dmd.getGalid();
-			String url = "", status = "", statuscode = "";
-
-			merc_codeactivite = current_merchant.getCmrCodactivite();
-			acqcode = current_merchant.getCmrCodbqe();
-			merchant_name = Util.pad_merchant(merchantname, 19, ' ');
-			Util.writeInFileTransaction(folder, file, "merchant_name : [" + merchant_name + "]");
-
-			merchant_city = "MOROCCO        ";
-			Util.writeInFileTransaction(folder, file, "merchant_city : [" + merchant_city + "]");
-
-			acq_type = "0000";
-			reason_code = "H";
-			transaction_condition = "6";
-			mesg_type = "0";
-
-			processing_code = "";
-			if (transactiontype.equals("0")) {
-				processing_code = "0";
-			} else if (transactiontype.equals("P")) {
-				processing_code = "P";
-			} else {
-				processing_code = "0";
-			}
-
-			// ajout cavv (cavv+eci) xid dans la trame
-			String champ_cavv = "";
-			xid = threeDSServerTransID;
-			if (cavv == null || eci == null) {
-				champ_cavv = null;
-				Util.writeInFileTransaction(folder, file, "cavv == null || eci == null");
-			} else if (cavv != null && eci != null) {
-				champ_cavv = cavv + eci;
-				Util.writeInFileTransaction(folder, file, "cavv != null && eci != null");
-				Util.writeInFileTransaction(folder, file, "champ_cavv : [" + champ_cavv + "]");
-			} else {
-				Util.writeInFileTransaction(folder, file, "champ_cavv = null");
-				champ_cavv = null;
-			}
-
-			boolean cvv_present = check_cvv_presence(cvv);
-			boolean is_reccuring = is_reccuring_check(recurring);
-			boolean is_first_trs = true;
-
-			String first_auth = "";
-			long lrec_serie = 0;
-
-			// controls
-			Util.writeInFileTransaction(folder, file, "Switch processing start ...");
-
-			String tlv = "";
-			Util.writeInFileTransaction(folder, file, "Preparing Switch TLV Request start ...");
-
-			if (!cvv_present && !is_reccuring) {
-				dmd.setDem_cvv("");
-				demandePaiementService.save(dmd);
-				Util.writeInFileTransaction(folder, file,
-						"payer 500 cvv not set , reccuring flag set to N, cvv must be present in normal transaction");
-
-				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (cvv doit être présent dans la transaction normale), votre compte ne sera pas débité, merci de réessayer .");
-				model.addAttribute("demandeDto", demandeDtoMsg);
-				page = "result";
-				return page;
-			}
-
-			// not reccuring , normal
-			if (cvv_present && !is_reccuring) {
-				Util.writeInFileTransaction(folder, file, "not reccuring , normal cvv_present && !is_reccuring");
-				try {
-
-					tlv = new TLVEncoder().withField(Tags.tag0, mesg_type).withField(Tags.tag1, cardnumber)
-							.withField(Tags.tag3, processing_code).withField(Tags.tag22, transaction_condition)
-							.withField(Tags.tag49, acq_type).withField(Tags.tag14, montanttrame)
-							.withField(Tags.tag15, currency).withField(Tags.tag23, reason_code)
-							.withField(Tags.tag18, "761454").withField(Tags.tag42, expirydate)
-							.withField(Tags.tag16, date).withField(Tags.tag17, heure)
-							.withField(Tags.tag10, merc_codeactivite).withField(Tags.tag8, "0" + merchantid)
-							.withField(Tags.tag9, merchantid).withField(Tags.tag66, rrn).withField(Tags.tag67, cvv)
-							.withField(Tags.tag11, merchant_name).withField(Tags.tag12, merchant_city)
-							.withField(Tags.tag90, acqcode).withField(Tags.tag167, champ_cavv)
-							.withField(Tags.tag168, xid).encode();
-
-					Util.writeInFileTransaction(folder, file, "tag0_request : [" + mesg_type + "]");
-					Util.writeInFileTransaction(folder, file, "tag1_request : [" + cardnumber + "]");
-					Util.writeInFileTransaction(folder, file, "tag3_request : [" + processing_code + "]");
-					Util.writeInFileTransaction(folder, file, "tag22_request : [" + transaction_condition + "]");
-					Util.writeInFileTransaction(folder, file, "tag49_request : [" + acq_type + "]");
-					Util.writeInFileTransaction(folder, file, "tag14_request : [" + montanttrame + "]");
-					Util.writeInFileTransaction(folder, file, "tag15_request : [" + currency + "]");
-					Util.writeInFileTransaction(folder, file, "tag23_request : [" + reason_code + "]");
-					Util.writeInFileTransaction(folder, file, "tag18_request : [761454]");
-					Util.writeInFileTransaction(folder, file, "tag42_request : [" + expirydate + "]");
-					Util.writeInFileTransaction(folder, file, "tag16_request : [" + date + "]");
-					Util.writeInFileTransaction(folder, file, "tag17_request : [" + heure + "]");
-					Util.writeInFileTransaction(folder, file, "tag10_request : [" + merc_codeactivite + "]");
-					Util.writeInFileTransaction(folder, file, "tag8_request : [0" + merchantid + "]");
-					Util.writeInFileTransaction(folder, file, "tag9_request : [" + merchantid + "]");
-					Util.writeInFileTransaction(folder, file, "tag66_request : [" + rrn + "]");
-					Util.writeInFileTransaction(folder, file, "tag67_request : [" + cvv + "]");
-					Util.writeInFileTransaction(folder, file, "tag11_request : [" + merchant_name + "]");
-					Util.writeInFileTransaction(folder, file, "tag12_request : [" + merchant_city + "]");
-					Util.writeInFileTransaction(folder, file, "tag90_request : [" + acqcode + "]");
-					Util.writeInFileTransaction(folder, file, "tag167_request : [" + champ_cavv + "]");
-					Util.writeInFileTransaction(folder, file, "tag168_request : [" + xid + "]");
-
-				} catch (Exception err4) {
-					dmd.setDem_cvv("");
-					demandePaiementService.save(dmd);
-					Util.writeInFileTransaction(folder, file,
-							"payer 500 Error during switch tlv buildup for given orderid:[" + orderid
-									+ "] and merchantid:[" + merchantid + "]" + err4);
-					demandeDtoMsg.setMsgRefus(
-							"La transaction en cours n’a pas abouti (Erreur lors de la création du switch tlv), votre compte ne sera pas débité, merci de réessayer .");
-					model.addAttribute("demandeDto", demandeDtoMsg);
-					page = "result";
-					return page;
-				}
-
-				Util.writeInFileTransaction(folder, file, "Switch TLV Request :[" + tlv + "]");
-
-			}
-
-			// reccuring
-			if (is_reccuring) {
-				Util.writeInFileTransaction(folder, file, "reccuring");
-			}
-
-			Util.writeInFileTransaction(folder, file, "Preparing Switch TLV Request end.");
-
-			String resp_tlv = "";
-//			SwitchTCPClient sw = SwitchTCPClient.getInstance();
-			int port = 0;
-			String sw_s = "", s_port = "";
-			int switch_ko = 0;
-			try {
-
-				s_port = portSwitch;
-				sw_s = ipSwitch;
-
-				port = Integer.parseInt(s_port);
-
-				Util.writeInFileTransaction(folder, file, "Switch TCP client V2 Connecting ...");
-
-				SwitchTCPClientV2 switchTCPClient = new SwitchTCPClientV2(sw_s, port);
-
-				boolean s_conn = switchTCPClient.isConnected();
-
-				if (!s_conn) {
-					dmd.setDem_cvv("");
-					demandePaiementService.save(dmd);
-					Util.writeInFileTransaction(folder, file, "Switch  malfunction cannot connect!!!");
-
-					Util.writeInFileTransaction(folder, file,
-							"payer 500 Error Switch communication s_conn false switch ip:[" + sw_s
-									+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-					demandeDtoMsg.setMsgRefus("Un dysfonctionnement du switch ne peut pas se connecter !!!");
-					model.addAttribute("demandeDto", demandeDtoMsg);
-					page = "result";
-					return page;
-				}
-
-				if (s_conn) {
-					Util.writeInFileTransaction(folder, file, "Switch Connected.");
-					Util.writeInFileTransaction(folder, file, "Switch Sending TLV Request ...");
-
-					resp_tlv = switchTCPClient.sendMessage(tlv);
-
-					Util.writeInFileTransaction(folder, file, "Switch TLV Request end.");
-					switchTCPClient.shutdown();
-				}
-
-			} catch (UnknownHostException e) {
-				dmd.setDem_cvv("");
-				dmd.setEtat_demande("SW_KO");
-				demandePaiementService.save(dmd);
-				Util.writeInFileTransaction(folder, file, "Switch  malfunction UnknownHostException !!!" + e);
-
-				demandeDtoMsg.setMsgRefus("Un dysfonctionnement du switch ne peut pas se connecter !!!");
-				model.addAttribute("demandeDto", demandeDtoMsg);
-				page = "result";
-				return page;
-
-			} catch (java.net.ConnectException e) {
-				dmd.setDem_cvv("");
-				dmd.setEtat_demande("SW_KO");
-				demandePaiementService.save(dmd);
-				Util.writeInFileTransaction(folder, file, "Switch  malfunction ConnectException !!!" + e);
-				switch_ko = 1;
-				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Un dysfonctionnement du switch), votre compte ne sera pas débité, merci de réessayer .");
-				model.addAttribute("demandeDto", demandeDtoMsg);
-				page = "result";
-				return page;
-			}
-
-			catch (SocketTimeoutException e) {
-				dmd.setDem_cvv("");
-				dmd.setEtat_demande("SW_KO");
-				demandePaiementService.save(dmd);
-				Util.writeInFileTransaction(folder, file, "Switch  malfunction  SocketTimeoutException !!!" + e);
-				switch_ko = 1;
-				e.printStackTrace();
-				Util.writeInFileTransaction(folder, file, "payer 500 Error Switch communication SocketTimeoutException"
-						+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Erreur de communication du switch SocketTimeoutException), votre compte ne sera pas débité, merci de réessayer .");
-				model.addAttribute("demandeDto", demandeDtoMsg);
-				page = "result";
-				return page;
-			}
-
-			catch (IOException e) {
-				dmd.setDem_cvv("");
-				dmd.setEtat_demande("SW_KO");
-				demandePaiementService.save(dmd);
-				Util.writeInFileTransaction(folder, file, "Switch  malfunction IOException !!!" + e);
-				switch_ko = 1;
-				e.printStackTrace();
-				Util.writeInFileTransaction(folder, file, "payer 500 Error Switch communication IOException"
-						+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Erreur de communication du switch IOException), votre compte ne sera pas débité, merci de réessayer .");
-				model.addAttribute("demandeDto", demandeDtoMsg);
-				page = "result";
-				return page;
-			}
-
-			catch (Exception e) {
-				dmd.setDem_cvv("");
-				dmd.setEtat_demande("SW_KO");
-				demandePaiementService.save(dmd);
-				Util.writeInFileTransaction(folder, file, "Switch  malfunction Exception!!!" + e);
-				switch_ko = 1;
-				e.printStackTrace();
-				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Dysfonctionnement du switch Exception), votre compte ne sera pas débité, merci de réessayer .");
-				model.addAttribute("demandeDto", demandeDtoMsg);
-				page = "result";
-				return page;
-			}
-
-			String resp = resp_tlv;
-
-			if (switch_ko == 0 && resp == null) {
-				dmd.setDem_cvv("");
-				dmd.setEtat_demande("SW_KO");
-				demandePaiementService.save(dmd);
-				Util.writeInFileTransaction(folder, file, "Switch  malfunction resp null!!!");
-				switch_ko = 1;
-				Util.writeInFileTransaction(folder, file, "payer 500 Error Switch null response" + "switch ip:[" + sw_s
-						+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Dysfonctionnement du switch resp null), votre compte ne sera pas débité, merci de réessayer .");
-				model.addAttribute("demandeDto", demandeDtoMsg);
-				page = "result";
-				return page;
-			}
-
-			if (switch_ko == 0 && resp.length() < 3) {
-				dmd.setDem_cvv("");
-				dmd.setEtat_demande("SW_KO");
-				demandePaiementService.save(dmd);
-				switch_ko = 1;
-
-				Util.writeInFileTransaction(folder, file, "Switch  malfunction resp < 3 !!!");
-				Util.writeInFileTransaction(folder, file, "payer 500 Error Switch short response length() < 3 "
-						+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Dysfonctionnement du switch resp < 3 !!!), votre compte ne sera pas débité, merci de réessayer .");
-				model.addAttribute("demandeDto", demandeDtoMsg);
-				page = "result";
-				return page;
-			}
-
-			Util.writeInFileTransaction(folder, file, "Switch TLV Respnose :[" + resp + "]");
-
-			Util.writeInFileTransaction(folder, file, "Processing Switch TLV Respnose ...");
-
-			TLVParser tlvp = null;
-
-			String tag0_resp = null, tag1_resp = null, tag3_resp = null, tag8_resp = null, tag9_resp = null,
-					tag14_resp = null, tag15_resp = null, tag16_resp = null, tag17_resp = null, tag66_resp = null,
-					tag18_resp = null, tag19_resp = null, tag23_resp = null, tag20_resp = null, tag21_resp = null,
-					tag22_resp = null, tag80_resp = null, tag98_resp = null;
-
-			if (switch_ko == 0) {
-				try {
-					tlvp = new TLVParser(resp);
-
-					tag0_resp = tlvp.getTag(Tags.tag0);
-					tag1_resp = tlvp.getTag(Tags.tag1);
-					tag3_resp = tlvp.getTag(Tags.tag3);
-					tag8_resp = tlvp.getTag(Tags.tag8);
-					tag9_resp = tlvp.getTag(Tags.tag9);
-					tag14_resp = tlvp.getTag(Tags.tag14);
-					tag15_resp = tlvp.getTag(Tags.tag15);
-					tag16_resp = tlvp.getTag(Tags.tag16);
-					tag17_resp = tlvp.getTag(Tags.tag17);
-					tag66_resp = tlvp.getTag(Tags.tag66); // f1
-					tag18_resp = tlvp.getTag(Tags.tag18);
-					tag19_resp = tlvp.getTag(Tags.tag19); // f2
-					tag23_resp = tlvp.getTag(Tags.tag23);
-					tag20_resp = tlvp.getTag(Tags.tag20);
-					tag21_resp = tlvp.getTag(Tags.tag21);
-					tag22_resp = tlvp.getTag(Tags.tag22);
-					tag80_resp = tlvp.getTag(Tags.tag80);
-					tag98_resp = tlvp.getTag(Tags.tag98);
-
-				} catch (Exception e) {
-					Util.writeInFileTransaction(folder, file, "Switch  malfunction tlv parsing !!!" + e);
-					switch_ko = 1;
-					Util.writeInFileTransaction(folder, file, "payer 500 Error during tlv Switch response parse"
-							+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-				}
-
-				// controle switch
-				if (tag1_resp == null) {
-					Util.writeInFileTransaction(folder, file, "Switch  malfunction !!! tag1_resp == null");
-					switch_ko = 1;
-					Util.writeInFileTransaction(folder, file,
-							"payer 500 Error during tlv Switch response parse tag1_resp tag null" + "switch ip:[" + sw_s
-									+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-				}
-
-				if (tag1_resp != null && tag1_resp.length() < 3) {
-					Util.writeInFileTransaction(folder, file, "Switch  malfunction !!! tag1_resp == null");
-					switch_ko = 1;
-					Util.writeInFileTransaction(folder, file,
-							"payer 500" + "Error during tlv Switch response parse tag1_resp length tag  < 3"
-									+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv
-									+ "]");
-				}
-
-				if (tag20_resp == null) {
-					Util.writeInFileTransaction(folder, file, "Switch  malfunction !!! tag20_resp == null");
-					switch_ko = 1;
-					Util.writeInFileTransaction(folder, file,
-							"payer 500 Error during tlv Switch response parse tag1_resp tag null" + "switch ip:[" + sw_s
-									+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-				}
-			}
-			Util.writeInFileTransaction(folder, file, "Switch TLV Respnose Processed");
-			Util.writeInFileTransaction(folder, file, "Switch TLV Respnose :[" + resp + "]");
-
-			Util.writeInFileTransaction(folder, file, "tag0_resp : [" + tag0_resp + "]");
-			Util.writeInFileTransaction(folder, file, "tag1_resp : [" + tag1_resp + "]");
-			Util.writeInFileTransaction(folder, file, "tag3_resp : [" + tag3_resp + "]");
-			Util.writeInFileTransaction(folder, file, "tag8_resp : [" + tag8_resp + "]");
-			Util.writeInFileTransaction(folder, file, "tag9_resp : [" + tag9_resp + "]");
-			Util.writeInFileTransaction(folder, file, "tag14_resp : [" + tag14_resp + "]");
-			Util.writeInFileTransaction(folder, file, "tag15_resp : [" + tag15_resp + "]");
-			Util.writeInFileTransaction(folder, file, "tag16_resp : [" + tag16_resp + "]");
-			Util.writeInFileTransaction(folder, file, "tag17_resp : [" + tag17_resp + "]");
-			Util.writeInFileTransaction(folder, file, "tag66_resp : [" + tag66_resp + "]");
-			Util.writeInFileTransaction(folder, file, "tag18_resp : [" + tag18_resp + "]");
-			Util.writeInFileTransaction(folder, file, "tag19_resp : [" + tag19_resp + "]");
-			Util.writeInFileTransaction(folder, file, "tag23_resp : [" + tag23_resp + "]");
-			Util.writeInFileTransaction(folder, file, "tag20_resp : [" + tag20_resp + "]");
-			Util.writeInFileTransaction(folder, file, "tag21_resp : [" + tag21_resp + "]");
-			Util.writeInFileTransaction(folder, file, "tag22_resp : [" + tag22_resp + "]");
-			Util.writeInFileTransaction(folder, file, "tag80_resp : [" + tag80_resp + "]");
-			Util.writeInFileTransaction(folder, file, "tag98_resp : [" + tag98_resp + "]");
-
-			String tag20_resp_verified = "";
-			String tag19_res_verified = "";
-			String tag66_resp_verified = "";
-			tag20_resp_verified = tag20_resp;
-			tag19_res_verified = tag19_resp;
-			tag66_resp_verified = tag66_resp;
-			String s_status, pan_auto = "";
-
-			// SWHistoAutoDto swhist = null;
-
-			if (switch_ko == 1) {
-				pan_auto = Util.formatagePan(cardnumber);
-				Util.writeInFileTransaction(folder, file, "getSWHistoAuto pan_auto/rrn/amount/date/merchantid : "
-						+ pan_auto + "/" + rrn + "/" + amount + "/" + date + "/" + merchantid);
-			}
-
-			HistoAutoGateDto hist = null;
-			Integer Ihist_id = null;
-
-			Util.writeInFileTransaction(folder, file, "Insert into Histogate...");
-
-			try {
-
-				hist = new HistoAutoGateDto();
-				Date curren_date_hist = new Date();
-				int numTransaction = Util.generateNumTransaction(folder, file, curren_date_hist);
-
-				Util.writeInFileTransaction(folder, file, "get status ...");
-
-				s_status = "";
-				try {
-					CodeReponseDto codeReponseDto = codeReponseService.findByRpcCode(tag20_resp_verified);
-					System.out.println("codeReponseDto : " + codeReponseDto);
-					Util.writeInFileTransaction(folder, file, "codeReponseDto : " + codeReponseDto);
-					if (codeReponseDto != null) {
-						s_status = codeReponseDto.getRpcLibelle();
-					}
-				} catch (Exception ee) {
-					Util.writeInFileTransaction(folder, file, "authorization 500 Error codeReponseDto null");
-					ee.printStackTrace();
-				}
-				
-				websiteid = dmd.getGalid();
-
-				Util.writeInFileTransaction(folder, file, "get status Switch status : [" + s_status + "]");
-
-				Util.writeInFileTransaction(folder, file, "get max id ...");
-
-				// Ihist_id = hist.getMAX_ID("HISTOAUTO_GATE", "HAT_ID");
-				// Ihist_id = histoAutoGateService.getMAX_ID();
-				// long currentid = Ihist_id.longValue() + 1;
-				// hist.setId(currentid);
-
-				Util.writeInFileTransaction(folder, file, "max id : [" + Ihist_id + "]");
-
-				Util.writeInFileTransaction(folder, file, "formatting pan...");
-
-				pan_auto = Util.formatagePan(cardnumber);
-				Util.writeInFileTransaction(folder, file, "formatting pan Ok pan_auto :[" + pan_auto + "]");
-
-				Util.writeInFileTransaction(folder, file, "HistoAutoGate data filling start ...");
-				
-				Util.writeInFileTransaction(folder, file, "websiteid : " + websiteid);
-
-				Date current_date_1 = getDateWithoutTime(curren_date_hist);
-				hist.setHatDatdem(current_date_1);
-
-				hist.setHatHerdem(new SimpleDateFormat("HH:mm").format(curren_date_hist));
-				hist.setHatMontant(Double.parseDouble(amount));
-				hist.setHatNumcmr(merchantid);
-				hist.setHatCoderep(tag20_resp_verified);
-				tag20_resp = tag20_resp_verified;
-				hist.setHatDevise(currency);
-				hist.setHatBqcmr(acqcode);
-				hist.setHatPorteur(pan_auto);
-				hist.setHatMtfref1(s_status);
-				hist.setHatNomdeandeur(websiteid);
-				hist.setHatNautemt(tag19_res_verified); // f2
-				tag19_resp = tag19_res_verified;
-				if (tag22_resp != null)
-					hist.setHatProcode(tag22_resp.charAt(0));
-				else
-					hist.setHatProcode('6');
-				hist.setHatExpdate(expirydate);
-				hist.setHatRepondeur(tag21_resp);
-				hist.setHatTypmsg("3");
-				hist.setHatRrn(tag66_resp_verified); // f1
-				tag66_resp_verified = tag66_resp;
-				hist.setHatEtat('E');
-				if (websiteid.equals("")) {
-					hist.setHatCodtpe("1");
-				} else {
-					hist.setHatCodtpe(websiteid);
-				}
-				hist.setHatMcc(merc_codeactivite);
-				hist.setHatNumCommande(orderid);
-				hist.setHatNumdem(new Long(numTransaction));
-
-				if (check_cvv_presence(cvv)) {
-
-					hist.setIs_cvv_verified("Y");
-				} else {
-
-					hist.setIs_cvv_verified("N");
-				}
-
-				hist.setIs_3ds("N");
-				hist.setIs_addcard("N");
-				// if (card_destination == 1)
-				// hist.setIs_national("Y");
-				// else
-				// hist.setIs_national("N");
-				hist.setIs_whitelist("N");
-				hist.setIs_withsave("N");
-				hist.setIs_tokenized("N");
-
-				if (recurring.equalsIgnoreCase("Y"))
-					hist.setIs_cof("Y");
-				if (recurring.equalsIgnoreCase("N"))
-					hist.setIs_cof("N");
-
-				Util.writeInFileTransaction(folder, file, "HistoAutoGate data filling end ...");
-
-				Util.writeInFileTransaction(folder, file, "HistoAutoGate Saving ...");
-
-				hist = histoAutoGateService.save(hist);
-				
-				Util.writeInFileTransaction(folder, file, "hatNomdeandeur : " + hist.getHatNomdeandeur());
-
-			} catch (Exception e) {
-				Util.writeInFileTransaction(folder, file,
-						"payer 500 Error during  insert in histoautogate for given orderid:[" + orderid + "]" + e);
-				try {
-					Util.writeInFileTransaction(folder, file, "2eme tentative : HistoAutoGate Saving ... ");
-					hist = histoAutoGateService.save(hist);
-				} catch (Exception ex) {
-					Util.writeInFileTransaction(folder, file,
-							"2eme tentative : payer 500 Error during  insert in histoautogate for given orderid:["
-									+ orderid + "]" + ex);
-				}
-			}
-
-			Util.writeInFileTransaction(folder, file, "HistoAutoGate OK.");
-
-			if (tag20_resp == null) {
-				tag20_resp = "";
-			}
-
-			if (tag20_resp.equalsIgnoreCase("00"))
-
-			{
-				Util.writeInFileTransaction(folder, file, "SWITCH RESONSE CODE :[00]");
-
-				try {
-					Util.writeInFileTransaction(folder, file, "update etat demande : SW_PAYE ...");
-
-					dmd.setEtat_demande("SW_PAYE");
-					if(dmd.getTransactiontype().equals("0")) {
-						dmd.setDem_cvv("");
-					}	
-					demandePaiementService.save(dmd);
-
-				} catch (Exception e) {
-					Util.writeInFileTransaction(folder, file,
-							"payer 500 Error during DEMANDE_PAIEMENT update etat demande for given orderid:[" + orderid
-									+ "]" + e);
-				}
-
-				Util.writeInFileTransaction(folder, file, "update etat demande : SW_PAYE OK");
-
-				String capture_status = "N";
-				int exp_flag = 0;
-
-				if (capture.equalsIgnoreCase("Y")) {
-					// 2024-05-17
-					HistoAutoGateDto histToCapture= null;
-					try {
-						if(hist.getId() == null) {
-							// get histoauto check if exist
-							histToCapture = histoAutoGateService.findLastByHatNumCommandeAndHatNumcmr(orderid, merchantid);
-							if(histToCapture == null) {
-								histToCapture = hist;
-							}
-						} else {
-							histToCapture = hist;
-						}
-					} catch (Exception err2) {
-						Util.writeInFileTransaction(folder, file,
-								"payer 500 Error during HistoAutoGate findLastByHatNumCommandeAndHatNumcmr orderid:[" + orderid
-										+ "] and merchantid:[" + merchantid + "]" + err2);
-					}
-					// 2024-05-17
-
-					Date current_date = null;
-					current_date = new Date();
-					Util.writeInFileTransaction(folder, file, "Automatic capture start...");
-
-					Util.writeInFileTransaction(folder, file, "Getting authnumber");
-
-					String authnumber = histToCapture.getHatNautemt();
-					Util.writeInFileTransaction(folder, file, "authnumber : [" + authnumber + "]");
-
-					Util.writeInFileTransaction(folder, file, "Getting authnumber");
-					TransactionDto trs_check = null;
-
-					try {
-						trs_check = transactionService.findByTrsnumautAndTrsnumcmr(authnumber, merchantid);
-					} catch (Exception ee) {
-
-						Util.writeInFileTransaction(folder, file,
-								"trs_check trs_check exception e : [" + ee.toString() + "]");
-					}
-
-					if (trs_check != null) {
-						// do nothing
-						Util.writeInFileTransaction(folder, file, "trs_check != null do nothing for now ...");
-					} else {
-						Util.writeInFileTransaction(folder, file, "inserting into telec start ...");
-						try {
-							// insert into telec
-
-							TelecollecteDto n_tlc = telecollecteService.getMAXTLC_N(merchantid);
-
-							long lidtelc = 0;
-
-							if (n_tlc == null) {
-								Util.writeInFileTransaction(folder, file, "getMAXTLC_N n_tlc = null");
-								Integer idtelc = null;
-
-								TelecollecteDto tlc = null;
-
-								// insert into telec
-								idtelc = telecollecteService.getMAX_ID(merchantid);
-								Util.writeInFileTransaction(folder, file, "getMAX_ID idtelc : " + idtelc);
-								
-								if (idtelc != null) {
-									lidtelc = idtelc.longValue() + 1;
-								} else {
-									lidtelc = 1;
-								}
-								tlc = new TelecollecteDto();
-								tlc.setTlc_numtlcolcte(lidtelc);
-
-								tlc.setTlc_numtpe(histToCapture.getHatCodtpe());
-
-								tlc.setTlc_datcrtfich(current_date);
-								tlc.setTlc_nbrtrans(new Double(1));
-								tlc.setTlc_gest("N");
-
-								tlc.setTlc_datremise(current_date);
-								tlc.setTlc_numremise(new Double(lidtelc));
-								// tlc.setTlc_numfich(new Double(0));
-								String tmpattern = "HH:mm";
-								SimpleDateFormat sftm = new SimpleDateFormat(tmpattern);
-								String stm = sftm.format(current_date);
-								tlc.setTlc_heuremise(stm);
-
-								tlc.setTlc_codbq(acqcode);
-								tlc.setTlc_numcmr(merchantid);
-								tlc.setTlc_numtpe(websiteid);
-								telecollecteService.save(tlc);
-
-							} else {
-								Util.writeInFileTransaction(folder, file, "n_tlc !=null ");
-
-								lidtelc = n_tlc.getTlc_numtlcolcte();
-								double nbr_trs = n_tlc.getTlc_nbrtrans();
-
-								nbr_trs = nbr_trs + 1;
-
-								n_tlc.setTlc_nbrtrans(nbr_trs);
-
-								telecollecteService.save(n_tlc);
-							}
-
-							// insert into transaction
-							TransactionDto trs = new TransactionDto();
-							trs.setTrsnumcmr(merchantid);
-							trs.setTrs_numtlcolcte(Double.valueOf(lidtelc));
-
-							String frmt_cardnumber = Util.formatagePan(cardnumber);
-							trs.setTrs_codporteur(frmt_cardnumber);
-
-							double dmnt = 0;
-
-							dmnt = Double.parseDouble(amount);
-
-							trs.setTrs_montant(dmnt);
-							// trs.setTrs_dattrans(new Date());
-
-							current_date = new Date();
-							Date current_date_1 = getDateWithoutTime(current_date);
-							trs.setTrs_dattrans(current_date_1);
-
-							trs.setTrsnumaut(authnumber);
-							trs.setTrs_etat("N");
-							trs.setTrs_devise(histToCapture.getHatDevise());
-							trs.setTrs_certif("N");
-							Integer idtrs = transactionService.getMAX_ID();
-							long lidtrs = idtrs.longValue() + 1;
-							trs.setTrs_id(lidtrs);
-							trs.setTrs_commande(orderid);
-							trs.setTrs_procod("0");
-							trs.setTrs_groupe(websiteid);
-							trs.setTrs_codtpe(0.0);
-							trs.setTrs_numbloc(0.0);
-							trs.setTrs_numfact(0.0);
-							transactionService.save(trs);
-
-							histToCapture.setHatEtat('T');
-							histToCapture.setHatdatetlc(current_date);
-							histToCapture.setOperateurtlc("mxplusapi");
-							histoAutoGateService.save(histToCapture);
-
-							capture_id = String.format("%040d",
-									new BigInteger(UUID.randomUUID().toString().replace("-", ""), 36));
-							Date dt = new Date();
-							String dtpattern = "yyyy-MM-dd";
-							SimpleDateFormat sfdt = new SimpleDateFormat(dtpattern);
-							String sdt = sfdt.format(dt);
-							String tmpattern = "HH:mm:ss";
-							SimpleDateFormat sftm = new SimpleDateFormat(tmpattern);
-							String stm = sftm.format(dt);
-							Util.writeInFileTransaction(folder, file, "inserting into telec ok");
-							capture_status = "Y";
-
-						} catch (Exception e) {
-							exp_flag = 1;
-							Util.writeInFileTransaction(folder, file, "inserting into telec ko..do nothing " + e);
-						}
-					}
-					if (capture_status.equalsIgnoreCase("Y") && exp_flag == 1)
-						capture_status.equalsIgnoreCase("N");
-
-					Util.writeInFileTransaction(folder, file, "Automatic capture end.");
-				}
-				
-				// 2023-01-03 confirmation par Callback URL
-				String resultcallback = "";
-				String callbackURL = dmd.getCallbackURL();
-				Util.writeInFileTransaction(folder, file, "Call Back URL: " + callbackURL);
-				if (dmd.getCallbackURL() != null && !dmd.getCallbackURL().equals("")
-						&& !dmd.getCallbackURL().equals("NA")) {
-					String clesigne = current_infoCommercant.getClePub();
-
-					String montanttrx = String.format("%.2f", dmd.getMontant()).replaceAll(",", ".");
-					String token_gen = "";
-
-					Util.writeInFileTransaction(folder, file,
-							"sendPOST(" + callbackURL + "," + clesigne + "," + dmd.getCommande() + ","
-									+ tag20_resp + "," + montanttrx + "," + hist.getHatNautemt() + ","
-									+ hist.getHatNumdem() + "," + dmd.getType_carte() + ")");
-
-					resultcallback = sendPOST(callbackURL, clesigne, dmd.getCommande(), tag20_resp,
-							montanttrx, hist.getHatNautemt(), hist.getHatNumdem(), token_gen,
-							Util.formatCard(cardnumber), dmd.getType_carte(), folder, file);
-
-					Util.writeInFileTransaction(folder, file,
-							"resultcallback :[" + resultcallback + "]");
-
-					boolean repsucces = resultcallback.indexOf("GATESUCCESS") != -1 ? true : false;
-
-					boolean repfailed = resultcallback.indexOf("GATEFAILED") != -1 ? true : false;
-
-					Util.writeInFileTransaction(folder, file, "repsucces : " + repsucces);
-					Util.writeInFileTransaction(folder, file, "repfailed : " + repfailed);
-					if (repsucces) {
-						Util.writeInFileTransaction(folder, file,
-								"Reponse recallURL OK => GATESUCCESS");
-						dmd.setRecallRep("Y");
-						demandePaiementService.save(dmd);
-					} else {
-						if (repfailed) {
-							Util.writeInFileTransaction(folder, file,
-									"Reponse recallURL KO => GATEFAILED");
-							dmd.setRecallRep("N");
-							demandePaiementService.save(dmd);
-						} 
-						//else {
-							if (!DGI_PREPROD.equals(merchantid) && !DGI_PROD.equals(merchantid)) {
-								Util.writeInFileTransaction(folder, file, "Annulation auto start ...");
-
-								String repAnnu = AnnulationAuto(dmd, current_merchant, hist, model, folder,
-										file);
-
-								Util.writeInFileTransaction(folder, file, "Annulation auto end");
-								s_status = "";
-								try {
-									CodeReponseDto codeReponseDto = codeReponseService
-											.findByRpcCode(repAnnu);
-									System.out.println("codeReponseDto annulation : " + codeReponseDto);
-									Util.writeInFileTransaction(folder, file,
-											"codeReponseDto annulation : " + codeReponseDto);
-									if (codeReponseDto != null) {
-										s_status = codeReponseDto.getRpcLibelle();
-									}
-								} catch (Exception ee) {
-									Util.writeInFileTransaction(folder, file,
-											"Annulation auto 500 Error codeReponseDto null");
-									ee.printStackTrace();
-								}
-								Util.writeInFileTransaction(folder, file,
-										"Switch status annulation : [" + s_status + "]");
-								if (repAnnu.equals("00")) {
-									dmd.setEtat_demande("SW_ANNUL_AUTO");
-									dmd.setDem_cvv("");
-									demandePaiementService.save(dmd);
-									demandeDtoMsg.setMsgRefus(
-											"La transaction en cours n’a pas abouti (Web service CallBack Hors service), votre compte ne sera pas débité, merci de réessayer .");
-									model.addAttribute("demandeDto", demandeDtoMsg);
-									page = "operationAnnulee";
-								} else {
-									page = "error";
-								}
-
-								Util.writeInFileTransaction(folder, file, "Fin processRequest ()");
-								System.out.println("Fin processRequest ()");
-								return page;
-
-							}
-						//}
-					}
-				}
-				// 2024-02-28 confirmation par Callback URL
-
-			} else {
-
-				Util.writeInFileTransaction(folder, file, "transaction declined !!! ");
-				Util.writeInFileTransaction(folder, file, "SWITCH RESONSE CODE :[" + tag20_resp + "]");
-
-				try {
-					Util.writeInFileTransaction(folder, file,
-							"transaction declinded ==> update Demandepaiement status to SW_REJET ...");
-
-					dmd.setEtat_demande("SW_REJET");
-					dmd.setDem_cvv("");
-					demandePaiementService.save(dmd);
-					// old
-					//hist.setHatEtat('A');
-					//histoAutoGateService.save(hist);
-				} catch (Exception e) {
-					dmd.setDem_cvv("");
-					demandePaiementService.save(dmd);
-					Util.writeInFileTransaction(folder, file,
-							"payer 500 Error during  DemandePaiement update SW_REJET for given orderid:[" + orderid
-									+ "]" + e);
-					demandeDtoMsg.setMsgRefus(
-							"La transaction en cours n’a pas abouti (Erreur lors de la mise à jour de DemandePaiement SW_REJET), votre compte ne sera pas débité, merci de réessayer .");
-					model.addAttribute("demandeDto", demandeDtoMsg);
-					page = "result";
-					return page;
-				}
-				Util.writeInFileTransaction(folder, file, "update Demandepaiement status to SW_REJET OK.");
-				// 2024-02-27
-				try {
-					if(hist.getId() == null) {
-						// get histoauto check if exist
-						HistoAutoGateDto histToAnnulle = histoAutoGateService.findByHatNumCommandeAndHatNumcmrV1(orderid, merchantid);
-						if(histToAnnulle != null) {
-							Util.writeInFileTransaction(folder, file,
-									"transaction declinded ==> update HistoAutoGateDto etat to A ...");
-							histToAnnulle.setHatEtat('A');
-							histToAnnulle = histoAutoGateService.save(histToAnnulle);
-						} else {
-							hist.setHatEtat('A');
-							hist = histoAutoGateService.save(hist);
-						}
-					} else {
-						hist.setHatEtat('A');
-						hist = histoAutoGateService.save(hist);
-					}
-				} catch (Exception err2) {
-					Util.writeInFileTransaction(folder, file,
-							"payer 500 Error during HistoAutoGate findByHatNumCommandeAndHatNumcmrV1 orderid:[" + orderid
-									+ "] and merchantid:[" + merchantid + "]" + err2);
-				}
-				Util.writeInFileTransaction(folder, file, "update HistoAutoGateDto etat to A OK.");
-				// 2024-02-27
-			}
-
-			Util.writeInFileTransaction(folder, file, "Generating paymentid...");
-
-			String uuid_paymentid, paymentid = "";
-			try {
-				uuid_paymentid = String.format("%040d",
-						new BigInteger(UUID.randomUUID().toString().replace("-", ""), 22));
-				paymentid = uuid_paymentid.substring(uuid_paymentid.length() - 22);
-			} catch (Exception e) {
-				Util.writeInFileTransaction(folder, file,
-						"payer 500 Error during  paymentid generation for given orderid:[" + orderid + "]" + e);
-				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Erreur lors de la génération de l'ID de paiement), votre compte ne sera pas débité, merci de réessayer .");
-				model.addAttribute("demandeDto", demandeDtoMsg);
-				page = "result";
-				return page;
-			}
-
-			Util.writeInFileTransaction(folder, file, "Generating paymentid OK");
-			Util.writeInFileTransaction(folder, file, "paymentid :[" + paymentid + "]");
-
-			// JSONObject jso = new JSONObject();
-
-			Util.writeInFileTransaction(folder, file, "Preparing autorization api response");
-
-			String authnumber, coderep, motif, merchnatidauth, dtdem = "";
-
-			try {
-				authnumber = hist.getHatNautemt();
-				coderep = hist.getHatCoderep();
-				motif = hist.getHatMtfref1();
-				merchnatidauth = hist.getHatNumcmr();
-				dtdem = dmd.getDem_pan();
-				transactionid = String.valueOf(hist.getHatNumdem());
-			} catch (Exception e) {
-				Util.writeInFileTransaction(folder, file,
-						"payer 500 Error during authdata preparation orderid:[" + orderid + "]" + e);
-				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Erreur lors de la préparation des données d'authentification), votre compte ne sera pas débité, merci de réessayer .");
-				model.addAttribute("demandeDto", demandeDtoMsg);
-				page = "result";
-				return page;
-			}
-
-			// reccurent transaction processing
-
-			// reccurent insert and update
-
-			try {
-
-				/*
-				 * String data_noncrypt = "orderid=" + orderid + "&fname=" + fname + "&lname=" +
-				 * lname + "&email=" + email + "&amount=" + amount + "&coderep=" + coderep +
-				 * "&authnumber=" + authnumber + "&cardnumber=" + Util.formatCard(cardnumber) +
-				 * "&transactionid=" + transactionid + "&paymentid=" + paymentid;
-				 */
-
-				String data_noncrypt = "id_commande=" + orderid + "&nomprenom=" + fname + "&email=" + email
-						+ "&montant=" + amount + "&frais=" + "" + "&repauto=" + coderep + "&numAuto=" + authnumber
-						+ "&numCarte=" + Util.formatCard(cardnumber) + "&typecarte=" + dmd.getType_carte()
-						+ "&numTrans=" + transactionid;
-
-				Util.writeInFileTransaction(folder, file, "data_noncrypt : " + data_noncrypt);
-				System.out.println("data_noncrypt : " + data_noncrypt);
-
-				String plainTxtSignature = orderid + current_infoCommercant.getClePub();
-
-				Util.writeInFileTransaction(folder, file, "plainTxtSignature : " + plainTxtSignature);
-				System.out.println("plainTxtSignature : " + plainTxtSignature);
-
-				String data = RSACrypto.encryptByPublicKeyWithMD5Sign(data_noncrypt, current_infoCommercant.getClePub(),
-						plainTxtSignature, folder, file);
-
-				Util.writeInFileTransaction(folder, file, "data encrypt : " + data);
-				System.out.println("data encrypt : " + data);
-
-				if (coderep.equals("00")) {
-					Util.writeInFileTransaction(folder, file,
-							"coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
-					System.out.println("coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
-					if (dmd.getSuccessURL() != null) {
-						response.sendRedirect(dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" + merchantid);
-					} else {
-						responseDto responseDto = new responseDto();
-						responseDto.setLname(dmd.getNom());
-						responseDto.setFname(dmd.getPrenom());
-						responseDto.setOrderid(dmd.getCommande());
-						responseDto.setAuthnumber(authnumber);
-						responseDto.setAmount(dmd.getMontant());
-						responseDto.setTransactionid(transactionid);
-						responseDto.setMerchantid(dmd.getComid());
-						responseDto.setEmail(dmd.getEmail());
-						responseDto.setMerchantname(current_infoCommercant.getCmrNom());
-						responseDto.setCardnumber(Util.formatCard(cardnumber));
-						responseDto.setTransactiontime(dateFormat.format(new Date()));
-
-						model.addAttribute("responseDto", responseDto);
-
-						page = "index";
-						Util.writeInFileTransaction(folder, file, "Fin payer ()");
-						System.out.println("Fin payer ()");
-						return page;
-					}
-				} else {
-					Util.writeInFileTransaction(folder, file,
-							"coderep = " + coderep + " => Redirect to failURL : " + dmd.getFailURL());
-					System.out.println("coderep = " + coderep + " => Redirect to failURL : " + dmd.getFailURL());
-					String libelle = "";
-					try {
-						CodeReponseDto codeReponseDto = codeReponseService.findByRpcCode(coderep);
-						System.out.println("codeReponseDto : " + codeReponseDto);
-						Util.writeInFileTransaction(folder, file, "codeReponseDto : " + codeReponseDto);
-						if (codeReponseDto != null) {
-							libelle = codeReponseDto.getRpcLibelle();
-						}
-					} catch (Exception ee) {
-						Util.writeInFileTransaction(folder, file, "payer 500 Error codeReponseDto null");
-						ee.printStackTrace();
-					}
-					demandeDtoMsg.setMsgRefus(
-							"La transaction en cours n’a pas abouti (Coderep " + coderep
-									+ ":" + libelle + ")," + " votre compte ne sera pas débité, merci de réessayer .");
-					model.addAttribute("demandeDto", demandeDtoMsg);
-					page = "result";
-				}
-			} catch (Exception jsouterr) {
-				Util.writeInFileTransaction(folder, file,
-						"payer 500 Error during jso out processing given authnumber:[" + authnumber + "]" + jsouterr);
-				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Erreur lors du traitement de sortie JSON), votre compte ne sera pas débité, merci de réessayer .");
-				model.addAttribute("demandeDto", demandeDtoMsg);
-				page = "result";
-				return page;
-			}
-
-			// fin
-			// *******************************************************************************************************************
-		} else if (reponseMPI.equals("C") || reponseMPI.equals("D")) {
-			// ********************* Cas chalenge responseMPI equal C ou D
-			// *********************
-			Util.writeInFileTransaction(folder, file, "****** Cas chalenge responseMPI equal C ou D ******");
-			try {
-
-				// insertion htmlCreq dans la demandePaiement
-				// dmd.setCreq(threeDsecureResponse.getHtmlCreq());
-				// dmd.setCreq(
-				// "<form action='https://acs2.sgmaroc.com:443/lacs2' method='post'
-				// enctype='application/x-www-form-urlencoded'><input type='hidden' name='creq'
-				// value='ewogICJtZXNzYWdlVmVyc2lvbiI6ICIyLjEuMCIsCiAgInRocmVlRFNTZXJ2ZXJUcmFuc0lEIjogIjBlYmU1ODEwLTlhMDMtNGYzZi05MDgzLTJlZWNhNjhiMjY2YSIsCiAgImFjc1RyYW5zSUQiOiAiMmM5MjAxNDgtNjhiOC00ZjA0LWJhODQtY2RiYTFlOTM5MDM3IiwKICAiY2hhbGxlbmdlV2luZG93U2l6ZSI6ICIwNSIsCiAgIm1lc3NhZ2VUeXBlIjogIkNSZXEiCn0='
-				// /></form>");
-				dmd.setCreq(threeDsecureResponse.getHtmlCreq());
-				dmd.setDem_xid(threeDSServerTransID);
-				dmd.setEtat_demande("SND_TO_ACS");
-				demandeDto = demandePaiementService.save(dmd);
-				model.addAttribute("demandeDto", demandeDto);
-				page = "chalenge";
-
-				Util.writeInFileTransaction(folder, file, "set demandeDto model creq : " + demandeDto.getCreq());
-				Util.writeInFileTransaction(folder, file, "return page : " + page);
-
-				// return page;
-			} catch (Exception ex) {
-				Util.writeInFileTransaction(folder, file, "payer 500 Error during jso out processing " + ex);
-				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Erreur lors du traitement de sortie JSON), votre compte ne sera pas débité, merci de réessayer .");
-				model.addAttribute("demandeDto", demandeDtoMsg);
-				page = "result";
-				return page;
-			}
-		} else if (reponseMPI.equals("E")) {
-			// ********************* Cas responseMPI equal E
-			// *********************
-			switch (errmpi) {
-			case "COMMERCANT NON PARAMETRE":
-				Util.writeInFileTransaction(folder, file, "COMMERCANT NON PARAMETRE : " + idDemande);
-				dmd.setDem_xid(threeDSServerTransID);
-				dmd.setEtat_demande("MPI_CMR_INEX");
-				dmd.setDem_cvv("");
-				demandePaiementService.save(dmd);
-				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (COMMERCANT NON PARAMETRE), votre compte ne sera pas débité, merci de réessayer .");
-				model.addAttribute("demandeDto", demandeDtoMsg);
-				page = "result";
-				Util.writeInFileTransaction(folder, file, "Fin processRequest ()");
-				System.out.println("Fin processRequest ()");
-				return page;
-			case "BIN NON PARAMETRE":
-				Util.writeInFileTransaction(folder, file, "BIN NON PARAMETRE : " + idDemande);
-				dmd.setEtat_demande("MPI_BIN_NON_PAR");
-				dmd.setDem_cvv("");
-				dmd.setDem_xid(threeDSServerTransID);
-				demandePaiementService.save(dmd);
-				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (BIN NON PARAMETREE), votre compte ne sera pas débité, merci de réessayer .");
-				model.addAttribute("demandeDto", demandeDtoMsg);
-				page = "result";
-				Util.writeInFileTransaction(folder, file, "Fin processRequest ()");
-				System.out.println("Fin processRequest ()");
-				return page;
-			case "DIRECTORY SERVER":
-				Util.writeInFileTransaction(folder, file, "DIRECTORY SERVER : " + idDemande);
-				dmd.setEtat_demande("MPI_DS_ERR");
-				dmd.setDem_cvv("");
-				dmd.setDem_xid(threeDSServerTransID);
-				demandePaiementService.save(dmd);
-				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (MPI_DS_ERR), votre compte ne sera pas débité, merci de réessayer .");
-				model.addAttribute("demandeDto", demandeDtoMsg);
-				page = "result";
-				Util.writeInFileTransaction(folder, file, "Fin processRequest ()");
-				System.out.println("Fin processRequest ()");
-				return page;
-			case "CARTE ERRONEE":
-				Util.writeInFileTransaction(folder, file, "CARTE ERRONEE : " + idDemande);
-				dmd.setEtat_demande("MPI_CART_ERROR");
-				dmd.setDem_cvv("");
-				dmd.setDem_xid(threeDSServerTransID);
-				demandePaiementService.save(dmd);
-				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (CARTE ERRONEE), votre compte ne sera pas débité, merci de réessayer .");
-				model.addAttribute("demandeDto", demandeDtoMsg);
-				page = "result";
-				Util.writeInFileTransaction(folder, file, "Fin processRequest ()");
-				System.out.println("Fin processRequest ()");
-				return page;
-			case "CARTE NON ENROLEE":
-				Util.writeInFileTransaction(folder, file, "CARTE NON ENROLEE : " + idDemande);
-				dmd.setEtat_demande("MPI_CART_NON_ENR");
-				dmd.setDem_cvv("");
-				dmd.setDem_xid(threeDSServerTransID);
-				demandePaiementService.save(dmd);
-				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (CARTE NON ENROLLE), votre compte ne sera pas débité, merci de réessayer .");
-				model.addAttribute("demandeDto", demandeDtoMsg);
-				page = "result";
-				Util.writeInFileTransaction(folder, file, "Fin processRequest ()");
-				System.out.println("Fin processRequest ()");
-				return page;
-			case "ERROR REPONSE ACS":
-				Util.writeInFileTransaction(folder, file, "ERROR REPONSE ACS : " + idDemande);
-				dmd.setEtat_demande("MPI_ERR_RS_ACS");
-				dmd.setDem_cvv("");
-				dmd.setDem_xid(threeDSServerTransID);
-				demandePaiementService.save(dmd);
-				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (ERROR REPONSE ACS), votre compte ne sera pas débité, merci de réessayer .");
-				model.addAttribute("demandeDto", demandeDtoMsg);
-				page = "result";
-				Util.writeInFileTransaction(folder, file, "Fin processRequest ()");
-				System.out.println("Fin processRequest ()");
-				return page;
-			case "Error 3DSS":
-				Util.writeInFileTransaction(folder, file, "Error 3DSS : " + idDemande);
-				dmd.setEtat_demande("MPI_ERR_3DSS");
-				dmd.setDem_cvv("");
-				dmd.setDem_xid(threeDSServerTransID);
-				demandePaiementService.save(dmd);
-				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (ERROR 3DSS), votre compte ne sera pas débité, merci de réessayer .");
-				model.addAttribute("demandeDto", demandeDtoMsg);
-				page = "result";
-				Util.writeInFileTransaction(folder, file, "Fin process ()");
-				System.out.println("Fin process ()");
-				return page;
-			}
-		} else {
-			switch (errmpi) {
-			case "COMMERCANT NON PARAMETRE":
-				Util.writeInFileTransaction(folder, file, "COMMERCANT NON PARAMETRE : " + idDemande);
-				dmd.setDem_xid(threeDSServerTransID);
-				dmd.setEtat_demande("MPI_CMR_INEX");
-				dmd.setDem_cvv("");
-				demandePaiementService.save(dmd);
-				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (COMMERCANT NON PARAMETRE), votre compte ne sera pas débité, merci de réessayer .");
-				model.addAttribute("demandeDto", demandeDtoMsg);
-				page = "result";
-				return page;
-			case "BIN NON PARAMETRE":
-				Util.writeInFileTransaction(folder, file, "BIN NON PARAMETRE : " + idDemande);
-				dmd.setEtat_demande("MPI_BIN_NON_PAR");
-				dmd.setDem_cvv("");
-				dmd.setDem_xid(threeDSServerTransID);
-				demandePaiementService.save(dmd);
-				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (BIN NON PARAMETREE), votre compte ne sera pas débité, merci de réessayer .");
-				model.addAttribute("demandeDto", demandeDtoMsg);
-				page = "result";
-				return page;
-			case "DIRECTORY SERVER":
-				Util.writeInFileTransaction(folder, file, "DIRECTORY SERVER : " + idDemande);
-				dmd.setEtat_demande("MPI_DS_ERR");
-				dmd.setDem_cvv("");
-				dmd.setDem_xid(threeDSServerTransID);
-				demandePaiementService.save(dmd);
-				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (MPI_DS_ERR), votre compte ne sera pas débité, merci de réessayer .");
-				model.addAttribute("demandeDto", demandeDtoMsg);
-				page = "result";
-				return page;
-			case "CARTE ERRONEE":
-				Util.writeInFileTransaction(folder, file, "CARTE ERRONEE : " + idDemande);
-				dmd.setEtat_demande("MPI_CART_ERROR");
-				dmd.setDem_cvv("");
-				dmd.setDem_xid(threeDSServerTransID);
-				demandePaiementService.save(dmd);
-				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (CARTE ERRONEE), votre compte ne sera pas débité, merci de réessayer .");
-				model.addAttribute("demandeDto", demandeDtoMsg);
-				page = "result";
-				return page;
-			case "CARTE NON ENROLEE":
-				Util.writeInFileTransaction(folder, file, "CARTE NON ENROLEE : " + idDemande);
-				dmd.setEtat_demande("MPI_CART_NON_ENR");
-				dmd.setDem_cvv("");
-				dmd.setDem_xid(threeDSServerTransID);
-				demandePaiementService.save(dmd);
-				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (CARTE NON ENROLLE), votre compte ne sera pas débité, merci de réessayer .");
-				model.addAttribute("demandeDto", demandeDtoMsg);
-				page = "result";
-				return page;
-			case "ERROR REPONSE ACS":
-				Util.writeInFileTransaction(folder, file, "ERROR REPONSE ACS : " + idDemande);
-				dmd.setEtat_demande("MPI_ERR_RS_ACS");
-				dmd.setDem_cvv("");
-				dmd.setDem_xid(threeDSServerTransID);
-				demandePaiementService.save(dmd);
-				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (ERROR REPONSE ACS), votre compte ne sera pas débité, merci de réessayer .");
-				model.addAttribute("demandeDto", demandeDtoMsg);
-				page = "result";
-				Util.writeInFileTransaction(folder, file, "Fin processRequest ()");
-				System.out.println("Fin processRequest ()");
-				return page;
-			case "Error 3DSS":
-				Util.writeInFileTransaction(folder, file, "Error 3DSS : " + idDemande);
-				dmd.setEtat_demande("MPI_ERR_3DSS");
-				dmd.setDem_cvv("");
-				dmd.setDem_xid(threeDSServerTransID);
-				demandePaiementService.save(dmd);
-				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (ERROR 3DSS), votre compte ne sera pas débité, merci de réessayer .");
-				model.addAttribute("demandeDto", demandeDtoMsg);
-				page = "result";
-				Util.writeInFileTransaction(folder, file, "Fin process ()");
-				System.out.println("Fin process ()");
-				return page;
-			}
-		}
-
-		System.out.println("demandeDto htmlCreq : " + demandeDto.getCreq());
-		System.out.println("return page : " + page);
-
-		Util.writeInFileTransaction(folder, file, "*********** Fin payer () ************** ");
-		System.out.println("*********** Fin payer () ************** ");
-
-		return page;
-	}
 	
 	@PostMapping("/retour")
 	public String retour(Model model, @ModelAttribute("demandeDto") DemandePaiementDto demandeDto, HttpServletRequest request,
@@ -5034,12 +3170,12 @@ public class GWPaiementController {
 			Util.writeInFileTransaction(folder, file, "current_dem is found OK");
 			System.out.println("current_dem is found OK");
 			if (current_dem.getEtat_demande().equals("SW_PAYE") || current_dem.getEtat_demande().equals("PAYE")) {
-				msgRefus = "La transaction en cours n’a pas abouti (Opération déjà effectuée), votre compte ne sera pas débité, merci de réessayer .";
+				msgRefus = "La transaction en cours n’a pas abouti (Opération déjà effectuée), votre compte ne sera pas débité, merci de réessayer.";
 				current_dem.setMsgRefus(msgRefus);
 				model.addAttribute("demandeDto", current_dem);
 				page = "error";
 			} else if (current_dem.getEtat_demande().equals("SW_REJET")) {
-				msgRefus = "La transaction en cours n’a pas abouti (Transaction rejetée), votre compte ne sera pas débité, merci de réessayer .";
+				msgRefus = "La transaction en cours n’a pas abouti (Transaction rejetée), votre compte ne sera pas débité, merci de réessayer.";
 				current_dem.setMsgRefus(msgRefus);
 				model.addAttribute("demandeDto", current_dem);
 				page = "error";

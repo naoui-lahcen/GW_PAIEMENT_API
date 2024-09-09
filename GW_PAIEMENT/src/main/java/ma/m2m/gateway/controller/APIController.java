@@ -410,7 +410,7 @@ public class APIController {
 			Util.writeInFileTransaction(folder, file, "authorization 500 Card number length is incorrect orderid:["
 					+ orderid + "] and merchantid:[" + merchantid + "]");
 
-			return getMsgError(folder, file, jsonOrequest, "authorization 500 Card number length is incorrect", null);
+			return getMsgError(folder, file, jsonOrequest, "The card number is incomplete, please try again.", null);
 		}
 
 		if (i_card_valid == 2) {
@@ -418,8 +418,7 @@ public class APIController {
 					"authorization 500 Card number  is not valid incorrect luhn check orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]");
 
-			return getMsgError(folder, file, jsonOrequest,
-					"authorization 500 Card number  is not valid incorrect luhn check", null);
+			return getMsgError(folder, file, jsonOrequest, "The card number is invalid, please try again.", null);
 		}
 
 		int i_card_type = Util.getCardIss(cardnumber);
@@ -482,7 +481,7 @@ public class APIController {
 			// set transctiontype
 			dmd.setTransactiontype(transactiontype);
 			// insérer info capture dans le champ Refdemande
-			dmd.setRefdemande("capture="+capture);
+			dmd.setRefdemande("capture=" + capture);
 
 			dmdSaved = demandePaiementService.save(dmd);
 			dmdSaved.setExpery(expirydate);
@@ -492,7 +491,8 @@ public class APIController {
 					"authorization 500 Error during DEMANDE_PAIEMENT insertion for given orderid:[" + orderid + "]"
 							+ err1);
 
-			return getMsgError(folder, file, jsonOrequest, "authorization 500 Error during DEMANDE_PAIEMENT insertion",
+			return getMsgError(folder, file, jsonOrequest,
+					"The current transaction was not successful, your account will not be debited, please try again .",
 					null);
 		}
 
@@ -506,7 +506,7 @@ public class APIController {
 				dmdSaved.setDem_cvv("");
 				demandePaiementService.save(dmdSaved);
 				Util.writeInFileTransaction(folder, file, "authorization 500 " + msg);
-				return getMsgError(folder, file, jsonOrequest, "authorization 500 " + msg, null);
+				return getMsgError(folder, file, jsonOrequest, msg, null);
 			}
 		} catch (Exception e) {
 			dmdSaved.setDem_cvv("");
@@ -515,8 +515,8 @@ public class APIController {
 			Util.writeInFileTransaction(folder, file,
 					"authorization 500 ControlRiskCmr misconfigured in DB or not existing merchantid:["
 							+ dmdSaved.getComid() + e);
-			return getMsgError(folder, file, jsonOrequest, "authorization 500 Error Opération rejetée: Contrôle risque",
-					null);
+			return getMsgError(folder, file, jsonOrequest,
+					"La transaction en cours n’a pas abouti, votre compte ne sera pas débité.", null);
 		}
 		Util.writeInFileTransaction(folder, file, "Fin controlleRisk");
 
@@ -794,10 +794,9 @@ public class APIController {
 				if (!s_conn) {
 					dmd.setDem_cvv("");
 					demandePaiementService.save(dmd);
-					Util.writeInFileTransaction(folder, file, "Switch  malfunction cannot connect!!!");
+					Util.writeInFileTransaction(folder, file, "Payment failed, the Switch is down.");
 
-					return getMsgError(folder, file, jsonOrequest,
-							"authorization 500 Error Switch communication s_conn false", "96");
+					return getMsgError(folder, file, jsonOrequest, "Payment failed, the Switch is down.", "96");
 				}
 
 				if (s_conn) {
@@ -815,16 +814,14 @@ public class APIController {
 				demandePaiementService.save(dmd);
 				Util.writeInFileTransaction(folder, file, "Switch  malfunction UnknownHostException !!!" + e);
 
-				return getMsgError(folder, file, jsonOrequest,
-						"authorization 500 Error Switch communication UnknownHostException", "96");
+				return getMsgError(folder, file, jsonOrequest, "Payment failed, the Switch is down.", "96");
 
 			} catch (java.net.ConnectException e) {
 				dmd.setDem_cvv("");
 				demandePaiementService.save(dmd);
 				Util.writeInFileTransaction(folder, file, "Switch  malfunction ConnectException !!!" + e);
 				switch_ko = 1;
-				return getMsgError(folder, file, jsonOrequest,
-						"authorization 500 Error Switch communication ConnectException", "96");
+				return getMsgError(folder, file, jsonOrequest, "Payment failed, the Switch is down.", "96");
 			}
 
 			catch (SocketTimeoutException e) {
@@ -837,7 +834,7 @@ public class APIController {
 				Util.writeInFileTransaction(folder, file,
 						"authorization 500 Error Switch communication SocketTimeoutException" + "switch ip:[" + sw_s
 								+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-				return getMsgError(folder, file, jsonOrequest, "Switch  malfunction  SocketTimeoutException !!!", "96");
+				return getMsgError(folder, file, jsonOrequest, "Payment failed, the Switch is down.", "96");
 			}
 
 			catch (IOException e) {
@@ -849,7 +846,7 @@ public class APIController {
 				e.printStackTrace();
 				Util.writeInFileTransaction(folder, file, "authorization 500 Error Switch communication IOException"
 						+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-				return getMsgError(folder, file, jsonOrequest, "Switch  malfunction  IOException !!!", "96");
+				return getMsgError(folder, file, jsonOrequest, "Payment failed, the Switch is down.", "96");
 			}
 
 			catch (Exception e) {
@@ -859,8 +856,7 @@ public class APIController {
 				Util.writeInFileTransaction(folder, file, "Switch  malfunction Exception!!!" + e);
 				switch_ko = 1;
 				e.printStackTrace();
-				return getMsgError(folder, file, jsonOrequest,
-						"authorization 500 Error Switch communication General Exception", "96");
+				return getMsgError(folder, file, jsonOrequest, "Payment failed, the Switch is down.", "96");
 			}
 
 			String resp = resp_tlv;
@@ -873,7 +869,7 @@ public class APIController {
 				switch_ko = 1;
 				Util.writeInFileTransaction(folder, file, "authorization 500 Error Switch null response" + "switch ip:["
 						+ sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-				return getMsgError(folder, file, jsonOrequest, "Switch  malfunction resp null!!!", "96");
+				return getMsgError(folder, file, jsonOrequest, "Payment failed, the Switch is down.", "96");
 			}
 
 			if (switch_ko == 0 && resp.length() < 3) {
@@ -1127,6 +1123,7 @@ public class APIController {
 						dmd.setDem_cvv("");
 					}
 					demandePaiementService.save(dmd);
+					Util.writeInFileTransaction(folder, file, "update etat demande : SW_PAYE OK");
 				} catch (Exception e) {
 					dmd.setDem_cvv("");
 					demandePaiementService.save(dmd);
@@ -1135,183 +1132,134 @@ public class APIController {
 									+ orderid + "]" + e);
 				}
 
-				Util.writeInFileTransaction(folder, file, "update etat demande : SW_PAYE OK");
-
 				String capture_status = "N";
 				int exp_flag = 0;
-				/* lnaoui commented le 2024-05-17 Blocage Traitement EOD 17/05/2024 // URGENT
-				if (capture.equalsIgnoreCase("Y")) {
-					// Si transactiontype = 0 (payement) on fait la telecollecte automatic
-					if (!transactiontype.equalsIgnoreCase("P")) {
-						
-						// 2024-05-16
-						HistoAutoGateDto histToCapture= null;
-						try {
-							if(hist.getId() == null) {
-							// get histoauto check if exist
-							histToCapture = histoAutoGateService.findLastByHatNumCommandeAndHatNumcmr(orderid, merchantid);
-								if(histToCapture ==null) {
-									histToCapture = hist;
-								}
-							} else {
-									histToCapture = hist;
-							}
-						} catch (Exception err2) {
-							Util.writeInFileTransaction(folder, file,
-									"authorization 500 Error during HistoAutoGate findLastByHatNumCommandeAndHatNumcmr orderid:[" + orderid
-											+ "] and merchantid:[" + merchantid + "]" + err2);
-						}
-						// 2024-05-16
-
-						Date current_date = null;
-						current_date = new Date();
-						Util.writeInFileTransaction(folder, file, "Automatic capture start...");
-
-						Util.writeInFileTransaction(folder, file, "Getting authnumber");
-
-						String authnumber = histToCapture.getHatNautemt();
-						Util.writeInFileTransaction(folder, file, "authnumber : [" + authnumber + "]");
-
-						Util.writeInFileTransaction(folder, file, "Getting authnumber");
-						TransactionDto trs_check = null;
-
-						try {
-							trs_check = transactionService.findByTrsnumautAndTrsnumcmr(authnumber, merchantid);
-						} catch (Exception ee) {
-
-							Util.writeInFileTransaction(folder, file,
-									"trs_check trs_check exception e : [" + ee.toString() + "]");
-						}
-
-						if (trs_check != null) {
-							// do nothing
-							Util.writeInFileTransaction(folder, file, "trs_check != null do nothing for now ...");
-						} else {
-
-							Util.writeInFileTransaction(folder, file, "inserting into telec start ...");
-							try {
-
-								// insert into telec
-
-								TelecollecteDto n_tlc = telecollecteService.getMAXTLC_N(merchantid);
-
-								long lidtelc = 0;
-
-								if (n_tlc == null) {
-									Util.writeInFileTransaction(folder, file, "getMAXTLC_N n_tlc = null");
-									Integer idtelc = null;
-
-									TelecollecteDto tlc = null;
-
-									// insert into telec
-									idtelc = telecollecteService.getMAX_ID(merchantid);
-									Util.writeInFileTransaction(folder, file, "getMAX_ID idtelc : " + idtelc);
-
-									if (idtelc != null) {
-										lidtelc = idtelc.longValue() + 1;
-									} else {
-										lidtelc = 1;
-									}
-									tlc = new TelecollecteDto();
-									tlc.setTlc_numtlcolcte(lidtelc);
-
-									tlc.setTlc_numtpe(histToCapture.getHatCodtpe());
-
-									tlc.setTlc_datcrtfich(current_date);
-									tlc.setTlc_nbrtrans(new Double(1));
-									tlc.setTlc_gest("N");
-
-									tlc.setTlc_datremise(current_date);
-									tlc.setTlc_numremise(new Double(lidtelc));
-									// tlc.setTlc_numfich(new Double(0));
-									String tmpattern = "HH:mm";
-									SimpleDateFormat sftm = new SimpleDateFormat(tmpattern);
-									String stm = sftm.format(current_date);
-									tlc.setTlc_heuremise(stm);
-
-									tlc.setTlc_codbq(acqcode);
-									tlc.setTlc_numcmr(merchantid);
-									tlc.setTlc_numtpe(websiteid);
-									telecollecteService.save(tlc);
-
-								} else {
-									Util.writeInFileTransaction(folder, file, "n_tlc !=null ");
-
-									lidtelc = n_tlc.getTlc_numtlcolcte();
-									double nbr_trs = n_tlc.getTlc_nbrtrans();
-
-									nbr_trs = nbr_trs + 1;
-
-									n_tlc.setTlc_nbrtrans(nbr_trs);
-
-									telecollecteService.save(n_tlc);
-
-								}
-
-								// insert into transaction
-								TransactionDto trs = new TransactionDto();
-								trs.setTrsnumcmr(merchantid);
-								trs.setTrs_numtlcolcte(Double.valueOf(lidtelc));
-
-								String frmt_cardnumber = Util.formatagePan(cardnumber);
-								trs.setTrs_codporteur(frmt_cardnumber);
-
-								double dmnt = 0;
-
-								dmnt = Double.parseDouble(amount);
-
-								trs.setTrs_montant(dmnt);
-								// trs.setTrs_dattrans(new Date());
-
-								current_date = new Date();
-								Date current_date_1 = getDateWithoutTime(current_date);
-								trs.setTrs_dattrans(current_date_1);
-
-								trs.setTrsnumaut(authnumber);
-								trs.setTrs_etat("N");
-								trs.setTrs_devise(histToCapture.getHatDevise());
-								trs.setTrs_certif("N");
-								Integer idtrs = transactionService.getMAX_ID();
-								long lidtrs = idtrs.longValue() + 1;
-								trs.setTrs_id(lidtrs);
-								trs.setTrs_commande(orderid);
-								trs.setTrs_procod("0");
-								trs.setTrs_groupe(websiteid);
-								trs.setTrs_codtpe(0.0);
-								trs.setTrs_numbloc(0.0);
-								trs.setTrs_numfact(0.0);
-								transactionService.save(trs);
-
-								histToCapture.setHatEtat('T');
-								histToCapture.setHatdatetlc(current_date);
-								histToCapture.setOperateurtlc("mxplusapi");
-								histoAutoGateService.save(histToCapture);
-
-								capture_id = String.format("%040d",
-										new BigInteger(UUID.randomUUID().toString().replace("-", ""), 36));
-								Date dt = new Date();
-								String dtpattern = "yyyy-MM-dd";
-								SimpleDateFormat sfdt = new SimpleDateFormat(dtpattern);
-								String sdt = sfdt.format(dt);
-								String tmpattern = "HH:mm:ss";
-								SimpleDateFormat sftm = new SimpleDateFormat(tmpattern);
-								String stm = sftm.format(dt);
-								Util.writeInFileTransaction(folder, file, "inserting into telec ok");
-								capture_status = "Y";
-
-							} catch (Exception e) {
-								exp_flag = 1;
-								Util.writeInFileTransaction(folder, file, "inserting into telec ko..do nothing" + e);
-							}
-						}
-						if (capture_status.equalsIgnoreCase("Y") && exp_flag == 1)
-							capture_status.equalsIgnoreCase("N");
-
-						Util.writeInFileTransaction(folder, file, "Automatic capture end.");
-					}
-					// Si transactiontype = P (pre-auto) on fait pas la telecollecte automatic,
-					// on le fait dans la confirmation de la pre-auto
-				}*/
+				/*
+				 * lnaoui commented le 2024-05-17 Blocage Traitement EOD 17/05/2024 // URGENT if
+				 * (capture.equalsIgnoreCase("Y")) { // Si transactiontype = 0 (payement) on
+				 * fait la telecollecte automatic if (!transactiontype.equalsIgnoreCase("P")) {
+				 * 
+				 * // 2024-05-16 HistoAutoGateDto histToCapture= null; try { if(hist.getId() ==
+				 * null) { // get histoauto check if exist histToCapture =
+				 * histoAutoGateService.findLastByHatNumCommandeAndHatNumcmr(orderid,
+				 * merchantid); if(histToCapture ==null) { histToCapture = hist; } } else {
+				 * histToCapture = hist; } } catch (Exception err2) {
+				 * Util.writeInFileTransaction(folder, file,
+				 * "authorization 500 Error during HistoAutoGate findLastByHatNumCommandeAndHatNumcmr orderid:["
+				 * + orderid + "] and merchantid:[" + merchantid + "]" + err2); } // 2024-05-16
+				 * 
+				 * Date current_date = null; current_date = new Date();
+				 * Util.writeInFileTransaction(folder, file, "Automatic capture start...");
+				 * 
+				 * Util.writeInFileTransaction(folder, file, "Getting authnumber");
+				 * 
+				 * String authnumber = histToCapture.getHatNautemt();
+				 * Util.writeInFileTransaction(folder, file, "authnumber : [" + authnumber +
+				 * "]");
+				 * 
+				 * Util.writeInFileTransaction(folder, file, "Getting authnumber");
+				 * TransactionDto trs_check = null;
+				 * 
+				 * try { trs_check = transactionService.findByTrsnumautAndTrsnumcmr(authnumber,
+				 * merchantid); } catch (Exception ee) {
+				 * 
+				 * Util.writeInFileTransaction(folder, file,
+				 * "trs_check trs_check exception e : [" + ee.toString() + "]"); }
+				 * 
+				 * if (trs_check != null) { // do nothing Util.writeInFileTransaction(folder,
+				 * file, "trs_check != null do nothing for now ..."); } else {
+				 * 
+				 * Util.writeInFileTransaction(folder, file, "inserting into telec start ...");
+				 * try {
+				 * 
+				 * // insert into telec
+				 * 
+				 * TelecollecteDto n_tlc = telecollecteService.getMAXTLC_N(merchantid);
+				 * 
+				 * long lidtelc = 0;
+				 * 
+				 * if (n_tlc == null) { Util.writeInFileTransaction(folder, file,
+				 * "getMAXTLC_N n_tlc = null"); Integer idtelc = null;
+				 * 
+				 * TelecollecteDto tlc = null;
+				 * 
+				 * // insert into telec idtelc = telecollecteService.getMAX_ID(merchantid);
+				 * Util.writeInFileTransaction(folder, file, "getMAX_ID idtelc : " + idtelc);
+				 * 
+				 * if (idtelc != null) { lidtelc = idtelc.longValue() + 1; } else { lidtelc = 1;
+				 * } tlc = new TelecollecteDto(); tlc.setTlc_numtlcolcte(lidtelc);
+				 * 
+				 * tlc.setTlc_numtpe(histToCapture.getHatCodtpe());
+				 * 
+				 * tlc.setTlc_datcrtfich(current_date); tlc.setTlc_nbrtrans(new Double(1));
+				 * tlc.setTlc_gest("N");
+				 * 
+				 * tlc.setTlc_datremise(current_date); tlc.setTlc_numremise(new
+				 * Double(lidtelc)); // tlc.setTlc_numfich(new Double(0)); String tmpattern =
+				 * "HH:mm"; SimpleDateFormat sftm = new SimpleDateFormat(tmpattern); String stm
+				 * = sftm.format(current_date); tlc.setTlc_heuremise(stm);
+				 * 
+				 * tlc.setTlc_codbq(acqcode); tlc.setTlc_numcmr(merchantid);
+				 * tlc.setTlc_numtpe(websiteid); telecollecteService.save(tlc);
+				 * 
+				 * } else { Util.writeInFileTransaction(folder, file, "n_tlc !=null ");
+				 * 
+				 * lidtelc = n_tlc.getTlc_numtlcolcte(); double nbr_trs =
+				 * n_tlc.getTlc_nbrtrans();
+				 * 
+				 * nbr_trs = nbr_trs + 1;
+				 * 
+				 * n_tlc.setTlc_nbrtrans(nbr_trs);
+				 * 
+				 * telecollecteService.save(n_tlc);
+				 * 
+				 * }
+				 * 
+				 * // insert into transaction TransactionDto trs = new TransactionDto();
+				 * trs.setTrsnumcmr(merchantid);
+				 * trs.setTrs_numtlcolcte(Double.valueOf(lidtelc));
+				 * 
+				 * String frmt_cardnumber = Util.formatagePan(cardnumber);
+				 * trs.setTrs_codporteur(frmt_cardnumber);
+				 * 
+				 * double dmnt = 0;
+				 * 
+				 * dmnt = Double.parseDouble(amount);
+				 * 
+				 * trs.setTrs_montant(dmnt); // trs.setTrs_dattrans(new Date());
+				 * 
+				 * current_date = new Date(); Date current_date_1 =
+				 * getDateWithoutTime(current_date); trs.setTrs_dattrans(current_date_1);
+				 * 
+				 * trs.setTrsnumaut(authnumber); trs.setTrs_etat("N");
+				 * trs.setTrs_devise(histToCapture.getHatDevise()); trs.setTrs_certif("N");
+				 * Integer idtrs = transactionService.getMAX_ID(); long lidtrs =
+				 * idtrs.longValue() + 1; trs.setTrs_id(lidtrs); trs.setTrs_commande(orderid);
+				 * trs.setTrs_procod("0"); trs.setTrs_groupe(websiteid); trs.setTrs_codtpe(0.0);
+				 * trs.setTrs_numbloc(0.0); trs.setTrs_numfact(0.0);
+				 * transactionService.save(trs);
+				 * 
+				 * histToCapture.setHatEtat('T'); histToCapture.setHatdatetlc(current_date);
+				 * histToCapture.setOperateurtlc("mxplusapi");
+				 * histoAutoGateService.save(histToCapture);
+				 * 
+				 * capture_id = String.format("%040d", new
+				 * BigInteger(UUID.randomUUID().toString().replace("-", ""), 36)); Date dt = new
+				 * Date(); String dtpattern = "yyyy-MM-dd"; SimpleDateFormat sfdt = new
+				 * SimpleDateFormat(dtpattern); String sdt = sfdt.format(dt); String tmpattern =
+				 * "HH:mm:ss"; SimpleDateFormat sftm = new SimpleDateFormat(tmpattern); String
+				 * stm = sftm.format(dt); Util.writeInFileTransaction(folder, file,
+				 * "inserting into telec ok"); capture_status = "Y";
+				 * 
+				 * } catch (Exception e) { exp_flag = 1; Util.writeInFileTransaction(folder,
+				 * file, "inserting into telec ko..do nothing" + e); } } if
+				 * (capture_status.equalsIgnoreCase("Y") && exp_flag == 1)
+				 * capture_status.equalsIgnoreCase("N");
+				 * 
+				 * Util.writeInFileTransaction(folder, file, "Automatic capture end."); } // Si
+				 * transactiontype = P (pre-auto) on fait pas la telecollecte automatic, // on
+				 * le fait dans la confirmation de la pre-auto }
+				 */
 
 			} else {
 
@@ -1343,10 +1291,11 @@ public class APIController {
 				Util.writeInFileTransaction(folder, file, "update Demandepaiement status to SW_REJET OK.");
 				// 2024-02-27
 				try {
-					if(hist.getId() == null) {
+					if (hist.getId() == null) {
 						// get histoauto check if exist
-						HistoAutoGateDto histToAnnulle = histoAutoGateService.findByHatNumCommandeAndHatNumcmrV1(orderid, merchantid);
-						if(histToAnnulle != null) {
+						HistoAutoGateDto histToAnnulle = histoAutoGateService
+								.findByHatNumCommandeAndHatNumcmrV1(orderid, merchantid);
+						if (histToAnnulle != null) {
 							Util.writeInFileTransaction(folder, file,
 									"transaction declinded ==> update HistoAutoGateDto etat to A ...");
 							histToAnnulle.setHatEtat('A');
@@ -2100,7 +2049,7 @@ public class APIController {
 
 		return jsoVerified.toString();
 	}
-	
+
 	@RequestMapping(value = "/napspayment/chalenge/token/{token}", method = RequestMethod.GET)
 	public String chalengeapi(@PathVariable(value = "token") String token, Model model, HttpServletRequest request,
 			HttpServletResponse response) {
@@ -2117,18 +2066,18 @@ public class APIController {
 		System.out.println("findByTokencommande token : " + token);
 
 		DemandePaiementDto current_dem = demandePaiementService.findByTokencommande(token);
-		String msgRefus = "Une erreur est survenue, merci de réessayer plus tard";
+		String msgRefus = "An error has occurred, please try again later.";
 
 		if (current_dem != null) {
 			Util.writeInFileTransaction(folder, file, "current_dem is exist OK");
 			System.out.println("current_dem is exist OK");
 			if (current_dem.getEtat_demande().equals("SW_PAYE") || current_dem.getEtat_demande().equals("PAYE")) {
-				msgRefus = "La transaction en cours n’a pas abouti (Opération déjà effectuée), votre compte ne sera pas débité, merci de réessayer .";
+				msgRefus = "The current transaction has already been completed, your account will not be debited.";
 				current_dem.setMsgRefus(msgRefus);
 				model.addAttribute("demandeDto", current_dem);
 				page = "error";
 			} else if (current_dem.getEtat_demande().equals("SW_REJET")) {
-				msgRefus = "La transaction en cours n’a pas abouti (Transaction rejetée), votre compte ne sera pas débité, merci de réessayer .";
+				msgRefus = "The current transaction was not successful, your account will not be debited, please try again.";
 				current_dem.setMsgRefus(msgRefus);
 				model.addAttribute("demandeDto", current_dem);
 				page = "error";
@@ -2136,7 +2085,7 @@ public class APIController {
 				page = "chalenge";
 
 				if (current_dem.getCreq().equals("")) {
-					msgRefus = "La transaction en cours n’a pas abouti (Le lien de chalence acs est null), votre compte ne sera pas débité, merci de réessayer .";
+					msgRefus = "The current transaction was not successful, your account will not be debited, please try again.";
 					current_dem.setMsgRefus(msgRefus);
 					Util.writeInFileTransaction(folder, file, "Le lien de chalence acs est null !!!");
 
@@ -2147,64 +2096,73 @@ public class APIController {
 					Util.writeInFileTransaction(folder, file, "current_dem htmlCreq : " + current_dem.getCreq());
 
 					model.addAttribute("demandeDto", current_dem);
-					
+
 					try {
-					// 2024-07-05
-					// autre façon de faire la soumission automatique de formulaires ACS via le HttpServletResponse.
-		
-			        String creq = "";
-			        String acsUrl = "";
-			        String response3DS = current_dem.getCreq();
-			        Pattern pattern = Pattern.compile("action='(.*?)'.*value='(.*?)'");
-			        Matcher matcher = pattern.matcher(response3DS);
+						// 2024-07-05
+						// autre façon de faire la soumission automatique de formulaires ACS via le
+						// HttpServletResponse.
 
-			        // Si une correspondance est trouvée
-		            if (matcher.find()) {
-		                acsUrl = matcher.group(1);
-		                creq = matcher.group(2);
-		                System.out.println("L'URL ACS est : " + acsUrl);
-		                System.out.println("La valeur de creq est : " + creq);
-		                Util.writeInFileTransaction(folder, file, "L'URL ACS est : " + acsUrl);
-		                Util.writeInFileTransaction(folder, file, "La valeur de creq est : " + creq);
+						String creq = "";
+						String acsUrl = "";
+						String response3DS = current_dem.getCreq();
+						Pattern pattern = Pattern.compile("action='(.*?)'.*value='(.*?)'");
+						Matcher matcher = pattern.matcher(response3DS);
 
-		                String decodedCreq = new String(Base64.decodeBase64(creq.getBytes()));
-		                System.out.println("La valeur de decodedCreq est : " + decodedCreq);
-		                Util.writeInFileTransaction(folder, file, "La valeur de decodedCreq est : " + decodedCreq);
-		                
-		                // URL de feedback après soumission ACS
-		                String feedbackUrl = request.getContextPath() + "/acsFeedback";
+						// Si une correspondance est trouvée
+						if (matcher.find()) {
+							acsUrl = matcher.group(1);
+							creq = matcher.group(2);
+							System.out.println("L'URL ACS est : " + acsUrl);
+							System.out.println("La valeur de creq est : " + creq);
+							Util.writeInFileTransaction(folder, file, "L'URL ACS est : " + acsUrl);
+							Util.writeInFileTransaction(folder, file, "La valeur de creq est : " + creq);
 
-		                // Afficher le formulaire HTML dans la réponse
-		                response.setContentType("text/html");
-		                response.setCharacterEncoding("UTF-8");
-		                response.getWriter().println("<html><body>");
-		                response.getWriter().println("<form id=\"acsForm\" action=\"" + acsUrl + "\" method=\"post\">");
-		                response.getWriter().println("<input type=\"hidden\" name=\"creq\" value=\"" + creq + "\">");
-		                response.getWriter().println("</form>");
-		                response.getWriter().println("<script>document.getElementById('acsForm').submit();</script>");
-		                response.getWriter().println("</body></html>");
-		                
-		                System.out.println("Le Creq a été envoyé à l'ACS par soumission automatique du formulaire.");
-		                Util.writeInFileTransaction(folder, file, "Le Creq a été envoyé à l'ACS par soumission automatique du formulaire.");
-		                
-		                return null;  // Terminer le traitement ici après avoir envoyé le formulaire
-		            } else {
-		                System.out.println("Aucune correspondance pour l'URL ACS et creq trouvée dans la réponse HTML.");
-		                Util.writeInFileTransaction(folder, file, "Aucune correspondance pour l'URL ACS et creq trouvée dans la réponse HTML.");
-		                page = "error";  // Définir la page d'erreur appropriée
-		            }
-					
-				// 2024-07-05
-				} catch (Exception ex) {
-					DemandePaiementDto demandeDtoMsg = new DemandePaiementDto();
-					Util.writeInFileTransaction(folder, file, "Aucune correspondance pour l'URL ACS et creq trouvée dans la réponse HTML " + ex);
-					demandeDtoMsg.setMsgRefus(
-							"La transaction en cours n’a pas abouti (Aucune correspondance pour l'URL ACS et creq trouvée dans la réponse HTML), votre compte ne sera pas débité, merci de réessayer .");
-					model.addAttribute("demandeDto", demandeDtoMsg);
-					current_dem.setDem_cvv("");
-					demandePaiementService.save(current_dem);
-					page = "result";
-					return page;
+							String decodedCreq = new String(Base64.decodeBase64(creq.getBytes()));
+							System.out.println("La valeur de decodedCreq est : " + decodedCreq);
+							Util.writeInFileTransaction(folder, file, "La valeur de decodedCreq est : " + decodedCreq);
+
+							// URL de feedback après soumission ACS
+							String feedbackUrl = request.getContextPath() + "/acsFeedback";
+
+							// Afficher le formulaire HTML dans la réponse
+							response.setContentType("text/html");
+							response.setCharacterEncoding("UTF-8");
+							response.getWriter().println("<html><body>");
+							response.getWriter()
+									.println("<form id=\"acsForm\" action=\"" + acsUrl + "\" method=\"post\">");
+							response.getWriter()
+									.println("<input type=\"hidden\" name=\"creq\" value=\"" + creq + "\">");
+							response.getWriter().println("</form>");
+							response.getWriter()
+									.println("<script>document.getElementById('acsForm').submit();</script>");
+							response.getWriter().println("</body></html>");
+
+							System.out
+									.println("Le Creq a été envoyé à l'ACS par soumission automatique du formulaire.");
+							Util.writeInFileTransaction(folder, file,
+									"Le Creq a été envoyé à l'ACS par soumission automatique du formulaire.");
+
+							return null; // Terminer le traitement ici après avoir envoyé le formulaire
+						} else {
+							System.out.println(
+									"Aucune correspondance pour l'URL ACS et creq trouvée dans la réponse HTML.");
+							Util.writeInFileTransaction(folder, file,
+									"Aucune correspondance pour l'URL ACS et creq trouvée dans la réponse HTML.");
+							page = "error"; // Définir la page d'erreur appropriée
+						}
+
+						// 2024-07-05
+					} catch (Exception ex) {
+						DemandePaiementDto demandeDtoMsg = new DemandePaiementDto();
+						Util.writeInFileTransaction(folder, file,
+								"Aucune correspondance pour l'URL ACS et creq trouvée dans la réponse HTML " + ex);
+						demandeDtoMsg.setMsgRefus(
+								"The current transaction was not successful, your account will not be debited, please try again.");
+						model.addAttribute("demandeDto", demandeDtoMsg);
+						current_dem.setDem_cvv("");
+						demandePaiementService.save(current_dem);
+						page = "result";
+						return page;
 					}
 				}
 			}
@@ -2241,18 +2199,18 @@ public class APIController {
 		System.out.println("findByTokencommande token : " + token);
 
 		DemandePaiementDto current_dem = demandePaiementService.findByTokencommande(token);
-		String msgRefus = "Une erreur est survenue, merci de réessayer plus tard";
+		String msgRefus = "An error has occurred, please try again later.";
 
 		if (current_dem != null) {
 			Util.writeInFileTransaction(folder, file, "current_dem is exist OK");
 			System.out.println("current_dem is exist OK");
 			if (current_dem.getEtat_demande().equals("SW_PAYE") || current_dem.getEtat_demande().equals("PAYE")) {
-				msgRefus = "La transaction en cours n’a pas abouti (Opération déjà effectuée), votre compte ne sera pas débité, merci de réessayer .";
+				msgRefus = "The current transaction has already been completed, your account will not be debited.";
 				current_dem.setMsgRefus(msgRefus);
 				model.addAttribute("demandeDto", current_dem);
 				page = "error";
 			} else if (current_dem.getEtat_demande().equals("SW_REJET")) {
-				msgRefus = "La transaction en cours n’a pas abouti (Transaction rejetée), votre compte ne sera pas débité, merci de réessayer .";
+				msgRefus = "The current transaction was not successful, your account will not be debited, please try again.";
 				current_dem.setMsgRefus(msgRefus);
 				model.addAttribute("demandeDto", current_dem);
 				page = "error";
@@ -2264,7 +2222,7 @@ public class APIController {
 				// type='hidden'name='creq'value='ewogICJtZXNzYWdlVmVyc2lvbiI6ICIyLjEuMCIsCiAgInRocmVlRFNTZXJ2ZXJUcmFuc0lEIjogIjllZjUwNjk3LWRiMTctNGZmMy04MDYzLTc0ZTAwMTk0N2I4YiIsCiAgImFjc1RyYW5zSUQiOiAiZjM2ZDA3ZWQtZGJhOS00ZTkzLWE2OGMtMzNmYjAyMDgxZDVmIiwKICAiY2hhbGxlbmdlV2luZG93U2l6ZSI6ICIwNSIsCiAgIm1lc3NhZ2VUeXBlIjogIkNSZXEiCn0='/></form>";
 				// current_dem.setCreq(htmlCreq);
 				if (current_dem.getCreq().equals("")) {
-					msgRefus = "La transaction en cours n’a pas abouti (Le lien de chalence acs est null), votre compte ne sera pas débité, merci de réessayer .";
+					msgRefus = "The current transaction has failed; your account will not be charged. Please try again.";
 					current_dem.setMsgRefus(msgRefus);
 					Util.writeInFileTransaction(folder, file, "Le lien de chalence acs est null !!!");
 
@@ -2393,7 +2351,7 @@ public class APIController {
 
 		DemandePaiementDto current_dmd = null;
 
-		String dcurrent_dmd, dtpattern, tmpattern, respcode="", s_respcode = "";
+		String dcurrent_dmd, dtpattern, tmpattern, respcode = "", s_respcode = "";
 		SimpleDateFormat sfdt, sftm = null;
 		Date datdem, datetlc = null;
 		Character E = '\0';
@@ -2462,10 +2420,10 @@ public class APIController {
 			}
 			if (dmd_etat.equalsIgnoreCase("PAYE")) {
 				Util.writeInFileTransaction(folder, file,
-						"Inconsitence HistoAutoGate not found for authnumber and DemandePaiement is PAYE status"
+						"Transaction not found for authnumber and DemandePaiement is PAYE status"
 								+ "HistoAutoGate not found for authnumber:[" + authnumber + "] and merchantid:["
 								+ merchantid + "]");
-				return getMsgError(folder, file, jsonOrequest, "status 500 Inconsitence HistoAutoGate not found", null);
+				return getMsgError(folder, file, jsonOrequest, "status 500 Transaction not found", null);
 			} else {
 
 				E = 'X';
@@ -2508,13 +2466,13 @@ public class APIController {
 
 		if (E == 'E') {
 			if (rep_auto.equalsIgnoreCase("00")) {
-				if(current_dmd.getTransactiontype().equals("0")) {
+				if (current_dmd.getTransactiontype().equals("0")) {
 					status_ = "Paid";
-				} else if(current_dmd.getTransactiontype().equals("P")) {
+				} else if (current_dmd.getTransactiontype().equals("P")) {
 					status_ = "Prepaid";
 				} else {
 					status_ = "Paid";
-				}				
+				}
 				statuscode_ = "00";
 
 				String spr = pr + "";
@@ -2549,8 +2507,15 @@ public class APIController {
 
 		if (E == 'T') {
 			try {
+				// old 2024-08-01
+				// trs_check = transactionService.findByTrsnumautAndTrsnumcmr(authnumber,
+				// merchantid);
 
-				trs_check = transactionService.findByTrsnumautAndTrsnumcmr(authnumber, merchantid);
+				Date dateTrss = dateFormatSimple.parse(current_dmd.getDem_date_time());
+				String dateTrs = dateFormatSimple.format(dateTrss);
+				Util.writeInFileTransaction(folder, file, "status dateTrs : " + dateTrs);
+				//trs_check = transactionService.findByTrsnumautAndTrsnumcmrAndDateTrs(authnumber, merchantid, dateTrs);
+				trs_check = transactionService.findByTrsnumautAndTrsnumcmrAndTrscommande(authnumber, merchantid, orderid);
 
 			} catch (Exception err4) {
 				Util.writeInFileTransaction(folder, file,
@@ -2777,7 +2742,7 @@ public class APIController {
 			callbackUrl = (String) jsonOrequest.get("callbackurl");
 
 			// Card info
-			cardnumber = (String) jsonOrequest.get("cardnumber");
+			//cardnumber = (String) jsonOrequest.get("cardnumber");
 
 			// Client info
 			fname = (String) jsonOrequest.get("fname");
@@ -2787,6 +2752,13 @@ public class APIController {
 		} catch (Exception jerr) {
 			Util.writeInFileTransaction(folder, file, "capture 500 malformed json expression " + capture + jerr);
 			return getMsgError(folder, file, null, "capture 500 malformed json expression " + jerr.getMessage(), null);
+		}
+		
+		try {
+			// Card info
+			cardnumber = (String) jsonOrequest.get("cardnumber");
+		} catch(Exception ex) {
+			Util.writeInFileTransaction(folder, file, "capture 500 cardnumber missing in jsonOrequest");
 		}
 
 		JSONObject jso = new JSONObject();
@@ -2823,6 +2795,13 @@ public class APIController {
 			return getMsgError(folder, file, jsonOrequest, "captue 500 PaiementRequest not found", null);
 		}
 
+		if (current_dmd.getEtat_demande() != null) {
+			if (current_dmd.getEtat_demande().equals("P")) {
+				return getMsgError(folder, file, jsonOrequest,
+						"capture 500, use .../cpautorisation api for capture pre-auto", null);
+			}
+		}
+
 		// get histoauto check if exist
 
 		HistoAutoGateDto current_hist = null;
@@ -2830,8 +2809,8 @@ public class APIController {
 		try {
 
 			// get histoauto check if exist
-			current_hist = histoAutoGateService.findByHatNumCommandeAndHatNautemtAndHatNumcmrAndHatCoderep(orderid, authnumber,
-					merchantid, "00");
+			current_hist = histoAutoGateService.findByHatNumCommandeAndHatNautemtAndHatNumcmrAndHatCoderep(orderid,
+					authnumber, merchantid, "00");
 
 		} catch (Exception err2) {
 			Util.writeInFileTransaction(folder, file,
@@ -2842,11 +2821,11 @@ public class APIController {
 
 		if (current_hist == null) {
 			Util.writeInFileTransaction(folder, file,
-					"capture 500 Inconsitence HistoAutoGate not found for authnumber and DemandePaiement is PAYE status"
+					"capture 500 Transaction not found for authnumber and DemandePaiement is PAYE status"
 							+ "HistoAutoGate not found for authnumber:[" + authnumber + "] and merchantid:["
 							+ merchantid + "]");
 
-			return getMsgError(folder, file, jsonOrequest, "capture 500 Inconsitence HistoAutoGate not found", null);
+			return getMsgError(folder, file, jsonOrequest, "capture 500 Transaction not found", null);
 		}
 
 		CommercantDto current_merchant = null;
@@ -2887,9 +2866,15 @@ public class APIController {
 		TransactionDto trs_check = null;
 
 		try {
+			// old 2024-08-01
+			// trs_check = transactionService.findByTrsnumautAndTrsnumcmr(authnumber,
+			// merchantid);
 
-			trs_check = transactionService.findByTrsnumautAndTrsnumcmr(authnumber, merchantid);
-
+			Date dateTrss = dateFormatSimple.parse(current_dmd.getDem_date_time());
+			String dateTrs = dateFormatSimple.format(dateTrss);
+			Util.writeInFileTransaction(folder, file, "capture dateTrs : " + dateTrs);
+			//trs_check = transactionService.findByTrsnumautAndTrsnumcmrAndDateTrs(authnumber, merchantid, dateTrs);
+			trs_check = transactionService.findByTrsnumautAndTrsnumcmrAndTrscommande(authnumber, merchantid, orderid);
 		} catch (Exception err4) {
 			Util.writeInFileTransaction(folder, file,
 					"capture 500 Error during Transaction findByTrsnumautAndTrsnumcmr for given authnumber:["
@@ -2905,79 +2890,78 @@ public class APIController {
 			return getMsgError(folder, file, jsonOrequest, "500 Transaction already captured", null);
 		}
 
-		TelecollecteDto n_tlc = telecollecteService.getMAXTLC_N(merchantid);
+		// TelecollecteDto n_tlc = telecollecteService.getMAXTLC_N(merchantid);
 		Date current_date = null;
 		current_date = new Date();
 		long lidtelc = 0;
 
-		if (n_tlc == null) {
-			Util.writeInFileTransaction(folder, file, "getMAXTLC_N n_tlc = null");
-			Integer idtelc = null;
+		// if (n_tlc == null) {
+		// Util.writeInFileTransaction(folder, file, "getMAXTLC_N n_tlc = null");
+		Integer idtelc = null;
 
-			TelecollecteDto tlc = null;
+		TelecollecteDto tlc = null;
 
-			try {
-				// insert into telec
-				// idtelc = tlcservice.getMAX_ID("TELECOLLECTE", "TLC_NUMTLCOLCTE");
-				idtelc = telecollecteService.getMAX_ID(merchantid);
-				Util.writeInFileTransaction(folder, file, "getMAX_ID idtelc : " + idtelc);
+		try {
+			// insert into telec
+			// idtelc = tlcservice.getMAX_ID("TELECOLLECTE", "TLC_NUMTLCOLCTE");
+			idtelc = telecollecteService.getMAX_ID(merchantid);
+			Util.writeInFileTransaction(folder, file, "getMAX_ID idtelc : " + idtelc);
 
-				lidtelc = idtelc.longValue() + 1;
-				tlc = new TelecollecteDto();
-				tlc.setTlc_numtlcolcte(lidtelc);
-				tlc.setTlc_numtpe(current_hist.getHatCodtpe());
+			lidtelc = idtelc.longValue() + 1;
+			tlc = new TelecollecteDto();
+			tlc.setTlc_numtlcolcte(lidtelc);
+			tlc.setTlc_numtpe(current_hist.getHatCodtpe());
 
-				tlc.setTlc_datcrtfich(current_date);
-				tlc.setTlc_nbrtrans(new Double(1));
-				tlc.setTlc_gest("N");
+			tlc.setTlc_datcrtfich(current_date);
+			tlc.setTlc_nbrtrans(new Double(1));
+			tlc.setTlc_gest("N");
 
-				tlc.setTlc_datremise(current_date);
-				tlc.setTlc_numremise(new Double(lidtelc));
-				// tlc.setTlc_numfich(new Double(0));
-				String tmpattern = "HH:mm";
-				SimpleDateFormat sftm = new SimpleDateFormat(tmpattern);
-				String stm = sftm.format(current_date);
-				tlc.setTlc_heuremise(stm);
+			tlc.setTlc_datremise(current_date);
+			tlc.setTlc_numremise(new Double(lidtelc));
+			// tlc.setTlc_numfich(new Double(0));
+			String tmpattern = "HH:mm";
+			SimpleDateFormat sftm = new SimpleDateFormat(tmpattern);
+			String stm = sftm.format(current_date);
+			tlc.setTlc_heuremise(stm);
 
-				tlc.setTlc_codbq(acqcode);
-				tlc.setTlc_numcmr(merchantid);
-				tlc.setTlc_numtpe(websiteid);
+			tlc.setTlc_codbq(acqcode);
+			tlc.setTlc_numcmr(merchantid);
+			tlc.setTlc_numtpe(websiteid);
 
-				telecollecteService.save(tlc);
+			telecollecteService.save(tlc);
 
-			} catch (Exception err5) {
-				Util.writeInFileTransaction(folder, file,
-						"capture 500 Error during insert into telec for given authnumber:[" + authnumber
-								+ "] and merchantid:[" + merchantid + "]" + err5);
+		} catch (Exception err5) {
+			Util.writeInFileTransaction(folder, file,
+					"capture 500 Error during insert into telec for given authnumber:[" + authnumber
+							+ "] and merchantid:[" + merchantid + "]" + err5);
 
-				return getMsgError(folder, file, jsonOrequest, "capture 500 Error during insert into telecollecte",
-						null);
-			}
-		} else {
-
-			lidtelc = n_tlc.getTlc_numtlcolcte();
-			double nbr_trs = n_tlc.getTlc_nbrtrans();
-
-			nbr_trs = nbr_trs + 1;
-
-			n_tlc.setTlc_nbrtrans(nbr_trs);
-
-			try {
-
-				telecollecteService.save(n_tlc);
-			} catch (Exception err55) {
-				Util.writeInFileTransaction(folder, file, "capture 500 Error during update telec for given authnumber:["
-						+ authnumber + "] and merchantid:[" + merchantid + "]" + err55);
-
-				return getMsgError(folder, file, jsonOrequest, "capture 500 Error during update telecollecte", null);
-			}
+			return getMsgError(folder, file, jsonOrequest, "capture 500 Error during insert into telecollecte", null);
 		}
+		/*
+		 * } else { lidtelc = n_tlc.getTlc_numtlcolcte(); double nbr_trs =
+		 * n_tlc.getTlc_nbrtrans(); nbr_trs = nbr_trs + 1;
+		 * n_tlc.setTlc_nbrtrans(nbr_trs); try { telecollecteService.save(n_tlc); }
+		 * catch (Exception err55) { Util.writeInFileTransaction(folder, file,
+		 * "capture 500 Error during update telec for given authnumber:[" + authnumber +
+		 * "] and merchantid:[" + merchantid + "]" + err55);
+		 * 
+		 * return getMsgError(folder, file, jsonOrequest,
+		 * "capture 500 Error during update telecollecte", null); } }
+		 */
 
 		TransactionDto trs = null;
 		String frmt_cardnumber = "";
 		double dmnt = 0;
 		Integer idtrs = null;
 		long lidtrs = 0;
+		try {
+			cardnumber = current_dmd.getDem_pan();
+		} catch (Exception err3) {
+			Util.writeInFileTransaction(folder, file, "capture 500 Error during cardnumber formatting for given orderid:["
+					+ orderid + "] and merchantid:[" + merchantid + "]" + err3);
+			return getMsgError(folder, file, jsonOrequest, "capture 500 Error during cardnumber formatting", null);
+		}
+
 		// insert into transaction
 		try {
 			trs = new TransactionDto();
@@ -2987,10 +2971,12 @@ public class APIController {
 			trs.setTrs_codporteur(frmt_cardnumber);
 			dmnt = Double.parseDouble(amount);
 			trs.setTrs_montant(dmnt);
-			// trs.setTrs_dattrans(new Date());
 			current_date = new Date();
 			Date current_date_1 = getDateWithoutTime(current_date);
-			trs.setTrs_dattrans(current_date_1);
+			Date trs_date = dateFormatSimple.parse(current_dmd.getDem_date_time());
+			Date trs_date_1 = getDateWithoutTime(trs_date);
+
+			trs.setTrs_dattrans(trs_date);
 			trs.setTrsnumaut(authnumber);
 			trs.setTrs_etat("N");
 			trs.setTrs_devise(current_hist.getHatDevise());
@@ -3019,7 +3005,7 @@ public class APIController {
 			current_hist.setHatEtat('T');
 			current_hist.setHatdatetlc(current_date);
 			current_hist.setOperateurtlc("mxplusapi");
-			histoAutoGateService.save(current_hist);
+			current_hist = histoAutoGateService.save(current_hist);
 
 		} catch (Exception err7) {
 			Util.writeInFileTransaction(folder, file,
@@ -3035,7 +3021,6 @@ public class APIController {
 		SimpleDateFormat sftm = null;
 
 		try {
-
 			capture_id = String.format("%040d", new BigInteger(UUID.randomUUID().toString().replace("-", ""), 36));
 			dt = new Date();
 			dtpattern = "yyyy-MM-dd";
@@ -3176,7 +3161,7 @@ public class APIController {
 			callbackUrl = (String) jsonOrequest.get("callbackurl");
 
 			// Card info
-			cardnumber = (String) jsonOrequest.get("cardnumber");
+			//cardnumber = (String) jsonOrequest.get("cardnumber");
 
 			// Client info
 			fname = (String) jsonOrequest.get("fname");
@@ -3186,6 +3171,13 @@ public class APIController {
 		} catch (Exception jerr) {
 			Util.writeInFileTransaction(folder, file, "refund 500 malformed json expression " + refund + jerr);
 			return getMsgError(folder, file, null, "refund 500 malformed json expression " + jerr.getMessage(), null);
+		}
+		
+		try {
+			// Card info
+			cardnumber = (String) jsonOrequest.get("cardnumber");
+		} catch(Exception ex) {
+			Util.writeInFileTransaction(folder, file, "refund 500 cardnumber missing in jsonOrequest");
 		}
 
 		JSONObject jso = new JSONObject();
@@ -3218,38 +3210,50 @@ public class APIController {
 			Util.writeInFileTransaction(folder, file, "refund 500 PaiementRequest not found for given orderid" + orderid
 					+ "] and merchantid:[" + merchantid + "]");
 
-			return getMsgError(folder, file, jsonOrequest, "refund 500 PaiementRequest not found", null);
+			return getMsgError(folder, file, jsonOrequest, "refund 500 Transaction not found", null);
 		}
 
 		HistoAutoGateDto current_hist = null;
 
 		try {
 			// get histoauto check if exist
-			current_hist = histoAutoGateService.findByHatNumCommandeAndHatNautemtAndHatNumcmrAndHatCoderep(orderid, authnumber,
-					merchantid, "00");
+			current_hist = histoAutoGateService.findByHatNumCommandeAndHatNautemtAndHatNumcmrAndHatCoderep(orderid,
+					authnumber, merchantid, "00");
 
 		} catch (Exception err2) {
 			Util.writeInFileTransaction(folder, file,
 					"refund 500 Error during HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmrAndHatCoderep orderid:["
 							+ orderid + "] and merchantid:[" + merchantid + "]" + err2);
 
-			return getMsgError(folder, file, jsonOrequest, "refund 500 Error during find HistoAutoGate", null);
+			return getMsgError(folder, file, jsonOrequest, "refund 500 Transaction not found", null);
 		}
 
 		if (current_hist == null) {
-			Util.writeInFileTransaction(folder, file,
-					"refund 500 Inconsitence HistoAutoGate not found for authnumber and DemandePaiement is PAYE status"
-							+ "HistoAutoGate not found for authnumber:[" + authnumber + "] and merchantid:["
-							+ merchantid + "]");
+			Util.writeInFileTransaction(folder, file, "refund 500 Transaction not found for authnumber:[" + authnumber
+					+ "] and merchantid:[" + merchantid + "]");
 
-			return getMsgError(folder, file, jsonOrequest, "refund 500 Inconsitence HistoAutoGate not found", null);
+			return getMsgError(folder, file, jsonOrequest, "refund 500 Transaction not found", null);
+		}
+
+		if (current_hist.getHatEtat().equals('A') || current_hist.getHatEtat() == 'A') {
+			Util.writeInFileTransaction(folder, file, "refund 500 Transaction is already cancelled for authnumber:["
+					+ authnumber + "] and merchantid:[" + merchantid + "]");
+
+			return getMsgError(folder, file, jsonOrequest, "refund 500 Transaction is already cancelled", null);
 		}
 
 		TransactionDto trs_check = null;
 
 		try {
+			// old 2024-08-01
+			// trs_check = transactionService.findByTrsnumautAndTrsnumcmr(authnumber,
+			// merchantid);
 
-			trs_check = transactionService.findByTrsnumautAndTrsnumcmr(authnumber, merchantid);
+			Date dateTrss = dateFormatSimple.parse(current_dmd.getDem_date_time());
+			String dateTrs = dateFormatSimple.format(dateTrss);
+			Util.writeInFileTransaction(folder, file, "refund dateTrs : " + dateTrs);
+			//trs_check = transactionService.findByTrsnumautAndTrsnumcmrAndDateTrs(authnumber, merchantid, dateTrs);
+			trs_check = transactionService.findByTrsnumautAndTrsnumcmrAndTrscommande(authnumber, merchantid, orderid);
 
 		} catch (Exception err4) {
 			Util.writeInFileTransaction(folder, file,
@@ -3261,11 +3265,10 @@ public class APIController {
 
 		if (trs_check == null) {
 			Util.writeInFileTransaction(folder, file,
-					"refund 500 Inconsitence Captured Transaction not found for authnumber and DemandePaiement is PAYE status"
-							+ "Captured Transaction not found for authnumber:[" + authnumber + "] and merchantid:["
-							+ merchantid + "]");
+					"refund 500 Transaction not found for authnumber:[" + authnumber
+							+ "] and merchantid:[" + merchantid + "]");
 
-			return getMsgError(folder, file, jsonOrequest, "refund 500 Inconsitence Captured Transaction not found",
+			return getMsgError(folder, file, jsonOrequest, "refund 500 Transaction not found",
 					null);
 		}
 
@@ -3274,43 +3277,40 @@ public class APIController {
 
 		if (trs_procod == null) {
 			Util.writeInFileTransaction(folder, file,
-					"refund 500 Inconsitence Captured Transaction trs_procod null for authnumber and DemandePaiement is PAYE status"
-							+ "Captured Transaction trs_procod null  for authnumber:[" + authnumber
+					"refund 500 Transaction trs_procod null for authnumber:[" + authnumber
 							+ "] and merchantid:[" + merchantid + "]");
 
 			return getMsgError(folder, file, jsonOrequest,
-					"refund 500 Inconsitence Captured Transaction trs_procod null", null);
+					"refund 500 Transaction trs_procod null", null);
 		}
 
 		if (trs_state == null) {
 			Util.writeInFileTransaction(folder, file,
-					"refund 500 Inconsitence Captured Transaction trs_procod null for authnumber and DemandePaiement is PAYE status"
-							+ "Captured Transaction trs_state null for authnumber:[" + authnumber + "] and merchantid:["
-							+ merchantid + "]");
+					"refund 500 Transaction trs_procod null for authnumber:[" + authnumber
+							+ "] and merchantid:[" + merchantid + "]");
 
 			return getMsgError(folder, file, jsonOrequest,
-					"refund 500 Inconsitence Captured Transaction trs_procod null", null);
+					"refund 500 Transaction trs_procod null", null);
 		}
 
 		if (!trs_procod.equalsIgnoreCase("0")) {
 			Util.writeInFileTransaction(folder, file,
-					"refund 500 Inconsitence Captured Transaction trs_procod <> 0 for authnumber and DemandePaiement is PAYE status"
-							+ "Captured Transaction trs_procod <> 0   for authnumber:[" + authnumber
+					"refund 500 Transaction trs_procod <> 0 for authnumber:[" + authnumber
 							+ "] and merchantid:[" + merchantid + "]");
 
 			return getMsgError(folder, file, jsonOrequest,
-					"refund 500 Inconsitence Captured Transaction trs_procod <> 0", null);
+					"refund 500 Transaction trs_procod <> 0", null);
 		}
 
-		if (!trs_state.equalsIgnoreCase("E")) {
-			Util.writeInFileTransaction(folder, file,
-					"refund 500 Inconsitence Captured Transaction trs_state <> E for authnumber and DemandePaiement is PAYE status"
-							+ "Captured Transaction  trs_state <> E  for authnumber:[" + authnumber
-							+ "] and merchantid:[" + merchantid + "]");
-
-			return getMsgError(folder, file, jsonOrequest,
-					"refund 500 Inconsitence Captured Transaction trs_state <> E", null);
-		}
+		/*
+		 * if (!trs_state.equalsIgnoreCase("E")) { Util.writeInFileTransaction(folder,
+		 * file,
+		 * "refund 500 Transaction trs_state <> E for authnumber:["
+		 * + authnumber + "] and merchantid:[" + merchantid + "]");
+		 * 
+		 * return getMsgError(folder, file, jsonOrequest,
+		 * "refund 500 Transaction trs_state <> E", null); }
+		 */
 
 		SimpleDateFormat formatheure, formatdate = null;
 		String date, heure, jul = "";
@@ -3327,6 +3327,13 @@ public class APIController {
 					+ orderid + "] and merchantid:[" + merchantid + "]" + err3);
 
 			return getMsgError(folder, file, jsonOrequest, "refund 500 Error during date formatting", null);
+		}
+		try {
+			cardnumber = current_dmd.getDem_pan();
+		} catch (Exception err3) {
+			Util.writeInFileTransaction(folder, file, "refund 500 Error during cardnumber formatting for given orderid:["
+					+ orderid + "] and merchantid:[" + merchantid + "]" + err3);
+			return getMsgError(folder, file, jsonOrequest, "refund 500 Error during cardnumber formatting", null);
 		}
 
 		String[] mm;
@@ -3387,85 +3394,75 @@ public class APIController {
 
 		Util.writeInFileTransaction(folder, file, "Switch status : [" + s_status + "]");
 
-		if (tag20_resp.equalsIgnoreCase("00"))
-
-		{
+		if (tag20_resp.equalsIgnoreCase("00")) {
 			Util.writeInFileTransaction(folder, file, "Switch CODE REP : [00]");
 
-			Util.writeInFileTransaction(folder, file, "Transaction refunded.");
-
 			try {
-				Util.writeInFileTransaction(folder, file, "Setting DemandePaiement status A ...");
-
+				Util.writeInFileTransaction(folder, file, "Setting DemandePaiement status R ...");
 				current_dmd.setEtat_demande("R");
 				demandePaiementService.save(current_dmd);
 			} catch (Exception e) {
 				Util.writeInFileTransaction(folder, file,
 						"refund 500 Error during  demandepaiement update  R for given  orderid:[" + orderid + "]" + e);
 
-				return getMsgError(folder, file, jsonOrequest, "refund 500 Error during  demandepaiement update R",
-						null);
+				return getMsgError(folder, file, jsonOrequest, "refund 500, the refund failed", null);
 			}
 
-			Util.writeInFileTransaction(folder, file, "Setting DemandePaiement status OK.");
-
-			Util.writeInFileTransaction(folder, file, "inserting HistoAutoGate   ...");
-
+			Util.writeInFileTransaction(folder, file, "Setting DemandePaiement status R OK.");
+			Util.writeInFileTransaction(folder, file, "inserting Telecollecte   ...");
 			try {
-
-				// Telecollecte n_tlc = tlcservice.getMAXTLC_NRefund(merchantid);
-				TelecollecteDto n_tlc = telecollecteService.getMAXTLC_N(merchantid);
+				// TelecollecteDto n_tlc = telecollecteService.getMAXTLC_N(merchantid);
 				Date current_date = null;
 				current_date = new Date();
 				long lidtelc = 0;
 
-				if (n_tlc == null) {
-					Util.writeInFileTransaction(folder, file, "getMAXTLC_N n_tlc = null");
-					Integer idtelc = null;
+				// if (n_tlc == null) {
+				// Util.writeInFileTransaction(folder, file, "getMAXTLC_N n_tlc = null");
+				Integer idtelc = null;
 
-					TelecollecteDto tlc = null;
+				TelecollecteDto tlc = null;
 
-					// insert into telec
-					idtelc = telecollecteService.getMAX_ID(merchantid);
-					Util.writeInFileTransaction(folder, file, "getMAX_ID idtelc : " + idtelc);
+				// insert into telec
+				idtelc = telecollecteService.getMAX_ID(merchantid);
+				Util.writeInFileTransaction(folder, file, "getMAX_ID idtelc : " + idtelc);
 
-					if (idtelc != null) {
-						lidtelc = idtelc.longValue() + 1;
-					} else {
-						lidtelc = 1;
-					}
-					tlc = new TelecollecteDto();
-					tlc.setTlc_numtlcolcte(lidtelc);
-					tlc.setTlc_numtpe(current_hist.getHatCodtpe());
-					// tlc.setTlc_typentre("REFUND");
-					tlc.setTlc_datcrtfich(current_date);
-					tlc.setTlc_nbrtrans(new Double(1));
-					tlc.setTlc_gest("N");
-
-					tlc.setTlc_datremise(current_date);
-					tlc.setTlc_numremise(new Double(lidtelc));
-					// tlc.setTlc_numfich(new Double(0));
-					String tmpattern = "HH:mm";
-					SimpleDateFormat sftm = new SimpleDateFormat(tmpattern);
-					String stm = sftm.format(current_date);
-					tlc.setTlc_heuremise(stm);
-					String acqcode = current_merchant.getCmrCodbqe();
-					tlc.setTlc_codbq(acqcode);
-					tlc.setTlc_numcmr(merchantid);
-					tlc.setTlc_numtpe(websiteid);
-
-					telecollecteService.save(tlc);
-
+				if (idtelc != null) {
+					lidtelc = idtelc.longValue() + 1;
 				} else {
-
-					lidtelc = n_tlc.getTlc_numtlcolcte();
-					double nbr_trs = n_tlc.getTlc_nbrtrans();
-
-					nbr_trs = nbr_trs + 1;
-
-					n_tlc.setTlc_nbrtrans(nbr_trs);
-
+					lidtelc = 1;
 				}
+				tlc = new TelecollecteDto();
+				tlc.setTlc_numtlcolcte(lidtelc);
+				tlc.setTlc_numtpe(current_hist.getHatCodtpe());
+				// tlc.setTlc_typentre("REFUND");
+				tlc.setTlc_datcrtfich(current_date);
+				tlc.setTlc_nbrtrans(new Double(1));
+				tlc.setTlc_gest("N");
+
+				tlc.setTlc_datremise(current_date);
+				tlc.setTlc_numremise(new Double(lidtelc));
+				// tlc.setTlc_numfich(new Double(0));
+				String tmpattern = "HH:mm";
+				SimpleDateFormat sftm = new SimpleDateFormat(tmpattern);
+				String stm = sftm.format(current_date);
+				tlc.setTlc_heuremise(stm);
+				String acqcode = current_merchant.getCmrCodbqe();
+				tlc.setTlc_codbq(acqcode);
+				tlc.setTlc_numcmr(merchantid);
+				tlc.setTlc_numtpe(websiteid);
+
+				telecollecteService.save(tlc);
+
+				/*
+				 * } else { lidtelc = n_tlc.getTlc_numtlcolcte(); double nbr_trs =
+				 * n_tlc.getTlc_nbrtrans(); nbr_trs = nbr_trs + 1;
+				 * n_tlc.setTlc_nbrtrans(nbr_trs); telecollecteService.save(n_tlc);
+				 * 
+				 * }
+				 */
+
+				Util.writeInFileTransaction(folder, file, "inserting Telecollecte  OK.");
+				Util.writeInFileTransaction(folder, file, "inserting Transaction   ...");
 
 				TransactionDto trs = null;
 				String frmt_cardnumber = "";
@@ -3480,10 +3477,12 @@ public class APIController {
 				trs.setTrs_codporteur(frmt_cardnumber);
 				dmnt = Double.parseDouble(amount);
 				trs.setTrs_montant(dmnt);
-				// trs.setTrs_dattrans(new Date());
-				current_date = new Date();
-				Date current_date_1 = getDateWithoutTime(current_date);
-				trs.setTrs_dattrans(current_date_1);
+				//current_date = new Date();
+				//Date current_date_1 = getDateWithoutTime(current_date);
+				Date trs_date = dateFormatSimple.parse(current_dmd.getDem_date_time());
+				Date trs_date_1 = getDateWithoutTime(trs_date);
+
+				trs.setTrs_dattrans(trs_date);
 				trs.setTrsnumaut("000000");// offline mode
 				trs.setTrs_etat("N");
 				trs.setTrs_devise(current_hist.getHatDevise());
@@ -3505,16 +3504,17 @@ public class APIController {
 				trs.setTrs_numfact(0.0);
 				transactionService.save(trs);
 
+				Util.writeInFileTransaction(folder, file, "inserting Transaction  OK.");
+
 			} catch (Exception e) {
 				Util.writeInFileTransaction(folder, file,
-						"refund 500 Error during  HistoAutoGate insertion or Transaction insertion A for given orderid:["
+						"refund 500 Error during  Telecollecte insertion or Transaction insertion for given orderid:["
 								+ orderid + "]" + e);
 
-				return getMsgError(folder, file, jsonOrequest,
-						"refund 500 Error during  HistoAutoGate insertion or Transaction insertion A", null);
+				return getMsgError(folder, file, jsonOrequest, "refund 500, the refund failed", null);
 			}
 
-			Util.writeInFileTransaction(folder, file, "inserting HistoAutoGate  OK.");
+			Util.writeInFileTransaction(folder, file, "Transaction refunded.");
 
 		} /*
 			 * else { //offline processing
@@ -3531,7 +3531,7 @@ public class APIController {
 			Util.writeInFileTransaction(folder, file,
 					"refund 500 Error during  refund_id generation for given orderid:[" + orderid + "]" + e);
 
-			return getMsgError(folder, file, jsonOrequest, "refund 500 Error during  refund_id generation", null);
+			return getMsgError(folder, file, jsonOrequest, "refund 500, the refund failed", null);
 		}
 
 		try {
@@ -3662,7 +3662,7 @@ public class APIController {
 			callbackUrl = (String) jsonOrequest.get("callbackurl");
 
 			// Card info
-			cardnumber = (String) jsonOrequest.get("cardnumber");
+			//cardnumber = (String) jsonOrequest.get("cardnumber");
 
 			// Client info
 			fname = (String) jsonOrequest.get("fname");
@@ -3672,6 +3672,13 @@ public class APIController {
 		} catch (Exception jerr) {
 			Util.writeInFileTransaction(folder, file, "reversal 500 malformed json expression " + reversal + jerr);
 			return getMsgError(folder, file, null, "reversal 500 malformed json expression " + jerr.getMessage(), null);
+		}
+		
+		try {
+			// Card info
+			cardnumber = (String) jsonOrequest.get("cardnumber");
+		} catch(Exception ex) {
+			Util.writeInFileTransaction(folder, file, "reversal 500 cardnumber missing in jsonOrequest");
 		}
 
 		JSONObject jso = new JSONObject();
@@ -3715,8 +3722,8 @@ public class APIController {
 		try {
 
 			// get histoauto check if exist
-			current_hist = histoAutoGateService.findByHatNumCommandeAndHatNautemtAndHatNumcmrAndHatCoderep(orderid, authnumber,
-					merchantid, "00");
+			current_hist = histoAutoGateService.findByHatNumCommandeAndHatNautemtAndHatNumcmrAndHatCoderep(orderid,
+					authnumber, merchantid, "00");
 
 		} catch (Exception err2) {
 			Util.writeInFileTransaction(folder, file,
@@ -3728,11 +3735,11 @@ public class APIController {
 
 		if (current_hist == null) {
 			Util.writeInFileTransaction(folder, file,
-					"reversal 500 Inconsitence HistoAutoGate not found for authnumber and DemandePaiement is PAYE status"
+					"reversal 500 Transaction not found for authnumber and DemandePaiement is PAYE status"
 							+ "HistoAutoGate not found for authnumber:[" + authnumber + "] and merchantid:["
 							+ merchantid + "]");
 
-			return getMsgError(folder, file, jsonOrequest, "reversal 500 Inconsitence HistoAutoGate not found", null);
+			return getMsgError(folder, file, jsonOrequest, "reversal 500 Transaction not found", null);
 		}
 
 		SimpleDateFormat formatheure, formatdate = null;
@@ -3860,7 +3867,7 @@ public class APIController {
 			Util.writeInFileTransaction(folder, file, "reversal 500 Error during switch tlv buildu for given orderid:["
 					+ orderid + "] and merchantid:[" + merchantid + "]" + err4);
 
-			return getMsgError(folder, file, jsonOrequest, "reversa 500 Error during switch tlv buildu", "96");
+			return getMsgError(folder, file, jsonOrequest, "reversal failed, the Switch is down.", "96");
 		}
 
 		Util.writeInFileTransaction(folder, file, "Switch TLV Request :[" + tlv + "]");
@@ -3899,48 +3906,43 @@ public class APIController {
 
 				Util.writeInFileTransaction(folder, file, "Switch  malfunction !!!");
 
-				return getMsgError(folder, file, jsonOrequest, "reversal 500 Error Switch communication s_conn false",
-						"96");
+				return getMsgError(folder, file, jsonOrequest, "reversal failed, the Switch is down.", "96");
 			}
 
 		} catch (SocketTimeoutException e) {
 			Util.writeInFileTransaction(folder, file, "Switch  malfunction !!!");
 
-			return getMsgError(folder, file, jsonOrequest,
-					"reversal 500 Error Switch communication SocketTimeoutException", "96");
+			return getMsgError(folder, file, jsonOrequest, "reversal failed, the Switch is down.", "96");
 		} catch (UnknownHostException e) {
 			Util.writeInFileTransaction(folder, file, "Switch  malfunction !!!");
 
-			return getMsgError(folder, file, jsonOrequest,
-					"reversal 500 Error Switch communication UnknownHostException", "96");
+			return getMsgError(folder, file, jsonOrequest, "reversal failed, the Switch is down.", "96");
 		}
 
 		catch (IOException e) {
 			Util.writeInFileTransaction(folder, file, "Switch  malfunction !!!" + e);
 
-			return getMsgError(folder, file, jsonOrequest, "reversal 500 Error Switch communication IOException", "96");
+			return getMsgError(folder, file, jsonOrequest, "reversal failed, the Switch is down.", "96");
 		} catch (Exception e) {
 			Util.writeInFileTransaction(folder, file, "Switch  malfunction !!!" + e);
 
-			return getMsgError(folder, file, jsonOrequest,
-					"reversal 500 Error Switch communication General Exception switch", "96");
+			return getMsgError(folder, file, jsonOrequest, "reversal failed, the Switch is down.", "96");
 		}
 
 		String resp = resp_tlv;
 		if (resp == null) {
 			Util.writeInFileTransaction(folder, file, "Switch  malfunction !!!");
 
-			return getMsgError(folder, file, jsonOrequest, "reversal 500 Error Switch null response switch", "96");
+			return getMsgError(folder, file, jsonOrequest, "reversal failed, the Switch is down.", "96");
 		}
 
 		if (resp.length() < 3)
 
 		{
 
-			Util.writeInFileTransaction(folder, file, "Switch  malfunction !!!");
+			Util.writeInFileTransaction(folder, file, "reversal 500 Error Switch short response length() < 3 switch");
 
-			return getMsgError(folder, file, jsonOrequest,
-					"reversal 500 Error Switch short response length() < 3 switch", "96");
+			return getMsgError(folder, file, jsonOrequest, "reversal failed, the Switch is down.", "96");
 		}
 
 		Util.writeInFileTransaction(folder, file, "Switch TLV Respnose :[" + resp + "]");
@@ -3984,23 +3986,21 @@ public class APIController {
 		} catch (Exception e) {
 			Util.writeInFileTransaction(folder, file, "Switch  malfunction !!!" + e);
 
-			return getMsgError(folder, file, jsonOrequest, "reversal 500 Error during tlv Switch response parse switch",
-					"96");
+			return getMsgError(folder, file, jsonOrequest, "reversal failed, the Switch is down.", "96");
 		}
 
 		// controle switch
 		if (tag1_resp == null) {
 			Util.writeInFileTransaction(folder, file, "Switch  malfunction !!!");
 
-			return getMsgError(folder, file, jsonOrequest,
-					"reversal 500 Error during tlv Switch response parse tag1_resp tag null", "96");
+			return getMsgError(folder, file, jsonOrequest, "reversal failed, the Switch is down.", "96");
 		}
 
 		if (tag1_resp.length() < 3) {
-			Util.writeInFileTransaction(folder, file, "Switch  malfunction !!!");
+			Util.writeInFileTransaction(folder, file,
+					"reversal 500 Error during tlv Switch response parse tag1_resp length tag  < 3 switch");
 
-			return getMsgError(folder, file, jsonOrequest,
-					"reversal 500 Error during tlv Switch response parse tag1_resp length tag  < 3 switch", "96");
+			return getMsgError(folder, file, jsonOrequest, "reversal failed, the Switch is down.", "96");
 		}
 
 		Util.writeInFileTransaction(folder, file, "Switch TLV Respnose Processed");
@@ -4026,12 +4026,12 @@ public class APIController {
 		Util.writeInFileTransaction(folder, file, "tag98_resp : [" + tag98_resp + "]");
 
 		if (tag20_resp == null) {
-			return getMsgError(folder, file, jsonOrequest, "reversal 500 Switch malfunction response code not present",
-					"96");
+			Util.writeInFileTransaction(folder, file, "reversal 500 Switch malfunction response code not present");
+			return getMsgError(folder, file, jsonOrequest, "reversal failed, the Switch is down.", "96");
 		}
 		if (tag20_resp.length() < 1) {
-			return getMsgError(folder, file, jsonOrequest,
-					"reversal 500 Switch malfunction response code length incorrect", "96");
+			Util.writeInFileTransaction(folder, file, "reversal 500 Switch malfunction response code length incorrect");
+			return getMsgError(folder, file, jsonOrequest, "reversal failed, the Switch is down.", "96");
 		}
 
 		if (tag20_resp.equalsIgnoreCase("00"))
@@ -4705,8 +4705,8 @@ public class APIController {
 								"savingcardtoken 500 Error during switch tlv buildup for given merchantid:["
 										+ merchantid + "]" + err4);
 
-						return getMsgErrorV1(folder, file, jsonOrequest,
-								"savingcardtoken 500 Error during switch tlv buildup", "96");
+						return getMsgErrorV1(folder, file, jsonOrequest, "savingcardtoken failed, the Switch is down.",
+								"96");
 					}
 
 					Util.writeInFileTransaction(folder, file, "Switch TLV Request :[" + tlv + "]");
@@ -4738,8 +4738,8 @@ public class APIController {
 						demandePaiementService.save(dmd);
 						Util.writeInFileTransaction(folder, file, "Switch  malfunction cannot connect!!!");
 
-						return getMsgErrorV1(folder, file, jsonOrequest,
-								"savingcardtoken 500 Error Switch communication s_conn false", "96");
+						return getMsgErrorV1(folder, file, jsonOrequest, "savingcardtoken failed, the Switch is down.",
+								"96");
 					}
 
 					if (s_conn) {
@@ -4757,8 +4757,8 @@ public class APIController {
 					demandePaiementService.save(dmd);
 					Util.writeInFileTransaction(folder, file, "Switch  malfunction UnknownHostException !!!" + e);
 
-					return getMsgErrorV1(folder, file, jsonOrequest,
-							"savingcardtoken 500 Error Switch communication UnknownHostException", "96");
+					return getMsgErrorV1(folder, file, jsonOrequest, "savingcardtoken failed, the Switch is down.",
+							"96");
 
 				} catch (java.net.ConnectException e) {
 					dmd.setDem_cvv("");
@@ -4766,8 +4766,8 @@ public class APIController {
 					demandePaiementService.save(dmd);
 					Util.writeInFileTransaction(folder, file, "Switch  malfunction ConnectException !!!" + e);
 					switch_ko = 1;
-					return getMsgErrorV1(folder, file, jsonOrequest,
-							"savingcardtoken 500 Error Switch communication ConnectException", "96");
+					return getMsgErrorV1(folder, file, jsonOrequest, "savingcardtoken failed, the Switch is down.",
+							"96");
 				}
 
 				catch (SocketTimeoutException e) {
@@ -4780,7 +4780,7 @@ public class APIController {
 					Util.writeInFileTransaction(folder, file,
 							"savingcardtoken 500 Error Switch communication SocketTimeoutException" + "switch ip:["
 									+ sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-					return getMsgErrorV1(folder, file, jsonOrequest, "Switch  malfunction  SocketTimeoutException !!!",
+					return getMsgErrorV1(folder, file, jsonOrequest, "savingcardtoken failed, the Switch is down.",
 							"96");
 				}
 
@@ -4794,7 +4794,8 @@ public class APIController {
 					Util.writeInFileTransaction(folder, file,
 							"savingcardtoken 500 Error Switch communication IOException" + "switch ip:[" + sw_s
 									+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-					return getMsgErrorV1(folder, file, jsonOrequest, "Switch  malfunction  IOException !!!", "96");
+					return getMsgErrorV1(folder, file, jsonOrequest, "savingcardtoken failed, the Switch is down.",
+							"96");
 				}
 
 				catch (Exception e) {
@@ -4804,8 +4805,8 @@ public class APIController {
 					Util.writeInFileTransaction(folder, file, "Switch  malfunction Exception!!!" + e);
 					switch_ko = 1;
 					e.printStackTrace();
-					return getMsgErrorV1(folder, file, jsonOrequest,
-							"savingcardtoken 500 Error Switch communication General Exception", "96");
+					return getMsgErrorV1(folder, file, jsonOrequest, "savingcardtoken failed, the Switch is down.",
+							"96");
 				}
 
 				// resp debug =
@@ -4822,7 +4823,8 @@ public class APIController {
 					switch_ko = 1;
 					Util.writeInFileTransaction(folder, file, "savingcardtoken 500 Error Switch null response"
 							+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-					return getMsgErrorV1(folder, file, jsonOrequest, "Switch  malfunction resp null!!!", "96");
+					return getMsgErrorV1(folder, file, jsonOrequest, "savingcardtoken failed, the Switch is down.",
+							"96");
 				}
 
 				if (switch_ko == 0 && resp.length() < 3) {
@@ -5205,12 +5207,13 @@ public class APIController {
 					}
 
 					Util.writeInFileTransaction(folder, file, "update Demandepaiement status to SW_REJET OK.");
-					
+
 					try {
-						if(hist.getId() == null) {
+						if (hist.getId() == null) {
 							// get histoauto check if exist
-							HistoAutoGateDto histToAnnulle = histoAutoGateService.findByHatNumCommandeAndHatNumcmrV1(orderid, merchantid);
-							if(histToAnnulle != null) {
+							HistoAutoGateDto histToAnnulle = histoAutoGateService
+									.findByHatNumCommandeAndHatNumcmrV1(orderid, merchantid);
+							if (histToAnnulle != null) {
 								Util.writeInFileTransaction(folder, file,
 										"transaction declinded ==> update HistoAutoGateDto etat to A ...");
 								histToAnnulle.setHatEtat('A');
@@ -5225,8 +5228,8 @@ public class APIController {
 						}
 					} catch (Exception err2) {
 						Util.writeInFileTransaction(folder, file,
-								"saving token 500 Error during HistoAutoGate findByHatNumCommandeAndHatNumcmrV1 orderid:[" + orderid
-										+ "] and merchantid:[" + merchantid + "]" + err2);
+								"saving token 500 Error during HistoAutoGate findByHatNumCommandeAndHatNumcmrV1 orderid:["
+										+ orderid + "] and merchantid:[" + merchantid + "]" + err2);
 					}
 					Util.writeInFileTransaction(folder, file, "update HistoAutoGateDto etat to A OK.");
 
@@ -5424,269 +5427,219 @@ public class APIController {
 		return jso.toString();
 	}
 
-	@PostMapping(value = "/napspayment/cardtokenOld", consumes = "application/json", produces = "application/json")
-	@ResponseBody
-	public String getCardTkenOld(@RequestHeader MultiValueMap<String, String> header, @RequestBody String cardtoken,
-			HttpServletResponse response) {
-		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		String file = "API_SAVINGCARD_" + randomWithSplittableRandom;
-		// create file log
-		Util.creatFileTransaction(file);
-		Util.writeInFileTransaction(folder, file, "*********** Start getCardTken() ************** ");
-		System.out.println("*********** Start getCardTken() ************** ");
-
-		String api_key = "";
-		String api_product = "";
-		String api_version = "";
-		String api_user_agent = "";
-
-		Util.writeInFileTransaction(folder, file, "cardtoken api call start ...");
-		Util.writeInFileTransaction(folder, file, "cardtoken : [" + cardtoken + "]");
-
-		JSONObject jsonOrequest = null;
-		try {
-			jsonOrequest = new JSONObject(cardtoken);
-		}
-
-		catch (JSONException jserr) {
-			Util.writeInFileTransaction(folder, file, "cardtoken 500 malformed json expression " + cardtoken + jserr);
-			return getMsgError(folder, file, null, "cardtoken 500 malformed json expression", null);
-		}
-
-		if (header != null)
-			Util.writeInFileTransaction(folder, file, "header : [" + header.toString() + "]");
-		else
-			Util.writeInFileTransaction(folder, file, "error header is null !");
-
-		try {
-
-			if (header != null) {
-
-				if (header.get("x-api-key") != null)
-					api_key = (String) header.get("x-api-key").get(0);
-				else if (header.get("x-api-key") != null)
-					api_key = (String) header.get("x-api-key").get(0);
-				if (header.get("x-product") != null)
-					api_product = (String) header.get("x-product").get(0);
-				else if (header.get("X-PRODUCT") != null)
-					api_product = (String) header.get("X-PRODUCT").get(0);
-				if (header.get("x-version") != null)
-					api_version = (String) header.get("x-version").get(0);
-				else if (header.get("X-VERSION") != null)
-					api_version = (String) header.get("X-VERSION").get(0);
-				if (header.get("user-agent") != null)
-					api_user_agent = (String) header.get("user-agent").get(0);
-				else if (header.get("USER-AGENT") != null)
-					api_user_agent = (String) header.get("USER-AGENT").get(0);
-			}
-
-		} catch (Exception head_err) {
-
-			if (header.toString() != null) {
-				Util.writeInFileTransaction(folder, file, "500 malformed header" + header.toString() + head_err);
-				return getMsgError(folder, file, null, "cardtoken 500 malformed header " + head_err.getMessage(), null);
-			} else {
-				Util.writeInFileTransaction(folder, file, "cardtoken 500 malformed header" + head_err);
-			}
-		}
-
-		String merchantid, merchantname, websiteName, websiteid, cardnumber, expirydate, holdername, fname, lname,
-				email = "", securtoken24, mac_value;
-
-		try {
-			// Merchnat info
-			merchantid = (String) jsonOrequest.get("merchantid");
-			merchantname = (String) jsonOrequest.get("merchantname");
-			websiteName = (String) jsonOrequest.get("websitename");
-			websiteid = (String) jsonOrequest.get("websiteid");
-
-			// Card info
-			cardnumber = (String) jsonOrequest.get("cardnumber");
-			expirydate = (String) jsonOrequest.get("expirydate");
-			holdername = (String) jsonOrequest.get("holdername");
-
-			// Client info
-			fname = (String) jsonOrequest.get("fname");
-			lname = (String) jsonOrequest.get("lname");
-			email = (String) jsonOrequest.get("email");
-
-			// Transaction info
-			securtoken24 = (String) jsonOrequest.get("securtoken24");
-			mac_value = (String) jsonOrequest.get("mac_value");
-
-		} catch (Exception jerr) {
-			Util.writeInFileTransaction(folder, file, "cardtoken 500 malformed json expression " + cardtoken + jerr);
-			Util.writeInFileTransaction(folder, file, "*********** Fin getCardTken() ************** ");
-			System.out.println("*********** Fin getCardTken() ************** ");
-			return getMsgError(folder, file, null, "cardtoken 500 malformed json expression " + jerr.getMessage(),
-					null);
-		}
-
-		JSONObject jso = new JSONObject();
-		try {
-			if (cardnumber.equals("")) {
-				Util.writeInFileTransaction(folder, file, "cardnumber is empty");
-				// Card info
-				jso.put("token", "");
-
-				// Transaction info
-				jso.put("statuscode", "17");
-				jso.put("status", "saving token failed, cardnumber is empty");
-
-				Util.writeInFileTransaction(folder, file, "*********** Fin getCardTken() ************** ");
-
-				return jso.toString();
-			}
-			if (mac_value.equals("")) {
-				Util.writeInFileTransaction(folder, file, "mac_value is empty");
-				// Card info
-				jso.put("token", "");
-
-				// Transaction info
-				jso.put("statuscode", "17");
-				jso.put("status", "saving token failed, mac_value is empty");
-
-				Util.writeInFileTransaction(folder, file, "*********** Fin getCardTken() ************** ");
-
-				return jso.toString();
-			}
-			if (securtoken24.equals("")) {
-				Util.writeInFileTransaction(folder, file, "securtoken24 is empty");
-				// Card info
-				jso.put("token", "");
-
-				// Transaction info
-				jso.put("statuscode", "17");
-				jso.put("status", "saving token failed, securtoken24 is empty");
-
-				Util.writeInFileTransaction(folder, file, "*********** Fin getCardTken() ************** ");
-
-				return jso.toString();
-			}
-			int i_card_valid = Util.isCardValid(cardnumber);
-
-			if (i_card_valid == 1) {
-				Util.writeInFileTransaction(folder, file, "Error 500 Card number length is incorrect");
-				// Card info
-				jso.put("token", "");
-
-				// Transaction info
-				jso.put("statuscode", "17");
-				jso.put("status", "Error 500 Card number length is incorrect");
-
-				Util.writeInFileTransaction(folder, file, "*********** Fin getCardTken() ************** ");
-				return jso.toString();
-			}
-
-			if (i_card_valid == 2) {
-				Util.writeInFileTransaction(folder, file, "Error 500 Card number  is not valid incorrect luhn check");
-				// Card info
-				jso.put("token", "");
-
-				// Transaction info
-				jso.put("statuscode", "17");
-				jso.put("status", "Error 500 Card number  is not valid incorrect luhn check");
-
-				Util.writeInFileTransaction(folder, file, "*********** Fin getCardTken() ************** ");
-				return jso.toString();
-			}
-			// verification expiration token
-			jso = verifieToken(securtoken24, file);
-			if (!jso.get("statuscode").equals("00")) {
-				// Card info
-				jso.put("token", "");
-				Util.writeInFileTransaction(folder, file, "jso : " + jso.toString());
-				System.out.println("jso : " + jso.toString());
-				Util.writeInFileTransaction(folder, file, "*********** Fin getCardTken() ************** ");
-				System.out.println("*********** Fin getCardTken() ************** ");
-				return jso.toString();
-			}
-			int dateint = Integer.valueOf(expirydate);
-
-			// insert new cardToken
-			CardtokenDto cardtokenDto = new CardtokenDto();
-
-			String tokencard = Util.generateCardToken(merchantid);
-
-			cardtokenDto.setToken(tokencard);
-			Util.writeInFileTransaction(folder, file, "cardtokenDto token : " + cardtokenDto.getToken());
-
-			String tokenid = UUID.randomUUID().toString();
-			cardtokenDto.setIdToken(tokenid);
-
-			Calendar dateCalendar = Calendar.getInstance();
-			Date dateToken = dateCalendar.getTime();
-
-			Util.writeInFileTransaction(folder, file, "cardtokenDto expirydate input : " + expirydate);
-			String anne = String.valueOf(dateCalendar.get(Calendar.YEAR));
-			// get year from date
-			String xx = anne.substring(0, 2) + expirydate.substring(0, 2);
-			String mm = expirydate.substring(2, expirydate.length());
-			// format date to "yyyy-MM-dd"
-			expirydate = xx + "-" + mm + "-" + "01";
-			System.out.println("cardtokenDto expirydate : " + expirydate);
-			Util.writeInFileTransaction(folder, file, "cardtokenDto expirydate formated : " + expirydate);
-			Date dateExp = dateFormatSimple.parse(expirydate);
-
-			if (dateExp.before(dateToken)) {
-				// Card info
-				jso.put("token", "");
-
-				// Transaction info
-				jso.put("statuscode", "17");
-				jso.put("status",
-						"saving token failed, invalid expiry date (expiry date must be greater than system date)");
-				Util.writeInFileTransaction(folder, file, "jso : " + jso.toString());
-				System.out.println("jso : " + jso.toString());
-				Util.writeInFileTransaction(folder, file, "*********** Fin getCardTken() ************** ");
-				System.out.println("*********** Fin getCardTken() ************** ");
-				return jso.toString();
-			}
-
-			cardtokenDto.setExprDate(dateExp);
-			String dateTokenStr = dateFormat.format(dateToken);
-			Date dateTokenFormated = dateFormat.parse(dateTokenStr);
-			cardtokenDto.setTokenDate(dateTokenFormated);
-			cardtokenDto.setCardNumber(cardnumber);
-			cardtokenDto.setIdMerchant(merchantid);
-			cardtokenDto.setIdMerchantClient(merchantid);
-			cardtokenDto.setFirst_name(fname);
-			cardtokenDto.setLast_name(lname);
-			cardtokenDto.setHolderName(holdername);
-			cardtokenDto.setMcc(merchantid);
-
-			CardtokenDto cardtokenSaved = cardtokenService.save(cardtokenDto);
-
-			// Card info
-			jso.put("token", cardtokenSaved.getToken());
-
-			// Transaction info
-			jso.put("statuscode", "00");
-			jso.put("status", "saving token successfully");
-
-			Util.writeInFileTransaction(folder, file, "Saving CARDTOKEN OK");
-
-		} catch (Exception ex) {
-			Util.writeInFileTransaction(folder, file,
-					"cardtoken 500 Error during CARDTOKEN Saving : " + ex.getMessage());
-			// Card info
-			jso.put("token", "");
-
-			// Transaction info
-			jso.put("statuscode", "17");
-			jso.put("status", "saving token failed ");
-
-			Util.writeInFileTransaction(folder, file, "*********** Fin getCardTken() ************** ");
-			System.out.println("*********** Fin getCardTken() ************** ");
-
-			return jso.toString();
-		}
-
-		Util.writeInFileTransaction(folder, file, "*********** Fin getCardTken() ************** ");
-		System.out.println("*********** Fin getCardTken() ************** ");
-
-		return jso.toString();
-	}
+	/*
+	 * @PostMapping(value = "/napspayment/cardtokenOld", consumes =
+	 * "application/json", produces = "application/json")
+	 * 
+	 * @ResponseBody public String getCardTkenOld(@RequestHeader
+	 * MultiValueMap<String, String> header, @RequestBody String cardtoken,
+	 * HttpServletResponse response) { randomWithSplittableRandom =
+	 * splittableRandom.nextInt(111111111, 999999999); String file =
+	 * "API_SAVINGCARD_" + randomWithSplittableRandom; // create file log
+	 * Util.creatFileTransaction(file); Util.writeInFileTransaction(folder, file,
+	 * "*********** Start getCardTken() ************** ");
+	 * System.out.println("*********** Start getCardTken() ************** ");
+	 * 
+	 * String api_key = ""; String api_product = ""; String api_version = ""; String
+	 * api_user_agent = "";
+	 * 
+	 * Util.writeInFileTransaction(folder, file, "cardtoken api call start ...");
+	 * Util.writeInFileTransaction(folder, file, "cardtoken : [" + cardtoken + "]");
+	 * 
+	 * JSONObject jsonOrequest = null; try { jsonOrequest = new
+	 * JSONObject(cardtoken); }
+	 * 
+	 * catch (JSONException jserr) { Util.writeInFileTransaction(folder, file,
+	 * "cardtoken 500 malformed json expression " + cardtoken + jserr); return
+	 * getMsgError(folder, file, null, "cardtoken 500 malformed json expression",
+	 * null); }
+	 * 
+	 * if (header != null) Util.writeInFileTransaction(folder, file, "header : [" +
+	 * header.toString() + "]"); else Util.writeInFileTransaction(folder, file,
+	 * "error header is null !");
+	 * 
+	 * try {
+	 * 
+	 * if (header != null) {
+	 * 
+	 * if (header.get("x-api-key") != null) api_key = (String)
+	 * header.get("x-api-key").get(0); else if (header.get("x-api-key") != null)
+	 * api_key = (String) header.get("x-api-key").get(0); if
+	 * (header.get("x-product") != null) api_product = (String)
+	 * header.get("x-product").get(0); else if (header.get("X-PRODUCT") != null)
+	 * api_product = (String) header.get("X-PRODUCT").get(0); if
+	 * (header.get("x-version") != null) api_version = (String)
+	 * header.get("x-version").get(0); else if (header.get("X-VERSION") != null)
+	 * api_version = (String) header.get("X-VERSION").get(0); if
+	 * (header.get("user-agent") != null) api_user_agent = (String)
+	 * header.get("user-agent").get(0); else if (header.get("USER-AGENT") != null)
+	 * api_user_agent = (String) header.get("USER-AGENT").get(0); }
+	 * 
+	 * } catch (Exception head_err) {
+	 * 
+	 * if (header.toString() != null) { Util.writeInFileTransaction(folder, file,
+	 * "500 malformed header" + header.toString() + head_err); return
+	 * getMsgError(folder, file, null, "cardtoken 500 malformed header " +
+	 * head_err.getMessage(), null); } else { Util.writeInFileTransaction(folder,
+	 * file, "cardtoken 500 malformed header" + head_err); } }
+	 * 
+	 * String merchantid, merchantname, websiteName, websiteid, cardnumber,
+	 * expirydate, holdername, fname, lname, email = "", securtoken24, mac_value;
+	 * 
+	 * try { // Merchnat info merchantid = (String) jsonOrequest.get("merchantid");
+	 * merchantname = (String) jsonOrequest.get("merchantname"); websiteName =
+	 * (String) jsonOrequest.get("websitename"); websiteid = (String)
+	 * jsonOrequest.get("websiteid");
+	 * 
+	 * // Card info cardnumber = (String) jsonOrequest.get("cardnumber"); expirydate
+	 * = (String) jsonOrequest.get("expirydate"); holdername = (String)
+	 * jsonOrequest.get("holdername");
+	 * 
+	 * // Client info fname = (String) jsonOrequest.get("fname"); lname = (String)
+	 * jsonOrequest.get("lname"); email = (String) jsonOrequest.get("email");
+	 * 
+	 * // Transaction info securtoken24 = (String) jsonOrequest.get("securtoken24");
+	 * mac_value = (String) jsonOrequest.get("mac_value");
+	 * 
+	 * } catch (Exception jerr) { Util.writeInFileTransaction(folder, file,
+	 * "cardtoken 500 malformed json expression " + cardtoken + jerr);
+	 * Util.writeInFileTransaction(folder, file,
+	 * "*********** Fin getCardTken() ************** ");
+	 * System.out.println("*********** Fin getCardTken() ************** "); return
+	 * getMsgError(folder, file, null, "cardtoken 500 malformed json expression " +
+	 * jerr.getMessage(), null); }
+	 * 
+	 * JSONObject jso = new JSONObject(); try { if (cardnumber.equals("")) {
+	 * Util.writeInFileTransaction(folder, file, "cardnumber is empty"); // Card
+	 * info jso.put("token", "");
+	 * 
+	 * // Transaction info jso.put("statuscode", "17"); jso.put("status",
+	 * "saving token failed, cardnumber is empty");
+	 * 
+	 * Util.writeInFileTransaction(folder, file,
+	 * "*********** Fin getCardTken() ************** ");
+	 * 
+	 * return jso.toString(); } if (mac_value.equals("")) {
+	 * Util.writeInFileTransaction(folder, file, "mac_value is empty"); // Card info
+	 * jso.put("token", "");
+	 * 
+	 * // Transaction info jso.put("statuscode", "17"); jso.put("status",
+	 * "saving token failed, mac_value is empty");
+	 * 
+	 * Util.writeInFileTransaction(folder, file,
+	 * "*********** Fin getCardTken() ************** ");
+	 * 
+	 * return jso.toString(); } if (securtoken24.equals("")) {
+	 * Util.writeInFileTransaction(folder, file, "securtoken24 is empty"); // Card
+	 * info jso.put("token", "");
+	 * 
+	 * // Transaction info jso.put("statuscode", "17"); jso.put("status",
+	 * "saving token failed, securtoken24 is empty");
+	 * 
+	 * Util.writeInFileTransaction(folder, file,
+	 * "*********** Fin getCardTken() ************** ");
+	 * 
+	 * return jso.toString(); } int i_card_valid = Util.isCardValid(cardnumber);
+	 * 
+	 * if (i_card_valid == 1) { Util.writeInFileTransaction(folder, file,
+	 * "Error 500 Card number length is incorrect"); // Card info jso.put("token",
+	 * "");
+	 * 
+	 * // Transaction info jso.put("statuscode", "17"); jso.put("status",
+	 * "Error 500 Card number length is incorrect");
+	 * 
+	 * Util.writeInFileTransaction(folder, file,
+	 * "*********** Fin getCardTken() ************** "); return jso.toString(); }
+	 * 
+	 * if (i_card_valid == 2) { Util.writeInFileTransaction(folder, file,
+	 * "Error 500 Card number  is not valid incorrect luhn check"); // Card info
+	 * jso.put("token", "");
+	 * 
+	 * // Transaction info jso.put("statuscode", "17"); jso.put("status",
+	 * "Error 500 Card number  is not valid incorrect luhn check");
+	 * 
+	 * Util.writeInFileTransaction(folder, file,
+	 * "*********** Fin getCardTken() ************** "); return jso.toString(); } //
+	 * verification expiration token jso = verifieToken(securtoken24, file); if
+	 * (!jso.get("statuscode").equals("00")) { // Card info jso.put("token", "");
+	 * Util.writeInFileTransaction(folder, file, "jso : " + jso.toString());
+	 * System.out.println("jso : " + jso.toString());
+	 * Util.writeInFileTransaction(folder, file,
+	 * "*********** Fin getCardTken() ************** ");
+	 * System.out.println("*********** Fin getCardTken() ************** "); return
+	 * jso.toString(); } int dateint = Integer.valueOf(expirydate);
+	 * 
+	 * // insert new cardToken CardtokenDto cardtokenDto = new CardtokenDto();
+	 * 
+	 * String tokencard = Util.generateCardToken(merchantid);
+	 * 
+	 * cardtokenDto.setToken(tokencard); Util.writeInFileTransaction(folder, file,
+	 * "cardtokenDto token : " + cardtokenDto.getToken());
+	 * 
+	 * String tokenid = UUID.randomUUID().toString();
+	 * cardtokenDto.setIdToken(tokenid);
+	 * 
+	 * Calendar dateCalendar = Calendar.getInstance(); Date dateToken =
+	 * dateCalendar.getTime();
+	 * 
+	 * Util.writeInFileTransaction(folder, file, "cardtokenDto expirydate input : "
+	 * + expirydate); String anne = String.valueOf(dateCalendar.get(Calendar.YEAR));
+	 * // get year from date String xx = anne.substring(0, 2) +
+	 * expirydate.substring(0, 2); String mm = expirydate.substring(2,
+	 * expirydate.length()); // format date to "yyyy-MM-dd" expirydate = xx + "-" +
+	 * mm + "-" + "01"; System.out.println("cardtokenDto expirydate : " +
+	 * expirydate); Util.writeInFileTransaction(folder, file,
+	 * "cardtokenDto expirydate formated : " + expirydate); Date dateExp =
+	 * dateFormatSimple.parse(expirydate);
+	 * 
+	 * if (dateExp.before(dateToken)) { // Card info jso.put("token", "");
+	 * 
+	 * // Transaction info jso.put("statuscode", "17"); jso.put("status",
+	 * "saving token failed, invalid expiry date (expiry date must be greater than system date)"
+	 * ); Util.writeInFileTransaction(folder, file, "jso : " + jso.toString());
+	 * System.out.println("jso : " + jso.toString());
+	 * Util.writeInFileTransaction(folder, file,
+	 * "*********** Fin getCardTken() ************** ");
+	 * System.out.println("*********** Fin getCardTken() ************** "); return
+	 * jso.toString(); }
+	 * 
+	 * cardtokenDto.setExprDate(dateExp); String dateTokenStr =
+	 * dateFormat.format(dateToken); Date dateTokenFormated =
+	 * dateFormat.parse(dateTokenStr); cardtokenDto.setTokenDate(dateTokenFormated);
+	 * cardtokenDto.setCardNumber(cardnumber);
+	 * cardtokenDto.setIdMerchant(merchantid);
+	 * cardtokenDto.setIdMerchantClient(merchantid);
+	 * cardtokenDto.setFirst_name(fname); cardtokenDto.setLast_name(lname);
+	 * cardtokenDto.setHolderName(holdername); cardtokenDto.setMcc(merchantid);
+	 * 
+	 * CardtokenDto cardtokenSaved = cardtokenService.save(cardtokenDto);
+	 * 
+	 * // Card info jso.put("token", cardtokenSaved.getToken());
+	 * 
+	 * // Transaction info jso.put("statuscode", "00"); jso.put("status",
+	 * "saving token successfully");
+	 * 
+	 * Util.writeInFileTransaction(folder, file, "Saving CARDTOKEN OK");
+	 * 
+	 * } catch (Exception ex) { Util.writeInFileTransaction(folder, file,
+	 * "cardtoken 500 Error during CARDTOKEN Saving : " + ex.getMessage()); // Card
+	 * info jso.put("token", "");
+	 * 
+	 * // Transaction info jso.put("statuscode", "17"); jso.put("status",
+	 * "saving token failed ");
+	 * 
+	 * Util.writeInFileTransaction(folder, file,
+	 * "*********** Fin getCardTken() ************** ");
+	 * System.out.println("*********** Fin getCardTken() ************** ");
+	 * 
+	 * return jso.toString(); }
+	 * 
+	 * Util.writeInFileTransaction(folder, file,
+	 * "*********** Fin getCardTken() ************** ");
+	 * System.out.println("*********** Fin getCardTken() ************** ");
+	 * 
+	 * return jso.toString(); }
+	 */
 
 	@PostMapping(value = "/napspayment/deleteCardtoken", consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -5995,11 +5948,10 @@ public class APIController {
 				return getMsgError(folder, file, null, "cpautorisation 500 malformed header " + head_err.getMessage(),
 						null);
 			}
-
 		}
 
 		String capture, currency, orderid, recurring, amount, transactionid, merchantid, capture_id, merchantname,
-				websiteName, websiteid, callbackurl, cardnumber, token = "", expirydate, cvv, fname, lname, email,
+				websiteName, websiteid, callbackurl, cardnumber="", token = "", expirydate, cvv, fname, lname, email,
 				authnumber, acqcode, acq_type, date, rrn, heure, securtoken24, mac_value, transactiontype, paymentid,
 				promoCode, callbackUrl, holdername, country, phone, city, state, zipcode, address, mesg_type,
 				merc_codeactivite, merchant_name, merchant_city, processing_code, reason_code, transaction_condition,
@@ -6026,7 +5978,8 @@ public class APIController {
 			callbackurl = (String) jsonOrequest.get("callbackurl");
 
 			// Card info
-			cardnumber = (String) jsonOrequest.get("cardnumber");
+			//cardnumber = (String) jsonOrequest.get("cardnumber");
+			
 			// token = (String) jsonOrequest.get("token");
 			// expirydate = (String) jsonOrequest.get("expirydate");
 			// cvv = (String) jsonOrequest.get("cvv");
@@ -6040,6 +5993,13 @@ public class APIController {
 			Util.writeInFileTransaction(folder, file, "cpautorisation 500 malformed json expression " + jerr);
 			return getMsgError(folder, file, null, "cpautorisation 500 malformed json expression " + jerr.getMessage(),
 					null);
+		}
+		
+		try {
+			// Card info
+			cardnumber = (String) jsonOrequest.get("cardnumber");
+		} catch(Exception ex) {
+			Util.writeInFileTransaction(folder, file, "cpautorisation 500 cardnumber missing in jsonOrequest");
 		}
 
 		String timeStamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
@@ -6108,12 +6068,13 @@ public class APIController {
 
 		try {
 			// get histoauto check if exist
-			current_hist = histoAutoGateService.findByHatNumCommandeAndHatNautemtAndHatNumcmrAndHatCoderep(orderid, authnumber,
-					merchantid, "00");
+			current_hist = histoAutoGateService.findByHatNumCommandeAndHatNautemtAndHatNumcmrAndHatCoderep(orderid,
+					authnumber, merchantid, "00");
 		} catch (Exception err2) {
 			Util.writeInFileTransaction(folder, file,
-					"Error during HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmrAndHatCoderep orderid:[" + orderid
-							+ "] + and authnumber:[" + authnumber + "]" + "and merchantid:[" + merchantid + "]" + err2);
+					"Error during HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmrAndHatCoderep orderid:["
+							+ orderid + "] + and authnumber:[" + authnumber + "]" + "and merchantid:[" + merchantid
+							+ "]" + err2);
 			return getMsgError(folder, file, jsonOrequest,
 					"cpautorisation 500 Error during Transaction not found orderid:[" + orderid + "] + and authnumber:["
 							+ authnumber + "]" + "and merchantid:[" + merchantid + "]",
@@ -6145,11 +6106,14 @@ public class APIController {
 		String codrep = "", motif, merchnatidauth, dtdem = "";
 		Double montantPreAuto = 0.00;
 		Double montantCfr = 0.00;
+		Double montantComplent = 0.00;
+		String montantComplentStr = "0";
+		String authnumberComplent = "";
 		try {
 			acqcode = current_merchant.getCmrCodbqe();
 			acq_type = "0000";
 			codrep = current_hist.getHatCoderep();
-			motif = current_hist.getHatMtfref1();
+			motif = current_hist.getHatMtfref1() != null ? current_hist.getHatMtfref1() : "Approved";
 			merchnatidauth = current_hist.getHatNumcmr();
 			dtdem = check_dmd.getDem_pan();
 			montantPreAuto = check_dmd.getMontant();
@@ -6165,6 +6129,9 @@ public class APIController {
 			if (cardnumber.equals("")) {
 				cardnumber = check_dmd.getDem_pan();
 			}
+			if (websiteid.equals("") || websiteid == null) {
+				websiteid = check_dmd.getGalid();
+			}
 		} catch (Exception e) {
 			Util.writeInFileTransaction(folder, file,
 					"cpautorisation 500 Error during authdata preparation orderid:[" + orderid + "]" + e);
@@ -6179,768 +6146,756 @@ public class APIController {
 			Util.writeInFileTransaction(folder, file, "montantCfr : " + montantCfr);
 			// toujours on fait la telecollecte auto dans la confirmation pre-auto (capture=
 			// "Y")
-			capture = "Y";
 
 			Util.writeInFileTransaction(folder, file, "confirmer telecollecte montantPreAuto");
 			if (codrep.equalsIgnoreCase("00")) {
-				if (montantCfr <= montantPreAuto) {
-					montantPreAuto = montantCfr;
-				}
 				String capture_status = "N";
 				int exp_flag = 0;
 
-				if (capture.equalsIgnoreCase("Y")) {
+				Date current_date = null;
+				current_date = new Date();
+				Util.writeInFileTransaction(folder, file, "Automatic capture start...");
 
-					Date current_date = null;
-					current_date = new Date();
-					Util.writeInFileTransaction(folder, file, "Automatic capture start...");
+				Util.writeInFileTransaction(folder, file, "Getting authnumber");
 
-					Util.writeInFileTransaction(folder, file, "Getting authnumber");
+				authnumber = current_hist.getHatNautemt();
+				Util.writeInFileTransaction(folder, file, "authnumber : [" + authnumber + "]");
 
-					authnumber = current_hist.getHatNautemt();
-					Util.writeInFileTransaction(folder, file, "authnumber : [" + authnumber + "]");
+				Util.writeInFileTransaction(folder, file, "Getting authnumber");
+				TransactionDto trs_check = null;
 
-					Util.writeInFileTransaction(folder, file, "Getting authnumber");
-					TransactionDto trs_check = null;
+				try {
+					// old 2024-08-01
+					// trs_check = transactionService.findByTrsnumautAndTrsnumcmr(authnumber,
+					// merchantid);
 
+					Date dateTrss = dateFormatSimple.parse(check_dmd.getDem_date_time());
+					String dateTrs = dateFormatSimple.format(dateTrss);
+					Util.writeInFileTransaction(folder, file, "cpautorisation dateTrs : " + dateTrs);
+					//trs_check = transactionService.findByTrsnumautAndTrsnumcmrAndDateTrs(authnumber, merchantid, dateTrs);
+					trs_check = transactionService.findByTrsnumautAndTrsnumcmrAndTrscommande(authnumber, merchantid, orderid);
+				} catch (Exception ee) {
+
+					Util.writeInFileTransaction(folder, file,
+							"trs_check trs_check exception e : [" + ee.toString() + "]");
+				}
+
+				if (trs_check != null) {
+					// do nothing
+					Util.writeInFileTransaction(folder, file, "trs_check != null do nothing for now ...");
+					motif = "Transaction already captured";
+				} else {
+					
+					if (montantCfr <= montantPreAuto) {
+						montantPreAuto = montantCfr;
+					}
+					Util.writeInFileTransaction(folder, file, "inserting into telec start ...");
+					
 					try {
-						trs_check = transactionService.findByTrsnumautAndTrsnumcmr(authnumber, merchantid);
-					} catch (Exception ee) {
+						// insert into telec
+						// TelecollecteDto n_tlc = telecollecteService.getMAXTLC_N(merchantid);
+						long lidtelc = 0;
+						// if (n_tlc == null) {
+						// Util.writeInFileTransaction(folder, file, "getMAXTLC_N n_tlc = null");
+						Integer idtelc = null;
+						TelecollecteDto tlc = null;
+
+						// insert into telec
+						idtelc = telecollecteService.getMAX_ID(merchantid);
+						Util.writeInFileTransaction(folder, file, "getMAX_ID idtelc : " + idtelc);
+
+						if (idtelc != null || idtelc == 0) {
+							lidtelc = idtelc.longValue() + 1;
+						} else {
+							lidtelc = 1;
+						}
+						tlc = new TelecollecteDto();
+						tlc.setTlc_numtlcolcte(lidtelc);
+						tlc.setTlc_numtpe(current_hist.getHatCodtpe());
+						tlc.setTlc_datcrtfich(current_date);
+						tlc.setTlc_nbrtrans(new Double(1));
+						tlc.setTlc_gest("N");
+						tlc.setTlc_datremise(current_date);
+						tlc.setTlc_numremise(new Double(lidtelc));
+						// tlc.setTlc_numfich(new Double(0));
+						String tmpattern = "HH:mm";
+						SimpleDateFormat sftm = new SimpleDateFormat(tmpattern);
+						String stm = sftm.format(current_date);
+						tlc.setTlc_heuremise(stm);
+						tlc.setTlc_codbq(acqcode);
+						tlc.setTlc_numcmr(merchantid);
+						tlc.setTlc_numtpe(websiteid);
+						tlc = telecollecteService.save(tlc);
 
 						Util.writeInFileTransaction(folder, file,
-								"trs_check trs_check exception e : [" + ee.toString() + "]");
+								"cpautorisation dateremise : " + tlc.getTlc_datremise());
+						Util.writeInFileTransaction(folder, file, "inserting into telec ok");
+
+						/*
+						 * } else { Util.writeInFileTransaction(folder, file, "n_tlc !=null ");
+						 * 
+						 * lidtelc = n_tlc.getTlc_numtlcolcte(); double nbr_trs =
+						 * n_tlc.getTlc_nbrtrans(); nbr_trs = nbr_trs + 1;
+						 * n_tlc.setTlc_nbrtrans(nbr_trs); telecollecteService.save(n_tlc); }
+						 */
+
+						// insert into transaction
+						TransactionDto trs = new TransactionDto();
+						trs.setTrsnumcmr(merchantid);
+						trs.setTrs_numtlcolcte(Double.valueOf(lidtelc));
+
+						String frmt_cardnumber = Util.formatagePan(cardnumber);
+						trs.setTrs_codporteur(frmt_cardnumber);
+						trs.setTrs_montant(montantPreAuto);
+
+						current_date = new Date();
+						Date current_date_1 = getDateWithoutTime(current_date);
+						Date trs_date = dateFormatSimple.parse(check_dmd.getDem_date_time());
+						Date trs_date_1 = getDateWithoutTime(trs_date);
+
+						trs.setTrs_dattrans(trs_date);
+						trs.setTrsnumaut(authnumber);
+						trs.setTrs_etat("N");
+						trs.setTrs_devise(current_hist.getHatDevise());
+						trs.setTrs_certif("N");
+						Integer idtrs = transactionService.getMAX_ID();
+						long lidtrs = idtrs.longValue() + 1;
+						trs.setTrs_id(lidtrs);
+						trs.setTrs_commande(orderid);
+						trs.setTrs_procod("0");
+						trs.setTrs_groupe(websiteid);
+						trs.setTrs_codtpe(0.0);
+						trs.setTrs_numbloc(0.0);
+						trs.setTrs_numfact(0.0);
+						transactionService.save(trs);
+
+						current_hist.setHatEtat('T');
+						current_hist.setHatdatetlc(current_date);
+						current_hist.setOperateurtlc("mxplusapi");
+						current_hist = histoAutoGateService.save(current_hist);
+
+						motif = motif + " and captured";
+
+						capture_id = String.format("%040d",
+								new BigInteger(UUID.randomUUID().toString().replace("-", ""), 36));
+
+						Util.writeInFileTransaction(folder, file, "inserting into Trs ok");
+						capture_status = "Y";
+
+					} catch (Exception e) {
+						exp_flag = 1;
+						Util.writeInFileTransaction(folder, file, "inserting into telec ko..do nothing " + e);
+						codrep = "96";
+						motif = "cpautorisation failed";
 					}
+					
+					// Check si le montant de la confirmation est supperieur au montant de la pre-auto
+					// Si le cas on doit debiter le client par le complement
+					
+					if (montantCfr > montantPreAuto) {
+						Util.writeInFileTransaction(folder, file, "if(montantCfr > montantPreAuto)");
 
-					if (trs_check != null) {
-						// do nothing
-						Util.writeInFileTransaction(folder, file, "trs_check != null do nothing for now ...");
-					} else {
+						montantComplent = montantCfr - montantPreAuto;
+						montantComplentStr = String.valueOf(montantComplent);
+						Date trsdate = null;
+						Util.writeInFileTransaction(folder, file,
+								"montantComplent => (montantCfr - montantPreAuto) : " + montantComplent);
 
-						Util.writeInFileTransaction(folder, file, "inserting into telec start ...");
+						String orderidToDebite = Util.genCommande(merchantid);
+						Util.writeInFileTransaction(folder, file,
+								"generate new commande To debite : " + orderidToDebite);
+
+						int i_card_type = Util.getCardIss(cardnumber);
+						DemandePaiementDto dmd = null;
+						DemandePaiementDto dmdSaved = null;
+
+						acq_type = "0000";
+						reason_code = "H";
+						transaction_condition = "6";
+						mesg_type = "0";
+						processing_code = "";
+						String xid = "";
+						transactiontype = "0"; // 0 payment , P preauto
+						currency = "504";
+						cvv = check_dmd.getDem_cvv() == null ? "" : check_dmd.getDem_cvv();
+						recurring = "N";
+						if (transactiontype.equals("0")) {
+							processing_code = "0";
+						} else if (transactiontype.equals("P")) {
+							processing_code = "P";
+						} else {
+							processing_code = "0";
+						}
+						expirydate = check_dmd.getDateexpnaps();
+
 						try {
+							dmd = new DemandePaiementDto();
 
-							// insert into telec
+							dmd.setComid(merchantid);
+							dmd.setCommande(orderidToDebite);
+							dmd.setDem_pan(cardnumber);
+							dmd.setDem_cvv(cvv);
+							dmd.setGalid(websiteid);
+							dmd.setSuccessURL(successURL);
+							dmd.setFailURL(failURL);
+							dmd.setType_carte(i_card_type + "");
+							if (montantComplentStr.equals("") || montantComplentStr == null) {
+								montantComplentStr = "0";
+							}
+							if (montantComplentStr.contains(",")) {
+								montantComplentStr = montantComplentStr.replace(",", ".");
+							}
+							dmd.setMontant(Double.parseDouble(montantComplentStr));
+							dmd.setNom(lname);
+							dmd.setPrenom(fname);
+							dmd.setEmail(email);
+							dmd.setTel(phone);
+							dmd.setAddress(address);
+							dmd.setCity(city);
+							dmd.setCountry(country);
+							dmd.setState(state);
+							dmd.setPostcode(zipcode);
+							// dmd.setDateexpnaps(expirydate);
+							dmd.setLangue("E");
+							dmd.setEtat_demande("INIT");
 
-							TelecollecteDto n_tlc = telecollecteService.getMAXTLC_N(merchantid);
+							formatter_1 = new SimpleDateFormat("yyyy-MM-dd");
+							formatter_2 = new SimpleDateFormat("HH:mm:ss");
+							trsdate = new Date();
+							transactiondate = formatter_1.format(trsdate);
+							transactiontime = formatter_2.format(trsdate);
+							// dmd.setDem_date_time(transactiondate + transactiontime);
+							dmd.setDem_date_time(dateFormat.format(new Date()));
+							if (recurring.equalsIgnoreCase("Y"))
+								dmd.setIs_cof("Y");
+							if (recurring.equalsIgnoreCase("N"))
+								dmd.setIs_cof("N");
 
-							long lidtelc = 0;
+							dmd.setIs_addcard("N");
+							dmd.setIs_tokenized("N");
+							dmd.setIs_whitelist("N");
+							dmd.setIs_withsave("N");
 
-							if (n_tlc == null) {
-								Util.writeInFileTransaction(folder, file, "getMAXTLC_N n_tlc = null");
-								Integer idtelc = null;
+							// generer token
+							String tokencommande = Util.genTokenCom(dmd.getCommande(), dmd.getComid());
+							dmd.setTokencommande(tokencommande);
+							// set transctiontype
+							dmd.setTransactiontype(transactiontype);
 
-								TelecollecteDto tlc = null;
+							dmdSaved = demandePaiementService.save(dmd);
+						} catch (Exception err1) {
+							Util.writeInFileTransaction(folder, file,
+									"cpautorisation 500 Error during DEMANDE_PAIEMENT insertion for given orderid:["
+											+ orderid + "]" + err1);
 
-								// insert into telec
-								idtelc = telecollecteService.getMAX_ID(merchantid);
-								Util.writeInFileTransaction(folder, file, "getMAX_ID idtelc : " + idtelc);
+							return getMsgError(folder, file, jsonOrequest,
+									"cpautorisation 500 Error during DEMANDE_PAIEMENT insertion", null);
+						}
 
-								if (idtelc != null) {
-									lidtelc = idtelc.longValue() + 1;
-								} else {
-									lidtelc = 1;
-								}
-								tlc = new TelecollecteDto();
-								tlc.setTlc_numtlcolcte(lidtelc);
-								tlc.setTlc_numtpe(current_hist.getHatCodtpe());
-								tlc.setTlc_datcrtfich(current_date);
-								tlc.setTlc_nbrtrans(new Double(1));
-								tlc.setTlc_gest("N");
-								tlc.setTlc_datremise(current_date);
-								tlc.setTlc_numremise(new Double(lidtelc));
-								// tlc.setTlc_numfich(new Double(0));
-								String tmpattern = "HH:mm";
-								SimpleDateFormat sftm = new SimpleDateFormat(tmpattern);
-								String stm = sftm.format(current_date);
-								tlc.setTlc_heuremise(stm);
-								tlc.setTlc_codbq(acqcode);
-								tlc.setTlc_numcmr(merchantid);
-								tlc.setTlc_numtpe(websiteid);
-								telecollecteService.save(tlc);
+						// 2024-03-05
+						montanttrame = formatMontantTrame(folder, file, montantComplentStr, orderidToDebite, merchantid,
+								jsonOrequest);
 
-							} else {
-								Util.writeInFileTransaction(folder, file, "n_tlc !=null ");
+						merc_codeactivite = current_merchant.getCmrCodactivite();
+						acqcode = current_merchant.getCmrCodbqe();
+						merchant_name = Util.pad_merchant(merchantname, 19, ' ');
+						Util.writeInFileTransaction(folder, file, "merchant_name : [" + merchant_name + "]");
 
-								lidtelc = n_tlc.getTlc_numtlcolcte();
-								double nbr_trs = n_tlc.getTlc_nbrtrans();
+						merchant_city = "MOROCCO        ";
+						Util.writeInFileTransaction(folder, file, "merchant_city : [" + merchant_city + "]");
 
-								nbr_trs = nbr_trs + 1;
+						// ajout cavv (cavv+eci) xid dans la trame
+						String champ_cavv = "";
+						/*
+						 * xid = threeDSServerTransID; if (cavv == null || eci == null) { champ_cavv =
+						 * null; Util.writeInFileTransaction(folder, file,
+						 * "cavv == null || eci == null"); } else if (cavv != null && eci != null) {
+						 * champ_cavv = cavv + eci; Util.writeInFileTransaction(folder, file,
+						 * "cavv != null && eci != null"); Util.writeInFileTransaction(folder, file,
+						 * "champ_cavv : [" + champ_cavv + "]"); } else {
+						 * Util.writeInFileTransaction(folder, file, "champ_cavv = null"); champ_cavv =
+						 * null; }
+						 */
 
-								n_tlc.setTlc_nbrtrans(nbr_trs);
+						boolean cvv_present = check_cvv_presence(cvv);
+						if (!token.equals("")) {
+							cvv_present = true;
+						}
+						cvv_present = true; // a revoir
+						String first_auth = "";
+						long lrec_serie = 0;
 
-								telecollecteService.save(n_tlc);
+						// controls
+						Util.writeInFileTransaction(folder, file, "Switch processing start ...");
 
+						String tlv = "";
+						Util.writeInFileTransaction(folder, file, "Preparing Switch TLV Request start ...");
+
+						if (!cvv_present) {
+							Util.writeInFileTransaction(folder, file,
+									"cpautorisation 500 cvv not set , reccuring flag set to N, cvv must be present in normal transaction");
+
+							return getMsgError(folder, file, jsonOrequest,
+									"cpautorisation 500 cvv not set , reccuring flag set to N, cvv must be present in normal transaction",
+									"82");
+						}
+
+						// not reccuring , normal
+						if (cvv_present) {
+							Util.writeInFileTransaction(folder, file,
+									"not reccuring , normal cvv_present && !is_reccuring");
+							try {
+								tlv = new TLVEncoder().withField(Tags.tag0, mesg_type).withField(Tags.tag1, cardnumber)
+										.withField(Tags.tag3, processing_code)
+										.withField(Tags.tag22, transaction_condition).withField(Tags.tag49, acq_type)
+										.withField(Tags.tag14, montanttrame).withField(Tags.tag15, currency)
+										.withField(Tags.tag23, reason_code).withField(Tags.tag18, "761454")
+										.withField(Tags.tag42, expirydate).withField(Tags.tag16, date)
+										.withField(Tags.tag17, heure).withField(Tags.tag10, merc_codeactivite)
+										.withField(Tags.tag8, "0" + merchantid).withField(Tags.tag9, merchantid)
+										.withField(Tags.tag66, rrn).withField(Tags.tag67, cvv)
+										.withField(Tags.tag11, merchant_name).withField(Tags.tag12, merchant_city)
+										.withField(Tags.tag90, acqcode).withField(Tags.tag167, champ_cavv)
+										.withField(Tags.tag168, xid).encode();
+
+								Util.writeInFileTransaction(folder, file, "tag0_request : [" + mesg_type + "]");
+								Util.writeInFileTransaction(folder, file, "tag1_request : [" + cardnumber + "]");
+								Util.writeInFileTransaction(folder, file, "tag3_request : [" + processing_code + "]");
+								Util.writeInFileTransaction(folder, file,
+										"tag22_request : [" + transaction_condition + "]");
+								Util.writeInFileTransaction(folder, file, "tag49_request : [" + acq_type + "]");
+								Util.writeInFileTransaction(folder, file, "tag14_request : [" + montanttrame + "]");
+								Util.writeInFileTransaction(folder, file, "tag15_request : [" + currency + "]");
+								Util.writeInFileTransaction(folder, file, "tag23_request : [" + reason_code + "]");
+								Util.writeInFileTransaction(folder, file, "tag18_request : [761454]");
+								Util.writeInFileTransaction(folder, file, "tag42_request : [" + expirydate + "]");
+								Util.writeInFileTransaction(folder, file, "tag16_request : [" + date + "]");
+								Util.writeInFileTransaction(folder, file, "tag17_request : [" + heure + "]");
+								Util.writeInFileTransaction(folder, file,
+										"tag10_request : [" + merc_codeactivite + "]");
+								Util.writeInFileTransaction(folder, file, "tag8_request : [0" + merchantid + "]");
+								Util.writeInFileTransaction(folder, file, "tag9_request : [" + merchantid + "]");
+								Util.writeInFileTransaction(folder, file, "tag66_request : [" + rrn + "]");
+								Util.writeInFileTransaction(folder, file, "tag67_request : [" + cvv + "]");
+								Util.writeInFileTransaction(folder, file, "tag11_request : [" + merchant_name + "]");
+								Util.writeInFileTransaction(folder, file, "tag12_request : [" + merchant_city + "]");
+								Util.writeInFileTransaction(folder, file, "tag90_request : [" + acqcode + "]");
+								Util.writeInFileTransaction(folder, file, "tag167_request : [" + champ_cavv + "]");
+								Util.writeInFileTransaction(folder, file, "tag168_request : [" + xid + "]");
+
+							} catch (Exception err4) {
+								Util.writeInFileTransaction(folder, file,
+										"cpautorisation 500 Error during switch tlv buildup for given orderid:["
+												+ orderidToDebite + "] and merchantid:[" + merchantid + "]" + err4);
+
+								return getMsgError(folder, file, jsonOrequest,
+										"cpautorisation failed, the Switch is down.", "96");
+							}
+							Util.writeInFileTransaction(folder, file, "Switch TLV Request :[" + tlv + "]");
+						}
+
+						Util.writeInFileTransaction(folder, file, "Preparing Switch TLV Request end.");
+
+						String resp_tlv = "";
+						int port = 0;
+						String sw_s = "", s_port = "";
+						int switch_ko = 0;
+						try {
+							s_port = portSwitch;
+							sw_s = ipSwitch;
+
+							port = Integer.parseInt(s_port);
+
+							Util.writeInFileTransaction(folder, file, "Switch TCP client V2 Connecting ...");
+
+							SwitchTCPClientV2 switchTCPClient = new SwitchTCPClientV2(sw_s, port);
+
+							boolean s_conn = switchTCPClient.isConnected();
+
+							if (!s_conn) {
+								Util.writeInFileTransaction(folder, file, "Switch  malfunction cannot connect!!!");
+
+								// return getMsgError(folder, file, jsonOrequest,
+								// "cpautorisation 500 Error Switch communication s_conn false", "96");
+								motif = "cpautorisation pre-autorisation approved, but supplement amount failed";
+								codrep = "96";
 							}
 
-							// insert into transaction
-							TransactionDto trs = new TransactionDto();
-							trs.setTrsnumcmr(merchantid);
-							trs.setTrs_numtlcolcte(Double.valueOf(lidtelc));
+							if (s_conn) {
+								Util.writeInFileTransaction(folder, file, "Switch Connected.");
+								Util.writeInFileTransaction(folder, file, "Switch Sending TLV Request ...");
 
-							String frmt_cardnumber = Util.formatagePan(cardnumber);
-							trs.setTrs_codporteur(frmt_cardnumber);
+								resp_tlv = switchTCPClient.sendMessage(tlv);
 
-							trs.setTrs_montant(montantPreAuto);
-							// trs.setTrs_dattrans(new Date());
+								Util.writeInFileTransaction(folder, file, "Switch TLV Request end.");
+								switchTCPClient.shutdown();
+							}
+
+						} catch (UnknownHostException e) {
+							Util.writeInFileTransaction(folder, file,
+									"Switch  malfunction UnknownHostException !!!" + e);
+
+							// return getMsgError(folder, file, jsonOrequest,
+							// "cpautorisation 500 Error Switch communication UnknownHostException", "96");
+							motif = "cpautorisation pre-autorisation approved, but supplement amount failed";
+							codrep = "96";
+						} catch (java.net.ConnectException e) {
+							Util.writeInFileTransaction(folder, file, "Switch  malfunction ConnectException !!!" + e);
+							switch_ko = 1;
+							// return getMsgError(folder, file, jsonOrequest,
+							// "cpautorisation 500 Error Switch communication ConnectException", "96");
+							motif = "cpautorisation pre-autorisation approved, but supplement amount failed";
+							codrep = "96";
+						}
+
+						catch (SocketTimeoutException e) {
+							Util.writeInFileTransaction(folder, file,
+									"Switch  malfunction  SocketTimeoutException !!!" + e);
+							switch_ko = 1;
+							e.printStackTrace();
+							Util.writeInFileTransaction(folder, file,
+									"cpautorisation 500 Error Switch communication SocketTimeoutException"
+											+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : ["
+											+ resp_tlv + "]");
+							// return getMsgError(folder, file, jsonOrequest, "Switch malfunction
+							// SocketTimeoutException !!!", "96");
+							motif = "cpautorisation pre-autorisation approved, but supplement amount failed";
+							codrep = "96";
+						}
+
+						catch (IOException e) {
+							Util.writeInFileTransaction(folder, file, "Switch  malfunction IOException !!!" + e);
+							switch_ko = 1;
+							e.printStackTrace();
+							Util.writeInFileTransaction(folder, file,
+									"cpautorisation 500 Error Switch communication IOException" + "switch ip:[" + sw_s
+											+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
+							// return getMsgError(folder, file, jsonOrequest, "Switch malfunction
+							// IOException !!!", "96");
+							motif = "cpautorisation pre-autorisation approved, but supplement amount failed";
+							codrep = "96";
+						}
+
+						catch (Exception e) {
+							Util.writeInFileTransaction(folder, file, "Switch  malfunction Exception!!!" + e);
+							switch_ko = 1;
+							e.printStackTrace();
+							// return getMsgError(folder, file, jsonOrequest,
+							// "cpautorisation 500 Error Switch communication General Exception", "96");
+							motif = "cpautorisation pre-autorisation approved, but supplement amount failed";
+							codrep = "96";
+						}
+
+						String resp = resp_tlv;
+
+						if (switch_ko == 0 && resp == null) {
+							Util.writeInFileTransaction(folder, file, "Switch  malfunction resp null!!!");
+							switch_ko = 1;
+							Util.writeInFileTransaction(folder, file,
+									"cpautorisation 500 Error Switch null response" + "switch ip:[" + sw_s
+											+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
+							// return getMsgError(folder, file, jsonOrequest, "Switch malfunction resp
+							// null!!!", "96");
+							motif = "cpautorisation pre-autorisation approved, but supplement amount failed";
+							codrep = "96";
+						}
+
+						if (switch_ko == 0 && resp.length() < 3) {
+							switch_ko = 1;
+
+							Util.writeInFileTransaction(folder, file, "Switch  malfunction resp < 3 !!!");
+							Util.writeInFileTransaction(folder, file,
+									"cpautorisation 500 Error Switch short response length() < 3 " + "switch ip:["
+											+ sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
+						}
+
+						Util.writeInFileTransaction(folder, file, "Switch TLV Respnose :[" + resp + "]");
+
+						Util.writeInFileTransaction(folder, file, "Processing Switch TLV Respnose ...");
+
+						TLVParser tlvp = null;
+
+						String tag0_resp = null, tag1_resp = null, tag3_resp = null, tag8_resp = null, tag9_resp = null,
+								tag14_resp = null, tag15_resp = null, tag16_resp = null, tag17_resp = null,
+								tag66_resp = null, tag18_resp = null, tag19_resp = null, tag23_resp = null,
+								tag20_resp = null, tag21_resp = null, tag22_resp = null, tag80_resp = null,
+								tag98_resp = null;
+
+						if (switch_ko == 0) {
+							try {
+								tlvp = new TLVParser(resp);
+
+								tag0_resp = tlvp.getTag(Tags.tag0);
+								tag1_resp = tlvp.getTag(Tags.tag1);
+								tag3_resp = tlvp.getTag(Tags.tag3);
+								tag8_resp = tlvp.getTag(Tags.tag8);
+								tag9_resp = tlvp.getTag(Tags.tag9);
+								tag14_resp = tlvp.getTag(Tags.tag14);
+								tag15_resp = tlvp.getTag(Tags.tag15);
+								tag16_resp = tlvp.getTag(Tags.tag16);
+								tag17_resp = tlvp.getTag(Tags.tag17);
+								tag66_resp = tlvp.getTag(Tags.tag66); // f1
+								tag18_resp = tlvp.getTag(Tags.tag18);
+								tag19_resp = tlvp.getTag(Tags.tag19); // f2
+								tag23_resp = tlvp.getTag(Tags.tag23);
+								tag20_resp = tlvp.getTag(Tags.tag20);
+								tag21_resp = tlvp.getTag(Tags.tag21);
+								tag22_resp = tlvp.getTag(Tags.tag22);
+								tag80_resp = tlvp.getTag(Tags.tag80);
+								tag98_resp = tlvp.getTag(Tags.tag98);
+
+							} catch (Exception e) {
+								Util.writeInFileTransaction(folder, file, "Switch  malfunction tlv parsing !!!" + e);
+								switch_ko = 1;
+								Util.writeInFileTransaction(folder, file,
+										"cpautorisation 500 Error during tlv Switch response parse" + "switch ip:["
+												+ sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv
+												+ "]");
+							}
+
+							// controle switch
+							if (tag1_resp == null) {
+								Util.writeInFileTransaction(folder, file, "Switch  malfunction !!! tag1_resp == null");
+								switch_ko = 1;
+								Util.writeInFileTransaction(folder, file,
+										"cpautorisation 500 Error during tlv Switch response parse tag1_resp tag null"
+												+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : ["
+												+ resp_tlv + "]");
+							}
+
+							if (tag1_resp != null && tag1_resp.length() < 3) {
+								Util.writeInFileTransaction(folder, file, "Switch  malfunction !!! tag1_resp == null");
+								switch_ko = 1;
+								Util.writeInFileTransaction(folder, file,
+										"cpautorisation 500 Error during tlv Switch response parse tag1_resp length tag  < 3"
+												+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : ["
+												+ resp_tlv + "]");
+							}
+
+							if (tag20_resp == null) {
+								Util.writeInFileTransaction(folder, file, "Switch  malfunction !!! tag20_resp == null");
+								switch_ko = 1;
+								Util.writeInFileTransaction(folder, file,
+										"cpautorisation 500 Error during tlv Switch response parse tag1_resp tag null"
+												+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : ["
+												+ resp_tlv + "]");
+							}
+						}
+						Util.writeInFileTransaction(folder, file, "Switch TLV Respnose Processed");
+						Util.writeInFileTransaction(folder, file, "Switch TLV Respnose :[" + resp + "]");
+
+						Util.writeInFileTransaction(folder, file, "tag0_resp : [" + tag0_resp + "]");
+						Util.writeInFileTransaction(folder, file, "tag1_resp : [" + tag1_resp + "]");
+						Util.writeInFileTransaction(folder, file, "tag3_resp : [" + tag3_resp + "]");
+						Util.writeInFileTransaction(folder, file, "tag8_resp : [" + tag8_resp + "]");
+						Util.writeInFileTransaction(folder, file, "tag9_resp : [" + tag9_resp + "]");
+						Util.writeInFileTransaction(folder, file, "tag14_resp : [" + tag14_resp + "]");
+						Util.writeInFileTransaction(folder, file, "tag15_resp : [" + tag15_resp + "]");
+						Util.writeInFileTransaction(folder, file, "tag16_resp : [" + tag16_resp + "]");
+						Util.writeInFileTransaction(folder, file, "tag17_resp : [" + tag17_resp + "]");
+						Util.writeInFileTransaction(folder, file, "tag66_resp : [" + tag66_resp + "]");
+						Util.writeInFileTransaction(folder, file, "tag18_resp : [" + tag18_resp + "]");
+						Util.writeInFileTransaction(folder, file, "tag19_resp : [" + tag19_resp + "]");
+						Util.writeInFileTransaction(folder, file, "tag23_resp : [" + tag23_resp + "]");
+						Util.writeInFileTransaction(folder, file, "tag20_resp : [" + tag20_resp + "]");
+						Util.writeInFileTransaction(folder, file, "tag21_resp : [" + tag21_resp + "]");
+						Util.writeInFileTransaction(folder, file, "tag22_resp : [" + tag22_resp + "]");
+						Util.writeInFileTransaction(folder, file, "tag80_resp : [" + tag80_resp + "]");
+						Util.writeInFileTransaction(folder, file, "tag98_resp : [" + tag98_resp + "]");
+
+						String tag20_resp_verified = "";
+						String tag19_res_verified = "";
+						String tag66_resp_verified = "";
+						tag20_resp_verified = tag20_resp;
+						tag19_res_verified = tag19_resp;
+						tag66_resp_verified = tag66_resp;
+						String s_status, pan_auto = "";
+
+						if (switch_ko == 1) {
+							pan_auto = Util.formatagePan(cardnumber);
+							Util.writeInFileTransaction(folder, file,
+									"getSWHistoAuto pan_auto/rrn/montantComplent/date/merchantid : " + pan_auto + "/"
+											+ rrn + "/" + montantComplent + "/" + date + "/" + merchantid);
+						}
+
+						HistoAutoGateDto hist = null;
+						Integer Ihist_id = null;
+						if (tag20_resp == null) {
+							tag20_resp = "";
+						}
+						if (tag20_resp.equalsIgnoreCase("00")) {
+							Util.writeInFileTransaction(folder, file, "SWITCH RESONSE CODE :[00]");
+							try {
+								Util.writeInFileTransaction(folder, file, "update etat demande : SW_PAYE ...");
+
+								dmdSaved.setEtat_demande("SW_PAYE");
+								dmdSaved.setDem_cvv("");
+								demandePaiementService.save(dmdSaved);
+							} catch (Exception e) {
+								Util.writeInFileTransaction(folder, file,
+										"cpautorisation 500 Error during DEMANDE_PAIEMENT update etat demande for given orderid:["
+												+ orderidToDebite + "]" + e);
+							}
+							Util.writeInFileTransaction(folder, file, "update etat demande : SW_PAYE OK");
+
+							Util.writeInFileTransaction(folder, file, "Insert into Histogate...");
+
+							try {
+								hist = new HistoAutoGateDto();
+								Date curren_date_hist = new Date();
+								int numTransaction = Util.generateNumTransaction(folder, file, curren_date_hist);
+
+								Util.writeInFileTransaction(folder, file, "get status ...");
+
+								s_status = "";
+								try {
+									CodeReponseDto codeReponseDto = codeReponseService
+											.findByRpcCode(tag20_resp_verified);
+									System.out.println("codeReponseDto : " + codeReponseDto);
+									Util.writeInFileTransaction(folder, file, "codeReponseDto : " + codeReponseDto);
+									if (codeReponseDto != null) {
+										s_status = codeReponseDto.getRpcLibelle();
+									}
+								} catch (Exception ee) {
+									Util.writeInFileTransaction(folder, file,
+											"cpautorisation 500 Error codeReponseDto null");
+									ee.printStackTrace();
+								}
+
+								Util.writeInFileTransaction(folder, file,
+										"get status Switch status : [" + s_status + "]");
+
+								Util.writeInFileTransaction(folder, file, "formatting pan...");
+
+								pan_auto = Util.formatagePan(cardnumber);
+								Util.writeInFileTransaction(folder, file,
+										"formatting pan Ok pan_auto :[" + pan_auto + "]");
+
+								Util.writeInFileTransaction(folder, file, "HistoAutoGate data filling start ...");
+
+								Util.writeInFileTransaction(folder, file, "websiteid : " + websiteid);
+
+								Date current_date_1 = getDateWithoutTime(curren_date_hist);
+								hist.setHatDatdem(current_date_1);
+
+								hist.setHatHerdem(new SimpleDateFormat("HH:mm").format(curren_date_hist));
+								hist.setHatMontant(montantComplent);
+								hist.setHatNumcmr(merchantid);
+								hist.setHatCoderep(tag20_resp_verified);
+								tag20_resp = tag20_resp_verified;
+								hist.setHatDevise(currency);
+								hist.setHatBqcmr(acqcode);
+								hist.setHatPorteur(pan_auto);
+								hist.setHatMtfref1(s_status);
+								hist.setHatNomdeandeur(websiteid);
+								hist.setHatNautemt(tag19_res_verified); // f2
+								tag19_resp = tag19_res_verified;
+								if (tag22_resp != null)
+									hist.setHatProcode(tag22_resp.charAt(0));
+								else
+									hist.setHatProcode('6');
+								hist.setHatExpdate(expirydate);
+								hist.setHatRepondeur(tag21_resp);
+								hist.setHatTypmsg("3");
+								hist.setHatRrn(tag66_resp_verified); // f1
+								tag66_resp_verified = tag66_resp;
+								hist.setHatEtat('E');
+								if (websiteid.equals("")) {
+									hist.setHatCodtpe("1");
+								} else {
+									hist.setHatCodtpe(websiteid);
+								}
+								hist.setHatMcc(merc_codeactivite);
+								hist.setHatNumCommande(orderidToDebite);
+								hist.setHatNumdem(new Long(numTransaction));
+
+								if (check_cvv_presence(cvv)) {
+									hist.setIs_cvv_verified("Y");
+								} else {
+									hist.setIs_cvv_verified("N");
+								}
+
+								hist.setIs_3ds("N");
+								hist.setIs_addcard("N");
+								hist.setIs_whitelist("N");
+								hist.setIs_withsave("N");
+								hist.setIs_tokenized("N");
+
+								if (recurring.equalsIgnoreCase("Y"))
+									hist.setIs_cof("Y");
+								if (recurring.equalsIgnoreCase("N"))
+									hist.setIs_cof("N");
+
+								Util.writeInFileTransaction(folder, file, "HistoAutoGate data filling end ...");
+
+								Util.writeInFileTransaction(folder, file, "HistoAutoGate Saving ...");
+
+								hist = histoAutoGateService.save(hist);
+
+								Util.writeInFileTransaction(folder, file,
+										"hatNomdeandeur : " + hist.getHatNomdeandeur());
+
+							} catch (Exception e) {
+								Util.writeInFileTransaction(folder, file,
+										"cpautorisation 500 Error during  insert in histoautogate for given orderid:["
+												+ orderidToDebite + "]" + e);
+							}
+
+							Util.writeInFileTransaction(folder, file, "HistoAutoGate OK.");
+
+							HistoAutoGateDto hist1 = null;
+							try {
+								if (hist.getId() == null) {
+									// get histoauto check if exist
+									hist1 = histoAutoGateService.findLastByHatNumCommandeAndHatNumcmr(orderidToDebite,
+											merchantid);
+									if (hist1 == null) {
+										hist1 = hist;
+									}
+								} else {
+									hist1 = hist;
+								}
+
+							} catch (Exception err2) {
+								Util.writeInFileTransaction(folder, file,
+										"cpauthorization 500 Error during HistoAutoGate findLastByHatNumCommandeAndHatNumcmr orderid:["
+												+ orderidToDebite + "] and merchantid:[" + merchantid + "]" + err2);
+							}
 
 							current_date = new Date();
-							Date current_date_1 = getDateWithoutTime(current_date);
-							trs.setTrs_dattrans(current_date_1);
-							trs.setTrsnumaut(authnumber);
-							trs.setTrs_etat("N");
-							trs.setTrs_devise(current_hist.getHatDevise());
-							trs.setTrs_certif("N");
-							Integer idtrs = transactionService.getMAX_ID();
-							long lidtrs = idtrs.longValue() + 1;
-							trs.setTrs_id(lidtrs);
-							trs.setTrs_commande(orderid);
-							trs.setTrs_procod("0");
-							trs.setTrs_groupe(websiteid);
-							trs.setTrs_codtpe(0.0);
-							trs.setTrs_numbloc(0.0);
-							trs.setTrs_numfact(0.0);
-							transactionService.save(trs);
+							Util.writeInFileTransaction(folder, file, "Automatic capture start...");
 
-							current_hist.setHatEtat('T');
-							current_hist.setHatdatetlc(current_date);
-							current_hist.setOperateurtlc("mxplusapi");
-							histoAutoGateService.save(current_hist);
+							Util.writeInFileTransaction(folder, file, "Getting authnumberComplent");
 
-							capture_id = String.format("%040d",
-									new BigInteger(UUID.randomUUID().toString().replace("-", ""), 36));
-							Date dt = new Date();
-							String dtpattern = "yyyy-MM-dd";
-							SimpleDateFormat sfdt = new SimpleDateFormat(dtpattern);
-							String sdt = sfdt.format(dt);
-							String tmpattern = "HH:mm:ss";
-							SimpleDateFormat sftm = new SimpleDateFormat(tmpattern);
-							String stm = sftm.format(dt);
-							Util.writeInFileTransaction(folder, file, "inserting into telec ok");
-							capture_status = "Y";
-
-						} catch (Exception e) {
-							exp_flag = 1;
-							Util.writeInFileTransaction(folder, file, "inserting into telec ko..do nothing " + e);
-							codrep = "96";
-							motif = "cpautorisation failed";
-						}
-					}
-					if (capture_status.equalsIgnoreCase("Y") && exp_flag == 1)
-						capture_status.equalsIgnoreCase("N");
-
-					Util.writeInFileTransaction(folder, file, "Automatic capture end.");
-				}
-			} else {
-				Util.writeInFileTransaction(folder, file, "transaction declined !!! ");
-				Util.writeInFileTransaction(folder, file, "SWITCH RESONSE CODE :[" + codrep + "]");
-			}
-
-			if (montantCfr > montantPreAuto) {
-				Util.writeInFileTransaction(folder, file, "if(montantCfr > montantPreAuto)");
-				Double montantToDebite = 0.00;
-				montantToDebite = montantCfr - montantPreAuto;
-				Date trsdate = null;
-				Util.writeInFileTransaction(folder, file,
-						"montantToDebite => (montantCfr - montantPreAuto) : " + montantToDebite);
-
-				String orderidToDebite = Util.genCommande(merchantid);
-				Util.writeInFileTransaction(folder, file, "generer new commande To debite : " + orderidToDebite);
-
-				int i_card_type = Util.getCardIss(cardnumber);
-				DemandePaiementDto dmd = null;
-				DemandePaiementDto dmdSaved = null;
-
-				acq_type = "0000";
-				reason_code = "H";
-				transaction_condition = "6";
-				mesg_type = "0";
-				processing_code = "";
-				String xid = "";
-				transactiontype = "0"; // 0 payment , P preauto
-				currency = "504";
-				cvv = check_dmd.getDem_cvv() == null ? "" : check_dmd.getDem_cvv();
-				recurring = "N";
-				if (transactiontype.equals("0")) {
-					processing_code = "0";
-				} else if (transactiontype.equals("P")) {
-					processing_code = "P";
-				} else {
-					processing_code = "0";
-				}
-				expirydate = check_dmd.getDateexpnaps();
-
-				try {
-					dmd = new DemandePaiementDto();
-
-					dmd.setComid(merchantid);
-					dmd.setCommande(orderidToDebite);
-					dmd.setDem_pan(cardnumber);
-					dmd.setDem_cvv(cvv);
-					dmd.setGalid(websiteid);
-					dmd.setSuccessURL(successURL);
-					dmd.setFailURL(failURL);
-					dmd.setType_carte(i_card_type + "");
-					if (amount.equals("") || amount == null) {
-						amount = "0";
-					}
-					if (amount.contains(",")) {
-						amount = amount.replace(",", ".");
-					}
-					dmd.setMontant(Double.parseDouble(amount));
-					dmd.setNom(lname);
-					dmd.setPrenom(fname);
-					dmd.setEmail(email);
-					dmd.setTel(phone);
-					dmd.setAddress(address);
-					dmd.setCity(city);
-					dmd.setCountry(country);
-					dmd.setState(state);
-					dmd.setPostcode(zipcode);
-					// dmd.setDateexpnaps(expirydate);
-					dmd.setLangue("E");
-					dmd.setEtat_demande("INIT");
-
-					formatter_1 = new SimpleDateFormat("yyyy-MM-dd");
-					formatter_2 = new SimpleDateFormat("HH:mm:ss");
-					trsdate = new Date();
-					transactiondate = formatter_1.format(trsdate);
-					transactiontime = formatter_2.format(trsdate);
-					// dmd.setDem_date_time(transactiondate + transactiontime);
-					dmd.setDem_date_time(dateFormat.format(new Date()));
-					if (recurring.equalsIgnoreCase("Y"))
-						dmd.setIs_cof("Y");
-					if (recurring.equalsIgnoreCase("N"))
-						dmd.setIs_cof("N");
-
-					dmd.setIs_addcard("N");
-					dmd.setIs_tokenized("N");
-					dmd.setIs_whitelist("N");
-					dmd.setIs_withsave("N");
-
-					// generer token
-					String tokencommande = Util.genTokenCom(dmd.getCommande(), dmd.getComid());
-					dmd.setTokencommande(tokencommande);
-					// set transctiontype
-					dmd.setTransactiontype(transactiontype);
-
-					dmdSaved = demandePaiementService.save(dmd);
-				} catch (Exception err1) {
-					Util.writeInFileTransaction(folder, file,
-							"cpautorisation 500 Error during DEMANDE_PAIEMENT insertion for given orderid:[" + orderid
-									+ "]" + err1);
-
-					return getMsgError(folder, file, jsonOrequest,
-							"cpautorisation 500 Error during DEMANDE_PAIEMENT insertion", null);
-				}
-
-				// 2024-03-05
-				montanttrame = formatMontantTrame(folder, file, amount, orderidToDebite, merchantid, jsonOrequest);
-
-				merc_codeactivite = current_merchant.getCmrCodactivite();
-				acqcode = current_merchant.getCmrCodbqe();
-				merchant_name = Util.pad_merchant(merchantname, 19, ' ');
-				Util.writeInFileTransaction(folder, file, "merchant_name : [" + merchant_name + "]");
-
-				merchant_city = "MOROCCO        ";
-				Util.writeInFileTransaction(folder, file, "merchant_city : [" + merchant_city + "]");
-
-				// ajout cavv (cavv+eci) xid dans la trame
-				String champ_cavv = "";
-				/*
-				 * xid = threeDSServerTransID; if (cavv == null || eci == null) { champ_cavv =
-				 * null; Util.writeInFileTransaction(folder, file,
-				 * "cavv == null || eci == null"); } else if (cavv != null && eci != null) {
-				 * champ_cavv = cavv + eci; Util.writeInFileTransaction(folder, file,
-				 * "cavv != null && eci != null"); Util.writeInFileTransaction(folder, file,
-				 * "champ_cavv : [" + champ_cavv + "]"); } else {
-				 * Util.writeInFileTransaction(folder, file, "champ_cavv = null"); champ_cavv =
-				 * null; }
-				 */
-
-				boolean cvv_present = check_cvv_presence(cvv);
-				if (!token.equals("")) {
-					cvv_present = true;
-				}
-				cvv_present = true; // a revoir
-				String first_auth = "";
-				long lrec_serie = 0;
-
-				// controls
-				Util.writeInFileTransaction(folder, file, "Switch processing start ...");
-
-				String tlv = "";
-				Util.writeInFileTransaction(folder, file, "Preparing Switch TLV Request start ...");
-
-				if (!cvv_present) {
-					Util.writeInFileTransaction(folder, file,
-							"cpautorisation 500 cvv not set , reccuring flag set to N, cvv must be present in normal transaction");
-
-					return getMsgError(folder, file, jsonOrequest,
-							"cpautorisation 500 cvv not set , reccuring flag set to N, cvv must be present in normal transaction",
-							"82");
-				}
-
-				// not reccuring , normal
-				if (cvv_present) {
-					Util.writeInFileTransaction(folder, file, "not reccuring , normal cvv_present && !is_reccuring");
-					try {
-						tlv = new TLVEncoder().withField(Tags.tag0, mesg_type).withField(Tags.tag1, cardnumber)
-								.withField(Tags.tag3, processing_code).withField(Tags.tag22, transaction_condition)
-								.withField(Tags.tag49, acq_type).withField(Tags.tag14, montanttrame)
-								.withField(Tags.tag15, currency).withField(Tags.tag23, reason_code)
-								.withField(Tags.tag18, "761454").withField(Tags.tag42, expirydate)
-								.withField(Tags.tag16, date).withField(Tags.tag17, heure)
-								.withField(Tags.tag10, merc_codeactivite).withField(Tags.tag8, "0" + merchantid)
-								.withField(Tags.tag9, merchantid).withField(Tags.tag66, rrn).withField(Tags.tag67, cvv)
-								.withField(Tags.tag11, merchant_name).withField(Tags.tag12, merchant_city)
-								.withField(Tags.tag90, acqcode).withField(Tags.tag167, champ_cavv)
-								.withField(Tags.tag168, xid).encode();
-
-						Util.writeInFileTransaction(folder, file, "tag0_request : [" + mesg_type + "]");
-						Util.writeInFileTransaction(folder, file, "tag1_request : [" + cardnumber + "]");
-						Util.writeInFileTransaction(folder, file, "tag3_request : [" + processing_code + "]");
-						Util.writeInFileTransaction(folder, file, "tag22_request : [" + transaction_condition + "]");
-						Util.writeInFileTransaction(folder, file, "tag49_request : [" + acq_type + "]");
-						Util.writeInFileTransaction(folder, file, "tag14_request : [" + montanttrame + "]");
-						Util.writeInFileTransaction(folder, file, "tag15_request : [" + currency + "]");
-						Util.writeInFileTransaction(folder, file, "tag23_request : [" + reason_code + "]");
-						Util.writeInFileTransaction(folder, file, "tag18_request : [761454]");
-						Util.writeInFileTransaction(folder, file, "tag42_request : [" + expirydate + "]");
-						Util.writeInFileTransaction(folder, file, "tag16_request : [" + date + "]");
-						Util.writeInFileTransaction(folder, file, "tag17_request : [" + heure + "]");
-						Util.writeInFileTransaction(folder, file, "tag10_request : [" + merc_codeactivite + "]");
-						Util.writeInFileTransaction(folder, file, "tag8_request : [0" + merchantid + "]");
-						Util.writeInFileTransaction(folder, file, "tag9_request : [" + merchantid + "]");
-						Util.writeInFileTransaction(folder, file, "tag66_request : [" + rrn + "]");
-						Util.writeInFileTransaction(folder, file, "tag67_request : [" + cvv + "]");
-						Util.writeInFileTransaction(folder, file, "tag11_request : [" + merchant_name + "]");
-						Util.writeInFileTransaction(folder, file, "tag12_request : [" + merchant_city + "]");
-						Util.writeInFileTransaction(folder, file, "tag90_request : [" + acqcode + "]");
-						Util.writeInFileTransaction(folder, file, "tag167_request : [" + champ_cavv + "]");
-						Util.writeInFileTransaction(folder, file, "tag168_request : [" + xid + "]");
-
-					} catch (Exception err4) {
-						Util.writeInFileTransaction(folder, file,
-								"cpautorisation 500 Error during switch tlv buildup for given orderid:["
-										+ orderidToDebite + "] and merchantid:[" + merchantid + "]" + err4);
-
-						return getMsgError(folder, file, jsonOrequest,
-								"cpautorisation 500 Error during switch tlv buildup", "96");
-					}
-					Util.writeInFileTransaction(folder, file, "Switch TLV Request :[" + tlv + "]");
-				}
-
-				Util.writeInFileTransaction(folder, file, "Preparing Switch TLV Request end.");
-
-				String resp_tlv = "";
-				int port = 0;
-				String sw_s = "", s_port = "";
-				int switch_ko = 0;
-				try {
-					s_port = portSwitch;
-					sw_s = ipSwitch;
-
-					port = Integer.parseInt(s_port);
-
-					Util.writeInFileTransaction(folder, file, "Switch TCP client V2 Connecting ...");
-
-					SwitchTCPClientV2 switchTCPClient = new SwitchTCPClientV2(sw_s, port);
-
-					boolean s_conn = switchTCPClient.isConnected();
-
-					if (!s_conn) {
-						Util.writeInFileTransaction(folder, file, "Switch  malfunction cannot connect!!!");
-
-						// return getMsgError(folder, file, jsonOrequest,
-						// "cpautorisation 500 Error Switch communication s_conn false", "96");
-						motif = "cpautorisation pre-autorisation approved, but supplement amount failed";
-						codrep = "96";
-					}
-
-					if (s_conn) {
-						Util.writeInFileTransaction(folder, file, "Switch Connected.");
-						Util.writeInFileTransaction(folder, file, "Switch Sending TLV Request ...");
-
-						resp_tlv = switchTCPClient.sendMessage(tlv);
-
-						Util.writeInFileTransaction(folder, file, "Switch TLV Request end.");
-						switchTCPClient.shutdown();
-					}
-
-				} catch (UnknownHostException e) {
-					Util.writeInFileTransaction(folder, file, "Switch  malfunction UnknownHostException !!!" + e);
-
-					// return getMsgError(folder, file, jsonOrequest,
-					// "cpautorisation 500 Error Switch communication UnknownHostException", "96");
-					motif = "cpautorisation pre-autorisation approved, but supplement amount failed";
-					codrep = "96";
-				} catch (java.net.ConnectException e) {
-					Util.writeInFileTransaction(folder, file, "Switch  malfunction ConnectException !!!" + e);
-					switch_ko = 1;
-					// return getMsgError(folder, file, jsonOrequest,
-					// "cpautorisation 500 Error Switch communication ConnectException", "96");
-					motif = "cpautorisation pre-autorisation approved, but supplement amount failed";
-					codrep = "96";
-				}
-
-				catch (SocketTimeoutException e) {
-					Util.writeInFileTransaction(folder, file, "Switch  malfunction  SocketTimeoutException !!!" + e);
-					switch_ko = 1;
-					e.printStackTrace();
-					Util.writeInFileTransaction(folder, file,
-							"cpautorisation 500 Error Switch communication SocketTimeoutException" + "switch ip:["
-									+ sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-					// return getMsgError(folder, file, jsonOrequest, "Switch malfunction
-					// SocketTimeoutException !!!", "96");
-					motif = "cpautorisation pre-autorisation approved, but supplement amount failed";
-					codrep = "96";
-				}
-
-				catch (IOException e) {
-					Util.writeInFileTransaction(folder, file, "Switch  malfunction IOException !!!" + e);
-					switch_ko = 1;
-					e.printStackTrace();
-					Util.writeInFileTransaction(folder, file,
-							"cpautorisation 500 Error Switch communication IOException" + "switch ip:[" + sw_s
-									+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-					// return getMsgError(folder, file, jsonOrequest, "Switch malfunction
-					// IOException !!!", "96");
-					motif = "cpautorisation pre-autorisation approved, but supplement amount failed";
-					codrep = "96";
-				}
-
-				catch (Exception e) {
-					Util.writeInFileTransaction(folder, file, "Switch  malfunction Exception!!!" + e);
-					switch_ko = 1;
-					e.printStackTrace();
-					// return getMsgError(folder, file, jsonOrequest,
-					// "cpautorisation 500 Error Switch communication General Exception", "96");
-					motif = "cpautorisation pre-autorisation approved, but supplement amount failed";
-					codrep = "96";
-				}
-
-				String resp = resp_tlv;
-
-				if (switch_ko == 0 && resp == null) {
-					Util.writeInFileTransaction(folder, file, "Switch  malfunction resp null!!!");
-					switch_ko = 1;
-					Util.writeInFileTransaction(folder, file, "cpautorisation 500 Error Switch null response"
-							+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-					// return getMsgError(folder, file, jsonOrequest, "Switch malfunction resp
-					// null!!!", "96");
-					motif = "cpautorisation pre-autorisation approved, but supplement amount failed";
-					codrep = "96";
-				}
-
-				if (switch_ko == 0 && resp.length() < 3) {
-					switch_ko = 1;
-
-					Util.writeInFileTransaction(folder, file, "Switch  malfunction resp < 3 !!!");
-					Util.writeInFileTransaction(folder, file,
-							"cpautorisation 500 Error Switch short response length() < 3 " + "switch ip:[" + sw_s
-									+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-				}
-
-				Util.writeInFileTransaction(folder, file, "Switch TLV Respnose :[" + resp + "]");
-
-				Util.writeInFileTransaction(folder, file, "Processing Switch TLV Respnose ...");
-
-				TLVParser tlvp = null;
-
-				String tag0_resp = null, tag1_resp = null, tag3_resp = null, tag8_resp = null, tag9_resp = null,
-						tag14_resp = null, tag15_resp = null, tag16_resp = null, tag17_resp = null, tag66_resp = null,
-						tag18_resp = null, tag19_resp = null, tag23_resp = null, tag20_resp = null, tag21_resp = null,
-						tag22_resp = null, tag80_resp = null, tag98_resp = null;
-
-				if (switch_ko == 0) {
-					try {
-						tlvp = new TLVParser(resp);
-
-						tag0_resp = tlvp.getTag(Tags.tag0);
-						tag1_resp = tlvp.getTag(Tags.tag1);
-						tag3_resp = tlvp.getTag(Tags.tag3);
-						tag8_resp = tlvp.getTag(Tags.tag8);
-						tag9_resp = tlvp.getTag(Tags.tag9);
-						tag14_resp = tlvp.getTag(Tags.tag14);
-						tag15_resp = tlvp.getTag(Tags.tag15);
-						tag16_resp = tlvp.getTag(Tags.tag16);
-						tag17_resp = tlvp.getTag(Tags.tag17);
-						tag66_resp = tlvp.getTag(Tags.tag66); // f1
-						tag18_resp = tlvp.getTag(Tags.tag18);
-						tag19_resp = tlvp.getTag(Tags.tag19); // f2
-						tag23_resp = tlvp.getTag(Tags.tag23);
-						tag20_resp = tlvp.getTag(Tags.tag20);
-						tag21_resp = tlvp.getTag(Tags.tag21);
-						tag22_resp = tlvp.getTag(Tags.tag22);
-						tag80_resp = tlvp.getTag(Tags.tag80);
-						tag98_resp = tlvp.getTag(Tags.tag98);
-
-					} catch (Exception e) {
-						Util.writeInFileTransaction(folder, file, "Switch  malfunction tlv parsing !!!" + e);
-						switch_ko = 1;
-						Util.writeInFileTransaction(folder, file,
-								"cpautorisation 500 Error during tlv Switch response parse" + "switch ip:[" + sw_s
-										+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-					}
-
-					// controle switch
-					if (tag1_resp == null) {
-						Util.writeInFileTransaction(folder, file, "Switch  malfunction !!! tag1_resp == null");
-						switch_ko = 1;
-						Util.writeInFileTransaction(folder, file,
-								"cpautorisation 500 Error during tlv Switch response parse tag1_resp tag null"
-										+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : ["
-										+ resp_tlv + "]");
-					}
-
-					if (tag1_resp != null && tag1_resp.length() < 3) {
-						Util.writeInFileTransaction(folder, file, "Switch  malfunction !!! tag1_resp == null");
-						switch_ko = 1;
-						Util.writeInFileTransaction(folder, file,
-								"cpautorisation 500 Error during tlv Switch response parse tag1_resp length tag  < 3"
-										+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : ["
-										+ resp_tlv + "]");
-					}
-
-					if (tag20_resp == null) {
-						Util.writeInFileTransaction(folder, file, "Switch  malfunction !!! tag20_resp == null");
-						switch_ko = 1;
-						Util.writeInFileTransaction(folder, file,
-								"cpautorisation 500 Error during tlv Switch response parse tag1_resp tag null"
-										+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : ["
-										+ resp_tlv + "]");
-					}
-				}
-				Util.writeInFileTransaction(folder, file, "Switch TLV Respnose Processed");
-				Util.writeInFileTransaction(folder, file, "Switch TLV Respnose :[" + resp + "]");
-
-				Util.writeInFileTransaction(folder, file, "tag0_resp : [" + tag0_resp + "]");
-				Util.writeInFileTransaction(folder, file, "tag1_resp : [" + tag1_resp + "]");
-				Util.writeInFileTransaction(folder, file, "tag3_resp : [" + tag3_resp + "]");
-				Util.writeInFileTransaction(folder, file, "tag8_resp : [" + tag8_resp + "]");
-				Util.writeInFileTransaction(folder, file, "tag9_resp : [" + tag9_resp + "]");
-				Util.writeInFileTransaction(folder, file, "tag14_resp : [" + tag14_resp + "]");
-				Util.writeInFileTransaction(folder, file, "tag15_resp : [" + tag15_resp + "]");
-				Util.writeInFileTransaction(folder, file, "tag16_resp : [" + tag16_resp + "]");
-				Util.writeInFileTransaction(folder, file, "tag17_resp : [" + tag17_resp + "]");
-				Util.writeInFileTransaction(folder, file, "tag66_resp : [" + tag66_resp + "]");
-				Util.writeInFileTransaction(folder, file, "tag18_resp : [" + tag18_resp + "]");
-				Util.writeInFileTransaction(folder, file, "tag19_resp : [" + tag19_resp + "]");
-				Util.writeInFileTransaction(folder, file, "tag23_resp : [" + tag23_resp + "]");
-				Util.writeInFileTransaction(folder, file, "tag20_resp : [" + tag20_resp + "]");
-				Util.writeInFileTransaction(folder, file, "tag21_resp : [" + tag21_resp + "]");
-				Util.writeInFileTransaction(folder, file, "tag22_resp : [" + tag22_resp + "]");
-				Util.writeInFileTransaction(folder, file, "tag80_resp : [" + tag80_resp + "]");
-				Util.writeInFileTransaction(folder, file, "tag98_resp : [" + tag98_resp + "]");
-
-				String tag20_resp_verified = "";
-				String tag19_res_verified = "";
-				String tag66_resp_verified = "";
-				tag20_resp_verified = tag20_resp;
-				tag19_res_verified = tag19_resp;
-				tag66_resp_verified = tag66_resp;
-				String s_status, pan_auto = "";
-
-				if (switch_ko == 1) {
-					pan_auto = Util.formatagePan(cardnumber);
-					Util.writeInFileTransaction(folder, file, "getSWHistoAuto pan_auto/rrn/amount/date/merchantid : "
-							+ pan_auto + "/" + rrn + "/" + montantToDebite + "/" + date + "/" + merchantid);
-				}
-
-				HistoAutoGateDto hist = null;
-				Integer Ihist_id = null;
-				if (tag20_resp == null) {
-					tag20_resp = "";
-				}
-				if (tag20_resp.equalsIgnoreCase("00")) {
-					Util.writeInFileTransaction(folder, file, "SWITCH RESONSE CODE :[00]");
-					try {
-						Util.writeInFileTransaction(folder, file, "update etat demande : SW_PAYE ...");
-
-						dmdSaved.setEtat_demande("SW_PAYE");
-						dmdSaved.setDem_cvv("");
-						demandePaiementService.save(dmdSaved);
-					} catch (Exception e) {
-						Util.writeInFileTransaction(folder, file,
-								"cpautorisation 500 Error during DEMANDE_PAIEMENT update etat demande for given orderid:["
-										+ orderidToDebite + "]" + e);
-					}
-					Util.writeInFileTransaction(folder, file, "update etat demande : SW_PAYE OK");
-
-					Util.writeInFileTransaction(folder, file, "Insert into Histogate...");
-
-					try {
-						hist = new HistoAutoGateDto();
-						Date curren_date_hist = new Date();
-						int numTransaction = Util.generateNumTransaction(folder, file, curren_date_hist);
-
-						Util.writeInFileTransaction(folder, file, "get status ...");
-
-						s_status = "";
-						try {
-							CodeReponseDto codeReponseDto = codeReponseService.findByRpcCode(tag20_resp_verified);
-							System.out.println("codeReponseDto : " + codeReponseDto);
-							Util.writeInFileTransaction(folder, file, "codeReponseDto : " + codeReponseDto);
-							if (codeReponseDto != null) {
-								s_status = codeReponseDto.getRpcLibelle();
-							}
-						} catch (Exception ee) {
-							Util.writeInFileTransaction(folder, file, "cpautorisation 500 Error codeReponseDto null");
-							ee.printStackTrace();
-						}
-
-						Util.writeInFileTransaction(folder, file, "get status Switch status : [" + s_status + "]");
-
-						Util.writeInFileTransaction(folder, file, "formatting pan...");
-
-						pan_auto = Util.formatagePan(cardnumber);
-						Util.writeInFileTransaction(folder, file, "formatting pan Ok pan_auto :[" + pan_auto + "]");
-
-						Util.writeInFileTransaction(folder, file, "HistoAutoGate data filling start ...");
-
-						Util.writeInFileTransaction(folder, file, "websiteid : " + websiteid);
-
-						Date current_date_1 = getDateWithoutTime(curren_date_hist);
-						hist.setHatDatdem(current_date_1);
-
-						hist.setHatHerdem(new SimpleDateFormat("HH:mm").format(curren_date_hist));
-						// hist.setHatMontant(Double.parseDouble(amount));
-						hist.setHatMontant(montantToDebite);
-						hist.setHatNumcmr(merchantid);
-						hist.setHatCoderep(tag20_resp_verified);
-						tag20_resp = tag20_resp_verified;
-						hist.setHatDevise(currency);
-						hist.setHatBqcmr(acqcode);
-						hist.setHatPorteur(pan_auto);
-						hist.setHatMtfref1(s_status);
-						hist.setHatNomdeandeur(websiteid);
-						hist.setHatNautemt(tag19_res_verified); // f2
-						tag19_resp = tag19_res_verified;
-						if (tag22_resp != null)
-							hist.setHatProcode(tag22_resp.charAt(0));
-						else
-							hist.setHatProcode('6');
-						hist.setHatExpdate(expirydate);
-						hist.setHatRepondeur(tag21_resp);
-						hist.setHatTypmsg("3");
-						hist.setHatRrn(tag66_resp_verified); // f1
-						tag66_resp_verified = tag66_resp;
-						hist.setHatEtat('E');
-						if (websiteid.equals("")) {
-							hist.setHatCodtpe("1");
-						} else {
-							hist.setHatCodtpe(websiteid);
-						}
-						hist.setHatMcc(merc_codeactivite);
-						hist.setHatNumCommande(orderidToDebite);
-						hist.setHatNumdem(new Long(numTransaction));
-
-						if (check_cvv_presence(cvv)) {
-							hist.setIs_cvv_verified("Y");
-						} else {
-							hist.setIs_cvv_verified("N");
-						}
-
-						hist.setIs_3ds("N");
-						hist.setIs_addcard("N");
-						// if (card_destination == 1)
-						// hist.setIs_national("Y");
-						// else
-						// hist.setIs_national("N");
-						hist.setIs_whitelist("N");
-						hist.setIs_withsave("N");
-						hist.setIs_tokenized("N");
-
-						if (recurring.equalsIgnoreCase("Y"))
-							hist.setIs_cof("Y");
-						if (recurring.equalsIgnoreCase("N"))
-							hist.setIs_cof("N");
-
-						Util.writeInFileTransaction(folder, file, "HistoAutoGate data filling end ...");
-
-						Util.writeInFileTransaction(folder, file, "HistoAutoGate Saving ...");
-
-						hist = histoAutoGateService.save(hist);
-
-						Util.writeInFileTransaction(folder, file, "hatNomdeandeur : " + hist.getHatNomdeandeur());
-
-					} catch (Exception e) {
-						Util.writeInFileTransaction(folder, file,
-								"cpautorisation 500 Error during  insert in histoautogate for given orderid:["
-										+ orderidToDebite + "]" + e);
-						try {
-							Util.writeInFileTransaction(folder, file, "2eme tentative : HistoAutoGate Saving ... ");
-							hist = histoAutoGateService.save(hist);
-						} catch (Exception ex) {
+							authnumberComplent = hist1.getHatNautemt();
 							Util.writeInFileTransaction(folder, file,
-									"2eme tentative : cpautorisation 500 Error during  insert in histoautogate for given orderid:["
-											+ orderidToDebite + "]" + ex);
-						}
-					}
+									"authnumberComplent : [" + authnumberComplent + "]");
 
-					Util.writeInFileTransaction(folder, file, "HistoAutoGate OK.");
+							Util.writeInFileTransaction(folder, file, "Getting authnumberComplent");
 
-					HistoAutoGateDto hist1 = null;
-					try {
-						if(hist.getId() == null) {
-						// get histoauto check if exist
-						    hist1 = histoAutoGateService.findLastByHatNumCommandeAndHatNumcmr(orderidToDebite, merchantid);
-							if (hist1 == null) {
-								hist1 = hist;
-							}
-						} else {
-							hist1 = hist;
-						}
-
-					} catch (Exception err2) {
-						Util.writeInFileTransaction(folder, file,
-								"cpauthorization 500 Error during HistoAutoGate findLastByHatNumCommandeAndHatNumcmr orderid:["
-										+ orderidToDebite + "] and merchantid:[" + merchantid + "]" + err2);
-					}
-
-					String capture_status = "N";
-					int exp_flag = 0;
-
-					if (capture.equalsIgnoreCase("Y")) {
-
-						Date current_date = null;
-						current_date = new Date();
-						Util.writeInFileTransaction(folder, file, "Automatic capture start...");
-
-						Util.writeInFileTransaction(folder, file, "Getting authnumber");
-
-						authnumber = hist1.getHatNautemt();
-						Util.writeInFileTransaction(folder, file, "authnumber : [" + authnumber + "]");
-
-						Util.writeInFileTransaction(folder, file, "Getting authnumber");
-						TransactionDto trs_check = null;
-
-						try {
-							trs_check = transactionService.findByTrsnumautAndTrsnumcmr(authnumber, merchantid);
-						} catch (Exception ee) {
-
-							Util.writeInFileTransaction(folder, file,
-									"trs_check trs_check exception e : [" + ee.toString() + "]");
-						}
-
-						if (trs_check != null) {
-							// do nothing
-							Util.writeInFileTransaction(folder, file, "trs_check != null do nothing for now ...");
-						} else {
-
-							Util.writeInFileTransaction(folder, file, "inserting into telec start ...");
 							try {
+								trs_check = transactionService.findByTrsnumautAndTrsnumcmr(authnumberComplent,
+										merchantid);
+							} catch (Exception ee) {
 
-								// insert into telec
+								Util.writeInFileTransaction(folder, file,
+										"trs_check trs_check exception e : [" + ee.toString() + "]");
+							}
 
-								TelecollecteDto n_tlc = telecollecteService.getMAXTLC_N(merchantid);
+							if (trs_check != null) {
+								// do nothing
+								Util.writeInFileTransaction(folder, file, "trs_check != null do nothing for now ...");
+							} else {
 
-								long lidtelc = 0;
+								Util.writeInFileTransaction(folder, file, "inserting into telec start ...");
+								try {
+									// insert into telec
+									// TelecollecteDto n_tlc = telecollecteService.getMAXTLC_N(merchantid);
 
-								if (n_tlc == null) {
-									Util.writeInFileTransaction(folder, file, "getMAXTLC_N n_tlc = null");
+									long lidtelc = 0;
+									// if (n_tlc == null) {
+									// Util.writeInFileTransaction(folder, file, "getMAXTLC_N n_tlc = null");
 									Integer idtelc = null;
-
 									TelecollecteDto tlc = null;
 
 									// insert into telec
@@ -6974,547 +6929,89 @@ public class APIController {
 									tlc.setTlc_numtpe(websiteid);
 									telecollecteService.save(tlc);
 
-								} else {
-									Util.writeInFileTransaction(folder, file, "n_tlc !=null ");
+									/*
+									 * } else { Util.writeInFileTransaction(folder, file, "n_tlc !=null "); lidtelc
+									 * = n_tlc.getTlc_numtlcolcte(); double nbr_trs = n_tlc.getTlc_nbrtrans();
+									 * nbr_trs = nbr_trs + 1; n_tlc.setTlc_nbrtrans(nbr_trs);
+									 * telecollecteService.save(n_tlc);
+									 * 
+									 * }
+									 */
 
-									lidtelc = n_tlc.getTlc_numtlcolcte();
-									double nbr_trs = n_tlc.getTlc_nbrtrans();
+									// insert into transaction for complement (montantComplent)
+									TransactionDto trs = new TransactionDto();
+									trs.setTrsnumcmr(merchantid);
+									trs.setTrs_numtlcolcte(Double.valueOf(lidtelc));
 
-									nbr_trs = nbr_trs + 1;
+									String frmt_cardnumber = Util.formatagePan(cardnumber);
+									trs.setTrs_codporteur(frmt_cardnumber);
+									trs.setTrs_montant(montantComplent);
 
-									n_tlc.setTlc_nbrtrans(nbr_trs);
+									current_date = new Date();
+									Date current_date_1 = getDateWithoutTime(current_date);
+									trs.setTrs_dattrans(current_date_1);
 
-									telecollecteService.save(n_tlc);
+									trs.setTrsnumaut(authnumberComplent);
+									trs.setTrs_etat("N");
+									trs.setTrs_devise(hist1.getHatDevise());
+									trs.setTrs_certif("N");
+									Integer idtrs = transactionService.getMAX_ID();
+									long lidtrs = idtrs.longValue() + 1;
+									trs.setTrs_id(lidtrs);
+									trs.setTrs_commande(orderidToDebite);
+									trs.setTrs_procod("0");
+									trs.setTrs_groupe(websiteid);
+									trs.setTrs_codtpe(0.0);
+									trs.setTrs_numbloc(0.0);
+									trs.setTrs_numfact(0.0);
+									transactionService.save(trs);
 
+									hist1.setHatEtat('T');
+									hist1.setHatdatetlc(current_date);
+									hist1.setOperateurtlc("mxplusapi");
+									hist1 = histoAutoGateService.save(hist1);
+
+									current_hist.setHatEtat('T');
+									current_hist.setHatdatetlc(current_date);
+									current_hist.setOperateurtlc("mxplusapi");
+									current_hist = histoAutoGateService.save(current_hist);
+
+									motif = motif + " and captured";
+
+									capture_id = String.format("%040d",
+											new BigInteger(UUID.randomUUID().toString().replace("-", ""), 36));
+
+									Util.writeInFileTransaction(folder, file, "inserting into telec ok");
+									capture_status = "Y";
+
+								} catch (Exception e) {
+									exp_flag = 1;
+									Util.writeInFileTransaction(folder, file,
+											"inserting into telec ko..do nothing " + e);
+									codrep = "96";
+									motif = "cpautorisation pre-autorisation approved, but supplement amount failed";
 								}
-
-								// insert into transaction
-								TransactionDto trs = new TransactionDto();
-								trs.setTrsnumcmr(merchantid);
-								trs.setTrs_numtlcolcte(Double.valueOf(lidtelc));
-
-								String frmt_cardnumber = Util.formatagePan(cardnumber);
-								trs.setTrs_codporteur(frmt_cardnumber);
-
-								trs.setTrs_montant(montantToDebite);
-								// trs.setTrs_dattrans(new Date());
-
-								current_date = new Date();
-								Date current_date_1 = getDateWithoutTime(current_date);
-								trs.setTrs_dattrans(current_date_1);
-
-								trs.setTrsnumaut(authnumber);
-								trs.setTrs_etat("N");
-								trs.setTrs_devise(hist1.getHatDevise());
-								trs.setTrs_certif("N");
-								Integer idtrs = transactionService.getMAX_ID();
-								long lidtrs = idtrs.longValue() + 1;
-								trs.setTrs_id(lidtrs);
-								trs.setTrs_commande(orderidToDebite);
-								trs.setTrs_procod("0");
-								trs.setTrs_groupe(websiteid);
-								trs.setTrs_codtpe(0.0);
-								trs.setTrs_numbloc(0.0);
-								trs.setTrs_numfact(0.0);
-								transactionService.save(trs);
-
-								hist1.setHatEtat('T');
-								hist1.setHatdatetlc(current_date);
-								hist1.setOperateurtlc("mxplusapi");
-								histoAutoGateService.save(hist1);
-
-								capture_id = String.format("%040d",
-										new BigInteger(UUID.randomUUID().toString().replace("-", ""), 36));
-								Date dt = new Date();
-								String dtpattern = "yyyy-MM-dd";
-								SimpleDateFormat sfdt = new SimpleDateFormat(dtpattern);
-								String sdt = sfdt.format(dt);
-								String tmpattern = "HH:mm:ss";
-								SimpleDateFormat sftm = new SimpleDateFormat(tmpattern);
-								String stm = sftm.format(dt);
-								Util.writeInFileTransaction(folder, file, "inserting into telec ok");
-								capture_status = "Y";
-
-							} catch (Exception e) {
-								exp_flag = 1;
-								Util.writeInFileTransaction(folder, file, "inserting into telec ko..do nothing " + e);
-								codrep = "96";
-								motif = "cpautorisation pre-autorisation approved, but supplement amount failed";
 							}
-						}
-						if (capture_status.equalsIgnoreCase("Y") && exp_flag == 1)
-							capture_status.equalsIgnoreCase("N");
-
-						Util.writeInFileTransaction(folder, file, "Automatic capture end.");
-					}
-				} else {
-					Util.writeInFileTransaction(folder, file, "transaction declined !!! ");
-					Util.writeInFileTransaction(folder, file, "SWITCH RESONSE CODE :[" + codrep + "]");
-					motif = "cpautorisation pre-autorisation approved, but supplement amount failed";
-				}
-
-			}
-		}
-
-		Util.writeInFileTransaction(folder, file, "Preparing cpautorisation api response");
-		try {
-
-			// Transaction info
-			jso.put("statuscode", codrep);
-			jso.put("status", motif);
-			jso.put("etataut", "Y");
-			jso.put("orderid", orderid);
-			jso.put("amount", amount);
-			jso.put("transactiondate", date);
-			jso.put("transactiontime", heure);
-			jso.put("authnumber", authnumber);
-			jso.put("paymentid", paymentid);
-			jso.put("transactionid", transactionid);
-
-			// Merchant info
-			jso.put("merchantid", merchnatidauth);
-			jso.put("merchantname", merchantname);
-			jso.put("websitename", websiteName);
-			jso.put("websiteid", websiteid);
-
-			// Card info
-			jso.put("cardnumber", Util.formatCard(cardnumber));
-
-			// Client info
-			jso.put("fname", fname);
-			jso.put("lname", lname);
-			jso.put("email", email);
-
-			Util.writeInFileTransaction(folder, file, "json res : [" + jso.toString() + "]");
-			System.out.println("json res : [" + jso.toString() + "]");
-
-		} catch (Exception jsouterr) {
-			Util.writeInFileTransaction(folder, file,
-					"cpautorisation 500 Error during jso out processing given authnumber:[" + authnumber + "]"
-							+ jsouterr);
-			return getMsgError(folder, file, jsonOrequest, "cpautorisation 500 Error during jso out processing",
-					codrep);
-		}
-
-		System.out.println("cpautorisation api response :  [" + jso.toString() + "]");
-		Util.writeInFileTransaction(folder, file, "cpautorisation api response :  [" + jso.toString() + "]");
-
-		Util.writeInFileTransaction(folder, file, "*********** Fin cpautorisation() ************** ");
-		System.out.println("*********** Fin cpautorisation() ************** ");
-
-		return jso.toString();
-	}
-
-	@PostMapping(value = "/napspayment/cpautorisationOLD", consumes = "application/json", produces = "application/json")
-	@ResponseBody
-	public String cpautorisationOLD(@RequestHeader MultiValueMap<String, String> header, @RequestBody String cpauths,
-			HttpServletResponse response) {
-		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		String file = "API_CPAUTORISATION" + randomWithSplittableRandom;
-		// create file log
-		Util.creatFileTransaction(file);
-		Util.writeInFileTransaction(folder, file, "*********** Start cpautorisation() ************** ");
-		System.out.println("*********** Start cpautorisation() ************** ");
-
-		String api_key = "";
-		String api_product = "";
-		String api_version = "";
-		String api_user_agent = "";
-
-		logger.info("cpautorisation api call start ...");
-
-		Util.writeInFileTransaction(folder, file, "cpautorisation api call start ...");
-
-		Util.writeInFileTransaction(folder, file, "cpautorisation : [" + cpauths + "]");
-
-		JSONObject jsonOrequest = null;
-		try {
-			jsonOrequest = new JSONObject(cpauths);
-		}
-
-		catch (JSONException jserr) {
-			Util.writeInFileTransaction(folder, file,
-					"cpautorisation 500 malformed json expression " + cpauths + jserr);
-			return getMsgError(folder, file, null, "cpautorisation 500 malformed json expression", null);
-		}
-
-		if (header != null)
-			Util.writeInFileTransaction(folder, file, "header : [" + header.toString() + "]");
-		else
-			Util.writeInFileTransaction(folder, file, "error header is null !");
-
-		try {
-
-			if (header != null) {
-
-				if (header.get("x-api-key") != null)
-					api_key = (String) header.get("x-api-key").get(0);
-				else if (header.get("x-api-key") != null)
-					api_key = (String) header.get("x-api-key").get(0);
-				if (header.get("x-product") != null)
-					api_product = (String) header.get("x-product").get(0);
-				else if (header.get("X-PRODUCT") != null)
-					api_product = (String) header.get("X-PRODUCT").get(0);
-				if (header.get("x-version") != null)
-					api_version = (String) header.get("x-version").get(0);
-				else if (header.get("X-VERSION") != null)
-					api_version = (String) header.get("X-VERSION").get(0);
-				if (header.get("user-agent") != null)
-					api_user_agent = (String) header.get("user-agent").get(0);
-				else if (header.get("USER-AGENT") != null)
-					api_user_agent = (String) header.get("USER-AGENT").get(0);
-			}
-
-		} catch (Exception head_err) {
-			if (header.toString() != null) {
-				Util.writeInFileTransaction(folder, file,
-						"cpautorisation 500 malformed header" + header.toString() + head_err);
-				return getMsgError(folder, file, null, "cpautorisation 500 malformed header", null);
-			}
-
-			else {
-				Util.writeInFileTransaction(folder, file, "cpautorisation 500 malformed header" + head_err);
-				return getMsgError(folder, file, null, "cpautorisation 500 malformed header " + head_err.getMessage(),
-						null);
-			}
-
-		}
-
-		String capture, currency, orderid, recurring, amount, transactionid, merchantid, capture_id, merchantname,
-				websiteName, websiteid, callbackurl, cardnumber, token, expirydate, cvv, fname, lname, email,
-				authnumber, acqcode, acq_type, date, rrn, heure, securtoken24, mac_value, transactiontype, paymentid;
-
-		SimpleDateFormat formatter_1, formatter_2, formatheure, formatdate = null;
-
-		try {
-			// Transaction info
-			securtoken24 = (String) jsonOrequest.get("securtoken24");
-			mac_value = (String) jsonOrequest.get("mac_value");
-
-			orderid = (String) jsonOrequest.get("orderid");
-			amount = (String) jsonOrequest.get("amount");
-			transactionid = (String) jsonOrequest.get("transactionid");
-			paymentid = (String) jsonOrequest.get("paymentid");
-			authnumber = (String) jsonOrequest.get("authnumber");
-
-			// Merchnat info
-			merchantid = (String) jsonOrequest.get("merchantid");
-			merchantname = (String) jsonOrequest.get("merchantname");
-			websiteName = (String) jsonOrequest.get("websitename");
-			websiteid = (String) jsonOrequest.get("websiteid");
-			callbackurl = (String) jsonOrequest.get("callbackurl");
-
-			// Card info
-			cardnumber = (String) jsonOrequest.get("cardnumber");
-			// token = (String) jsonOrequest.get("token");
-			// expirydate = (String) jsonOrequest.get("expirydate");
-			// cvv = (String) jsonOrequest.get("cvv");
-
-			// Client info
-			fname = (String) jsonOrequest.get("fname");
-			lname = (String) jsonOrequest.get("lname");
-			email = (String) jsonOrequest.get("email");
-
-		} catch (Exception jerr) {
-			Util.writeInFileTransaction(folder, file, "cpautorisation 500 malformed json expression " + jerr);
-			return getMsgError(folder, file, null, "cpautorisation 500 malformed json expression " + jerr.getMessage(),
-					null);
-		}
-
-		String timeStamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-
-		Util.writeInFileTransaction(folder, file, "cpautorisation_" + orderid + timeStamp);
-
-		CommercantDto current_merchant = null;
-		try {
-			current_merchant = commercantService.findByCmrNumcmr(merchantid);
-		} catch (Exception e) {
-			Util.writeInFileTransaction(folder, file,
-					"cpautorisation 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
-							+ "] and merchantid:[" + merchantid + "]");
-
-			return getMsgError(folder, file, jsonOrequest,
-					"cpautorisation 500 Merchant misconfigured in DB or not existing", "15");
-		}
-
-		if (current_merchant == null) {
-			Util.writeInFileTransaction(folder, file,
-					"cpautorisation 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
-							+ "] and merchantid:[" + merchantid + "]");
-
-			return getMsgError(folder, file, jsonOrequest,
-					"cpautorisation 500 Merchant misconfigured in DB or not existing", "15");
-		}
-
-		if (current_merchant.getCmrCodactivite() == null) {
-			Util.writeInFileTransaction(folder, file,
-					"cpautorisation 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
-							+ "] and merchantid:[" + merchantid + "]");
-
-			return getMsgError(folder, file, jsonOrequest,
-					"cpautorisation 500 Merchant misconfigured in DB or not existing", "15");
-		}
-
-		if (current_merchant.getCmrCodbqe() == null) {
-			Util.writeInFileTransaction(folder, file,
-					"cpautorisation 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
-							+ "] and merchantid:[" + merchantid + "]");
-
-			return getMsgError(folder, file, jsonOrequest,
-					"cpautorisation 500 Merchant misconfigured in DB or not existing", "");
-		}
-
-		DemandePaiementDto check_dmd = null;
-		HistoAutoGateDto current_hist = null;
-		// get demandepaiement id , check if exist
-		try {
-			check_dmd = demandePaiementService.findByCommandeAndComid(orderid, merchantid);
-
-		} catch (Exception err1) {
-			Util.writeInFileTransaction(folder, file,
-					"cpautorisation 500 Error during PaiementRequest findByCommandeAndComid orderid:[" + orderid
-							+ "] and merchantid:[" + merchantid + "]" + err1);
-
-			return getMsgError(folder, file, jsonOrequest, "cpautorisation 500 Error during PaiementRequest", null);
-		}
-		if (check_dmd == null) {
-			Util.writeInFileTransaction(folder, file,
-					"cpautorisation 500 PaiementRequest misconfigured in DB or not existing orderid:[" + orderid
-							+ "] and merchantid:[" + merchantid + "]");
-
-			return getMsgError(folder, file, jsonOrequest,
-					"cpautorisation 500 PaiementRequest misconfigured in DB or not existing", "15");
-		}
-
-		try {
-			// get histoauto check if exist
-			current_hist = histoAutoGateService.findByHatNumCommandeAndHatNautemtAndHatNumcmr(orderid, authnumber,
-					merchantid);
-
-		} catch (Exception err2) {
-			Util.writeInFileTransaction(folder, file,
-					"Error during HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmr orderid:[" + orderid
-							+ "] + and authnumber:[" + authnumber + "]" + "and merchantid:[" + merchantid + "]" + err2);
-			return getMsgError(folder, file, jsonOrequest,
-					"cpautorisation 500 Error during Transaction not found orderid:[" + orderid + "] + and authnumber:["
-							+ authnumber + "]" + "and merchantid:[" + merchantid + "]",
-					null);
-		}
-
-		if (current_hist == null) {
-			Util.writeInFileTransaction(folder, file, "cpautorisation 500 Transaction not found orderid:[" + orderid
-					+ "] + and authnumber:[" + authnumber + "]" + "and merchantid:[" + merchantid + "]");
-			return getMsgError(folder, file, jsonOrequest, "cpautorisation 500 Transaction not found orderid:["
-					+ orderid + "] + and authnumber:[" + authnumber + "]" + "and merchantid:[" + merchantid + "]",
-					null);
-		}
-
-		try {
-			formatheure = new SimpleDateFormat("HHmmss");
-			formatdate = new SimpleDateFormat("ddMMyy");
-			date = formatdate.format(new Date());
-			heure = formatheure.format(new Date());
-			rrn = Util.getGeneratedRRN();
-		} catch (Exception err2) {
-			Util.writeInFileTransaction(folder, file,
-					"cpautorisation 500 Error during  date formatting for given orderid:[" + orderid
-							+ "] and merchantid:[" + merchantid + "]" + err2);
-			return getMsgError(folder, file, jsonOrequest, "cpautorisation 500 Error during  date formatting", null);
-		}
-
-		JSONObject jso = new JSONObject();
-
-		acqcode = current_merchant.getCmrCodbqe();
-		acq_type = "0000";
-
-		String codrep = "", motif, merchnatidauth, dtdem = "";
-		try {
-			codrep = current_hist.getHatCoderep();
-			motif = current_hist.getHatMtfref1();
-			merchnatidauth = current_hist.getHatNumcmr();
-			dtdem = check_dmd.getDem_pan();
-			if (cardnumber.equals("")) {
-				cardnumber = current_hist.getHatPorteur();
-			}
-		} catch (Exception e) {
-			Util.writeInFileTransaction(folder, file,
-					"cpautorisation 500 Error during authdata preparation orderid:[" + orderid + "]" + e);
-
-			return getMsgError(folder, file, jsonOrequest, "cpautorisation 500 Error during authdata preparation",
-					codrep);
-		}
-		if (codrep.equalsIgnoreCase("00")) {
-
-			String capture_status = "N";
-			int exp_flag = 0;
-			// toujours on fait la telecollecte auto dans la confirmation pre-auto (capture
-			// = "Y")
-			capture = "Y";
-
-			if (capture.equalsIgnoreCase("Y")) {
-
-				Date current_date = null;
-				current_date = new Date();
-				Util.writeInFileTransaction(folder, file, "Automatic capture start...");
-
-				Util.writeInFileTransaction(folder, file, "Getting authnumber");
-
-				authnumber = current_hist.getHatNautemt();
-				Util.writeInFileTransaction(folder, file, "authnumber : [" + authnumber + "]");
-
-				Util.writeInFileTransaction(folder, file, "Getting authnumber");
-				TransactionDto trs_check = null;
-
-				try {
-					trs_check = transactionService.findByTrsnumautAndTrsnumcmr(authnumber, merchantid);
-				} catch (Exception ee) {
-
-					Util.writeInFileTransaction(folder, file,
-							"trs_check trs_check exception e : [" + ee.toString() + "]");
-				}
-
-				if (trs_check != null) {
-					// do nothing
-					Util.writeInFileTransaction(folder, file, "trs_check != null do nothing for now ...");
-				} else {
-
-					Util.writeInFileTransaction(folder, file, "inserting into telec start ...");
-					try {
-
-						// insert into telec
-
-						TelecollecteDto n_tlc = telecollecteService.getMAXTLC_N(merchantid);
-
-						long lidtelc = 0;
-
-						if (n_tlc == null) {
-							Util.writeInFileTransaction(folder, file, "getMAXTLC_N n_tlc = null");
-							Integer idtelc = null;
-
-							TelecollecteDto tlc = null;
-
-							// insert into telec
-							idtelc = telecollecteService.getMAX_ID(merchantid);
-							Util.writeInFileTransaction(folder, file, "getMAX_ID idtelc : " + idtelc);
-
-							if (idtelc != null) {
-								lidtelc = idtelc.longValue() + 1;
-							} else {
-								lidtelc = 1;
-							}
-							tlc = new TelecollecteDto();
-							tlc.setTlc_numtlcolcte(lidtelc);
-
-							tlc.setTlc_numtpe(current_hist.getHatCodtpe());
-
-							tlc.setTlc_datcrtfich(current_date);
-							tlc.setTlc_nbrtrans(new Double(1));
-							tlc.setTlc_gest("N");
-
-							tlc.setTlc_datremise(current_date);
-							tlc.setTlc_numremise(new Double(lidtelc));
-							// tlc.setTlc_numfich(new Double(0));
-							String tmpattern = "HH:mm";
-							SimpleDateFormat sftm = new SimpleDateFormat(tmpattern);
-							String stm = sftm.format(current_date);
-							tlc.setTlc_heuremise(stm);
-
-							tlc.setTlc_codbq(acqcode);
-							tlc.setTlc_numcmr(merchantid);
-							tlc.setTlc_numtpe(websiteid);
-							telecollecteService.save(tlc);
 
 						} else {
-							Util.writeInFileTransaction(folder, file, "n_tlc !=null ");
-
-							lidtelc = n_tlc.getTlc_numtlcolcte();
-							double nbr_trs = n_tlc.getTlc_nbrtrans();
-
-							nbr_trs = nbr_trs + 1;
-
-							n_tlc.setTlc_nbrtrans(nbr_trs);
-
-							telecollecteService.save(n_tlc);
-
+							Util.writeInFileTransaction(folder, file, "transaction declined !!! ");
+							Util.writeInFileTransaction(folder, file, "SWITCH RESONSE CODE :[" + codrep + "]");
+							motif = "cpautorisation pre-autorisation approved, but supplement amount failed";
 						}
-
-						// insert into transaction
-						TransactionDto trs = new TransactionDto();
-						trs.setTrsnumcmr(merchantid);
-						trs.setTrs_numtlcolcte(Double.valueOf(lidtelc));
-
-						String frmt_cardnumber = Util.formatagePan(cardnumber);
-						trs.setTrs_codporteur(frmt_cardnumber);
-
-						double dmnt = 0;
-
-						dmnt = Double.parseDouble(amount);
-
-						trs.setTrs_montant(dmnt);
-						// trs.setTrs_dattrans(new Date());
-
-						current_date = new Date();
-						Date current_date_1 = getDateWithoutTime(current_date);
-						trs.setTrs_dattrans(current_date_1);
-
-						trs.setTrsnumaut(authnumber);
-						trs.setTrs_etat("N");
-						trs.setTrs_devise(current_hist.getHatDevise());
-						trs.setTrs_certif("N");
-						Integer idtrs = transactionService.getMAX_ID();
-						long lidtrs = idtrs.longValue() + 1;
-						trs.setTrs_id(lidtrs);
-						trs.setTrs_commande(orderid);
-						trs.setTrs_procod("0");
-						trs.setTrs_groupe(websiteid);
-						trs.setTrs_codtpe(0.0);
-						trs.setTrs_numbloc(0.0);
-						trs.setTrs_numfact(0.0);
-						transactionService.save(trs);
-
-						current_hist.setHatEtat('T');
-						current_hist.setHatdatetlc(current_date);
-						current_hist.setOperateurtlc("mxplusapi");
-						histoAutoGateService.save(current_hist);
-
-						capture_id = String.format("%040d",
-								new BigInteger(UUID.randomUUID().toString().replace("-", ""), 36));
-						Date dt = new Date();
-						String dtpattern = "yyyy-MM-dd";
-						SimpleDateFormat sfdt = new SimpleDateFormat(dtpattern);
-						String sdt = sfdt.format(dt);
-						String tmpattern = "HH:mm:ss";
-						SimpleDateFormat sftm = new SimpleDateFormat(tmpattern);
-						String stm = sftm.format(dt);
-						Util.writeInFileTransaction(folder, file, "inserting into telec ok");
-						capture_status = "Y";
-
-					} catch (Exception e) {
-						exp_flag = 1;
-						Util.writeInFileTransaction(folder, file, "inserting into telec ko..do nothing " + e);
-						codrep = "96";
-						motif = "cpautorisation failed";
 					}
+
 				}
 				if (capture_status.equalsIgnoreCase("Y") && exp_flag == 1)
 					capture_status.equalsIgnoreCase("N");
 
 				Util.writeInFileTransaction(folder, file, "Automatic capture end.");
+			} else {
+				Util.writeInFileTransaction(folder, file, "transaction declined !!! ");
+				Util.writeInFileTransaction(folder, file, "SWITCH RESONSE CODE :[" + codrep + "]");
 			}
-
-		} else {
-			Util.writeInFileTransaction(folder, file, "transaction declined !!! ");
-			Util.writeInFileTransaction(folder, file, "SWITCH RESONSE CODE :[" + codrep + "]");
 		}
 
-		// JSONObject jso = new JSONObject();
-
 		Util.writeInFileTransaction(folder, file, "Preparing cpautorisation api response");
-
-		// reccurent transaction processing
-
-		// reccurent insert and update
-
 		try {
 
 			// Transaction info

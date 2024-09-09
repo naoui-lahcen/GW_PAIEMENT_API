@@ -53,7 +53,7 @@ public class Transaction implements Serializable {
 	@Column(name = "TRS_PROCOD")
 	private String trs_procod;
 	@Column(name = "TRS_MONTANT")
-	private Double  trs_montant;
+	private Double  trsmontant;
 	@Column(name = "TRS_ECART")	
 	private Double  trs_ecart;
 	@Column(name = "TRS_TYPCARTE")	
@@ -140,12 +140,7 @@ public class Transaction implements Serializable {
 	private String  trs_ordrecarte;
 
 	@Column(name = "TRS_COMMANDE")	
-	private String   trs_commande;
-	
-	
-	
-	
-	
+	private String   trscommande;
 	
 	public Transaction() {
 		super();
@@ -162,7 +157,7 @@ public class Transaction implements Serializable {
 			String trs_devsrc, String trs_cptcmr, Date trs_impdate, Date trs_trtdate, Date trs_expdate,
 			String trs_trstype, String trs_codopr, String trs_certif, String trs_pursefile, String trs_debtransc,
 			String trs_credtransc, String trs_pursecod, String trs_numremise, Date trs_datfin, String trs_ordrecarte,
-			long trs_id, String trs_commande) {
+			long trs_id, String trscommande) {
 		super();
 		this.trs_numtrait = trs_numtrait;
 		this.trsnumcmr = trs_numcmr;
@@ -175,7 +170,7 @@ public class Transaction implements Serializable {
 		this.trs_nocompte = trs_nocompte;
 		this.trs_typtop = trs_typtop;
 		this.trs_procod = trs_procod;
-		this.trs_montant = trs_montant;
+		this.trsmontant = trs_montant;
 		this.trs_ecart = trs_ecart;
 		this.trs_typcarte = trs_typcarte;
 		this.trs_syspay = trs_syspay;
@@ -219,7 +214,7 @@ public class Transaction implements Serializable {
 		this.trs_datfin = trs_datfin;
 		this.trs_ordrecarte = trs_ordrecarte;
 		this.trs_id = trs_id;
-		this.trs_commande = trs_commande;
+		this.trscommande = trscommande;
 	}
 	public Double getTrs_numtrait() {
 		return trs_numtrait;
@@ -288,10 +283,10 @@ public class Transaction implements Serializable {
 		this.trs_procod = trs_procod;
 	}
 	public Double getTrs_montant() {
-		return trs_montant;
+		return trsmontant;
 	}
-	public void setTrs_montant(Double trs_montant) {
-		this.trs_montant = trs_montant;
+	public void setTrs_montant(Double trsmontant) {
+		this.trsmontant = trsmontant;
 	}
 	public Double getTrs_ecart() {
 		return trs_ecart;
@@ -552,10 +547,10 @@ public class Transaction implements Serializable {
 		this.trs_id = trs_id;
 	}
 	public String getTrs_commande() {
-		return trs_commande;
+		return trscommande;
 	}
-	public void setTrs_commande(String trs_commande) {
-		this.trs_commande = trs_commande;
+	public void setTrs_commande(String trscommande) {
+		this.trscommande = trscommande;
 	}
 	
 	@Override
@@ -563,8 +558,8 @@ public class Transaction implements Serializable {
 		return "Transaction [trs_numtrait=" + trs_numtrait + ", trsnumcmr=" + trsnumcmr + ", trs_numtlcolcte="
 				+ trs_numtlcolcte + ", trs_codtpe=" + trs_codtpe + ", trs_numfact=" + trs_numfact + ", trs_numbloc="
 				+ trs_numbloc + ", trs_numseq=" + trs_numseq + ", trs_codporteur=" + trs_codporteur + ", trs_nocompte="
-				+ trs_nocompte + ", trs_typtop=" + trs_typtop + ", trs_procod=" + trs_procod + ", trs_montant="
-				+ trs_montant + ", trs_ecart=" + trs_ecart + ", trs_typcarte=" + trs_typcarte + ", trs_syspay="
+				+ trs_nocompte + ", trs_typtop=" + trs_typtop + ", trs_procod=" + trs_procod + ", trsmontant="
+				+ trsmontant + ", trs_ecart=" + trs_ecart + ", trs_typcarte=" + trs_typcarte + ", trs_syspay="
 				+ trs_syspay + ", trs_modval=" + trs_modval + ", trs_mapreleas=" + trs_mapreleas + ", trs_originpor="
 				+ trs_originpor + ", trs_codbqe=" + trs_codbqe + ", trs_groupe=" + trs_groupe + ", trs_dattrans="
 				+ trs_dattrans + ", trsnumaut=" + trsnumaut + ", trs_numreleveport=" + trs_numreleveport
@@ -579,7 +574,7 @@ public class Transaction implements Serializable {
 				+ ", trs_pursefile=" + trs_pursefile + ", trs_debtransc=" + trs_debtransc + ", trs_credtransc="
 				+ trs_credtransc + ", trs_pursecod=" + trs_pursecod + ", trs_numremise=" + trs_numremise
 				+ ", trs_datfin=" + trs_datfin + ", trs_ordrecarte=" + trs_ordrecarte + ", trs_id=" + trs_id
-				+ ", trs_commande=" + trs_commande + "]";
+				+ ", trscommande=" + trscommande + "]";
 	}
 	
 	

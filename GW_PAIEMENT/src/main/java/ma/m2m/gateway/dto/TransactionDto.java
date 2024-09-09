@@ -11,7 +11,7 @@ import java.util.Date;
 public class TransactionDto {
 	
 	private long trs_id;
-	private String   trs_commande;
+	private String   trscommande;
 	private Double trs_numtrait;
 	private String trsnumcmr;
 	private Double trs_numtlcolcte;
@@ -23,7 +23,7 @@ public class TransactionDto {
 	private String trs_nocompte;
 	private String  trs_typtop;
 	private String trs_procod;
-	private Double  trs_montant;
+	private Double  trsmontant;
 	private Double  trs_ecart;
 	private String  trs_typcarte;
 	private String  trs_syspay;
@@ -73,10 +73,10 @@ public class TransactionDto {
 		this.trs_id = trs_id;
 	}
 	public String getTrs_commande() {
-		return trs_commande;
+		return trscommande;
 	}
-	public void setTrs_commande(String trs_commande) {
-		this.trs_commande = trs_commande;
+	public void setTrs_commande(String trscommande) {
+		this.trscommande = trscommande;
 	}
 	public Double getTrs_numtrait() {
 		return trs_numtrait;
@@ -145,10 +145,10 @@ public class TransactionDto {
 		this.trs_procod = trs_procod;
 	}
 	public Double getTrs_montant() {
-		return trs_montant;
+		return trsmontant;
 	}
-	public void setTrs_montant(Double trs_montant) {
-		this.trs_montant = trs_montant;
+	public void setTrs_montant(Double trsmontant) {
+		this.trsmontant = trsmontant;
 	}
 	public Double getTrs_ecart() {
 		return trs_ecart;
@@ -402,9 +402,9 @@ public class TransactionDto {
 	public void setTrs_ordrecarte(String trs_ordrecarte) {
 		this.trs_ordrecarte = trs_ordrecarte;
 	}
-	public TransactionDto(long trs_id, String trs_commande, Double trs_numtrait, String trsnumcmr,
+	public TransactionDto(long trs_id, String trscommande, Double trs_numtrait, String trsnumcmr,
 			Double trs_numtlcolcte, Double trs_codtpe, Double trs_numfact, Double trs_numbloc, Double trs_numseq,
-			String trs_codporteur, String trs_nocompte, String trs_typtop, String trs_procod, Double trs_montant,
+			String trs_codporteur, String trs_nocompte, String trs_typtop, String trs_procod, Double trsmontant,
 			Double trs_ecart, String trs_typcarte, String trs_syspay, String trs_modval, String trs_mapreleas,
 			String trs_originpor, String trs_codbqe, String trs_groupe, Date trs_dattrans, String trsnumaut,
 			Double trs_numreleveport, Double trs_numrelevecmr, Double trs_numedition, String trs_annule,
@@ -416,7 +416,7 @@ public class TransactionDto {
 			String trs_numremise, Date trs_datfin, String trs_ordrecarte) {
 		super();
 		this.trs_id = trs_id;
-		this.trs_commande = trs_commande;
+		this.trscommande = trscommande;
 		this.trs_numtrait = trs_numtrait;
 		this.trsnumcmr = trsnumcmr;
 		this.trs_numtlcolcte = trs_numtlcolcte;
@@ -428,7 +428,7 @@ public class TransactionDto {
 		this.trs_nocompte = trs_nocompte;
 		this.trs_typtop = trs_typtop;
 		this.trs_procod = trs_procod;
-		this.trs_montant = trs_montant;
+		this.trsmontant = trsmontant;
 		this.trs_ecart = trs_ecart;
 		this.trs_typcarte = trs_typcarte;
 		this.trs_syspay = trs_syspay;
@@ -474,6 +474,29 @@ public class TransactionDto {
 	}
 	public TransactionDto() {
 		super();
+	}
+	@Override
+	public String toString() {
+		return "TransactionDto [trs_id=" + trs_id + ", trscommande=" + trscommande + ", trs_numtrait=" + trs_numtrait
+				+ ", trsnumcmr=" + trsnumcmr + ", trs_numtlcolcte=" + trs_numtlcolcte + ", trs_codtpe=" + trs_codtpe
+				+ ", trs_numfact=" + trs_numfact + ", trs_numbloc=" + trs_numbloc + ", trs_numseq=" + trs_numseq
+				+ ", trs_codporteur=" + trs_codporteur + ", trs_nocompte=" + trs_nocompte + ", trs_typtop=" + trs_typtop
+				+ ", trs_procod=" + trs_procod + ", trsmontant=" + trsmontant + ", trs_ecart=" + trs_ecart
+				+ ", trs_typcarte=" + trs_typcarte + ", trs_syspay=" + trs_syspay + ", trs_modval=" + trs_modval
+				+ ", trs_mapreleas=" + trs_mapreleas + ", trs_originpor=" + trs_originpor + ", trs_codbqe=" + trs_codbqe
+				+ ", trs_groupe=" + trs_groupe + ", trs_dattrans=" + trs_dattrans + ", trsnumaut=" + trsnumaut
+				+ ", trs_numreleveport=" + trs_numreleveport + ", trs_numrelevecmr=" + trs_numrelevecmr
+				+ ", trs_numedition=" + trs_numedition + ", trs_annule=" + trs_annule + ", trs_etat=" + trs_etat
+				+ ", trs_arn=" + trs_arn + ", trs_devise=" + trs_devise + ", trs_ica=" + trs_ica + ", trs_bqcmr="
+				+ trs_bqcmr + ", trs_origine=" + trs_origine + ", trs_chgreas=" + trs_chgreas + ", trs_poscapbi="
+				+ trs_poscapbi + ", trs_cdhlidmt=" + trs_cdhlidmt + ", trs_posentry=" + trs_posentry + ", trs_mailin="
+				+ trs_mailin + ", trs_heuretrs=" + trs_heuretrs + ", trs_mntsrc=" + trs_mntsrc + ", trs_devsrc="
+				+ trs_devsrc + ", trs_cptcmr=" + trs_cptcmr + ", trs_impdate=" + trs_impdate + ", trs_trtdate="
+				+ trs_trtdate + ", trs_expdate=" + trs_expdate + ", trs_trstype=" + trs_trstype + ", trs_codopr="
+				+ trs_codopr + ", trs_certif=" + trs_certif + ", trs_pursefile=" + trs_pursefile + ", trs_debtransc="
+				+ trs_debtransc + ", trs_credtransc=" + trs_credtransc + ", trs_pursecod=" + trs_pursecod
+				+ ", trs_numremise=" + trs_numremise + ", trs_datfin=" + trs_datfin + ", trs_ordrecarte="
+				+ trs_ordrecarte + "]";
 	}
 
 

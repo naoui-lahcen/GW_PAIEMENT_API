@@ -19,6 +19,9 @@
          href="https://use.fontawesome.com/releases/v5.0.8/css/all.css">
      <meta name="viewport" content="width=device-width, initial-scale=1">
      <style>
+	body {
+    	font-family: 'Roboto', sans-serif;
+	}
       .dialog {
          display : none;
      }
@@ -130,7 +133,7 @@
                   </p>
                   <br class="mobile-hide">
                   <div class="row" th:if="${demandeDto.factures == null}">
-                     <p class="text-right tr2" style="color: #f27a45f2;font-size: x-large;font-weight: 700;">. Informations de votre paiement
+                     <p class="text-right tr2" style="color: #f27a45f2;font-size: x-large;font-weight: 700;">Informations de votre paiement
                      </p>
                   </div>
                   <div class="row" th:if="${demandeDto.factures == null}">
@@ -148,7 +151,7 @@
                      </label>
                   </div>
                   <div class="row" th:if="${demandeDto.factures != null and demandeDto.factures.size > 0}">
-                     <p class="text-right tr2" style="color: #f27a45f2;font-size: x-large;font-weight: 700;">. Détails factures
+                     <p class="text-right tr2" style="color: #f27a45f2;font-size: x-large;font-weight: 700;">Détails factures
                      </p>
                   </div>
                   <div class="row lydecdata" th:if="${demandeDto.factures != null and demandeDto.factures.size > 0}">
@@ -205,7 +208,7 @@
             <article class="card">
             <div class="card-body yyy p-5">
                <div class="row">
-                  <p class="text-left tr3" style="color: #f27a45f2;font-size: x-large;font-weight: 700;">. Informations de votre carte
+                  <p class="text-left tr3" style="color: #f27a45f2;font-size: x-large;font-weight: 700;">Informations de votre carte
                   </p>
                </div>
                <form role="form" method="POST" th:action="@{/payer}" th:object="${demandeDto}">
@@ -214,7 +217,7 @@
                      carte bancaire</label>
                      <div class="col-sm-3" th:if="${demandeDto.cartes == null }">
                         <input type="number" th:field="*{dem_pan}" class="form-control" id="num" required="required"
-                           placeholder="N° carte bancaire">
+                           placeholder="Numéro de carte">
                      </div>
                      <div class="col-sm-3" id="cartes" th:if="${demandeDto.cartes != null and demandeDto.cartes.size > 0 }">
                        <select class="form-control" id="carteID" th:field="*{infoCarte}" required="required" onchange="updateExpirationDate()">
@@ -226,13 +229,12 @@
                      <!-- si je clique sur Nouvelle carte jaffiche cette div-->
                      <div class="col-sm-3" id="nvnums" style="display: none;">
                         <input type="number" th:field="*{dem_pan}" class="form-control" id="nvnum"
-                           placeholder="N° nouvelle carte bancaire">
+                           placeholder="Nouvelle numéro de carte">
                      </div>
-                     <label for="cvv" class="col-sm-3 col-form-label">Code de
-                     sécurité</label>
+                     <label for="cvv" class="col-sm-3 col-form-label">CVV</label>
                      <div class="col-sm-3">
                         <input type="number" th:field="*{dem_cvv}" class="form-control" id="cvv" required="required"
-                           placeholder="CVV">
+                           placeholder="Code à 3 chiffres">
                      </div>
                   </div>
                   <div class="form-group row">
@@ -240,7 +242,7 @@
                      d'expiration</label>
                      <div class="col-sm-3" th:if="${demandeDto.cartes == null }">
                         <select class="form-control" th:field="*{annee}" required="required">
-                           <option value="">YY</option>
+                           <option value="">Année</option>
                            <option th:each="item : ${demandeDto.years}" th:value="${item}" th:text="${item}"></option>
                         </select>
                      </div>
@@ -250,14 +252,14 @@
                      <!-- si je clique sur Nouvelle carte jaffiche cette div-->
                      <div class="col-sm-3" id="nvannes" style="display: none;">
                         <select class="form-control" th:field="*{annee}">
-                           <option value="">YY</option>
+                           <option value="">Année</option>
                            <option th:each="item : ${demandeDto.years}" th:value="${item}" th:text="${item}"></option>
                         </select>
                      </div>
-                     <label for="xxx" class="col-sm-3 col-form-label">Mois</label>
+                     <label for="xxx" class="col-sm-3 col-form-label"></label>
                      <div class="col-sm-3" th:if="${demandeDto.cartes == null }">
                         <select class="form-control" th:field="*{mois}" required="required">
-                           <option value="">MM</option>
+                           <option value="">Mois</option>
                            <option th:each="item : ${demandeDto.months}" th:value="${item.value}" th:text="${item.month}"></option>
                         </select>
                      </div>
@@ -267,7 +269,7 @@
                       <!-- si je clique sur Nouvelle carte jaffiche cette div-->
                      <div class="col-sm-3" id="nvmois" style="display: none;">
                         <select class="form-control" th:field="*{mois}">
-                           <option value="">MM</option>
+                           <option value="">Mois</option>
                            <option th:each="item : ${demandeDto.months}" th:value="${item.value}" th:text="${item.month}"></option>
                         </select>
                      </div>
@@ -295,7 +297,7 @@
                      <label>
                      <input type="checkbox" th:field="*{condition}" required="required" /> J'ai lu et j'accepte
                      </label>
-                     <a id="openDialog" style="color: #0056b3;cursor: pointer;text-decoration: underline;">
+                     <a id="openDialog" style="color: #0056b3;cursor: pointer;text-decoration: underline;margin: 0 2px;">
                      les conditions générales d'utilisation</a>
                   </div>
 				  
@@ -341,13 +343,13 @@
       <div id="dialog" class="dialog container my-2" align="center">
          <article class="card" style="max-height: 200px;overflow-y: auto;border: 1px solid #ccc;padding: 10px;">
             <div class="card-body p-5" style="font-size: 15px;">
-               <p style="margin-left: 40px; font-weight: bold !important;">
+               <p style="font-weight: bold !important;">
                   Conformément à la loi 09-08 sur la protection des personnes physiques à 
                   l'égard du traitement des données à caractère personnel, il est porté à votre connaissance 
                   qu'en utilisant le service de paiement en ligne pour payer un service ou un produit 
                   commercialisé par un site marchand affilié à NAPS:
                </p>
-               <ul>
+               <ul style="padding-left: 0;">
                   <li style="color: #f37122;"><span
                      style="color: #000 !important;">
                      Les destinataires des données concernant un payeur telles que le nom et prénom, courriel,
@@ -432,7 +434,7 @@
          <footer class="bg-light text-center text-lg-start">
             <!-- Copyright -->
             <div class="text-center cp p-3" style="    border: 0.1px solid #d6d2d2;color: black;">
-               Copyright © 2023 NAPS all rights reserved
+               Copyright © 2024 Naps Tous droits réservés.
                <a href="https://naps.ma/">naps.ma</a>
             </div>
             <!-- Copyright -->

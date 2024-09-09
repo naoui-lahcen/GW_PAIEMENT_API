@@ -347,7 +347,7 @@ public class AppMobileController {
 							Util.writeInFileTransaction(folder, file,
 									"demandePaiement after update MPI_KO idDemande null");
 							demandeDtoMsg.setMsgRefus(
-									"La transaction en cours n’a pas abouti (MPI_KO), votre compte ne sera pas débité, merci de réessayer .");
+									"La transaction en cours n’a pas abouti (MPI_KO), votre compte ne sera pas débité, merci de réessayer.");
 							model.addAttribute("demandeDto", demandeDtoMsg);
 							page = "result";
 							Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -362,7 +362,7 @@ public class AppMobileController {
 									"demandePaiement not found !!!! demandePaiement = null  / received idDemande from MPI => "
 											+ idDemande);
 							demandeDtoMsg.setMsgRefus(
-									"La transaction en cours n’a pas abouti (DemandePaiement introuvable), votre compte ne sera pas débité, merci de réessayer .");
+									"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 							model.addAttribute("demandeDto", demandeDtoMsg);
 							page = "result";
 							Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -372,33 +372,34 @@ public class AppMobileController {
 						
 						// 2024-06-04
 						// gestion expiration de la session on recupere la date en millisecond
-						Long paymentStartTime = Long.parseLong(dmd.getTimeoutURL());
-						Util.writeInFileTransaction(folder, file, "paymentStartTime : " + paymentStartTime);
-
-					    if (paymentStartTime != null) {
-					        long currentTime = System.currentTimeMillis();
-					        long elapsedTime = currentTime - paymentStartTime;
-					        Util.writeInFileTransaction(folder, file, "currentTime : " + currentTime);
-					        Util.writeInFileTransaction(folder, file, "elapsedTime : " + elapsedTime);
-					        // Check if more than 5 minutes (300000 milliseconds) have passed
-					        int timeoutF = timeout;
-					        if (elapsedTime > timeoutF) {
-								Util.writeInFileTransaction(folder, file, "Page expirée Time > 5min");
-								demandeDtoMsg.setMsgRefus("Votre session de paiement a expiré. Veuillez réessayer.");
-								demandeDtoMsg.setIddemande(dmd.getIddemande());
-								session.setAttribute("idDemande", dmd.getIddemande());								
-								model.addAttribute("demandeDto", demandeDtoMsg);
-								dmd.setEtat_demande("TimeOut");
-								dmd.setDem_cvv("");
-								dmd = demandePaiementService.save(dmd);	            
-								page = "timeout";
-								
-								Util.writeInFileTransaction(folder, file, "*********** Fin processRequest () ************** ");
-								System.out.println("*********** Fin processRequest () ************** ");
-								
-								return page;
-					        }
-					    }
+						if(dmd.getTimeoutURL() != null) {
+							Long paymentStartTime = Long.parseLong(dmd.getTimeoutURL());
+							Util.writeInFileTransaction(folder, file, "paymentStartTime : " + paymentStartTime);
+						    if (paymentStartTime != null) {
+						        long currentTime = System.currentTimeMillis();
+						        long elapsedTime = currentTime - paymentStartTime;
+						        Util.writeInFileTransaction(folder, file, "currentTime : " + currentTime);
+						        Util.writeInFileTransaction(folder, file, "elapsedTime : " + elapsedTime);
+						        // Check if more than 5 minutes (300000 milliseconds) have passed
+						        int timeoutF = timeout;
+						        if (elapsedTime > timeoutF) {
+									Util.writeInFileTransaction(folder, file, "Page expirée Time > 5min");
+									demandeDtoMsg.setMsgRefus("Votre session de paiement a expiré. Veuillez réessayer.");
+									demandeDtoMsg.setIddemande(dmd.getIddemande());
+									session.setAttribute("idDemande", dmd.getIddemande());								
+									model.addAttribute("demandeDto", demandeDtoMsg);
+									dmd.setEtat_demande("TimeOut");
+									dmd.setDem_cvv("");
+									dmd = demandePaiementService.save(dmd);	            
+									page = "timeout";
+									
+									Util.writeInFileTransaction(folder, file, "*********** Fin processRequest () ************** ");
+									System.out.println("*********** Fin processRequest () ************** ");
+									
+									return page;
+						        }
+						    }
+						}
 					 // 2024-06-04
 
 						// Merchnat info
@@ -419,7 +420,7 @@ public class AppMobileController {
 									"authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 											+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]"
 											+ e);
-							demandeDtoMsg.setMsgRefus("Commerçant mal configuré dans la base de données ou inexistant");
+							demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité.");
 							model.addAttribute("demandeDto", demandeDtoMsg);
 							page = "result";
 							Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -434,7 +435,7 @@ public class AppMobileController {
 									"authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 											+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid
 											+ "]");
-							demandeDtoMsg.setMsgRefus("Commerçant mal configuré dans la base de données ou inexistant");
+							demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité.");
 							model.addAttribute("demandeDto", demandeDtoMsg);
 							page = "result";
 							Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -449,7 +450,7 @@ public class AppMobileController {
 									"authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 											+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid
 											+ "]");
-							demandeDtoMsg.setMsgRefus("Commerçant mal configuré dans la base de données ou inexistant");
+							demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité.");
 							model.addAttribute("demandeDto", demandeDtoMsg);
 							page = "result";
 							Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -464,7 +465,7 @@ public class AppMobileController {
 									"authorization 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 											+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid
 											+ "]");
-							demandeDtoMsg.setMsgRefus("Commerçant mal configuré dans la base de données ou inexistant");
+							demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité.");
 							model.addAttribute("demandeDto", demandeDtoMsg);
 							page = "result";
 							Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -483,7 +484,7 @@ public class AppMobileController {
 											+ orderid + "] and merchantid:[" + merchantid + "] and websiteid:["
 											+ websiteid + "]" + e);
 							demandeDtoMsg
-									.setMsgRefus("InfoCommercant mal configuré dans la base de données ou inexistant");
+									.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité.");
 							model.addAttribute("demandeDto", demandeDtoMsg);
 							page = "result";
 							Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -499,7 +500,7 @@ public class AppMobileController {
 											+ orderid + "] and merchantid:[" + merchantid + "] and websiteid:["
 											+ websiteid + "]");
 							demandeDtoMsg
-									.setMsgRefus("InfoCommercant mal configuré dans la base de données ou inexistant");
+									.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité.");
 							model.addAttribute("demandeDto", demandeDtoMsg);
 							page = "result";
 							Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -558,7 +559,7 @@ public class AppMobileController {
 							Util.writeInFileTransaction(folder, file,
 									"authorization 500 Error during  date formatting for given orderid:[" + orderid
 											+ "] and merchantid:[" + merchantid + "]" + err2);
-							demandeDtoMsg.setMsgRefus("Erreur lors du formatage de la date");
+							demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 							model.addAttribute("demandeDto", demandeDtoMsg);
 							page = "result";
 							Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -574,7 +575,7 @@ public class AppMobileController {
 									"demandePaiement after update MPI_KO reponseMPI null : " + dmd.toString());
 							Util.writeInFileTransaction(folder, file, "Response 3DS is null");
 							demandeDtoMsg.setMsgRefus(
-									"La transaction en cours n’a pas abouti (MPI_KO reponseMPI null), votre compte ne sera pas débité, merci de réessayer .");
+									"La transaction en cours n’a pas abouti (MPI_KO reponseMPI null), votre compte ne sera pas débité, merci de réessayer.");
 							model.addAttribute("demandeDto", demandeDtoMsg);
 							page = "result";
 							Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -641,7 +642,7 @@ public class AppMobileController {
 								Util.writeInFileTransaction(folder, file,
 										"authorization 500 cvv not set , reccuring flag set to N, cvv must be present in normal transaction");
 								demandeDtoMsg.setMsgRefus(
-										"La transaction en cours n’a pas abouti (cvv doit être présent dans la transaction normale), votre compte ne sera pas débité, merci de réessayer .");
+										"La transaction en cours n’a pas abouti (cvv doit être présent dans la transaction normale), votre compte ne sera pas débité, merci de réessayer.");
 								model.addAttribute("demandeDto", demandeDtoMsg);
 								page = "result";
 								Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -709,7 +710,7 @@ public class AppMobileController {
 											"authorization 500 Error during switch tlv buildup for given orderid:["
 													+ orderid + "] and merchantid:[" + merchantid + "]" + err4);
 									demandeDtoMsg.setMsgRefus(
-											"La transaction en cours n’a pas abouti (Erreur lors de la création du switch tlv), votre compte ne sera pas débité, merci de réessayer .");
+											"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 									model.addAttribute("demandeDto", demandeDtoMsg);
 									page = "result";
 									Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -755,7 +756,7 @@ public class AppMobileController {
 													+ sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv
 													+ "]");
 									demandeDtoMsg
-											.setMsgRefus("Un dysfonctionnement du switch ne peut pas se connecter !!!");
+											.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 									model.addAttribute("demandeDto", demandeDtoMsg);
 									page = "result";
 									Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -793,7 +794,7 @@ public class AppMobileController {
 										"Switch  malfunction ConnectException !!!" + e);
 								switch_ko = 1;
 								demandeDtoMsg.setMsgRefus(
-										"La transaction en cours n’a pas abouti (Un dysfonctionnement du switch), votre compte ne sera pas débité, merci de réessayer .");
+										"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 								model.addAttribute("demandeDto", demandeDtoMsg);
 								page = "result";
 								Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -814,7 +815,7 @@ public class AppMobileController {
 												+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : ["
 												+ resp_tlv + "]");
 								demandeDtoMsg.setMsgRefus(
-										"La transaction en cours n’a pas abouti (Erreur de communication du switch SocketTimeoutException), votre compte ne sera pas débité, merci de réessayer .");
+										"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 								model.addAttribute("demandeDto", demandeDtoMsg);
 								page = "result";
 								Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -834,7 +835,7 @@ public class AppMobileController {
 												+ sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv
 												+ "]");
 								demandeDtoMsg.setMsgRefus(
-										"La transaction en cours n’a pas abouti (Erreur de communication du switch IOException), votre compte ne sera pas débité, merci de réessayer .");
+										"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 								model.addAttribute("demandeDto", demandeDtoMsg);
 								page = "result";
 								Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -850,7 +851,7 @@ public class AppMobileController {
 								switch_ko = 1;
 								e.printStackTrace();
 								demandeDtoMsg.setMsgRefus(
-										"La transaction en cours n’a pas abouti (Dysfonctionnement du switch Exception), votre compte ne sera pas débité, merci de réessayer .");
+										"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 								model.addAttribute("demandeDto", demandeDtoMsg);
 								page = "result";
 								Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -874,7 +875,7 @@ public class AppMobileController {
 										"authorization 500 Error Switch null response" + "switch ip:[" + sw_s
 												+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
 								demandeDtoMsg.setMsgRefus(
-										"La transaction en cours n’a pas abouti (Dysfonctionnement du switch resp null), votre compte ne sera pas débité, merci de réessayer .");
+										"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 								model.addAttribute("demandeDto", demandeDtoMsg);
 								page = "result";
 								Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -894,7 +895,7 @@ public class AppMobileController {
 												+ sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv
 												+ "]");
 								demandeDtoMsg.setMsgRefus(
-										"La transaction en cours n’a pas abouti (Dysfonctionnement du switch resp < 3 !!!), votre compte ne sera pas débité, merci de réessayer .");
+										"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 								model.addAttribute("demandeDto", demandeDtoMsg);
 								page = "result";
 								Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -949,7 +950,7 @@ public class AppMobileController {
 													+ sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv
 													+ "]");
 									demandeDtoMsg.setMsgRefus(
-											"La transaction en cours n’a pas abouti (Erreur lors de la mise à jour de DemandePaiement SW_REJET), votre compte ne sera pas débité, merci de réessayer .");
+											"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 									model.addAttribute("demandeDto", demandeDtoMsg);
 									page = "result";
 									Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -1171,190 +1172,12 @@ public class AppMobileController {
 									dmd.setEtat_demande("SW_PAYE");
 									dmd.setDem_cvv("");
 									demandePaiementService.save(dmd);
-
+									Util.writeInFileTransaction(folder, file, "update etat demande : SW_PAYE OK");
 								} catch (Exception e) {
 									Util.writeInFileTransaction(folder, file,
 											"authorization 500 Error during DEMANDE_PAIEMENT update etat demande for given orderid:["
 													+ orderid + "]" + e);
-								}
-
-								Util.writeInFileTransaction(folder, file, "update etat demande : SW_PAYE OK");
-
-								String capture_status = "N";
-								int exp_flag = 0;
-
-								if (capture.equalsIgnoreCase("Y")) {
-									// 2024-05-17
-									HistoAutoGateDto histToCapture= null;
-									try {
-										if(hist.getId() == null) {
-											// get histoauto check if exist
-											histToCapture = histoAutoGateService.findLastByHatNumCommandeAndHatNumcmr(orderid, merchantid);
-											if(histToCapture ==null) {
-												histToCapture = hist;
-											}
-										} else {
-											histToCapture = hist;
-										}
-									} catch (Exception err2) {
-										Util.writeInFileTransaction(folder, file,
-												"authorization 500 Error during HistoAutoGate findLastByHatNumCommandeAndHatNumcmr orderid:[" + orderid
-														+ "] and merchantid:[" + merchantid + "]" + err2);
-									}
-									// 2024-05-17
-
-									Date current_date = null;
-									current_date = new Date();
-									Util.writeInFileTransaction(folder, file, "Automatic capture start...");
-
-									Util.writeInFileTransaction(folder, file, "Getting authnumber");
-
-									String authnumber = histToCapture.getHatNautemt();
-									Util.writeInFileTransaction(folder, file, "authnumber : [" + authnumber + "]");
-
-									Util.writeInFileTransaction(folder, file, "Getting authnumber");
-									TransactionDto trs_check = null;
-
-									try {
-										trs_check = transactionService.findByTrsnumautAndTrsnumcmr(authnumber,
-												merchantid);
-									} catch (Exception ee) {
-
-										Util.writeInFileTransaction(folder, file,
-												"trs_check trs_check exception e : [" + ee.toString() + "]");
-									}
-
-									if (trs_check != null) {
-										// do nothing
-										Util.writeInFileTransaction(folder, file,
-												"trs_check != null do nothing for now ...");
-									} else {
-
-										Util.writeInFileTransaction(folder, file, "inserting into telec start ...");
-
-										try {
-
-											// insert into telec
-
-											TelecollecteDto n_tlc = telecollecteService.getMAXTLC_N(merchantid);
-
-											long lidtelc = 0;
-
-											if (n_tlc == null) {
-												Util.writeInFileTransaction(folder, file, "getMAXTLC_N n_tlc = null");
-												Integer idtelc = null;
-
-												TelecollecteDto tlc = null;
-
-												// insert into telec
-												idtelc = telecollecteService.getMAX_ID(merchantid);
-												Util.writeInFileTransaction(folder, file,
-														"getMAX_ID idtelc : " + idtelc);
-
-												if (idtelc != null) {
-													lidtelc = idtelc.longValue() + 1;
-												} else {
-													lidtelc = 1;
-												}
-												tlc = new TelecollecteDto();
-												tlc.setTlc_numtlcolcte(lidtelc);
-
-												tlc.setTlc_numtpe(histToCapture.getHatCodtpe());
-
-												tlc.setTlc_datcrtfich(current_date);
-												tlc.setTlc_nbrtrans(new Double(1));
-												tlc.setTlc_gest("N");
-
-												tlc.setTlc_datremise(current_date);
-												tlc.setTlc_numremise(new Double(lidtelc));
-												// tlc.setTlc_numfich(new Double(0));
-												String tmpattern = "HH:mm";
-												SimpleDateFormat sftm = new SimpleDateFormat(tmpattern);
-												String stm = sftm.format(current_date);
-												tlc.setTlc_heuremise(stm);
-
-												tlc.setTlc_codbq(acqcode);
-												tlc.setTlc_numcmr(merchantid);
-												tlc.setTlc_numtpe(websiteid);
-												telecollecteService.save(tlc);
-
-											} else {
-												Util.writeInFileTransaction(folder, file, "n_tlc !=null ");
-
-												lidtelc = n_tlc.getTlc_numtlcolcte();
-												double nbr_trs = n_tlc.getTlc_nbrtrans();
-
-												nbr_trs = nbr_trs + 1;
-
-												n_tlc.setTlc_nbrtrans(nbr_trs);
-
-												telecollecteService.save(n_tlc);
-
-											}
-
-											// insert into transaction
-											TransactionDto trs = new TransactionDto();
-											trs.setTrsnumcmr(merchantid);
-											trs.setTrs_numtlcolcte(Double.valueOf(lidtelc));
-
-											String frmt_cardnumber = Util.formatagePan(cardnumber);
-											trs.setTrs_codporteur(frmt_cardnumber);
-
-											double dmnt = 0;
-
-											dmnt = Double.parseDouble(amount);
-
-											trs.setTrs_montant(dmnt);
-											// trs.setTrs_dattrans(new Date());
-
-											current_date = new Date();
-											Date current_date_1 = getDateWithoutTime(current_date);
-											trs.setTrs_dattrans(current_date_1);
-
-											trs.setTrsnumaut(authnumber);
-											trs.setTrs_etat("N");
-											trs.setTrs_devise(histToCapture.getHatDevise());
-											trs.setTrs_certif("N");
-											Integer idtrs = transactionService.getMAX_ID();
-											long lidtrs = idtrs.longValue() + 1;
-											trs.setTrs_id(lidtrs);
-											trs.setTrs_commande(orderid);
-											trs.setTrs_procod("0");
-											trs.setTrs_groupe(websiteid);
-											trs.setTrs_codtpe(0.0);
-											trs.setTrs_numbloc(0.0);
-											trs.setTrs_numfact(0.0);
-											transactionService.save(trs);
-
-											histToCapture.setHatEtat('T');
-											histToCapture.setHatdatetlc(current_date);
-											histToCapture.setOperateurtlc("mxplusapi");
-											histoAutoGateService.save(histToCapture);
-
-											capture_id = String.format("%040d",
-													new BigInteger(UUID.randomUUID().toString().replace("-", ""), 36));
-											Date dt = new Date();
-											String dtpattern = "yyyy-MM-dd";
-											SimpleDateFormat sfdt = new SimpleDateFormat(dtpattern);
-											String sdt = sfdt.format(dt);
-											String tmpattern = "HH:mm:ss";
-											SimpleDateFormat sftm = new SimpleDateFormat(tmpattern);
-											String stm = sftm.format(dt);
-											Util.writeInFileTransaction(folder, file, "inserting into telec ok");
-											capture_status = "Y";
-
-										} catch (Exception e) {
-											exp_flag = 1;
-											Util.writeInFileTransaction(folder, file,
-													"inserting into telec ko..do nothing " + e);
-										}
-
-									}
-									if (capture_status.equalsIgnoreCase("Y") && exp_flag == 1)
-										capture_status.equalsIgnoreCase("N");
-
-									Util.writeInFileTransaction(folder, file, "Automatic capture end.");
-								}
+								}								
 
 							} else {
 
@@ -1368,9 +1191,6 @@ public class AppMobileController {
 									dmd.setEtat_demande("SW_REJET");
 									dmd.setDem_cvv("");
 									demandePaiementService.save(dmd);
-									// old
-									//hist.setHatEtat('A');
-									//histoAutoGateService.save(hist);
 								} catch (Exception e) {
 									dmd.setDem_cvv("");
 									demandePaiementService.save(dmd);
@@ -1378,7 +1198,7 @@ public class AppMobileController {
 											"authorization 500 Error during  DemandePaiement update SW_REJET for given orderid:["
 													+ orderid + "]" + e);
 									demandeDtoMsg.setMsgRefus(
-											"La transaction en cours n’a pas abouti (Erreur lors de la mise à jour de DemandePaiement SW_REJET), votre compte ne sera pas débité, merci de réessayer .");
+											"La transaction en cours n’a pas abouti (Erreur lors de la mise à jour de DemandePaiement SW_REJET), votre compte ne sera pas débité, merci de réessayer.");
 									model.addAttribute("demandeDto", demandeDtoMsg);
 									page = "result";
 									Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -1427,7 +1247,7 @@ public class AppMobileController {
 										"authorization 500 Error during  paymentid generation for given orderid:["
 												+ orderid + "]" + e);
 								demandeDtoMsg.setMsgRefus(
-										"La transaction en cours n’a pas abouti (Erreur lors de la génération de l'ID de paiement), votre compte ne sera pas débité, merci de réessayer .");
+										"La transaction en cours n’a pas abouti (Erreur lors de la génération de l'ID de paiement), votre compte ne sera pas débité, merci de réessayer.");
 								model.addAttribute("demandeDto", demandeDtoMsg);
 								page = "result";
 								Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -1465,7 +1285,7 @@ public class AppMobileController {
 										"authorization 500 Error during authdata preparation orderid:[" + orderid + "]"
 												+ e);
 								demandeDtoMsg.setMsgRefus(
-										"La transaction en cours n’a pas abouti (Erreur lors de la préparation des données d'authentification), votre compte ne sera pas débité, merci de réessayer .");
+										"La transaction en cours n’a pas abouti (Erreur lors de la préparation des données d'authentification), votre compte ne sera pas débité, merci de réessayer.");
 								model.addAttribute("demandeDto", demandeDtoMsg);
 								page = "result";
 								Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -1549,7 +1369,7 @@ public class AppMobileController {
 									demandeDtoMsg.setMsgRefus(
 											"La transaction en cours n’a pas abouti (Coderep "
 													+ coderep + ":" + libelle + "),"
-													+ " votre compte ne sera pas débité, merci de réessayer .");
+													+ " votre compte ne sera pas débité, merci de réessayer.");
 									model.addAttribute("demandeDto", demandeDtoMsg);
 									page = "result";
 									Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -1562,7 +1382,7 @@ public class AppMobileController {
 										"authorization 500 Error during jso out processing given authnumber:["
 												+ authnumber + "]" + jsouterr);
 								demandeDtoMsg.setMsgRefus(
-										"La transaction en cours n’a pas abouti (Erreur lors du traitement de sortie JSON), votre compte ne sera pas débité, merci de réessayer .");
+										"La transaction en cours n’a pas abouti (Erreur lors du traitement de sortie JSON), votre compte ne sera pas débité, merci de réessayer.");
 								model.addAttribute("demandeDto", demandeDtoMsg);
 								page = "result";
 								Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -1628,7 +1448,7 @@ public class AppMobileController {
 								Util.writeInFileTransaction(folder, file,
 										"authorization 500 Error during jso out processing " + ex);
 								demandeDtoMsg.setMsgRefus(
-										"La transaction en cours n’a pas abouti (Erreur lors du traitement de sortie JSON), votre compte ne sera pas débité, merci de réessayer .");
+										"La transaction en cours n’a pas abouti (Erreur lors du traitement de sortie JSON), votre compte ne sera pas débité, merci de réessayer.");
 								model.addAttribute("demandeDto", demandeDtoMsg);
 								page = "result";
 								Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -1648,7 +1468,7 @@ public class AppMobileController {
 								dmd.setDem_cvv("");
 								demandePaiementService.save(dmd);
 								demandeDtoMsg.setMsgRefus(
-										"La transaction en cours n’a pas abouti (COMMERCANT NON PARAMETRE), votre compte ne sera pas débité, merci de réessayer .");
+										"La transaction en cours n’a pas abouti (COMMERCANT NON PARAMETRE), votre compte ne sera pas débité, merci de réessayer.");
 								model.addAttribute("demandeDto", demandeDtoMsg);
 								page = "result";
 								Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -1661,7 +1481,7 @@ public class AppMobileController {
 								dmd.setDem_xid(threeDSServerTransID);
 								demandePaiementService.save(dmd);
 								demandeDtoMsg.setMsgRefus(
-										"La transaction en cours n’a pas abouti (BIN NON PARAMETREE), votre compte ne sera pas débité, merci de réessayer .");
+										"La transaction en cours n’a pas abouti (BIN NON PARAMETREE), votre compte ne sera pas débité, merci de réessayer.");
 								model.addAttribute("demandeDto", demandeDtoMsg);
 								page = "result";
 								Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -1674,7 +1494,7 @@ public class AppMobileController {
 								dmd.setDem_xid(threeDSServerTransID);
 								demandePaiementService.save(dmd);
 								demandeDtoMsg.setMsgRefus(
-										"La transaction en cours n’a pas abouti (MPI_DS_ERR), votre compte ne sera pas débité, merci de réessayer .");
+										"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 								model.addAttribute("demandeDto", demandeDtoMsg);
 								page = "result";
 								Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -1687,7 +1507,7 @@ public class AppMobileController {
 								dmd.setDem_xid(threeDSServerTransID);
 								demandePaiementService.save(dmd);
 								demandeDtoMsg.setMsgRefus(
-										"La transaction en cours n’a pas abouti (CARTE ERRONEE), votre compte ne sera pas débité, merci de réessayer .");
+										"La transaction en cours n’a pas abouti (CARTE ERRONEE), votre compte ne sera pas débité, merci de réessayer.");
 								model.addAttribute("demandeDto", demandeDtoMsg);
 								page = "result";
 								Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -1700,7 +1520,7 @@ public class AppMobileController {
 								dmd.setDem_xid(threeDSServerTransID);
 								demandePaiementService.save(dmd);
 								demandeDtoMsg.setMsgRefus(
-										"La transaction en cours n’a pas abouti (CARTE NON ENROLLE), votre compte ne sera pas débité, merci de réessayer .");
+										"La transaction en cours n’a pas abouti (CARTE NON ENROLLE), votre compte ne sera pas débité, merci de réessayer.");
 								model.addAttribute("demandeDto", demandeDtoMsg);
 								page = "result";
 								Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -1713,7 +1533,7 @@ public class AppMobileController {
 								dmd.setDem_xid(threeDSServerTransID);
 								demandePaiementService.save(dmd);
 								demandeDtoMsg.setMsgRefus(
-										"La transaction en cours n’a pas abouti (ERROR REPONSE ACS), votre compte ne sera pas débité, merci de réessayer .");
+										"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 								model.addAttribute("demandeDto", demandeDtoMsg);
 								page = "result";
 								Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -1726,7 +1546,7 @@ public class AppMobileController {
 								dmd.setDem_xid(threeDSServerTransID);
 								demandePaiementService.save(dmd);
 								demandeDtoMsg.setMsgRefus(
-										"La transaction en cours n’a pas abouti (ERROR 3DSS), votre compte ne sera pas débité, merci de réessayer .");
+										"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 								model.addAttribute("demandeDto", demandeDtoMsg);
 								page = "result";
 								Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -1742,7 +1562,7 @@ public class AppMobileController {
 								dmd.setDem_cvv("");
 								demandePaiementService.save(dmd);
 								demandeDtoMsg.setMsgRefus(
-										"La transaction en cours n’a pas abouti (COMMERCANT NON PARAMETRE), votre compte ne sera pas débité, merci de réessayer .");
+										"La transaction en cours n’a pas abouti (COMMERCANT NON PARAMETRE), votre compte ne sera pas débité, merci de réessayer.");
 								model.addAttribute("demandeDto", demandeDtoMsg);
 								page = "result";
 								Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -1755,7 +1575,7 @@ public class AppMobileController {
 								dmd.setDem_xid(threeDSServerTransID);
 								demandePaiementService.save(dmd);
 								demandeDtoMsg.setMsgRefus(
-										"La transaction en cours n’a pas abouti (BIN NON PARAMETREE), votre compte ne sera pas débité, merci de réessayer .");
+										"La transaction en cours n’a pas abouti (BIN NON PARAMETREE), votre compte ne sera pas débité, merci de réessayer.");
 								model.addAttribute("demandeDto", demandeDtoMsg);
 								page = "result";
 								Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -1768,7 +1588,7 @@ public class AppMobileController {
 								dmd.setDem_xid(threeDSServerTransID);
 								demandePaiementService.save(dmd);
 								demandeDtoMsg.setMsgRefus(
-										"La transaction en cours n’a pas abouti (MPI_DS_ERR), votre compte ne sera pas débité, merci de réessayer .");
+										"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 								model.addAttribute("demandeDto", demandeDtoMsg);
 								page = "result";
 								Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -1781,7 +1601,7 @@ public class AppMobileController {
 								dmd.setDem_xid(threeDSServerTransID);
 								demandePaiementService.save(dmd);
 								demandeDtoMsg.setMsgRefus(
-										"La transaction en cours n’a pas abouti (CARTE ERRONEE), votre compte ne sera pas débité, merci de réessayer .");
+										"La transaction en cours n’a pas abouti (CARTE ERRONEE), votre compte ne sera pas débité, merci de réessayer.");
 								model.addAttribute("demandeDto", demandeDtoMsg);
 								page = "result";
 								Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -1794,7 +1614,7 @@ public class AppMobileController {
 								dmd.setDem_xid(threeDSServerTransID);
 								demandePaiementService.save(dmd);
 								demandeDtoMsg.setMsgRefus(
-										"La transaction en cours n’a pas abouti (CARTE NON ENROLLE), votre compte ne sera pas débité, merci de réessayer .");
+										"La transaction en cours n’a pas abouti (CARTE NON ENROLLE), votre compte ne sera pas débité, merci de réessayer.");
 								model.addAttribute("demandeDto", demandeDtoMsg);
 								page = "result";
 								Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -1807,7 +1627,7 @@ public class AppMobileController {
 								dmd.setDem_xid(threeDSServerTransID);
 								demandePaiementService.save(dmd);
 								demandeDtoMsg.setMsgRefus(
-										"La transaction en cours n’a pas abouti (ERROR REPONSE ACS), votre compte ne sera pas débité, merci de réessayer .");
+										"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 								model.addAttribute("demandeDto", demandeDtoMsg);
 								page = "result";
 								Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -1820,7 +1640,7 @@ public class AppMobileController {
 								dmd.setDem_xid(threeDSServerTransID);
 								demandePaiementService.save(dmd);
 								demandeDtoMsg.setMsgRefus(
-										"La transaction en cours n’a pas abouti (ERROR 3DSS), votre compte ne sera pas débité, merci de réessayer .");
+										"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 								model.addAttribute("demandeDto", demandeDtoMsg);
 								page = "result";
 								Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -1834,7 +1654,7 @@ public class AppMobileController {
 						Util.writeInFileTransaction(folder, file,
 								"if(eci!=05) || eci!=02|| eci!=06 || eci!=01) : arret du processus ");
 						demandeDtoMsg.setMsgRefus(
-								"La transaction en cours n’a pas abouti (Authentification failed), votre compte ne sera pas débité, merci de réessayer .");
+								"La transaction en cours n’a pas abouti (Authentification failed), votre compte ne sera pas débité, merci de réessayer.");
 						model.addAttribute("demandeDto", demandeDtoMsg);
 						page = "result";
 						Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -1844,7 +1664,7 @@ public class AppMobileController {
 				} else {
 					Util.writeInFileTransaction(folder, file, "threeDsecureResponse null");
 					demandeDtoMsg.setMsgRefus(
-							"La transaction en cours n’a pas abouti (Authentification failed), votre compte ne sera pas débité, merci de réessayer .");
+							"La transaction en cours n’a pas abouti (Authentification failed), votre compte ne sera pas débité, merci de réessayer.");
 					model.addAttribute("demandeDto", demandeDtoMsg);
 					page = "result";
 					Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -1877,7 +1697,7 @@ public class AppMobileController {
 							"TransStatus != N && TransStatus != Y => Redirect to FailURL : " + demandeP.getFailURL());
 					
 					msgRefus = "La transaction en cours n’a pas abouti (TransStatus = " + cleanCres.getTransStatus()
-							+ "), votre compte ne sera pas débité, merci de réessayer .";
+							+ "), votre compte ne sera pas débité, merci de réessayer.";
 					
 					demandeDtoMsg.setMsgRefus(msgRefus);
 					model.addAttribute("demandeDto", demandeDtoMsg);
@@ -1887,7 +1707,7 @@ public class AppMobileController {
 					return page;
 				} else {
 					msgRefus = "La transaction en cours n’a pas abouti (TransStatus = " + cleanCres.getTransStatus()
-							+ "), votre compte ne sera pas débité, merci de réessayer .";
+							+ "), votre compte ne sera pas débité, merci de réessayer.";
 					demandeDtoMsg.setMsgRefus(msgRefus);
 					model.addAttribute("demandeDto", demandeDtoMsg);
 					page = "result";
@@ -1900,7 +1720,7 @@ public class AppMobileController {
 			Util.writeInFileTransaction(folder, file, "ACSController RETOUR ACS =====> Exception " + ex);
 			System.out.println("ACSController RETOUR ACS =====> Exception " + ex);
 			msgRefus = "La transaction en cours n’a pas abouti (TransStatus = " + cleanCres.getTransStatus()
-					+ "), votre compte ne sera pas débité, merci de réessayer .";
+					+ "), votre compte ne sera pas débité, merci de réessayer.";
 			demandeDtoMsg.setMsgRefus(msgRefus);
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
@@ -2332,13 +2152,13 @@ public class AppMobileController {
 				if (demandeDto.getEtat_demande().equals("SW_PAYE") || demandeDto.getEtat_demande().equals("PAYE")) {
 					Util.writeInFileTransaction(folder, file, "Opération déjà effectuée");
 					demandeDto.setMsgRefus(
-							"La transaction en cours n’a pas abouti (Opération déjà effectuée), votre compte ne sera pas débité, merci de réessayer .");
+							"La transaction en cours est déjà effectuée, votre compte ne sera pas débité.");
 					model.addAttribute("demandeDto", demandeDto);
 					page = "operationEffectue";
 				} else if (demandeDto.getEtat_demande().equals("SW_REJET")) {
 					Util.writeInFileTransaction(folder, file, "Transaction rejetée");
 					demandeDto.setMsgRefus(
-							"La transaction en cours n’a pas abouti (Transaction rejetée), votre compte ne sera pas débité, merci de réessayer .");
+							"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 					model.addAttribute("demandeDto", demandeDto);
 					page = "result";
 				} else {
@@ -2354,7 +2174,7 @@ public class AppMobileController {
 								"showPageRchg 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 										+ "] and merchantid:[" + merchantid + "]" + e);
 						demandeDto = new DemandePaiementDto();
-						demandeDto.setMsgRefus("Commerçant mal configuré dans la base de données ou inexistant");
+						demandeDto.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité.");
 						model.addAttribute("demandeDto", demandeDto);
 						page = "result";
 					}
@@ -2370,7 +2190,7 @@ public class AppMobileController {
 								"showPageRchg 500 Galerie misconfigured in DB or not existing orderid:[" + orderid
 										+ "] and merchantid:[" + merchantid + "]" + e);
 						demandeDto = new DemandePaiementDto();
-						demandeDto.setMsgRefus("Galerie mal configuré dans la base de données ou inexistant");
+						demandeDto.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité.");
 						model.addAttribute("demandeDto", demandeDto);
 						page = "result";
 					}
@@ -2379,7 +2199,7 @@ public class AppMobileController {
 				Util.writeInFileTransaction(folder, file, "demandeDto not found token : " + token);
 				System.out.println("demandeDto not found token : " + token);
 				demandeDto = new DemandePaiementDto();
-				demandeDto.setMsgRefus("Demande paiement mal configuré dans la base de données ou inexistant");
+				demandeDto.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité.");
 				model.addAttribute("demandeDto", demandeDto);
 				page = "result";
 			}
@@ -2391,7 +2211,7 @@ public class AppMobileController {
 			Util.writeInFileTransaction(folder, file, "showPageRchg 500 exception" + e);
 			e.printStackTrace();
 			demandeDto = new DemandePaiementDto();
-			demandeDto.setMsgRefus("Demande paiement mal configuré dans la base de données ou inexistant");
+			demandeDto.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité.");
 			model.addAttribute("demandeDto", demandeDto);
 			page = "result";
 		}
@@ -2520,7 +2340,7 @@ public class AppMobileController {
 
 		} catch (Exception jerr) {
 			Util.writeInFileTransaction(folder, file, "recharger 500 malformed json expression" + jerr);
-			demandeDtoMsg.setMsgRefus("données mal formées");
+			demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			return page;
@@ -2533,7 +2353,7 @@ public class AppMobileController {
 			Util.writeInFileTransaction(folder, file,
 					"recharger 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]" + e);
-			demandeDtoMsg.setMsgRefus("Commerçant mal configuré dans la base de données ou inexistant");
+			demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité.");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			return page;
@@ -2543,7 +2363,7 @@ public class AppMobileController {
 			Util.writeInFileTransaction(folder, file,
 					"recharger 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]");
-			demandeDtoMsg.setMsgRefus("Commerçant mal configuré dans la base de données ou inexistant");
+			demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité.");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			return page;
@@ -2553,7 +2373,7 @@ public class AppMobileController {
 			Util.writeInFileTransaction(folder, file,
 					"recharger 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]");
-			demandeDtoMsg.setMsgRefus("Commerçant mal configuré dans la base de données ou inexistant");
+			demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité.");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			return page;
@@ -2563,7 +2383,7 @@ public class AppMobileController {
 			Util.writeInFileTransaction(folder, file,
 					"recharger 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]");
-			demandeDtoMsg.setMsgRefus("Commerçant mal configuré dans la base de données ou inexistant");
+			demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité.");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			return page;
@@ -2578,7 +2398,7 @@ public class AppMobileController {
 					"recharger 500 InfoCommercant misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]" + e);
 
-			demandeDtoMsg.setMsgRefus("InfoCommercant mal configuré dans la base de données ou inexistant");
+			demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité.");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			return page;
@@ -2589,7 +2409,7 @@ public class AppMobileController {
 					"recharger 500 InfoCommercantDto misconfigured in DB or not existing orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]");
 
-			demandeDtoMsg.setMsgRefus("InfoCommercant mal configuré dans la base de données ou inexistant");
+			demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité.");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			return page;
@@ -2600,7 +2420,7 @@ public class AppMobileController {
 		if (i_card_valid == 1) {
 			Util.writeInFileTransaction(folder, file, "recharger 500 Card number length is incorrect orderid:["
 					+ orderid + "] and merchantid:[" + merchantid + "]");
-			demandeDtoMsg.setMsgRefus("La longueur du numéro de la carte est incorrecte");
+			demandeDtoMsg.setMsgRefus("Le numéro de la carte est incomplet, merci de réessayer.");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			return page;
@@ -2610,7 +2430,7 @@ public class AppMobileController {
 			Util.writeInFileTransaction(folder, file,
 					"recharger 500 Card number  is not valid incorrect luhn check orderid:[" + orderid
 							+ "] and merchantid:[" + merchantid + "]");
-			demandeDtoMsg.setMsgRefus("Le numéro de la carte est invalide");
+			demandeDtoMsg.setMsgRefus("Le numéro de la carte est invalide, merci de réessayer.");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			return page;
@@ -2647,7 +2467,7 @@ public class AppMobileController {
 		} catch (Exception err1) {
 			Util.writeInFileTransaction(folder, file,
 					"recharger 500 Error during DEMANDE_PAIEMENT insertion for given orderid:[" + orderid + "]" + err1);
-			demandeDtoMsg.setMsgRefus("Erreur lors de l'insertion DEMANDE_PAIEMENT");
+			demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			return page;
@@ -2687,7 +2507,7 @@ public class AppMobileController {
 			demandePaiementService.save(demandeDto);
 			Util.writeInFileTransaction(folder, file, "Opération déjà effectuée");
 			demandeDto.setMsgRefus(
-					"La transaction en cours n’a pas abouti (Opération déjà effectuée), votre compte ne sera pas débité, merci de réessayer .");
+					"La transaction en cours est déjà effectuée, votre compte ne sera pas débité.");
 			model.addAttribute("demandeDto", demandeDto);
 			page = "operationEffectue";
 			return page;
@@ -2702,7 +2522,7 @@ public class AppMobileController {
 				demandeDto.setDem_cvv("");
 				demandeDto.setEtat_demande("REJET_RISK_CTRL");
 				demandePaiementService.save(demandeDto);
-				Util.writeInFileTransaction(folder, file, "recharger 500 Error " + msg);
+				Util.writeInFileTransaction(folder, file, msg);
 				demandeDto = new DemandePaiementDto();
 				demandeDtoMsg.setMsgRefus(msg);
 				model.addAttribute("demandeDto", demandeDtoMsg);
@@ -2717,7 +2537,7 @@ public class AppMobileController {
 					"recharger 500 ControlRiskCmr misconfigured in DB or not existing merchantid:["
 							+ demandeDto.getComid() + e);
 			demandeDto = new DemandePaiementDto();
-			demandeDtoMsg.setMsgRefus("Error 500 Opération rejetée: Contrôle risque");
+			demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité.");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			return page;
@@ -2818,7 +2638,7 @@ public class AppMobileController {
 			demandePaiementService.save(demandeDto);
 			Util.writeInFileTransaction(folder, file, "recharger 500 Error during  date formatting for given orderid:["
 					+ orderid + "] and merchantid:[" + merchantid + "]" + err2);
-			demandeDtoMsg.setMsgRefus("Erreur lors du formatage de la date");
+			demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			return page;
@@ -2894,7 +2714,7 @@ public class AppMobileController {
 			Util.writeInFileTransaction(folder, file,
 					"demandePaiement after update MPI_KO idDemande null : " + demandeDto.toString());
 			demandeDtoMsg.setMsgRefus(
-					"La transaction en cours n’a pas abouti (MPI_KO), votre compte ne sera pas débité, merci de réessayer .");
+					"La transaction en cours n’a pas abouti (MPI_KO), votre compte ne sera pas débité, merci de réessayer.");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			return page;
@@ -2909,7 +2729,7 @@ public class AppMobileController {
 					"demandePaiement not found !!!! demandePaiement = null  / received idDemande from MPI => "
 							+ idDemande);
 			demandeDtoMsg.setMsgRefus(
-					"La transaction en cours n’a pas abouti (DemandePaiement introuvable), votre compte ne sera pas débité, merci de réessayer .");
+					"La transaction en cours n’a pas abouti (DemandePaiement introuvable), votre compte ne sera pas débité, merci de réessayer.");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			return page;
@@ -2923,7 +2743,7 @@ public class AppMobileController {
 					"demandePaiement after update MPI_KO reponseMPI null : " + dmd.toString());
 			Util.writeInFileTransaction(folder, file, "Response 3DS is null");
 			demandeDtoMsg.setMsgRefus(
-					"La transaction en cours n’a pas abouti (MPI_KO reponseMPI null), votre compte ne sera pas débité, merci de réessayer .");
+					"La transaction en cours n’a pas abouti (MPI_KO reponseMPI null), votre compte ne sera pas débité, merci de réessayer.");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			return page;
@@ -3008,7 +2828,7 @@ public class AppMobileController {
 						"recharger 500 cvv not set , reccuring flag set to N, cvv must be present in normal transaction");
 
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (cvv doit être présent dans la transaction normale), votre compte ne sera pas débité, merci de réessayer .");
+						"Le champ CVV est vide. Veuillez saisir le code de sécurité à trois chiffres situé au dos de votre carte pour continuer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				return page;
@@ -3065,7 +2885,7 @@ public class AppMobileController {
 							"recharger 500 Error during switch tlv buildup for given orderid:[" + orderid
 									+ "] and merchantid:[" + merchantid + "]" + err4);
 					demandeDtoMsg.setMsgRefus(
-							"La transaction en cours n’a pas abouti (Erreur lors de la création du switch tlv), votre compte ne sera pas débité, merci de réessayer .");
+							"La transaction en cours n’a pas abouti (Erreur lors de la création du switch tlv), votre compte ne sera pas débité, merci de réessayer.");
 					model.addAttribute("demandeDto", demandeDtoMsg);
 					page = "result";
 					return page;
@@ -3140,7 +2960,7 @@ public class AppMobileController {
 				Util.writeInFileTransaction(folder, file, "Switch  malfunction ConnectException !!!" + e);
 				switch_ko = 1;
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Un dysfonctionnement du switch), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti (Un dysfonctionnement du switch), votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				return page;
@@ -3156,7 +2976,7 @@ public class AppMobileController {
 						"recharger 500 Error Switch communication SocketTimeoutException" + "switch ip:[" + sw_s
 								+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Erreur de communication du switch SocketTimeoutException), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti (Erreur de communication du switch SocketTimeoutException), votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				return page;
@@ -3171,7 +2991,7 @@ public class AppMobileController {
 				Util.writeInFileTransaction(folder, file, "recharger 500 Error Switch communication IOException"
 						+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Erreur de communication du switch IOException), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti (Erreur de communication du switch IOException), votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				return page;
@@ -3184,7 +3004,7 @@ public class AppMobileController {
 				switch_ko = 1;
 				e.printStackTrace();
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Dysfonctionnement du switch Exception), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti (Dysfonctionnement du switch Exception), votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				return page;
@@ -3200,7 +3020,7 @@ public class AppMobileController {
 				Util.writeInFileTransaction(folder, file, "recharger 500 Error Switch null response" + "switch ip:["
 						+ sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Dysfonctionnement du switch resp null), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti (Dysfonctionnement du switch resp null), votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				return page;
@@ -3215,7 +3035,7 @@ public class AppMobileController {
 				Util.writeInFileTransaction(folder, file, "recharger 500 Error Switch short response length() < 3 "
 						+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Dysfonctionnement du switch resp < 3 !!!), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti (Dysfonctionnement du switch resp < 3 !!!), votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				return page;
@@ -3464,181 +3284,12 @@ public class AppMobileController {
 					dmd.setEtat_demande("SW_PAYE");
 					dmd.setDem_cvv("");
 					demandePaiementService.save(dmd);
-
+					Util.writeInFileTransaction(folder, file, "update etat demande : SW_PAYE OK");
 				} catch (Exception e) {
 					Util.writeInFileTransaction(folder, file,
 							"recharger 500 Error during DEMANDE_PAIEMENT update etat demande for given orderid:["
 									+ orderid + "]" + e);
-				}
-
-				Util.writeInFileTransaction(folder, file, "update etat demande : SW_PAYE OK");
-
-				String capture_status = "N";
-				int exp_flag = 0;
-
-				if (capture.equalsIgnoreCase("Y")) {
-					// 2024-05-17
-					HistoAutoGateDto histToCapture= null;
-					try {
-						if(hist.getId() == null) {
-							// get histoauto check if exist
-							histToCapture = histoAutoGateService.findLastByHatNumCommandeAndHatNumcmr(orderid, merchantid);
-							if(histToCapture ==null) {
-								histToCapture = hist;
-							}
-						} else {
-							histToCapture = hist;
-						}
-					} catch (Exception err2) {
-						Util.writeInFileTransaction(folder, file,
-								"recharger 500 Error during HistoAutoGate findLastByHatNumCommandeAndHatNumcmr orderid:[" + orderid
-										+ "] and merchantid:[" + merchantid + "]" + err2);
-					}
-					// 2024-05-17
-
-					Date current_date = null;
-					current_date = new Date();
-					Util.writeInFileTransaction(folder, file, "Automatic capture start...");
-
-					Util.writeInFileTransaction(folder, file, "Getting authnumber");
-
-					String authnumber = histToCapture.getHatNautemt();
-					Util.writeInFileTransaction(folder, file, "authnumber : [" + authnumber + "]");
-
-					Util.writeInFileTransaction(folder, file, "Getting authnumber");
-					TransactionDto trs_check = null;
-
-					try {
-						trs_check = transactionService.findByTrsnumautAndTrsnumcmr(authnumber, merchantid);
-					} catch (Exception ee) {
-
-						Util.writeInFileTransaction(folder, file,
-								"trs_check trs_check exception e : [" + ee.toString() + "]");
-					}
-
-					if (trs_check != null) {
-						// do nothing
-						Util.writeInFileTransaction(folder, file, "trs_check != null do nothing for now ...");
-					} else {
-						Util.writeInFileTransaction(folder, file, "inserting into telec start ...");
-						try {
-							// insert into telec
-
-							TelecollecteDto n_tlc = telecollecteService.getMAXTLC_N(merchantid);
-
-							long lidtelc = 0;
-
-							if (n_tlc == null) {
-								Util.writeInFileTransaction(folder, file, "getMAXTLC_N n_tlc = null");
-								Integer idtelc = null;
-
-								TelecollecteDto tlc = null;
-
-								// insert into telec
-								idtelc = telecollecteService.getMAX_ID(merchantid);
-								Util.writeInFileTransaction(folder, file, "getMAX_ID idtelc : " + idtelc);
-
-								if (idtelc != null) {
-									lidtelc = idtelc.longValue() + 1;
-								} else {
-									lidtelc = 1;
-								}
-								tlc = new TelecollecteDto();
-								tlc.setTlc_numtlcolcte(lidtelc);
-
-								tlc.setTlc_numtpe(histToCapture.getHatCodtpe());
-
-								tlc.setTlc_datcrtfich(current_date);
-								tlc.setTlc_nbrtrans(new Double(1));
-								tlc.setTlc_gest("N");
-
-								tlc.setTlc_datremise(current_date);
-								tlc.setTlc_numremise(new Double(lidtelc));
-								// tlc.setTlc_numfich(new Double(0));
-								String tmpattern = "HH:mm";
-								SimpleDateFormat sftm = new SimpleDateFormat(tmpattern);
-								String stm = sftm.format(current_date);
-								tlc.setTlc_heuremise(stm);
-
-								tlc.setTlc_codbq(acqcode);
-								tlc.setTlc_numcmr(merchantid);
-								tlc.setTlc_numtpe(websiteid);
-								telecollecteService.save(tlc);
-
-							} else {
-								Util.writeInFileTransaction(folder, file, "n_tlc !null ");
-
-								lidtelc = n_tlc.getTlc_numtlcolcte();
-								double nbr_trs = n_tlc.getTlc_nbrtrans();
-
-								nbr_trs = nbr_trs + 1;
-
-								n_tlc.setTlc_nbrtrans(nbr_trs);
-
-								telecollecteService.save(n_tlc);
-							}
-
-							// insert into transaction
-							TransactionDto trs = new TransactionDto();
-							trs.setTrsnumcmr(merchantid);
-							trs.setTrs_numtlcolcte(Double.valueOf(lidtelc));
-
-							String frmt_cardnumber = Util.formatagePan(cardnumber);
-							trs.setTrs_codporteur(frmt_cardnumber);
-
-							double dmnt = 0;
-
-							dmnt = Double.parseDouble(amount);
-
-							trs.setTrs_montant(dmnt);
-							// trs.setTrs_dattrans(new Date());
-
-							current_date = new Date();
-							Date current_date_1 = getDateWithoutTime(current_date);
-							trs.setTrs_dattrans(current_date_1);
-
-							trs.setTrsnumaut(authnumber);
-							trs.setTrs_etat("N");
-							trs.setTrs_devise(histToCapture.getHatDevise());
-							trs.setTrs_certif("N");
-							Integer idtrs = transactionService.getMAX_ID();
-							long lidtrs = idtrs.longValue() + 1;
-							trs.setTrs_id(lidtrs);
-							trs.setTrs_commande(orderid);
-							trs.setTrs_procod("0");
-							trs.setTrs_groupe(websiteid);
-							trs.setTrs_codtpe(0.0);
-							trs.setTrs_numbloc(0.0);
-							trs.setTrs_numfact(0.0);
-							transactionService.save(trs);
-
-							histToCapture.setHatEtat('T');
-							histToCapture.setHatdatetlc(current_date);
-							histToCapture.setOperateurtlc("mxplusapi");
-							histoAutoGateService.save(histToCapture);
-
-							capture_id = String.format("%040d",
-									new BigInteger(UUID.randomUUID().toString().replace("-", ""), 36));
-							Date dt = new Date();
-							String dtpattern = "yyyy-MM-dd";
-							SimpleDateFormat sfdt = new SimpleDateFormat(dtpattern);
-							String sdt = sfdt.format(dt);
-							String tmpattern = "HH:mm:ss";
-							SimpleDateFormat sftm = new SimpleDateFormat(tmpattern);
-							String stm = sftm.format(dt);
-							Util.writeInFileTransaction(folder, file, "inserting into telec ok");
-							capture_status = "Y";
-
-						} catch (Exception e) {
-							exp_flag = 1;
-							Util.writeInFileTransaction(folder, file, "inserting into telec ko..do nothing " + e);
-						}
-					}
-					if (capture_status.equalsIgnoreCase("Y") && exp_flag == 1)
-						capture_status.equalsIgnoreCase("N");
-
-					Util.writeInFileTransaction(folder, file, "Automatic capture end.");
-				}
+				}				
 
 			} else {
 
@@ -3652,9 +3303,6 @@ public class AppMobileController {
 					dmd.setEtat_demande("SW_REJET");
 					dmd.setDem_cvv("");
 					demandePaiementService.save(dmd);
-					// old
-					//hist.setHatEtat('A');
-					//histoAutoGateService.save(hist);
 				} catch (Exception e) {
 					dmd.setDem_cvv("");
 					demandePaiementService.save(dmd);
@@ -3662,7 +3310,7 @@ public class AppMobileController {
 							"recharger 500 Error during  DemandePaiement update SW_REJET for given orderid:[" + orderid
 									+ "]" + e);
 					demandeDtoMsg.setMsgRefus(
-							"La transaction en cours n’a pas abouti (Erreur lors de la mise à jour de DemandePaiement SW_REJET), votre compte ne sera pas débité, merci de réessayer .");
+							"La transaction en cours n’a pas abouti (Erreur lors de la mise à jour de DemandePaiement SW_REJET), votre compte ne sera pas débité, merci de réessayer.");
 					model.addAttribute("demandeDto", demandeDtoMsg);
 					page = "result";
 					return page;
@@ -3706,7 +3354,7 @@ public class AppMobileController {
 				Util.writeInFileTransaction(folder, file,
 						"recharger 500 Error during  paymentid generation for given orderid:[" + orderid + "]" + e);
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Erreur lors de la génération de l'ID de paiement), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				return page;
@@ -3735,7 +3383,7 @@ public class AppMobileController {
 				Util.writeInFileTransaction(folder, file,
 						"recharger 500 Error during authdata preparation orderid:[" + orderid + "]" + e);
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Erreur lors de la préparation des données d'authentification), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti (Erreur lors de la préparation des données d'authentification), votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				return page;
@@ -3818,7 +3466,7 @@ public class AppMobileController {
 					}
 					demandeDtoMsg.setMsgRefus(
 							"La transaction en cours n’a pas abouti (Coderep " + coderep
-									+ ":" + libelle + ")," + " votre compte ne sera pas débité, merci de réessayer .");
+									+ ":" + libelle + ")," + " votre compte ne sera pas débité, merci de réessayer.");
 					model.addAttribute("demandeDto", demandeDtoMsg);
 					page = "result";
 				}
@@ -3827,7 +3475,7 @@ public class AppMobileController {
 						"recharger 500 Error during jso out processing given authnumber:[" + authnumber + "]"
 								+ jsouterr);
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Erreur lors du traitement de sortie JSON), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti (Erreur lors du traitement de sortie JSON), votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				return page;
@@ -3906,7 +3554,7 @@ public class AppMobileController {
 			} catch (Exception ex) {
 				Util.writeInFileTransaction(folder, file, "Aucune correspondance pour l'URL ACS et creq trouvée dans la réponse HTML " + ex);
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Aucune correspondance pour l'URL ACS et creq trouvée dans la réponse HTML), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti (Aucune correspondance pour l'URL ACS et creq trouvée dans la réponse HTML), votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				dmd.setDem_cvv("");
 				demandePaiementService.save(dmd);
@@ -3924,7 +3572,7 @@ public class AppMobileController {
 				dmd.setEtat_demande("MPI_CMR_INEX");
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (COMMERCANT NON PARAMETRE), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti (COMMERCANT NON PARAMETRE), votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -3937,7 +3585,7 @@ public class AppMobileController {
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (BIN NON PARAMETREE), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti (BIN NON PARAMETREE), votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -3950,7 +3598,7 @@ public class AppMobileController {
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (MPI_DS_ERR), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -3963,7 +3611,7 @@ public class AppMobileController {
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (CARTE ERRONEE), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti (CARTE ERRONEE), votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -3976,7 +3624,7 @@ public class AppMobileController {
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (CARTE NON ENROLLE), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti (CARTE NON ENROLLE), votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -3989,7 +3637,7 @@ public class AppMobileController {
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (ERROR REPONSE ACS), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -4002,7 +3650,7 @@ public class AppMobileController {
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (ERROR 3DSS), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -4018,7 +3666,7 @@ public class AppMobileController {
 				dmd.setEtat_demande("MPI_CMR_INEX");
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (COMMERCANT NON PARAMETRE), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti (COMMERCANT NON PARAMETRE), votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				return page;
@@ -4029,7 +3677,7 @@ public class AppMobileController {
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (BIN NON PARAMETREE), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti (BIN NON PARAMETREE), votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				return page;
@@ -4040,7 +3688,7 @@ public class AppMobileController {
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (MPI_DS_ERR), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				return page;
@@ -4051,7 +3699,7 @@ public class AppMobileController {
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (CARTE ERRONEE), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti (CARTE ERRONEE), votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				return page;
@@ -4062,7 +3710,7 @@ public class AppMobileController {
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (CARTE NON ENROLLE), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti (CARTE NON ENROLLE), votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				return page;
@@ -4073,7 +3721,7 @@ public class AppMobileController {
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (ERROR REPONSE ACS), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
@@ -4086,7 +3734,7 @@ public class AppMobileController {
 				dmd.setDem_xid(threeDSServerTransID);
 				demandePaiementService.save(dmd);
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (ERROR 3DSS), votre compte ne sera pas débité, merci de réessayer .");
+						"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				Util.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
