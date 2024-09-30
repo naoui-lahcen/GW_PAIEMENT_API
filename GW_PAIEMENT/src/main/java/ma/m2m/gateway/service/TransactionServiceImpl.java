@@ -33,14 +33,14 @@ public class TransactionServiceImpl implements TransactionService {
 	}
 	
 	@Override
-	public TransactionDto findByTrsnumautAndTrsnumcmrAndTrscommande(String numAuth, String cumCmr, String commande) {
-		return transactionMapper.model2VO(transactionDao.findByTrsnumautAndTrsnumcmrAndTrscommande(numAuth, cumCmr, commande));
-	}
-	
-	@Override
 	public TransactionDto findByTrsnumautAndTrsnumcmrAndDateTrs(String numAuth, String cumCmr, String dateTrs) {
 		//dateTrs = dateTrs+"%";
 		return transactionMapper.model2VO(transactionDao.findByTrsnumautAndTrsnumcmrAndDateTrs(numAuth, cumCmr, dateTrs));
+	}
+	
+	@Override
+	public TransactionDto findByTrsnumcmrAndTrscommandeAndTrsnumaut(String numCmr, String commande, String numAuth) {
+		return transactionMapper.model2VO(transactionDao.findByTrsnumcmrAndTrscommandeAndTrsnumaut(numCmr, commande, numAuth));
 	}
 
 	@Override

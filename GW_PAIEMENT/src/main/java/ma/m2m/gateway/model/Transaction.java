@@ -142,6 +142,11 @@ public class Transaction implements Serializable {
 	@Column(name = "TRS_COMMANDE")	
 	private String   trscommande;
 	
+	
+	
+	
+	
+	
 	public Transaction() {
 		super();
 		// TODO Auto-generated constructor stub

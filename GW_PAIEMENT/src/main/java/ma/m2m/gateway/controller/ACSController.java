@@ -785,7 +785,7 @@ public class ACSController {
 										"Switch  malfunction UnknownHostException !!!" + e);
 								switch_ko = 1;
 								demandeDtoMsg
-										.setMsgRefus("Un dysfonctionnement du switch ne peut pas se connecter !!!");
+										.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 								model.addAttribute("demandeDto", demandeDtoMsg);
 								page = "result";
 								Util.writeInFileTransaction(folder, file, "Fin processRequest ()");

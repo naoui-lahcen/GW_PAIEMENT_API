@@ -2885,7 +2885,7 @@ public class AppMobileController {
 							"recharger 500 Error during switch tlv buildup for given orderid:[" + orderid
 									+ "] and merchantid:[" + merchantid + "]" + err4);
 					demandeDtoMsg.setMsgRefus(
-							"La transaction en cours n’a pas abouti (Erreur lors de la création du switch tlv), votre compte ne sera pas débité, merci de réessayer.");
+							"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 					model.addAttribute("demandeDto", demandeDtoMsg);
 					page = "result";
 					return page;
@@ -2928,7 +2928,7 @@ public class AppMobileController {
 					Util.writeInFileTransaction(folder, file,
 							"recharger 500 Error Switch communication s_conn false switch ip:[" + sw_s
 									+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-					demandeDtoMsg.setMsgRefus("Un dysfonctionnement du switch ne peut pas se connecter !!!");
+					demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 					model.addAttribute("demandeDto", demandeDtoMsg);
 					page = "result";
 					return page;
@@ -2949,7 +2949,7 @@ public class AppMobileController {
 				demandePaiementService.save(dmd);
 				Util.writeInFileTransaction(folder, file, "Switch  malfunction UnknownHostException !!!" + e);
 
-				demandeDtoMsg.setMsgRefus("Un dysfonctionnement du switch ne peut pas se connecter !!!");
+				demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				return page;
@@ -2960,7 +2960,7 @@ public class AppMobileController {
 				Util.writeInFileTransaction(folder, file, "Switch  malfunction ConnectException !!!" + e);
 				switch_ko = 1;
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Un dysfonctionnement du switch), votre compte ne sera pas débité, merci de réessayer.");
+						"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				return page;
@@ -2976,7 +2976,7 @@ public class AppMobileController {
 						"recharger 500 Error Switch communication SocketTimeoutException" + "switch ip:[" + sw_s
 								+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Erreur de communication du switch SocketTimeoutException), votre compte ne sera pas débité, merci de réessayer.");
+						"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				return page;
@@ -2991,7 +2991,7 @@ public class AppMobileController {
 				Util.writeInFileTransaction(folder, file, "recharger 500 Error Switch communication IOException"
 						+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Erreur de communication du switch IOException), votre compte ne sera pas débité, merci de réessayer.");
+						"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				return page;
@@ -3004,7 +3004,7 @@ public class AppMobileController {
 				switch_ko = 1;
 				e.printStackTrace();
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Dysfonctionnement du switch Exception), votre compte ne sera pas débité, merci de réessayer.");
+						"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				return page;
@@ -3020,7 +3020,7 @@ public class AppMobileController {
 				Util.writeInFileTransaction(folder, file, "recharger 500 Error Switch null response" + "switch ip:["
 						+ sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Dysfonctionnement du switch resp null), votre compte ne sera pas débité, merci de réessayer.");
+						"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				return page;
@@ -3035,7 +3035,7 @@ public class AppMobileController {
 				Util.writeInFileTransaction(folder, file, "recharger 500 Error Switch short response length() < 3 "
 						+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Dysfonctionnement du switch resp < 3 !!!), votre compte ne sera pas débité, merci de réessayer.");
+						"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
 				return page;

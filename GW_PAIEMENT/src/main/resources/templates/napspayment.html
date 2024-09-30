@@ -19,9 +19,6 @@
          href="https://use.fontawesome.com/releases/v5.0.8/css/all.css">
      <meta name="viewport" content="width=device-width, initial-scale=1">
      <style>
-	body {
-    	font-family: 'Roboto', sans-serif;
-	}
       .dialog {
          display : none;
      }
@@ -188,16 +185,16 @@
                      </p>
                   </div>
                   <div class="row" th:if="${demandeDto.factures == null}">
-                     <label for="commande" class="col-sm-6 col-form-label"><strong>Commande :</strong> 
+                     <label for="commande" class="col-sm-6 col-form-label">Commande : 
                      <span th:text="${demandeDto.commande}"></span>
                      </label>
-                     <label for="comid" class="col-sm-6 col-form-label"><strong> Commerçant : </strong> 
+                     <label for="comid" class="col-sm-6 col-form-label">Commerçant : 
                      <span th:if="${demandeDto.commercantDto != null}" th:text="${demandeDto.commercantDto.cmrNom}"></span>
                      </label>
-                     <label for="galid" class="col-sm-6 col-form-label"><strong> Site web commerçant : </strong> 
+                     <label for="galid" class="col-sm-6 col-form-label">Site web commerçant : 
                      <span th:if="${demandeDto.galerieDto != null}" th:text="${demandeDto.galerieDto.urlGal}"></span>                     
                      </label>
-                     <label for="montant" class="col-sm-6 col-form-label"><strong> Montant à payer : </strong> 
+                     <label for="montant" class="col-sm-6 col-form-label">Montant à payer : 
                      <span th:text="${demandeDto.montantStr}" style="color: #DF6537;font-weight: 700;"></span> DH
                      </label>
                   </div>
@@ -210,18 +207,18 @@
 						<thead>
 						<tr style="line-height: 30px;">
 				
-							<td style="background: #fef7f7;font-weight: bold;">Référence</td>
+							<td style="background: #fef7f7;">Référence</td>
 				
-							<td style="background: #fef7f7;font-weight: bold;">Fourniture</td>
+							<td style="background: #fef7f7;">Fourniture</td>
 				
-							<td style="background: #fef7f7;font-weight: bold;">N° contrat</td>
+							<td style="background: #fef7f7;">N° contrat</td>
 				
 				
-							<td style="background: #fef7f7;font-weight: bold;">Type</td>
+							<td style="background: #fef7f7;">Type</td>
 				
 							<!-- <td style="background: #fef7f7;">Description</td>-->
 				
-							<td style="background: #fef7f7;font-weight: bold;">Montant</td>
+							<td style="background: #fef7f7;">Montant</td>
 						</tr>
 						</thead>
 						<tbody>
@@ -264,8 +261,8 @@
                </div>
                <form role="form" method="POST" th:action="@{/payer}" th:object="${demandeDto}" onsubmit="showProcessingPopup()">
                   <div class="form-group row">
-                     <label for="num" class="col-sm-3 col-form-label"><strong>N°
-                     carte bancaire </strong></label>
+                     <label for="num" class="col-sm-3 col-form-label">N°
+                     carte bancaire</label>
                      <div class="col-sm-3" th:if="${demandeDto.cartes == null }">
                         <input type="number" th:field="*{dem_pan}" class="form-control" id="num" required="required"
                            placeholder="Numéro de carte">
@@ -282,15 +279,15 @@
                         <input type="number" th:field="*{dem_pan}" class="form-control" id="nvnum"
                            placeholder="Nouvelle numéro de carte">
                      </div>
-                     <label for="cvv" class="col-sm-3 col-form-label"><strong> CVV </strong></label>
+                     <label for="cvv" class="col-sm-3 col-form-label">CVV</label>
                      <div class="col-sm-3">
                         <input type="number" th:field="*{dem_cvv}" class="form-control" id="cvv" required="required"
                            placeholder="Code à 3 chiffres">
                      </div>
                   </div>
                   <div class="form-group row">
-                     <label for="xxx" class="col-sm-3 col-form-label"><strong> Date
-                     d'expiration </strong></label>
+                     <label for="xxx" class="col-sm-3 col-form-label">Date
+                     d'expiration</label>
                      <div class="col-sm-3" th:if="${demandeDto.cartes == null }">
                         <select class="form-control" th:field="*{annee}" required="required">
                            <option value="">Année</option>
