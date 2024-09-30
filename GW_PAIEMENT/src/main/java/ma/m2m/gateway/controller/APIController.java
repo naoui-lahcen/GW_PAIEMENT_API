@@ -2956,6 +2956,9 @@ public class APIController {
 		long lidtrs = 0;
 		try {
 			cardnumber = current_dmd.getDem_pan();
+			if (websiteid.equals("") || websiteid == null) {
+				websiteid = current_dmd.getGalid();
+			}
 		} catch (Exception err3) {
 			Util.writeInFileTransaction(folder, file, "capture 500 Error during cardnumber formatting for given orderid:["
 					+ orderid + "] and merchantid:[" + merchantid + "]" + err3);
@@ -2976,7 +2979,7 @@ public class APIController {
 			Date trs_date = dateFormatSimple.parse(current_dmd.getDem_date_time());
 			Date trs_date_1 = getDateWithoutTime(trs_date);
 
-			trs.setTrs_dattrans(trs_date);
+			trs.setTrs_dattrans(current_date_1);
 			trs.setTrsnumaut(authnumber);
 			trs.setTrs_etat("N");
 			trs.setTrs_devise(current_hist.getHatDevise());
@@ -3321,7 +3324,10 @@ public class APIController {
 			date = formatdate.format(new Date());
 			heure = formatheure.format(new Date());
 			jul = Util.convertToJulian(new Date()) + "";
-
+			cardnumber = current_dmd.getDem_pan();
+			if (websiteid.equals("") || websiteid == null) {
+				websiteid = current_dmd.getGalid();
+			}
 		} catch (Exception err3) {
 			Util.writeInFileTransaction(folder, file, "refund 500 Error during date formatting for given orderid:["
 					+ orderid + "] and merchantid:[" + merchantid + "]" + err3);
@@ -3477,12 +3483,12 @@ public class APIController {
 				trs.setTrs_codporteur(frmt_cardnumber);
 				dmnt = Double.parseDouble(amount);
 				trs.setTrs_montant(dmnt);
-				//current_date = new Date();
-				//Date current_date_1 = getDateWithoutTime(current_date);
+				current_date = new Date();
+				Date current_date_1 = getDateWithoutTime(current_date);
 				Date trs_date = dateFormatSimple.parse(current_dmd.getDem_date_time());
 				Date trs_date_1 = getDateWithoutTime(trs_date);
 
-				trs.setTrs_dattrans(trs_date);
+				trs.setTrs_dattrans(current_date_1);
 				trs.setTrsnumaut("000000");// offline mode
 				trs.setTrs_etat("N");
 				trs.setTrs_devise(current_hist.getHatDevise());
@@ -6253,7 +6259,7 @@ public class APIController {
 						Date trs_date = dateFormatSimple.parse(check_dmd.getDem_date_time());
 						Date trs_date_1 = getDateWithoutTime(trs_date);
 
-						trs.setTrs_dattrans(trs_date);
+						trs.setTrs_dattrans(current_date_1);
 						trs.setTrsnumaut(authnumber);
 						trs.setTrs_etat("N");
 						trs.setTrs_devise(current_hist.getHatDevise());
