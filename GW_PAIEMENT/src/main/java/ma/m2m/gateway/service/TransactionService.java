@@ -18,8 +18,6 @@ public interface TransactionService {
 	
 	TransactionDto findByTrsnumautAndTrsnumcmrAndDateTrs(String numAuth, String cumCmr, String dateTrs);
 	
-	TransactionDto findByTrsnumcmrAndTrscommandeAndTrsnumaut(String numCmr, String commande, String numAuth);
-	
 	Integer getMAX_ID();
 	
 	TransactionDto save(TransactionDto trs);

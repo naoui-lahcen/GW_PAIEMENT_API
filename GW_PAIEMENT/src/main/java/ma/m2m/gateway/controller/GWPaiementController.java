@@ -90,7 +90,6 @@ import ma.m2m.gateway.Utils.Objects;
 import ma.m2m.gateway.Utils.Util;
 import ma.m2m.gateway.config.JwtTokenUtil;
 import ma.m2m.gateway.dto.ArticleDGIDto;
-import ma.m2m.gateway.dto.CaptureDto;
 import ma.m2m.gateway.dto.CardtokenDto;
 import ma.m2m.gateway.dto.Cartes;
 import ma.m2m.gateway.dto.CodeReponseDto;
@@ -121,7 +120,6 @@ import ma.m2m.gateway.reporting.GenerateExcel;
 import ma.m2m.gateway.risk.GWRiskAnalysis;
 import ma.m2m.gateway.service.ArticleDGIService;
 import ma.m2m.gateway.service.AutorisationService;
-import ma.m2m.gateway.service.CaptureService;
 import ma.m2m.gateway.service.CardtokenService;
 import ma.m2m.gateway.service.CodeReponseService;
 import ma.m2m.gateway.service.CommercantService;
@@ -240,9 +238,6 @@ public class GWPaiementController {
 
 	@Autowired
 	ArticleDGIService articleDGIService;
-	
-	@Autowired
-	CaptureService captureService;
 
 	private LocalDateTime date;
 	private String folder;
@@ -460,10 +455,10 @@ public class GWPaiementController {
         hist = histoAutoGateService.save(hist);
         System.out.println("hist [" + hist +"]");*/
         
-        /*String comm ="88385524445414";
-        DemandePaiementDto demDto = demandePaiementService.findByCommande(comm);
+        /*String commande ="88385524445414";
+        DemandePaiementDto dto = demandePaiementService.findByCommande(commande);
         
-        String montant = String.valueOf(demDto.getMontant());
+        String montant = String.valueOf(dto.getMontant());
         montant = montant.replace(",", ".");
         Double montantDouble = Double.parseDouble(montant);
         BigDecimal bd = new BigDecimal(montantDouble).setScale(4, RoundingMode.HALF_UP);
@@ -474,67 +469,20 @@ public class GWPaiementController {
         System.out.println(trs !=null ? trs.toString() : null);
         
 		try {        
-			Date dateTrss = dateFormatSimple.parse(demDto.getDem_date_time());  						
+			Date dateTrss = dateFormatSimple.parse(dto.getDem_date_time());  						
 			Date current_date_1 = getDateWithoutTime(dateTrss);			
 			//trs.setTrs_dattrans(current_date_1);	
 			trs.setTrs_dattrans(dateTrss);
 			transactionService.save(trs);
 			
 			String dateTrs = dateFormatSimple.format(dateTrss);  
-
-	        TransactionDto trs1 = transactionService.findByTrsnumautAndTrsnumcmrAndDateTrs("797535", "1180092", dateTrs);
-	        TransactionDto trs2 = transactionService.findByTrsnumcmrAndTrscommandeAndTrsnumaut("1180092", demDto.getCommande(), "797535");
-	        System.out.println(trs1 !=null ? trs1.toString() : null);	
-	        System.out.println(trs2 !=null ? trs2.toString() : null);	
-
 	        //TransactionDto trs1 = transactionService.findByTrsnumautAndTrsnumcmrAndDateTrs("797535", "1180092", dateTrs);
 	        TransactionDto trs1 = transactionService.findByTrsnumautAndTrsnumcmrAndTrscommande("797535", "1180092", "88385524445414");
 	        System.out.println("trs1 : ");	   
 	        System.out.println(trs1 !=null ? trs1.toString() : null);	        
-
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}*/
-        
-        try {        
-        	String commande ="88385524445414";
-            DemandePaiementDto dto = demandePaiementService.findByCommande(commande);
-        	HistoAutoGateDto histDto = histoAutoGateService.findByHatNumCommande(commande);
-        	CaptureDto current_capture = captureService.findByNumCmrAndCommandeAndNumAuto(dto.getComid(), commande, histDto.getHatNautemt());
-        	if(current_capture == null) {
-    			Date dateTrs = dateFormatSimple.parse(dto.getDem_date_time());  
-    			String dateCapStr = dateFormatSimple.format(new Date());
-    			Date dateCap = dateFormatSimple.parse(dateCapStr);
-    			
-    			CaptureDto capture = new CaptureDto();	
-    			capture.setCommande(commande);
-    			capture.setCommandeParent(commande);
-    			capture.setNumCmr(dto.getComid());
-    			capture.setNumCarte(dto.getDem_pan());
-    			capture.setMontantCap(dto.getMontant());
-    			capture.setMontantHat(dto.getMontant());
-    			capture.setNumAuto(histDto.getHatNautemt());
-    			capture.setDateTrans(dateTrs);
-    			capture.setDateCap(dateCap);
-    			capture.setHerCap(new SimpleDateFormat("HH:mm").format(new Date()));
-    			capture.setNumTlc(null);
-    			capture.setEtat("N");
-
-    			//capture = captureService.save(capture);
-
-    	        System.out.println(capture !=null ? capture.toString() : null);	 
-        	} else {
-        		System.out.println("Transaction deja capturée ");	
-        	}
-        	List<CaptureDto> capturesComplements = captureService.findComplementAndHatByNumCmrAndCommande("2200000", "Q5EYWUPTMU2200000");
-        	System.out.println(capturesComplements !=null ? capturesComplements.size() : null);	 
-        	
-        	List<CaptureDto> capturesParent = captureService.findHatAndComplementByNumCmrAndCommandeParent("1180092", "8838552444541466");
-        	System.out.println(capturesParent !=null ? capturesParent.size() : null);	
-       
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
        
 		return msg;
 	}

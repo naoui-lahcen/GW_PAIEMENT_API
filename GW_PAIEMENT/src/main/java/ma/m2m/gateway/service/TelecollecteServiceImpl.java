@@ -44,7 +44,7 @@ public class TelecollecteServiceImpl implements TelecollecteService {
 	
 	@Override
 	public Integer getMAX_ID(String merchantid) {
-		Integer idTlc = telecollecteDao.getMAX_ID();
+		Integer idTlc = telecollecteDao.getMAX_ID(merchantid);
 		return idTlc;
 	}
 

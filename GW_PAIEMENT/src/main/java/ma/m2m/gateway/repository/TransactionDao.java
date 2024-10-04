@@ -21,8 +21,6 @@ public interface TransactionDao extends JpaRepository<Transaction, Long> {
 	
 	Transaction findByTrsnumautAndTrsnumcmrAndTrsmontant(String numAuth, String cumCmr, Double montant);
 	
-	Transaction findByTrsnumcmrAndTrscommandeAndTrsnumaut(String numCmr, String commande, String numAuth);
-	
 	Transaction findByTrsnumautAndTrsnumcmrAndTrscommande(String numAuth, String cumCmr, String commande);
 	
 	@Query(value = "SELECT * FROM MXGATEWAY.TRANSACTION WHERE "

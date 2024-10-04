@@ -11,7 +11,7 @@ import java.util.Date;
 public class TransactionDto {
 	
 	private long trs_id;
-	private String trscommande;
+	private String   trscommande;
 	private Double trs_numtrait;
 	private String trsnumcmr;
 	private Double trs_numtlcolcte;

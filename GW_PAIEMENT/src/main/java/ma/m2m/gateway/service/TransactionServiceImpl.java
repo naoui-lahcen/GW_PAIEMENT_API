@@ -42,11 +42,6 @@ public class TransactionServiceImpl implements TransactionService {
 		//dateTrs = dateTrs+"%";
 		return transactionMapper.model2VO(transactionDao.findByTrsnumautAndTrsnumcmrAndDateTrs(numAuth, cumCmr, dateTrs));
 	}
-	
-	@Override
-	public TransactionDto findByTrsnumcmrAndTrscommandeAndTrsnumaut(String numCmr, String commande, String numAuth) {
-		return transactionMapper.model2VO(transactionDao.findByTrsnumcmrAndTrscommandeAndTrsnumaut(numCmr, commande, numAuth));
-	}
 
 	@Override
 	public TransactionDto save(TransactionDto trs) {
