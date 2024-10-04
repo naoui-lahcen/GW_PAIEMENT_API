@@ -2508,7 +2508,11 @@ public class APIController {
 				// trs_check = transactionService.findByTrsnumautAndTrsnumcmr(authnumber,
 				// merchantid);
 
-				trs_check = transactionService.findByTrsnumcmrAndTrscommandeAndTrsnumaut(merchantid, orderid , authnumber);
+				Date dateTrss = dateFormatSimple.parse(current_dmd.getDem_date_time());
+				String dateTrs = dateFormatSimple.format(dateTrss);
+				Util.writeInFileTransaction(folder, file, "status dateTrs : " + dateTrs);
+				//trs_check = transactionService.findByTrsnumautAndTrsnumcmrAndDateTrs(authnumber, merchantid, dateTrs);
+				trs_check = transactionService.findByTrsnumautAndTrsnumcmrAndTrscommande(authnumber, merchantid, orderid);
 
 			} catch (Exception err4) {
 				Util.writeInFileTransaction(folder, file,
@@ -2750,7 +2754,7 @@ public class APIController {
 		try {
 			// Card info
 			cardnumber = (String) jsonOrequest.get("cardnumber");
-		} catch (Exception jerr) {
+		} catch(Exception ex) {
 			Util.writeInFileTransaction(folder, file, "capture 500 cardnumber missing in jsonOrequest");
 		}
 
@@ -2871,7 +2875,13 @@ public class APIController {
 			//Date dateTrss = dateFormatSimple.parse(current_dmd.getDem_date_time());
 			//String dateTrs = dateFormatSimple.format(dateTrss);
 			//Util.writeInFileTransaction(folder, file, "capture dateTrs : " + dateTrs);
-			trs_check = transactionService.findByTrsnumcmrAndTrscommandeAndTrsnumaut(merchantid, orderid , authnumber);
+			
+			Date dateTrss = dateFormatSimple.parse(current_dmd.getDem_date_time());
+			String dateTrs = dateFormatSimple.format(dateTrss);
+			Util.writeInFileTransaction(folder, file, "capture dateTrs : " + dateTrs);
+			//trs_check = transactionService.findByTrsnumautAndTrsnumcmrAndDateTrs(authnumber, merchantid, dateTrs);
+			trs_check = transactionService.findByTrsnumautAndTrsnumcmrAndTrscommande(authnumber, merchantid, orderid);
+			
 		} catch (Exception err4) {
 			Util.writeInFileTransaction(folder, file,
 					"capture 500 Error during Transaction findByTrsnumautAndTrsnumcmr for given authnumber:["
@@ -2960,6 +2970,7 @@ public class APIController {
 					+ orderid + "] and merchantid:[" + merchantid + "]" + err3);
 			return getMsgError(folder, file, jsonOrequest, "capture 500 Error during cardnumber formatting", null);
 		}
+
 		// insert into transaction
 		try {
 			trs = new TransactionDto();
@@ -2969,10 +2980,10 @@ public class APIController {
 			trs.setTrs_codporteur(frmt_cardnumber);
 			dmnt = Double.parseDouble(amount);
 			trs.setTrs_montant(dmnt);
-			// current_date = new Date();
-			// Date current_date_1 = getDateWithoutTime(current_date);
-			current_date = dateFormatSimple.parse(current_dmd.getDem_date_time());
+			current_date = new Date();
 			Date current_date_1 = getDateWithoutTime(current_date);
+			Date trs_date = dateFormatSimple.parse(current_dmd.getDem_date_time());
+			Date trs_date_1 = getDateWithoutTime(trs_date);
 
 			trs.setTrs_dattrans(current_date_1);
 			trs.setTrsnumaut(authnumber);
@@ -3214,7 +3225,7 @@ public class APIController {
 		try {
 			// Card info
 			cardnumber = (String) jsonOrequest.get("cardnumber");
-		} catch (Exception jerr) {
+		} catch(Exception ex) {
 			Util.writeInFileTransaction(folder, file, "refund 500 cardnumber missing in jsonOrequest");
 		}
 
@@ -3287,7 +3298,11 @@ public class APIController {
 			// trs_check = transactionService.findByTrsnumautAndTrsnumcmr(authnumber,
 			// merchantid);
 
-			trs_check = transactionService.findByTrsnumcmrAndTrscommandeAndTrsnumaut(merchantid, orderid , authnumber);
+			Date dateTrss = dateFormatSimple.parse(current_dmd.getDem_date_time());
+			String dateTrs = dateFormatSimple.format(dateTrss);
+			Util.writeInFileTransaction(folder, file, "refund dateTrs : " + dateTrs);
+			//trs_check = transactionService.findByTrsnumautAndTrsnumcmrAndDateTrs(authnumber, merchantid, dateTrs);
+			trs_check = transactionService.findByTrsnumautAndTrsnumcmrAndTrscommande(authnumber, merchantid, orderid);
 
 		} catch (Exception err4) {
 			Util.writeInFileTransaction(folder, file,
@@ -3299,10 +3314,10 @@ public class APIController {
 
 		if (trs_check == null) {
 			Util.writeInFileTransaction(folder, file,
-					"refund 500 Inconsitence Captured Transaction not found for authnumber:[" + authnumber
+					"refund 500 Transaction not found for authnumber:[" + authnumber
 							+ "] and merchantid:[" + merchantid + "]");
 
-			return getMsgError(folder, file, jsonOrequest, "refund 500 Inconsitence Captured Transaction not found",
+			return getMsgError(folder, file, jsonOrequest, "refund 500 Transaction not found",
 					null);
 		}
 
@@ -3311,39 +3326,39 @@ public class APIController {
 
 		if (trs_procod == null) {
 			Util.writeInFileTransaction(folder, file,
-					"refund 500 Inconsitence Captured Transaction trs_procod null for authnumber:[" + authnumber
+					"refund 500 Transaction trs_procod null for authnumber:[" + authnumber
 							+ "] and merchantid:[" + merchantid + "]");
 
 			return getMsgError(folder, file, jsonOrequest,
-					"refund 500 Inconsitence Captured Transaction trs_procod null", null);
+					"refund 500 Transaction trs_procod null", null);
 		}
 
 		if (trs_state == null) {
 			Util.writeInFileTransaction(folder, file,
-					"refund 500 Inconsitence Captured Transaction trs_procod null for authnumber:[" + authnumber
+					"refund 500 Transaction trs_procod null for authnumber:[" + authnumber
 							+ "] and merchantid:[" + merchantid + "]");
 
 			return getMsgError(folder, file, jsonOrequest,
-					"refund 500 Inconsitence Captured Transaction trs_procod null", null);
+					"refund 500 Transaction trs_procod null", null);
 		}
 
 		if (!trs_procod.equalsIgnoreCase("0")) {
 			Util.writeInFileTransaction(folder, file,
-					"refund 500 Inconsitence Captured Transaction trs_procod <> 0 for authnumber:[" + authnumber
+					"refund 500 Transaction trs_procod <> 0 for authnumber:[" + authnumber
 							+ "] and merchantid:[" + merchantid + "]");
 
 			return getMsgError(folder, file, jsonOrequest,
-					"refund 500 Inconsitence Captured Transaction trs_procod <> 0", null);
+					"refund 500 Transaction trs_procod <> 0", null);
 		}
 
 		/*
 		 * if (!trs_state.equalsIgnoreCase("E")) { Util.writeInFileTransaction(folder,
 		 * file,
-		 * "refund 500 Inconsitence Captured Transaction trs_state <> E for authnumber:["
+		 * "refund 500 Transaction trs_state <> E for authnumber:["
 		 * + authnumber + "] and merchantid:[" + merchantid + "]");
 		 * 
 		 * return getMsgError(folder, file, jsonOrequest,
-		 * "refund 500 Inconsitence Captured Transaction trs_state <> E", null); }
+		 * "refund 500 Transaction trs_state <> E", null); }
 		 */
 
 		SimpleDateFormat formatheure, formatdate = null;
@@ -3357,6 +3372,7 @@ public class APIController {
 			date = formatdate.format(new Date());
 			heure = formatheure.format(new Date());
 			jul = Util.convertToJulian(new Date()) + "";
+			jul = Util.convertToJulian(new Date()) + "";						
 			if (websiteid.equals("") || websiteid == null) {
 				websiteid = current_dmd.getGalid();
 			}
@@ -3514,6 +3530,9 @@ public class APIController {
 				trs.setTrs_montant(dmnt);
 				current_date = new Date();
 				Date current_date_1 = getDateWithoutTime(current_date);
+				Date trs_date = dateFormatSimple.parse(current_dmd.getDem_date_time());
+				Date trs_date_1 = getDateWithoutTime(trs_date);
+
 				trs.setTrs_dattrans(current_date_1);
 				trs.setTrsnumaut("000000");// offline mode
 				trs.setTrs_etat("N");
@@ -3709,7 +3728,7 @@ public class APIController {
 		try {
 			// Card info
 			cardnumber = (String) jsonOrequest.get("cardnumber");
-		} catch (Exception jerr) {
+		} catch(Exception ex) {
 			Util.writeInFileTransaction(folder, file, "reversal 500 cardnumber missing in jsonOrequest");
 		}
 
@@ -5984,7 +6003,6 @@ public class APIController {
 				return getMsgError(folder, file, null, "cpautorisation 500 malformed header " + head_err.getMessage(),
 						null);
 			}
-
 		}
 
 		String capture, currency, orderid, recurring, amount, transactionid, merchantid, capture_id, merchantname,
@@ -7254,7 +7272,7 @@ public class APIController {
 		}
 
 		String capture, currency, orderid, recurring, amount, transactionid, merchantid, capture_id, merchantname,
-				websiteName, websiteid, callbackurl, cardnumber, token = "", expirydate, cvv, fname, lname, email,
+				websiteName, websiteid, callbackurl, cardnumber="", token = "", expirydate, cvv, fname, lname, email,
 				authnumber, acqcode, acq_type, date, rrn, heure, securtoken24, mac_value, transactiontype, paymentid,
 				promoCode, callbackUrl, holdername, country, phone, city, state, zipcode, address, mesg_type,
 				merc_codeactivite, merchant_name, merchant_city, processing_code, reason_code, transaction_condition,
@@ -7281,7 +7299,8 @@ public class APIController {
 			callbackurl = (String) jsonOrequest.get("callbackurl");
 
 			// Card info
-			cardnumber = (String) jsonOrequest.get("cardnumber");
+			//cardnumber = (String) jsonOrequest.get("cardnumber");
+			
 			// token = (String) jsonOrequest.get("token");
 			// expirydate = (String) jsonOrequest.get("expirydate");
 			// cvv = (String) jsonOrequest.get("cvv");
@@ -7295,6 +7314,13 @@ public class APIController {
 			Util.writeInFileTransaction(folder, file, "cpautorisation 500 malformed json expression " + jerr);
 			return getMsgError(folder, file, null, "cpautorisation 500 malformed json expression " + jerr.getMessage(),
 					null);
+		}
+		
+		try {
+			// Card info
+			cardnumber = (String) jsonOrequest.get("cardnumber");
+		} catch(Exception ex) {
+			Util.writeInFileTransaction(folder, file, "cpautorisation 500 cardnumber missing in jsonOrequest");
 		}
 
 		String timeStamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
@@ -7471,7 +7497,12 @@ public class APIController {
 					// trs_check = transactionService.findByTrsnumautAndTrsnumcmr(authnumber,
 					// merchantid);
 
-					trs_check = transactionService.findByTrsnumcmrAndTrscommandeAndTrsnumaut(merchantid, orderid , authnumber);
+					Date dateTrss = dateFormatSimple.parse(check_dmd.getDem_date_time());
+					String dateTrs = dateFormatSimple.format(dateTrss);
+					Util.writeInFileTransaction(folder, file, "cpautorisation dateTrs : " + dateTrs);
+					//trs_check = transactionService.findByTrsnumautAndTrsnumcmrAndDateTrs(authnumber, merchantid, dateTrs);
+					trs_check = transactionService.findByTrsnumautAndTrsnumcmrAndTrscommande(authnumber, merchantid, orderid);
+
 				} catch (Exception ee) {
 
 					Util.writeInFileTransaction(folder, file,
@@ -7534,10 +7565,10 @@ public class APIController {
 						trs.setTrs_codporteur(frmt_cardnumber);
 						trs.setTrs_montant(montantPreAuto);
 
-						// current_date = new Date();
-						// Date current_date_1 = getDateWithoutTime(current_date);
-						current_date = dateFormatSimple.parse(check_dmd.getDem_date_time());
+						current_date = new Date();
 						Date current_date_1 = getDateWithoutTime(current_date);
+						Date trs_date = dateFormatSimple.parse(check_dmd.getDem_date_time());
+						Date trs_date_1 = getDateWithoutTime(trs_date);
 
 						trs.setTrs_dattrans(current_date_1);
 						trs.setTrsnumaut(authnumber);

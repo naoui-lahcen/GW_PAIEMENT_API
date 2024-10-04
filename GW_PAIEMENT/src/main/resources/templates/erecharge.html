@@ -18,7 +18,10 @@
       <link rel="stylesheet"
          href="https://use.fontawesome.com/releases/v5.0.8/css/all.css">
      <meta name="viewport" content="width=device-width, initial-scale=1">
-     <style>
+     <style>		 
+	body {
+    	font-family: 'Roboto', sans-serif;
+	}
       .dialog {
          display : none;
      }
@@ -179,16 +182,16 @@
                      </p>
                   </div>
                   <div class="row">
-                     <label for="commande" class="col-sm-6 col-form-label">Commande : 
+                     <label for="commande" class="col-sm-6 col-form-label"><strong>Commande :</strong> 
                      <span th:text="${demandeDto.commande}"></span>
                      </label>
-                     <label for="comid" class="col-sm-6 col-form-label cmr">Commerçant : 
+                     <label for="comid" class="col-sm-6 col-form-label cmr"><strong> Commerçant : </strong> 
                      <span th:if="${demandeDto.commercantDto != null}" th:text="${demandeDto.commercantDto.cmrNom}"></span>
                      </label>
-                     <label for="galid" class="col-sm-6 col-form-label gl">Site web commerçant : 
+                     <label for="galid" class="col-sm-6 col-form-label gl"><strong> Site web commerçant : </strong> 
                      <span th:if="${demandeDto.galerieDto != null}" th:text="${demandeDto.galerieDto.urlGal}"></span>
                      </label>
-                     <label for="montant" class="col-sm-6 col-form-label">Montant à recharger : 
+                     <label for="montant" class="col-sm-6 col-form-label"><strong> Montant à payer : </strong> 
                      <span th:text="${demandeDto.montantStr}" style="color: #DF6537;font-weight: 700;"></span> DH
                      </label>
                   </div>
@@ -207,8 +210,8 @@
                </div>
                <form role="form" method="POST" th:action="@{/recharger}" th:object="${demandeDto}" onsubmit="showProcessingPopup()">
                   <div class="form-group row">
-                     <label for="num" class="col-sm-3 col-form-label">N°
-                     carte bancaire</label>
+                     <label for="num" class="col-sm-3 col-form-label"><strong>N°
+                     carte bancaire </strong></label>
                      <div class="col-sm-3" th:if="${demandeDto.cartes == null }">
                         <input type="number" th:field="*{dem_pan}" class="form-control" id="num" required="required"
                            placeholder="Numéro de carte">
@@ -225,15 +228,15 @@
                         <input type="number" th:field="*{dem_pan}" class="form-control" id="nvnum"
                            placeholder="Nouvelle numéro de carte">
                      </div>
-                     <label for="cvv" class="col-sm-3 col-form-label">CVV</label>
+                     <label for="cvv" class="col-sm-3 col-form-label"><strong> CVV </strong></label>
                      <div class="col-sm-3">
                         <input type="number" th:field="*{dem_cvv}" class="form-control" id="cvv" required="required"
                            placeholder="Code à 3 chiffres">
                      </div>
                   </div>
                   <div class="form-group row">
-                     <label for="xxx" class="col-sm-3 col-form-label">Date
-                     d'expiration</label>
+                     <label for="xxx" class="col-sm-3 col-form-label"><strong> Date
+                     d'expiration </strong></label>
                      <div class="col-sm-3" th:if="${demandeDto.cartes == null }">
                         <select class="form-control" th:field="*{annee}" required="required">
                            <option value="">Année</option>

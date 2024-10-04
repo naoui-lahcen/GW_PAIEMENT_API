@@ -19,6 +19,9 @@
          href="https://use.fontawesome.com/releases/v5.0.8/css/all.css">
      <meta name="viewport" content="width=device-width, initial-scale=1">
      <style>
+	body {
+    	font-family: 'Roboto', sans-serif;
+	}
       .dialog {
          display : none;
      }
@@ -191,13 +194,13 @@
 						<thead>
 						<tr style="line-height: 30px;">
 				
-							<td style="background: #fef7f7;">Référence</td>
+							<td style="background: #fef7f7;font-weight: bold;">Référence</td>
 				
-							<td style="background: #fef7f7;">Type</td>
+							<td style="background: #fef7f7;font-weight: bold;">Type</td>
 				
-							<td style="background: #fef7f7;">Description</td>
+							<td style="background: #fef7f7;font-weight: bold;">Description</td>
 				
-							<td style="background: #fef7f7;">Montant</td>
+							<td style="background: #fef7f7;font-weight: bold;">Montant</td>
 
 						</tr>
 						</thead>
@@ -240,21 +243,21 @@
                </div>
                <form role="form" method="POST" th:action="@{/payer}" th:object="${demandeDto}" onsubmit="showProcessingPopup()">
                   <div class="form-group row">
-                     <label for="num" class="col-sm-3 col-form-label">N°
-                     carte bancaire</label>
+                     <label for="num" class="col-sm-3 col-form-label"><strong>N°
+                     carte bancaire </strong></label>
                      <div class="col-sm-3">
                         <input type="number" th:field="*{dem_pan}" class="form-control" id="num" required="required"
                            placeholder="Numéro de carte">
                      </div>
-                     <label for="cvv" class="col-sm-3 col-form-label">CVV</label>
+                     <label for="cvv" class="col-sm-3 col-form-label"><strong> CVV </strong></label>
                      <div class="col-sm-3">
                         <input type="number" th:field="*{dem_cvv}" class="form-control" id="cvv" required="required"
                            placeholder="Code à 3 chiffres">
                      </div>
                   </div>
                   <div class="form-group row">
-                     <label for="xxx" class="col-sm-3 col-form-label">Date
-                     d'expiration</label>
+                     <label for="xxx" class="col-sm-3 col-form-label"><strong> Date
+                     d'expiration </strong></label>
                      <div class="col-sm-3">
                         <select class="form-control" th:field="*{annee}" required="required">
                            <option value="">Année</option>

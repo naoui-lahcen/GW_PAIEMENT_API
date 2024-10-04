@@ -14,6 +14,8 @@ public interface TransactionService {
 	
 	TransactionDto findByTrsnumautAndTrsnumcmrAndTrsmontant(String numAuth, String cumCmr, Double montant);
 	
+	TransactionDto findByTrsnumautAndTrsnumcmrAndTrscommande(String numAuth, String cumCmr, String commande);
+	
 	TransactionDto findByTrsnumautAndTrsnumcmrAndDateTrs(String numAuth, String cumCmr, String dateTrs);
 	
 	TransactionDto findByTrsnumcmrAndTrscommandeAndTrsnumaut(String numCmr, String commande, String numAuth);

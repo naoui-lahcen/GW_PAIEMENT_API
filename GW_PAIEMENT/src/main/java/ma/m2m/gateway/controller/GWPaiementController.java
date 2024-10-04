@@ -470,19 +470,28 @@ public class GWPaiementController {
         Double montantDb = bd.doubleValue();
         
         TransactionDto trs = transactionService.findByTrsnumautAndTrsnumcmrAndTrsmontant("797535", "1180092", montantDb);
+        System.out.println("trs : ");
         System.out.println(trs !=null ? trs.toString() : null);
         
 		try {        
 			Date dateTrss = dateFormatSimple.parse(demDto.getDem_date_time());  						
 			Date current_date_1 = getDateWithoutTime(dateTrss);			
-			trs.setTrs_dattrans(current_date_1);			
+			//trs.setTrs_dattrans(current_date_1);	
+			trs.setTrs_dattrans(dateTrss);
 			transactionService.save(trs);
 			
 			String dateTrs = dateFormatSimple.format(dateTrss);  
+
 	        TransactionDto trs1 = transactionService.findByTrsnumautAndTrsnumcmrAndDateTrs("797535", "1180092", dateTrs);
 	        TransactionDto trs2 = transactionService.findByTrsnumcmrAndTrscommandeAndTrsnumaut("1180092", demDto.getCommande(), "797535");
 	        System.out.println(trs1 !=null ? trs1.toString() : null);	
 	        System.out.println(trs2 !=null ? trs2.toString() : null);	
+
+	        //TransactionDto trs1 = transactionService.findByTrsnumautAndTrsnumcmrAndDateTrs("797535", "1180092", dateTrs);
+	        TransactionDto trs1 = transactionService.findByTrsnumautAndTrsnumcmrAndTrscommande("797535", "1180092", "88385524445414");
+	        System.out.println("trs1 : ");	   
+	        System.out.println(trs1 !=null ? trs1.toString() : null);	        
+
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}*/
