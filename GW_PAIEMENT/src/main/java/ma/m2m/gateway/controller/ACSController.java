@@ -601,10 +601,6 @@ public class ACSController {
 							// ********************* Frictionless responseMPI equal Y *********************
 							Util.writeInFileTransaction(folder, file,
 									"********************* responseMPI equal Y *********************");
-
-							dmd.setDem_xid(threeDSServerTransID);
-							dmd.setEtat_demande("RETOUR_ACS_AUTH_OK");
-							demandePaiementService.save(dmd);
 							
 							// 2024-03-05
 							montanttrame = formatMontantTrame(folder, file, amount, orderid, merchantid, page, model);

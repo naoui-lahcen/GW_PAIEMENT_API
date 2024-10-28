@@ -587,12 +587,7 @@ public class AppMobileController {
 							// ********************* Frictionless responseMPI equal Y *********************
 							Util.writeInFileTransaction(folder, file,
 									"********************* responseMPI equal Y *********************");
-							if (!threeDSServerTransID.equals("")) {
-								dmd.setDem_xid(threeDSServerTransID);
-								dmd.setEtat_demande("RETOUR_ACS_AUTH_OK");
-								demandePaiementService.save(dmd);
-							}
-							
+
 							// 2024-03-05
 							montanttrame = formatMontantTrame(folder, file, amount, orderid, merchantid, dmd, page, model);
 						
@@ -2714,7 +2709,7 @@ public class AppMobileController {
 			Util.writeInFileTransaction(folder, file,
 					"demandePaiement after update MPI_KO idDemande null : " + demandeDto.toString());
 			demandeDtoMsg.setMsgRefus(
-					"La transaction en cours n’a pas abouti (MPI_KO), votre compte ne sera pas débité, merci de réessayer.");
+					"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			return page;
@@ -2729,7 +2724,7 @@ public class AppMobileController {
 					"demandePaiement not found !!!! demandePaiement = null  / received idDemande from MPI => "
 							+ idDemande);
 			demandeDtoMsg.setMsgRefus(
-					"La transaction en cours n’a pas abouti (DemandePaiement introuvable), votre compte ne sera pas débité, merci de réessayer.");
+					"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			return page;
@@ -2743,7 +2738,7 @@ public class AppMobileController {
 					"demandePaiement after update MPI_KO reponseMPI null : " + dmd.toString());
 			Util.writeInFileTransaction(folder, file, "Response 3DS is null");
 			demandeDtoMsg.setMsgRefus(
-					"La transaction en cours n’a pas abouti (MPI_KO reponseMPI null), votre compte ne sera pas débité, merci de réessayer.");
+					"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			return page;
@@ -3489,9 +3484,13 @@ public class AppMobileController {
 			Util.writeInFileTransaction(folder, file, "****** Cas chalenge responseMPI equal C ou D ******");
 			try {
 				dmd.setCreq(threeDsecureResponse.getHtmlCreq());
+				if(threeDSServerTransID.equals("") || threeDSServerTransID == null) {
+					threeDSServerTransID = threeDsecureResponse.getThreeDSServerTransID();
+				}
 				dmd.setDem_xid(threeDSServerTransID);
 				dmd.setEtat_demande("SND_TO_ACS");
 				demandeDto = demandePaiementService.save(dmd);
+				Util.writeInFileTransaction(folder, file, "threeDSServerTransID : " + demandeDto.getDem_xid());
 				model.addAttribute("demandeDto", demandeDto);
 				// 2024-06-27 old
 				/*page = "chalenge";

@@ -727,18 +727,6 @@ public class DemandePaiement implements Serializable {
 		this.is_bpaysave = is_bpaysave;
 	}
 
-
-
-	public String getDemxid() {
-		return demxid;
-	}
-
-
-	public void setDemxid(String demxid) {
-		this.demxid = demxid;
-	}
-
-
 	public String getDateSendMPI() {
 		return dateSendMPI;
 	}

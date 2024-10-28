@@ -482,12 +482,6 @@ public class DemandePaiementDto implements Serializable {
 	public void setCreq(String creq) {
 		this.creq = creq;
 	}
-	public String getDemxid() {
-		return demxid;
-	}
-	public void setDemxid(String demxid) {
-		this.demxid = demxid;
-	}
 	public CommercantDto getCommercantDto() {
 		return commercantDto;
 	}

@@ -149,6 +149,16 @@ public class TelecollecteDto {
 		super();
 	}
 	
+	@Override
+	public String toString() {
+		return "TelecollecteDto [tlc_numcmr=" + tlc_numcmr + ", tlc_numtpe=" + tlc_numtpe + ", tlc_numtlcolcte="
+				+ tlc_numtlcolcte + ", tlc_numremise=" + tlc_numremise + ", tlc_numfich=" + tlc_numfich
+				+ ", tlc_akwnbr=" + tlc_akwnbr + ", tlc_mesimp=" + tlc_mesimp + ", tlc_datremise=" + tlc_datremise
+				+ ", tlc_heuremise=" + tlc_heuremise + ", tlc_datcrtfich=" + tlc_datcrtfich + ", tlc_nbrtrans="
+				+ tlc_nbrtrans + ", tlc_gest=" + tlc_gest + ", tlc_typentre=" + tlc_typentre + ", tlc_escompte="
+				+ tlc_escompte + ", tlc_codbq=" + tlc_codbq + ", tlc_fileid=" + tlc_fileid + "]";
+	}
+	
 	
 
 }

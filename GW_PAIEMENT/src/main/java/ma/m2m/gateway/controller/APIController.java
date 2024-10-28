@@ -1436,6 +1436,9 @@ public class APIController {
 
 				// insertion htmlCreq dans la demandePaiement
 				dmd.setCreq(threeDsecureResponse.getHtmlCreq());
+				if(threeDSServerTransID.equals("") || threeDSServerTransID == null) {
+					threeDSServerTransID = threeDsecureResponse.getThreeDSServerTransID();
+				}
 				dmd.setDem_xid(threeDSServerTransID);
 				dmd.setEtat_demande("SND_TO_ACS");
 				demandePaiementService.save(dmd);
@@ -2907,7 +2910,11 @@ public class APIController {
 			idtelc = telecollecteService.getMAX_ID(merchantid);
 			Util.writeInFileTransaction(folder, file, "getMAX_ID idtelc : " + idtelc);
 
-			lidtelc = idtelc.longValue() + 1;
+			if (idtelc != null) {
+				lidtelc = idtelc.longValue() + 1;
+			} else {
+				lidtelc = 1;
+			}
 			tlc = new TelecollecteDto();
 			tlc.setTlc_numtlcolcte(lidtelc);
 			tlc.setTlc_numtpe(current_hist.getHatCodtpe());
@@ -2927,6 +2934,8 @@ public class APIController {
 			tlc.setTlc_codbq(acqcode);
 			tlc.setTlc_numcmr(merchantid);
 			tlc.setTlc_numtpe(websiteid);
+			
+			Util.writeInFileTransaction(folder, file, tlc.toString());
 
 			telecollecteService.save(tlc);
 
@@ -3454,6 +3463,8 @@ public class APIController {
 				tlc.setTlc_codbq(acqcode);
 				tlc.setTlc_numcmr(merchantid);
 				tlc.setTlc_numtpe(websiteid);
+				
+				Util.writeInFileTransaction(folder, file, tlc.toString());
 
 				telecollecteService.save(tlc);
 
@@ -5293,8 +5304,8 @@ public class APIController {
 					// Card info
 					jso.put("cardnumber", Util.formatCard(cardnumber));
 					jso.put("token", "");
-					jso.put("statuscode", "");
-					jso.put("status", "");
+					jso.put("statuscode", "00");
+					jso.put("status", "Challenge");
 
 					// Client info
 					jso.put("fname", fname);
@@ -6229,6 +6240,9 @@ public class APIController {
 						tlc.setTlc_codbq(acqcode);
 						tlc.setTlc_numcmr(merchantid);
 						tlc.setTlc_numtpe(websiteid);
+						
+						Util.writeInFileTransaction(folder, file, tlc.toString());
+						
 						tlc = telecollecteService.save(tlc);
 
 						Util.writeInFileTransaction(folder, file,
@@ -6931,6 +6945,9 @@ public class APIController {
 									tlc.setTlc_codbq(acqcode);
 									tlc.setTlc_numcmr(merchantid);
 									tlc.setTlc_numtpe(websiteid);
+									
+									Util.writeInFileTransaction(folder, file, tlc.toString());
+									
 									telecollecteService.save(tlc);
 
 									/*
