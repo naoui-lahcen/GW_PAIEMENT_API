@@ -44,6 +44,7 @@ import ma.m2m.gateway.dto.CommercantDto;
 import ma.m2m.gateway.dto.ControlRiskCmrDto;
 import ma.m2m.gateway.dto.DemandePaiementDto;
 import ma.m2m.gateway.dto.EmetteurDto;
+import ma.m2m.gateway.dto.GalerieDto;
 import ma.m2m.gateway.dto.HistoAutoGateDto;
 import ma.m2m.gateway.dto.RequestDto;
 import ma.m2m.gateway.dto.TelecollecteDto;
@@ -58,6 +59,7 @@ import ma.m2m.gateway.service.CommercantService;
 import ma.m2m.gateway.service.ControlRiskCmrService;
 import ma.m2m.gateway.service.DemandePaiementService;
 import ma.m2m.gateway.service.EmetteurService;
+import ma.m2m.gateway.service.GalerieService;
 import ma.m2m.gateway.service.HistoAutoGateService;
 import ma.m2m.gateway.service.TelecollecteService;
 import ma.m2m.gateway.service.TransactionService;
@@ -160,6 +162,9 @@ public class APIController {
 
 	@Autowired
 	CodeReponseService codeReponseService;
+	
+	@Autowired
+	GalerieService galerieService;
 
 	DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	DateFormat dateFormatSimple = new SimpleDateFormat("yyyy-MM-dd");
@@ -318,6 +323,24 @@ public class APIController {
 			auth3ds = "Y";
 			Util.writeInFileTransaction(folder, file, "authorization 500 malformed json expression auth3ds " + e);
 		}
+		
+		try {
+			Double montant = 0.00;
+			if (amount.equals("") || amount == null) {
+				amount = "0";
+			}
+			if (amount.contains(",")) {
+				amount = amount.replace(",", ".");
+			}
+			montant = Double.valueOf(amount);
+			if(montant<5) {
+				return getMsgError(folder, file, null, "The amount must be greater than or equal to 5dh", null);
+			}
+		} catch (Exception e) {
+			Util.writeInFileTransaction(folder, file, "The amount must be greater than or equal to 5dh" + e);
+			return getMsgError(folder, file, null, "The amount must be greater than or equal to 5dh" + e.getMessage(),
+					null);
+		}
 
 		// get cardnumber by token
 		if (!token.equals("") && token != null && !token.equals("null")) {
@@ -379,6 +402,31 @@ public class APIController {
 
 			return getMsgError(folder, file, jsonOrequest,
 					"authorization 500 Merchant misconfigured in DB or not existing", "");
+		}
+		
+		GalerieDto galerie = null;
+		
+		try {
+			galerie = galerieService.findByCodeCmr(merchantid);
+		} catch (Exception e) {
+			Util.writeInFileTransaction(folder, file,
+					"authorization 500 Galerie misconfigured in DB or not existing orderid:[" + orderid
+							+ "] and merchantid:[" + merchantid + "]");
+
+			return getMsgError(folder, file, jsonOrequest,
+					"authorization 500 Galerie misconfigured in DB or not existing", "15");
+		}
+		
+		if (galerie == null) {
+			Util.writeInFileTransaction(folder, file,
+					"authorization 500 Galerie misconfigured in DB or not existing orderid:[" + orderid
+							+ "] and merchantid:[" + merchantid + "]");
+
+			return getMsgError(folder, file, jsonOrequest,
+					"authorization 500 Galerie misconfigured in DB or not existing", "15");
+		}
+		if(!websiteid.equals(galerie.getCodeGal())) {
+			websiteid = galerie.getCodeGal();
 		}
 
 		// get demandepaiement id , check if exist
@@ -1441,8 +1489,9 @@ public class APIController {
 				}
 				dmd.setDem_xid(threeDSServerTransID);
 				dmd.setEtat_demande("SND_TO_ACS");
-				demandePaiementService.save(dmd);
-
+				dmd = demandePaiementService.save(dmd);
+				
+				Util.writeInFileTransaction(folder, file, "threeDSServerTransID : " + dmd.getDem_xid());
 				System.out.println("link_chalenge " + link_chalenge + dmd.getTokencommande());
 				Util.writeInFileTransaction(folder, file, "link_chalenge " + link_chalenge + dmd.getTokencommande());
 
@@ -1658,12 +1707,43 @@ public class APIController {
 		try {
 			id_client = (String) jsonOrequest.get("id_client");
 		} catch (Exception jerr) {
-			Util.writeInFileTransaction(folder, file, "getLink 500 malformed json expression " + linkP + jerr);
+			Util.writeInFileTransaction(folder, file, "getLink 500 malformed json expression " + jerr);
 		}
 		try {
 			token = (String) jsonOrequest.get("token");
 		} catch (Exception jerr) {
-			Util.writeInFileTransaction(folder, file, "getLink 500 malformed json expression " + linkP + jerr);
+			Util.writeInFileTransaction(folder, file, "getLink 500 malformed json expression " + jerr);
+		}
+		
+		String url = "", status = "", statuscode = "";
+		JSONObject jso = new JSONObject();
+		
+		try {
+			Double montant = 0.00;
+			if (amount.equals("") || amount == null) {
+				amount = "0";
+			}
+			if (amount.contains(",")) {
+				amount = amount.replace(",", ".");
+			}
+			montant = Double.valueOf(amount);
+			if(montant<5) {
+				url = "";
+				statuscode = "17";
+				status = "The amount must be greater than or equal to 5dh";
+				
+				jso.put("statuscode", statuscode);
+				jso.put("status", status);
+				jso.put("orderid", orderid);
+				jso.put("amount", amount);
+				jso.put("url", url);
+				Util.writeInFileTransaction(folder, file, "The amount must be greater than or equal to 5dh");
+				return jso.toString();
+			}
+		} catch (Exception e) {
+			Util.writeInFileTransaction(folder, file, "The amount must be greater than or equal to 5dh" + e);
+			return getMsgError(folder, file, null, "The amount must be greater than or equal to 5dh" + e.getMessage(),
+					null);
 		}
 
 		CommercantDto current_merchant = null;
@@ -1725,7 +1805,7 @@ public class APIController {
 			return getMsgError(folder, file, jsonOrequest, "getLink 500 Error Already exist in PaiementRequest", "16");
 		}
 
-		String url = "", status = "", statuscode = "";
+		
 
 		try {
 			String tokencommande = "";
@@ -1815,8 +1895,6 @@ public class APIController {
 
 			return getMsgError(folder, file, jsonOrequest, "getLink 500 Error during DEMANDE_PAIEMENT insertion", null);
 		}
-
-		JSONObject jso = new JSONObject();
 
 		try {
 			// Transaction info
@@ -2892,6 +2970,20 @@ public class APIController {
 
 			return getMsgError(folder, file, jsonOrequest, "500 Transaction already captured", null);
 		}
+		
+		try {
+			cardnumber = current_dmd.getDem_pan();
+			if(websiteid.equals("") || websiteid == null) {
+				websiteid = current_dmd.getGalid();
+			}
+			if(!websiteid.equals(current_dmd.getGalid())) {
+				websiteid = current_dmd.getGalid();
+			}
+		} catch (Exception err3) {
+			Util.writeInFileTransaction(folder, file, "capture 500 Error during cardnumber formatting for given orderid:["
+					+ orderid + "] and merchantid:[" + merchantid + "]" + err3);
+			return getMsgError(folder, file, jsonOrequest, "capture 500 Error during cardnumber formatting", null);
+		}
 
 		// TelecollecteDto n_tlc = telecollecteService.getMAXTLC_N(merchantid);
 		Date current_date = null;
@@ -2963,16 +3055,6 @@ public class APIController {
 		double dmnt = 0;
 		Integer idtrs = null;
 		long lidtrs = 0;
-		try {
-			cardnumber = current_dmd.getDem_pan();
-			if (websiteid.equals("") || websiteid == null) {
-				websiteid = current_dmd.getGalid();
-			}
-		} catch (Exception err3) {
-			Util.writeInFileTransaction(folder, file, "capture 500 Error during cardnumber formatting for given orderid:["
-					+ orderid + "] and merchantid:[" + merchantid + "]" + err3);
-			return getMsgError(folder, file, jsonOrequest, "capture 500 Error during cardnumber formatting", null);
-		}
 
 		// insert into transaction
 		try {
@@ -3335,7 +3417,10 @@ public class APIController {
 			date = formatdate.format(new Date());
 			heure = formatheure.format(new Date());
 			jul = Util.convertToJulian(new Date()) + "";						
-			if (websiteid.equals("") || websiteid == null) {
+			if(websiteid.equals("") || websiteid == null) {
+				websiteid = current_dmd.getGalid();
+			}
+			if(!websiteid.equals(current_dmd.getGalid())) {
 				websiteid = current_dmd.getGalid();
 			}
 			numcarteTrs = current_dmd.getDem_pan();
@@ -4426,6 +4511,30 @@ public class APIController {
 				return getMsgErrorV1(folder, file, jsonOrequest,
 						"savingCardToken 500 Merchant misconfigured in DB or not existing", "");
 			}
+			
+			GalerieDto galerie = null;
+			
+			try {
+				galerie = galerieService.findByCodeCmr(merchantid);
+			} catch (Exception e) {
+				Util.writeInFileTransaction(folder, file,
+						"authorization 500 Galerie misconfigured in DB or not existing");
+
+				return getMsgError(folder, file, jsonOrequest,
+						"authorization 500 Galerie misconfigured in DB or not existing", "15");
+			}
+			
+			if (galerie == null) {
+				Util.writeInFileTransaction(folder, file,
+						"authorization 500 Galerie misconfigured in DB or not existing");
+
+				return getMsgError(folder, file, jsonOrequest,
+						"authorization 500 Galerie misconfigured in DB or not existing", "15");
+			}
+			if(!websiteid.equals(galerie.getCodeGal())) {
+				websiteid = galerie.getCodeGal();
+			}
+			
 			int i_card_type = Util.getCardIss(cardnumber);
 
 			DemandePaiementDto dmd = null;
@@ -5365,8 +5474,6 @@ public class APIController {
 				// Card info
 				jso.put("cardnumber", Util.formatCard(cardnumber));
 				jso.put("token", "");
-				jso.put("statuscode", "");
-				jso.put("status", "");
 
 				// Client info
 				jso.put("fname", fname);
@@ -6141,10 +6248,13 @@ public class APIController {
 			country = check_dmd.getCountry();
 			city = check_dmd.getCity();
 			state = check_dmd.getState();
-			if (cardnumber.equals("")) {
+			if(cardnumber.equals("")) {
 				cardnumber = check_dmd.getDem_pan();
 			}
-			if (websiteid.equals("") || websiteid == null) {
+			if(websiteid.equals("") || websiteid == null) {
+				websiteid = check_dmd.getGalid();
+			}
+			if(!websiteid.equals(check_dmd.getGalid())) {
 				websiteid = check_dmd.getGalid();
 			}
 		} catch (Exception e) {
@@ -6736,7 +6846,7 @@ public class APIController {
 											+ rrn + "/" + montantComplent + "/" + date + "/" + merchantid);
 						}
 
-						HistoAutoGateDto hist = null;
+						HistoAutoGateDto histComlement = null;
 						Integer Ihist_id = null;
 						if (tag20_resp == null) {
 							tag20_resp = "";
@@ -6759,7 +6869,7 @@ public class APIController {
 							Util.writeInFileTransaction(folder, file, "Insert into Histogate...");
 
 							try {
-								hist = new HistoAutoGateDto();
+								histComlement = new HistoAutoGateDto();
 								Date curren_date_hist = new Date();
 								int numTransaction = Util.generateNumTransaction(folder, file, curren_date_hist);
 
@@ -6794,64 +6904,64 @@ public class APIController {
 								Util.writeInFileTransaction(folder, file, "websiteid : " + websiteid);
 
 								Date current_date_1 = getDateWithoutTime(curren_date_hist);
-								hist.setHatDatdem(current_date_1);
+								histComlement.setHatDatdem(current_date_1);
 
-								hist.setHatHerdem(new SimpleDateFormat("HH:mm").format(curren_date_hist));
-								hist.setHatMontant(montantComplent);
-								hist.setHatNumcmr(merchantid);
-								hist.setHatCoderep(tag20_resp_verified);
+								histComlement.setHatHerdem(new SimpleDateFormat("HH:mm").format(curren_date_hist));
+								histComlement.setHatMontant(montantComplent);
+								histComlement.setHatNumcmr(merchantid);
+								histComlement.setHatCoderep(tag20_resp_verified);
 								tag20_resp = tag20_resp_verified;
-								hist.setHatDevise(currency);
-								hist.setHatBqcmr(acqcode);
-								hist.setHatPorteur(pan_auto);
-								hist.setHatMtfref1(s_status);
-								hist.setHatNomdeandeur(websiteid);
-								hist.setHatNautemt(tag19_res_verified); // f2
+								histComlement.setHatDevise(currency);
+								histComlement.setHatBqcmr(acqcode);
+								histComlement.setHatPorteur(pan_auto);
+								histComlement.setHatMtfref1(s_status);
+								histComlement.setHatNomdeandeur(websiteid);
+								histComlement.setHatNautemt(tag19_res_verified); // f2
 								tag19_resp = tag19_res_verified;
 								if (tag22_resp != null)
-									hist.setHatProcode(tag22_resp.charAt(0));
+									histComlement.setHatProcode(tag22_resp.charAt(0));
 								else
-									hist.setHatProcode('6');
-								hist.setHatExpdate(expirydate);
-								hist.setHatRepondeur(tag21_resp);
-								hist.setHatTypmsg("3");
-								hist.setHatRrn(tag66_resp_verified); // f1
+									histComlement.setHatProcode('6');
+								histComlement.setHatExpdate(expirydate);
+								histComlement.setHatRepondeur(tag21_resp);
+								histComlement.setHatTypmsg("3");
+								histComlement.setHatRrn(tag66_resp_verified); // f1
 								tag66_resp_verified = tag66_resp;
-								hist.setHatEtat('E');
+								histComlement.setHatEtat('E');
 								if (websiteid.equals("")) {
-									hist.setHatCodtpe("1");
+									histComlement.setHatCodtpe("1");
 								} else {
-									hist.setHatCodtpe(websiteid);
+									histComlement.setHatCodtpe(websiteid);
 								}
-								hist.setHatMcc(merc_codeactivite);
-								hist.setHatNumCommande(orderidToDebite);
-								hist.setHatNumdem(new Long(numTransaction));
+								histComlement.setHatMcc(merc_codeactivite);
+								histComlement.setHatNumCommande(orderidToDebite);
+								histComlement.setHatNumdem(new Long(numTransaction));
 
 								if (check_cvv_presence(cvv)) {
-									hist.setIs_cvv_verified("Y");
+									histComlement.setIs_cvv_verified("Y");
 								} else {
-									hist.setIs_cvv_verified("N");
+									histComlement.setIs_cvv_verified("N");
 								}
 
-								hist.setIs_3ds("N");
-								hist.setIs_addcard("N");
-								hist.setIs_whitelist("N");
-								hist.setIs_withsave("N");
-								hist.setIs_tokenized("N");
+								histComlement.setIs_3ds("N");
+								histComlement.setIs_addcard("N");
+								histComlement.setIs_whitelist("N");
+								histComlement.setIs_withsave("N");
+								histComlement.setIs_tokenized("N");
 
 								if (recurring.equalsIgnoreCase("Y"))
-									hist.setIs_cof("Y");
+									histComlement.setIs_cof("Y");
 								if (recurring.equalsIgnoreCase("N"))
-									hist.setIs_cof("N");
+									histComlement.setIs_cof("N");
 
 								Util.writeInFileTransaction(folder, file, "HistoAutoGate data filling end ...");
 
 								Util.writeInFileTransaction(folder, file, "HistoAutoGate Saving ...");
 
-								hist = histoAutoGateService.save(hist);
+								histComlement = histoAutoGateService.save(histComlement);
 
 								Util.writeInFileTransaction(folder, file,
-										"hatNomdeandeur : " + hist.getHatNomdeandeur());
+										"hatNomdeandeur : " + histComlement.getHatNomdeandeur());
 
 							} catch (Exception e) {
 								Util.writeInFileTransaction(folder, file,
@@ -6861,39 +6971,19 @@ public class APIController {
 
 							Util.writeInFileTransaction(folder, file, "HistoAutoGate OK.");
 
-							HistoAutoGateDto hist1 = null;
-							try {
-								if (hist.getId() == null) {
-									// get histoauto check if exist
-									hist1 = histoAutoGateService.findLastByHatNumCommandeAndHatNumcmr(orderidToDebite,
-											merchantid);
-									if (hist1 == null) {
-										hist1 = hist;
-									}
-								} else {
-									hist1 = hist;
-								}
-
-							} catch (Exception err2) {
-								Util.writeInFileTransaction(folder, file,
-										"cpauthorization 500 Error during HistoAutoGate findLastByHatNumCommandeAndHatNumcmr orderid:["
-												+ orderidToDebite + "] and merchantid:[" + merchantid + "]" + err2);
-							}
-
 							current_date = new Date();
 							Util.writeInFileTransaction(folder, file, "Automatic capture start...");
 
 							Util.writeInFileTransaction(folder, file, "Getting authnumberComplent");
 
-							authnumberComplent = hist1.getHatNautemt();
+							authnumberComplent = histComlement.getHatNautemt();
 							Util.writeInFileTransaction(folder, file,
 									"authnumberComplent : [" + authnumberComplent + "]");
 
 							Util.writeInFileTransaction(folder, file, "Getting authnumberComplent");
 
 							try {
-								trs_check = transactionService.findByTrsnumautAndTrsnumcmr(authnumberComplent,
-										merchantid);
+								trs_check = transactionService.findByTrsnumautAndTrsnumcmrAndTrscommande(authnumberComplent, merchantid, orderidToDebite);
 							} catch (Exception ee) {
 
 								Util.writeInFileTransaction(folder, file,
@@ -6928,7 +7018,7 @@ public class APIController {
 									tlc = new TelecollecteDto();
 									tlc.setTlc_numtlcolcte(lidtelc);
 
-									tlc.setTlc_numtpe(hist1.getHatCodtpe());
+									tlc.setTlc_numtpe(histComlement.getHatCodtpe());
 
 									tlc.setTlc_datcrtfich(current_date);
 									tlc.setTlc_nbrtrans(new Double(1));
@@ -6974,7 +7064,7 @@ public class APIController {
 
 									trs.setTrsnumaut(authnumberComplent);
 									trs.setTrs_etat("N");
-									trs.setTrs_devise(hist1.getHatDevise());
+									trs.setTrs_devise(histComlement.getHatDevise());
 									trs.setTrs_certif("N");
 									Integer idtrs = transactionService.getMAX_ID();
 									long lidtrs = idtrs.longValue() + 1;
@@ -6987,15 +7077,10 @@ public class APIController {
 									trs.setTrs_numfact(0.0);
 									transactionService.save(trs);
 
-									hist1.setHatEtat('T');
-									hist1.setHatdatetlc(current_date);
-									hist1.setOperateurtlc("mxplusapi");
-									hist1 = histoAutoGateService.save(hist1);
-
-									current_hist.setHatEtat('T');
-									current_hist.setHatdatetlc(current_date);
-									current_hist.setOperateurtlc("mxplusapi");
-									current_hist = histoAutoGateService.save(current_hist);
+									histComlement.setHatEtat('T');
+									histComlement.setHatdatetlc(current_date);
+									histComlement.setOperateurtlc("mxplusapi");
+									histComlement = histoAutoGateService.save(histComlement);
 
 									motif = motif + " and captured";
 
@@ -7132,9 +7217,9 @@ public class APIController {
 			jso.put("merchantid", (String) jsonOrequest.get("merchantid"));
 			jso.put("amount", (String) jsonOrequest.get("amount"));
 		} else {
-			jso.put("orderid", "");
-			jso.put("merchantid", "");
-			jso.put("amount", "");
+			//jso.put("orderid", "");
+			//jso.put("merchantid", "");
+			//jso.put("amount", "");
 		}
 		if (coderep != null) {
 			jso.put("statuscode", coderep);
@@ -7144,9 +7229,9 @@ public class APIController {
 
 		jso.put("status", msg);
 		jso.put("etataut", "N");
-		jso.put("linkacs", "");
-		jso.put("url", "");
-		jso.put("idDemande", "");
+		//jso.put("linkacs", "");
+		//jso.put("url", "");
+		//jso.put("idDemande", "");
 
 		Util.writeInFileTransaction(folder, file, "json : " + jso.toString());
 		System.out.println("json : " + jso.toString());
@@ -7164,9 +7249,9 @@ public class APIController {
 		if (jsonOrequest != null) {
 			jso.put("merchantid", (String) jsonOrequest.get("merchantid"));
 		} else {
-			jso.put("orderid", "");
-			jso.put("merchantid", "");
-			jso.put("amount", "");
+			//jso.put("orderid", "");
+			//jso.put("merchantid", "");
+			//jso.put("amount", "");
 		}
 		if (coderep != null) {
 			jso.put("statuscode", coderep);
@@ -7176,9 +7261,9 @@ public class APIController {
 
 		jso.put("status", msg);
 		jso.put("etataut", "N");
-		jso.put("linkacs", "");
-		jso.put("url", "");
-		jso.put("idDemande", "");
+		//jso.put("linkacs", "");
+		//jso.put("url", "");
+		//jso.put("idDemande", "");
 
 		Util.writeInFileTransaction(folder, file, "json : " + jso.toString());
 		System.out.println("json : " + jso.toString());

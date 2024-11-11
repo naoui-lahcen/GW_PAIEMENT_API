@@ -1845,6 +1845,36 @@ public class AppMobileController {
 			return getMsgError(folder, file, null, "getLinkCCB 500 malformed json expression " + jerr.getMessage(),
 					null);
 		}
+		
+		String url = "", status = "", statuscode = "";
+		JSONObject jso = new JSONObject();
+		
+		try {
+			Double montant = 0.00;
+			if (amount.equals("") || amount == null) {
+				amount = "0";
+			}
+			if (amount.contains(",")) {
+				amount = amount.replace(",", ".");
+			}
+			montant = Double.valueOf(amount);
+			if(montant<5) {
+				url = "";
+				statuscode = "17";
+				status = "The amount must be greater than or equal to 5dh";
+				
+				jso.put("statuscode", statuscode);
+				jso.put("status", status);
+				jso.put("orderid", orderid);
+				jso.put("amount", amount);
+				jso.put("url", url);
+				return jso.toString();
+			}
+		} catch (Exception e) {
+			Util.writeInFileTransaction(folder, file, "The amount must be greater than or equal to 5dh" + e);
+			return getMsgError(folder, file, null, "The amount must be greater than or equal to 5dh" + e.getMessage(),
+					null);
+		}
 
 		CommercantDto current_merchant = null;
 		try {
@@ -1905,8 +1935,6 @@ public class AppMobileController {
 			return getMsgError(folder, file, jsonOrequest, "getLinkCCB 500 Error Already exist in PaiementRequest",
 					"16");
 		}
-
-		String url = "", status = "", statuscode = "";
 
 		try {
 			String tokencommande = "";
@@ -2011,8 +2039,6 @@ public class AppMobileController {
 			return getMsgError(folder, file, jsonOrequest, "getLinkCCB 500 Error during DEMANDE_PAIEMENT insertion",
 					null);
 		}
-
-		JSONObject jso = new JSONObject();
 
 		try {
 			// Transaction info
@@ -3820,9 +3846,9 @@ public class AppMobileController {
 			jso.put("merchantid", (String) jsonOrequest.get("merchantid"));
 			jso.put("amount", (String) jsonOrequest.get("amount"));
 		} else {
-			jso.put("orderid", "");
-			jso.put("merchantid", "");
-			jso.put("amount", "");
+			//jso.put("orderid", "");
+			//jso.put("merchantid", "");
+			//jso.put("amount", "");
 		}
 		if (coderep != null) {
 			jso.put("statuscode", coderep);
@@ -3832,9 +3858,9 @@ public class AppMobileController {
 
 		jso.put("status", msg);
 		jso.put("etataut", "N");
-		jso.put("linkacs", "");
-		jso.put("url", "");
-		jso.put("idDemande", "");
+		//jso.put("linkacs", "");
+		//jso.put("url", "");
+		//jso.put("idDemande", "");
 
 		Util.writeInFileTransaction(folder, file, "json : " + jso.toString());
 		System.out.println("json : " + jso.toString());
