@@ -1,15 +1,12 @@
-package ma.m2m.gateway.Utils;
+package ma.m2m.gateway.utils;
 import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
-import java.util.TimeZone;
 
 /*
 * @author  LAHCEN NAOUI
@@ -29,19 +26,30 @@ public class DateUtil {
 	public static final String DF_DD_MM_YYYY_HH_MM = "dd/MM/yy HH:mm";
 
 	public static final String DF_DD_MM_YYYY_A_HH_MM_SS = "dd/MM/yy à HH:mm:ss";
+	
+	public static final String DF_DD_MM_YY = "ddMMyy";
+	
+	public static final String DF_YYYY_MM_DD_HH_MM_SS = "yyyy-MM-DD HH:mm:ss";
+	
+	public static final String DF_DD_MM_YYYY = "dd/MM/yyyy";
+	
+	public static final String DFF_YYYY_MM_DD_HH_MM_SS = "yyyy/MM/dd HH:mm:ss";
+	
+	public static final String DFF_DD_MM_YYYY = "dd-MM-yyyy";
+	
 
-	public static final String[] MOIS = { "janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août",
+	protected static final String[] MOIS = { "janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août",
 			"septembre", "octobre", "novembre", "décembre" };
 
-	public static final Map<String, Integer> MOIS_BY_NUM_LIST = new HashMap<String, Integer>();
+	protected static final Map<String, Integer> MOIS_BY_NUM_LIST = new HashMap<>();
 
-	public static final long MS_PAR_JOUR = 1000 * 60 * 60 * 24;
+	public static final long MS_PAR_JOUR = 1000L * 60 * 60 * 24;
 
 	public static final String DATE_SEPARATOR = "/";
 	/**
 	 * @author pour le calcule des jours entre 2 dates
 	 */
-	public static final long DAY_IN_MILLIS = 1000 * 60 * 60 * 24;
+	public static final long DAY_IN_MILLIS = 1000L * 60 * 60 * 24;
 
 	private DateUtil() {
 	}
@@ -52,15 +60,14 @@ public class DateUtil {
 	 * @return Date
 	 */
 	public static Date currentDate() {
-		SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+		SimpleDateFormat formatter = new SimpleDateFormat(DF_DD_MM_YYYY);
 		String strDate = formatter.format(new Date());
 		return ConvertUtil.stringToDate(strDate);
 	}
 
 	public static String currentHour() {
 		SimpleDateFormat formatter = new SimpleDateFormat("HH:mm");
-		String strDate = formatter.format(new Date());
-		return strDate;
+		return formatter.format(new Date());
 	}
 
 	/**
@@ -102,7 +109,7 @@ public class DateUtil {
 	 */
 
 	public static Date format(String day, String month, String year) throws ParseException {
-		SimpleDateFormat formatter = new SimpleDateFormat("dd/mm/yyyy");
+		SimpleDateFormat formatter = new SimpleDateFormat(DF_DD_MM_YYYY);
 		return formatter.parse(day + "/" + month + "/" + year);
 	}
 
@@ -145,70 +152,6 @@ public class DateUtil {
 			return false;
 		}
 		return date1.before(date2);
-	}
-
-	/**
-	 * Méthode verifie si la date dateATester appartient à l'intervalle
-	 * [dateLimite-jourInf j ,dateLimite+jourSup j]
-	 * 
-	 * @param dateATester
-	 * @param dateLimite
-	 * @param jourInf
-	 * @param jourSup
-	 * @return boolean
-	 */
-	public static boolean isBetween(Date dateATester, Date dateLimite, int jourInf, int jourSup) {
-		long timeATester = dateATester.getTime();
-		long timeReference = dateLimite.getTime();
-
-// dateATester + jourInf * jours => dateLimite
-// et dateATester - jourSup * jours - dateLimite < 24 heures
-		return (timeATester - timeReference + (jourInf + 1) * MS_PAR_JOUR) > 0
-				&& (timeATester - (jourSup + 1) * MS_PAR_JOUR - timeReference) < 0;
-
-	}
-
-	/**
-	 * Méthode vérifiant si une date est compris entre des deux dates<br>
-	 * 
-	 * @param dateATester
-	 * @param dateInf
-	 * @param dateSup
-	 * @return
-	 */
-	public static boolean isBetween(Date dateATester, Date dateInf, Date dateSup) {
-		if (DateUtil.isSameDay(dateATester, dateInf) || DateUtil.isSameDay(dateATester, dateSup)) {
-			return true;
-		} else {
-			if (dateATester.before(dateSup) && dateATester.after(dateInf)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public static boolean isBetweenTimeStomps(Date dateATester, Date dateInf, Date dateSup) {
-		if (dateATester.equals(dateInf) || dateATester.equals(dateSup)) {
-			return true;
-		} else {
-			if (dateATester.before(dateSup) && dateATester.after(dateInf)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public static boolean isInTimeInterval(Date data, Date debut, Date fin) {
-		Date heureDebut = timeOnly(debut);
-		Date heureFin = timeOnly(fin);
-		Date heure = timeOnly(data);
-
-		if (heure.equals(heureDebut) || heure.equals(heureFin)) {
-			return true;
-		} else if (heure.before(heureFin) && heure.after(heureDebut)) {
-			return true;
-		}
-		return false;
 	}
 
 	/**
@@ -291,7 +234,7 @@ public class DateUtil {
 		GregorianCalendar calendar = new GregorianCalendar();
 		month = month - 1;
 		calendar.set(year, month, 1);
-		int dayInt = calendar.getActualMaximum(GregorianCalendar.DAY_OF_MONTH);
+		int dayInt = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
 
 		return Integer.toString(dayInt);
 	}
@@ -365,13 +308,6 @@ public class DateUtil {
 		return DateUtil.isDate(sdt, FORMAT_DEFAUT);
 	}
 
-	public static Calendar dateCalendarCouranteDDMMYYYY() throws Exception {
-		Calendar cal = Calendar.getInstance(TimeZone.getDefault(), Locale.getDefault());
-		final String date = formatCalendar("dd/MM/yyyy", cal);
-		cal = getCalendar("dd/MM/yyyy", date);
-		return cal;
-	}
-
 	public static String formatCalendar(String format, Calendar fDate) {
 
 		if (fDate == null) {
@@ -379,50 +315,16 @@ public class DateUtil {
 		}
 
 		final SimpleDateFormat sdf = new SimpleDateFormat(format);
-		final String lDate = sdf.format(fDate.getTime());
-		return lDate;
+		return sdf.format(fDate.getTime());
 	}
 
-	public static Calendar getCalendar(String fDate) throws Exception {
-		if (StringUtils.isEmpty(fDate)) {
-			return null;
-		}
-		String format = null;
-		final int lengthDate = fDate.length();
-		fDate = fDate.replace("-", "/");
-		if (lengthDate == 10) {
-			format = "dd/MM/yyyy";
-		} else if (lengthDate == 13) {
-			format = "dd/MM/yyyy HH";
-		} else if (lengthDate == 16) {
-			format = "dd/MM/yyyy HH:mm";
-		} else if (lengthDate == 19) {
-			format = "dd/MM/yyyy HH:mm:ss";
-		}
-		return getCalendar(format, fDate);
-	}
-
-	public static Calendar getCalendar(String format, String fDate) throws Exception {
-
-		final Calendar calendar = Calendar.getInstance(TimeZone.getDefault(), Locale.getDefault());
-		final SimpleDateFormat formatter = new SimpleDateFormat(format);
-		final ParsePosition pos = new ParsePosition(0);
-		final Date lDate = formatter.parse(fDate, pos);
-		if (lDate == null) {
-			throw new Exception(
-					"Problem [DateUtils]-->getCalendar format:(" + format + ") fDate:(" + fDate + ")");
-		}
-		final Date dateHeure = new Date(lDate.getTime());
-		calendar.setTime(dateHeure);
-		return calendar;
-	}
 
 	public static String formatCalendarDDMMYYHHMMSSConcat(Calendar fDate) {
 		return formatCalendar("ddMMyyyyHHmmss", fDate);
 	}
 
 	public static String formatDateLong(Date date) {
-		DateFormat dateFormatLong = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+		DateFormat dateFormatLong = new SimpleDateFormat(DFF_YYYY_MM_DD_HH_MM_SS);
 		return dateFormatLong.format(date);
 	}
 
@@ -440,7 +342,7 @@ public class DateUtil {
 	}
 
 	public static Date getDate1970() {
-		return ConvertUtil.stringToDate("01/01/1970", "dd/MM/yy");
+		return ConvertUtil.stringToDate("01/01/1970", FRENCH_DEFAUT);
 	}
 
 	public static Date timeOnly(Date date) {
@@ -470,38 +372,38 @@ public class DateUtil {
 	 * @return the string
 	 * @throws ParseException the parse exception
 	 */
-	public static String formatDDMMYY(String start_dt) throws ParseException {
-		DateFormat formatter = new SimpleDateFormat("yyyy-MM-DD");
-		Date date = (Date) formatter.parse(start_dt);
-		SimpleDateFormat newFormat = new SimpleDateFormat("ddMMyy");
+	public static String formatDDMMYY(String startDt) throws ParseException {
+		DateFormat formatter = new SimpleDateFormat(FORMAT_DEFAUT);
+		Date date = formatter.parse(startDt);
+		SimpleDateFormat newFormat = new SimpleDateFormat(DF_DD_MM_YY);
 		return newFormat.format(date);
 	}
 
-	public static String formatHHMMSS(String start_dt) throws ParseException {
+	public static String formatHHMMSS(String startDt) throws ParseException {
 		DateFormat formatter = new SimpleDateFormat("hh:mm:ss");
-		Date date = (Date) formatter.parse(start_dt);
+		Date date = formatter.parse(startDt);
 		SimpleDateFormat newFormat = new SimpleDateFormat("hhmmss");
 		return newFormat.format(date);
 	}
 
-	public static String formatDDMMYYhhmmss(String start_dt) throws ParseException {
-		DateFormat formatter = new SimpleDateFormat("yyyy-MM-DD HH:mm:ss");
-		Date date = (Date) formatter.parse(start_dt);
-		SimpleDateFormat newFormat = new SimpleDateFormat("ddMMyy");
+	public static String formatDDMMYYhhmmss(String startDt) throws ParseException {
+		DateFormat formatter = new SimpleDateFormat(DF_YYYY_MM_DD_HH_MM_SS);
+		Date date = formatter.parse(startDt);
+		SimpleDateFormat newFormat = new SimpleDateFormat(DF_DD_MM_YY);
 		return newFormat.format(date);
 	}
 
-	public static String formatDDMMYYInverse(String start_dt) throws ParseException {
-		DateFormat formatter = new SimpleDateFormat("ddMMyy");
-		Date date = (Date) formatter.parse(start_dt);
-		SimpleDateFormat newFormat = new SimpleDateFormat("dd-MM-yyyy");
+	public static String formatDDMMYYInverse(String startDt) throws ParseException {
+		DateFormat formatter = new SimpleDateFormat(DF_DD_MM_YY);
+		Date date = formatter.parse(startDt);
+		SimpleDateFormat newFormat = new SimpleDateFormat(DFF_DD_MM_YYYY);
 		return newFormat.format(date);
 	}
 
-	public static String formatDDMMYYInverseFrench(String start_dt) throws ParseException {
-		DateFormat formatter = new SimpleDateFormat("ddMMyy");
-		Date date = (Date) formatter.parse(start_dt);
-		SimpleDateFormat newFormat = new SimpleDateFormat("dd/MM/yyyy");
+	public static String formatDDMMYYInverseFrench(String startDt) throws ParseException {
+		DateFormat formatter = new SimpleDateFormat(DF_DD_MM_YY);
+		Date date = formatter.parse(startDt);
+		SimpleDateFormat newFormat = new SimpleDateFormat(DF_DD_MM_YYYY);
 		return newFormat.format(date);
 	}
 
@@ -522,8 +424,11 @@ public class DateUtil {
 	public static String juliandate(String date) {
 
 		String dateOut;
-		int jour, mois, annee;
-		int i, somme;
+		int jour;
+		int mois;
+		int annee;
+		int i;
+		int somme;
 		int iAn;
 
 		somme = 0;
@@ -534,19 +439,24 @@ public class DateUtil {
 		iAn = annee % 10;
 
 		for (i = 1; i < mois; i++) {
-			if ((i == 1) || (i == 3) || (i == 5) || (i == 7) || (i == 8) || (i == 10) || (i == 12))
+			if ((i == 1) || (i == 3) || (i == 5) || (i == 7) || (i == 8) || (i == 10) || (i == 12)) {
 				somme += 31;
-			if ((i == 4) || (i == 6) || (i == 9) || (i == 11))
+			}
+				
+			if ((i == 4) || (i == 6) || (i == 9) || (i == 11)) {
 				somme += 30;
-			if (i == 2)
-				if (annee % 4 == 0)
+			}
+				
+			if (i == 2) {
+				if (annee % 4 == 0) {
 					somme += 29;
-				else
+				}else {
 					somme += 28;
+				}					
+			}
 		}
 
 		somme += jour;
-//sprintf(sdate, "%d%03d", i_an, somme);
 		dateOut = String.valueOf(iAn).concat(String.valueOf(somme));
 		return dateOut;
 

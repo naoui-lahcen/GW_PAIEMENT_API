@@ -16,9 +16,13 @@ import ma.m2m.gateway.repository.ArticleDGIDao;
 @Service
 public class ArticleDGIServiceImpl implements ArticleDGIService {
 	
-	@Autowired
-	ArticleDGIDao articleDGIDao;
+	//@Autowired
+	private final ArticleDGIDao articleDGIDao;
 	
+	public ArticleDGIServiceImpl(ArticleDGIDao articleDGIDao) {
+		this.articleDGIDao = articleDGIDao;
+	}
+
 	private ArticleDGIMapper articleDGIMapper = new ArticleDGIMapper();
 
 	@Override

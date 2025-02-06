@@ -16,11 +16,15 @@ import ma.m2m.gateway.repository.InfoCommercantDao;
 @Service
 public class InfoCommercantServiceImpl implements InfoCommercantService {
 
-	@Autowired(required = true)
-	InfoCommercantDao infoCommercantDao;
+	//@Autowired(required = true)
+	private final InfoCommercantDao infoCommercantDao;
 	
 	private InfoCommercantMapper infoCommercantMapper = new InfoCommercantMapper();
 	
+	public InfoCommercantServiceImpl(InfoCommercantDao infoCommercantDao) {
+		this.infoCommercantDao = infoCommercantDao;
+	}
+
 	@Override
 	public InfoCommercantDto findByCmrCode(String numCMR) {
 		return infoCommercantMapper.model2VO(infoCommercantDao.findByCmrCode(numCMR));

@@ -18,8 +18,12 @@ public class CommercantServiceImpl implements CommercantService {
 	
 	private CommercantMapper commercantMapper = new CommercantMapper();
 	
-	@Autowired
-	CommercantDao commercantDao;
+	//@Autowired
+	private final CommercantDao commercantDao;
+
+	public CommercantServiceImpl(CommercantDao commercantDao) {
+		this.commercantDao = commercantDao;
+	}
 
 	@Override
 	public CommercantDto findByCmrCode(String numCMR) {

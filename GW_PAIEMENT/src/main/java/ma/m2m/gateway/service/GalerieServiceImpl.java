@@ -18,8 +18,12 @@ public class GalerieServiceImpl implements GalerieService {
 	
 	private GalerieMapper galerieMapper = new GalerieMapper();
 	
-	@Autowired
-	GalerieDao galerieDao;
+	//@Autowired
+	private final GalerieDao galerieDao;
+
+	public GalerieServiceImpl(GalerieDao galerieDao) {
+		this.galerieDao = galerieDao;
+	}
 
 	@Override
 	public GalerieDto findByCodeGalAndCodeCmr(String codeGal, String codeCmr) {

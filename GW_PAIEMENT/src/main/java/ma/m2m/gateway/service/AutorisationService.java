@@ -1,7 +1,11 @@
 package ma.m2m.gateway.service;
 
+import org.springframework.ui.Model;
+
 import ma.m2m.gateway.dto.DemandePaiementDto;
 import ma.m2m.gateway.threedsecure.ThreeDSecureResponse;
+
+import javax.servlet.http.HttpSession;
 
 /*
 * @author  LAHCEN NAOUI
@@ -22,4 +26,28 @@ public interface AutorisationService {
 	 ThreeDSecureResponse preparerReqMobileThree3DSS(DemandePaiementDto demandeDto,String folder,String file);
 	 
 	 String controlleRisk(DemandePaiementDto demandeDto,String folder,String file);
+	 
+	 ThreeDSecureResponse preparerProcessOutReqThree3DSS(DemandePaiementDto demandeDto,String folder,String file);
+	 
+	 void processPaymentPageData(DemandePaiementDto demandeDto,String folder, String file);
+	 
+	 void processInfosMerchant(DemandePaiementDto demandeDto, String folder, String file);
+
+	void logMessage(String file, String message);
+
+	String handleSwitchError(Exception e, String file, String orderid, String merchantid, String resp_tlv, DemandePaiementDto dmd, Model model, String page);
+
+	String handleMpiError(String errmpi, String file, String idDemande, String threeDSServerTransID,
+						  DemandePaiementDto dmd, Model model, String page);
+
+	String handleMerchantAndInfoCommercantError(String file, String orderid, String merchantid, String websiteid,
+												DemandePaiementDto demandeDtoMsg, Model model, String page, boolean isMerchantError);
+
+	String handleCardValidationError(int iCardValid, String cardNumber, String orderid, String merchantid,
+									 String file, DemandePaiementDto demandeDtoMsg, Model model, String page);
+
+	String handleSessionTimeout(
+			HttpSession session, String file, int timeout, DemandePaiementDto demandeDto,
+			DemandePaiementDto demandeDtoMsg, Model model);
+
 }

@@ -18,8 +18,12 @@ public class InternationalAcquiringServiceImpl implements InternationalAcquiring
 	
 	private InternationalAcquiringMapper internationalAcquiringMapper = new InternationalAcquiringMapper();
 	
-	@Autowired
-	InternationalAcquiringDao internationalAcquiringDao;
+	//@Autowired
+	private final InternationalAcquiringDao internationalAcquiringDao;
+
+	public InternationalAcquiringServiceImpl(InternationalAcquiringDao internationalAcquiringDao) {
+		this.internationalAcquiringDao = internationalAcquiringDao;
+	}
 
 	@Override
 	public InternationalAcquiringDto findByNumCommercant(String numCMR) {

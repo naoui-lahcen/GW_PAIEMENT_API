@@ -19,9 +19,13 @@ public class TelecollecteServiceImpl implements TelecollecteService {
 	
 	private TelecollecteMapper telecollecteMapper = new TelecollecteMapper();
 	
-	@Autowired
-	TelecollecteDao telecollecteDao;
+	//@Autowired
+	private final TelecollecteDao telecollecteDao;
 	
+	public TelecollecteServiceImpl(TelecollecteDao telecollecteDao) {
+		this.telecollecteDao = telecollecteDao;
+	}
+
 	@Override
 	public TelecollecteDto getMAXTLC_N(String merchantid) {
 		return telecollecteMapper.model2VO(telecollecteDao.getMAXTLC_N(merchantid));

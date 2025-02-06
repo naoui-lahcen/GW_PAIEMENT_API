@@ -5,37 +5,6 @@ import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.Date;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlSchemaType;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.datatype.XMLGregorianCalendar;
-
-
-//@XmlAccessorType(XmlAccessType.FIELD)
-//@XmlType(name = "Transaction", propOrder = {
-//    "numTrans",
-//    "dateTrans",
-//    "dateVal",
-//    "agcCod",
-//    "guichetCod",
-//    "matr",
-//    "typeTrans",
-//    "etatTrans",
-//    "mtDebite",
-//    "mtFacture",
-//    "mtCrediteCred",
-//    "mtEncMp",
-//    "mtEncEsp",
-//    "mtCrediteVers",
-//    "mtCrediteProv",
-//    "mtAnnuleTimbre",
-//    "mtRembCheq",
-//    "mtOd",
-//    "trAnnul",
-//    "trRecu"
-//})
 public class Transaction {
 
     private int num_Trans;

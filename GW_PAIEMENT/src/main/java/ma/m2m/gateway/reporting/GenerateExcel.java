@@ -76,12 +76,12 @@ public class GenerateExcel {
 			workbook.write(file); // Écrire les données dans le fichier Excel
 			System.out.println("Fichier Excel créé avec succès !");
 		} catch (IOException e) {
-			e.printStackTrace();
+			// TODO: e.printStackTrace();
 		} finally {
 			try {
 				workbook.close(); // Fermer le classeur Excel
 			} catch (IOException e) {
-				e.printStackTrace();
+				// TODO: e.printStackTrace();
 			}
 		}
 	}
@@ -161,12 +161,12 @@ public class GenerateExcel {
 			workbook.write(file); // Écrire les données dans le fichier Excel
 			System.out.println("Fichier Excel créé avec succès !");
 		} catch (IOException e) {
-			e.printStackTrace();
+			// TODO: e.printStackTrace();
 		} finally {
 			try {
 				workbook.close(); // Fermer le classeur Excel
 			} catch (IOException e) {
-				e.printStackTrace();
+				// TODO: e.printStackTrace();
 			}
 		}
 		workbook.close();
@@ -213,7 +213,7 @@ public class GenerateExcel {
 	            createCell(row, columnCount++, columns[3], style); // NUMCOmpte
 	            createCell(row, columnCount++, columns[columns.length-1], style); // RIB
 	        }catch(Exception ex) {
-	        	ex.printStackTrace();
+	        	// TODO: ex.printStackTrace();
 	        }
 	    }
 	}

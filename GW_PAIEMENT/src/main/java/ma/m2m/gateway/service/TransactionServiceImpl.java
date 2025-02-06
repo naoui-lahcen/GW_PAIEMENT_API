@@ -8,6 +8,8 @@ import ma.m2m.gateway.mappers.TransactionMapper;
 import ma.m2m.gateway.model.Transaction;
 import ma.m2m.gateway.repository.TransactionDao;
 
+import java.util.List;
+
 /*
 * @author  LAHCEN NAOUI
 * @version 1.0
@@ -19,28 +21,37 @@ public class TransactionServiceImpl implements TransactionService {
 	
 	private TransactionMapper transactionMapper = new TransactionMapper();
 	
-	@Autowired
-	TransactionDao transactionDao;
+	//@Autowired
+	private final TransactionDao transactionDao;
+
+	public TransactionServiceImpl(TransactionDao transactionDao) {
+		this.transactionDao = transactionDao;
+	}
 
 	@Override
 	public TransactionDto findByTrsnumautAndTrsnumcmr(String numAuth, String cumCmr) {
-		return transactionMapper.model2VO(transactionDao.findByTrsnumautAndTrsnumcmr(numAuth, cumCmr));
+		return transactionMapper.model2VO(transactionDao.findByTrsNumautAndTrsNumcmr(numAuth, cumCmr));
 	}
 	
 	@Override
 	public TransactionDto findByTrsnumautAndTrsnumcmrAndTrsmontant(String numAuth, String cumCmr, Double montant) {
-		return transactionMapper.model2VO(transactionDao.findByTrsnumautAndTrsnumcmrAndTrsmontant(numAuth, cumCmr, montant));
+		return transactionMapper.model2VO(transactionDao.findByTrsNumautAndTrsNumcmrAndTrsMontant(numAuth, cumCmr, montant));
 	}
 	
 	@Override
 	public TransactionDto findByTrsnumautAndTrsnumcmrAndTrscommande(String numAuth, String cumCmr, String commande) {
-		return transactionMapper.model2VO(transactionDao.findByTrsnumautAndTrsnumcmrAndTrscommande(numAuth, cumCmr, commande));
+		return transactionMapper.model2VO(transactionDao.findByTrsNumautAndTrsNumcmrAndTrsCommande(numAuth, cumCmr, commande));
+	}
+
+	@Override
+	public List<TransactionDto> findListByTrsNumautAndTrsNumcmrAndTrsCommande(String numAuth, String cumCmr, String commande) {
+		return transactionMapper.modelList2VOList(transactionDao.findListByTrsNumautAndTrsNumcmrAndTrsCommande(numAuth, cumCmr, commande));
 	}
 	
 	@Override
 	public TransactionDto findByTrsnumautAndTrsnumcmrAndDateTrs(String numAuth, String cumCmr, String dateTrs) {
 		//dateTrs = dateTrs+"%";
-		return transactionMapper.model2VO(transactionDao.findByTrsnumautAndTrsnumcmrAndDateTrs(numAuth, cumCmr, dateTrs));
+		return transactionMapper.model2VO(transactionDao.findByTrsNumautAndTrsNumcmrAndDateTrs(numAuth, cumCmr, dateTrs));
 	}
 
 	@Override

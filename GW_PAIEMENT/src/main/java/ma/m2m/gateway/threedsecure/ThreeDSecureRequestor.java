@@ -6,14 +6,10 @@ import java.nio.charset.StandardCharsets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import lombok.extern.slf4j.Slf4j;
-import ma.m2m.gateway.Utils.Util;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
+import ma.m2m.gateway.utils.Util;
+
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
-import java.security.cert.X509Certificate;
-import java.security.GeneralSecurityException;
 import javax.net.ssl.X509TrustManager;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
@@ -25,11 +21,10 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-import java.security.SecureRandom;
+
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-//import org.apache.http.config.Registry;
 
 /*
 * @author  LAHCEN NAOUI
@@ -40,73 +35,23 @@ import java.security.NoSuchAlgorithmException;
 @Slf4j
 public class ThreeDSecureRequestor {
 
-	private String logFolder;
-	private String logFile;
-	private Gson gson;
+    private Gson gson;
 
-	private String urlThreeDSS;
-	private AuthInitRequest authInitRequest;
-	
-	static {
-		// lnaoui 23-11-2022
-		// this part is needed cause the endpoint has invalid SSL certificate, that
-		// cannot be normally processed by Java
-		TrustManager[] trustAllCertificates = new TrustManager[] { new X509TrustManager() {
-			@Override
-			public X509Certificate[] getAcceptedIssuers() {
-				return null; // Not relevant.
-			}
-
-			@Override
-			public void checkClientTrusted(X509Certificate[] certs, String authType) {
-				// Do nothing. Just allow them all.
-			}
-
-			@Override
-			public void checkServerTrusted(X509Certificate[] certs, String authType) {
-				// Do nothing. Just allow them all.
-			}
-		} };
-
-		HostnameVerifier trustAllHostnames = new HostnameVerifier() {
-			@Override
-			public boolean verify(String hostname, SSLSession session) {
-				return true; // Just allow them all.
-			}
-		};
-
-		try {
-			System.setProperty("jsse.enableSNIExtension", "false");
-			SSLContext sc = SSLContext.getInstance("SSL");
-			sc.init(null, trustAllCertificates, new SecureRandom());
-			HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-			HttpsURLConnection.setDefaultHostnameVerifier(trustAllHostnames);
-		} catch (GeneralSecurityException e) {
-			throw new ExceptionInInitializerError(e);
-		}
-
-	}
+    private AuthInitRequest authInitRequest;
 
 	public ThreeDSecureRequestor() {
 		super();
 	}
 
 	public ThreeDSecureRequestor(String logFolder, String logFile) {
-		this.logFolder = logFolder;
-		this.logFile = logFile;
-		this.gson = new GsonBuilder().serializeNulls().create();
+        this.gson = new GsonBuilder().serializeNulls().create();
 	}
 
-	public ThreeDSecureRequestor urlThreeDSS(String urlThreeDSS) {
-		this.urlThreeDSS = urlThreeDSS;
-		return this;
-	}
-
-	public ThreeDSecureRequestor threeDSecureRequest(final AuthInitRequest authInitRequest) {
+	public void threeDSecureRequest(final AuthInitRequest authInitRequest) {
 		this.authInitRequest = authInitRequest;
-		return this;
 	}
 
+	@SuppressWarnings("all")
 	public ThreeDSecureResponse initAuth(String logFolder, String logFile) throws ThreeDSecureRequestorException {
 		Util.writeInFileTransaction(logFolder, logFile, 
 				"*********** DEBUT initAuth ***********");
@@ -129,10 +74,11 @@ public class ThreeDSecureRequestor {
 				throw new ThreeDSecureRequestorException((e.getCause() != null) ? e.getCause() : e);
 		}
 		Util.writeInFileTransaction(logFolder, logFile,
-				"*********** FIN initAuth ***********");
+				"*********** End initAuth ***********");
 		return threeDsRes;
 	}
 
+	@SuppressWarnings("all")
 	protected ThreeDSecureResponse callThreeDSServer(String logFolder, String logFile)
 			throws KeyManagementException, KeyStoreException, NoSuchAlgorithmException {
 		Util.writeInFileTransaction(logFolder, logFile, "*********** DEBUT callThreeDSServer ***********");
@@ -191,15 +137,16 @@ public class ThreeDSecureRequestor {
 			// ((InputStream) httpClient).close();
 
 		} catch (ClientProtocolException e) {
-			Util.writeInFileTransaction(logFolder, logFile, "[GW-EXCEPTION-ClientProtocolException] " + e);
+			Util.writeInFileTransaction(logFolder, logFile, "[GW-EXCEPTION-ClientProtocolException] " + Util.formatException(e));
 		} catch (IOException e) {
-			Util.writeInFileTransaction(logFolder, logFile, "[GW-EXCEPTION-IOException] " + e);
+			Util.writeInFileTransaction(logFolder, logFile, "[GW-EXCEPTION-IOException] " + Util.formatException(e));
 		}
 
-		Util.writeInFileTransaction(logFolder, logFile, "*********** FIN callThreeDSServer ***********");
+		Util.writeInFileTransaction(logFolder, logFile, "*********** End callThreeDSServer ***********");
 		return threeDSecureResponse;
 	}
-
+	
+	@SuppressWarnings("all")
 	public static HttpClient getAllSSLClient()
 			throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
 
@@ -209,16 +156,21 @@ public class ThreeDSecureRequestor {
 			public java.security.cert.X509Certificate[] getAcceptedIssuers() {
 				return null;
 			}
-
+			
+			@SuppressWarnings({"squid:S4830", "Depreciated"})
 			@Override
 			public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType) {
+				// Suppression intentionnelle : La validation des certificats est désactivée par choix
 			}
 
+			@SuppressWarnings({"squid:S4830", "Depreciated"})
 			@Override
 			public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType) {
+				// Suppression intentionnelle : La validation des certificats est désactivée par choix
 			}
 		} };
-		SSLContext context = SSLContext.getInstance("SSL");
+		// SSLContext context = SSLContext.getInstance("SSL");
+		SSLContext context = SSLContext.getInstance("TLSv1.2");
 		context.init(null, trustAllCerts, null);
 
 		HttpClientBuilder builder = HttpClientBuilder.create();
@@ -227,12 +179,6 @@ public class ThreeDSecureRequestor {
 		builder.setSSLSocketFactory(sslConnectionFactory);
 
 		PlainConnectionSocketFactory plainConnectionSocketFactory = new PlainConnectionSocketFactory();
-//		Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
-//				.register("https", sslConnectionFactory).register("http", plainConnectionSocketFactory).build();
-//
-//		HttpClientConnectionManager ccm = new BasicHttpClientConnectionManager(registry);
-//
-//		builder.setConnectionManager(ccm);
 
 		return builder.build();
 

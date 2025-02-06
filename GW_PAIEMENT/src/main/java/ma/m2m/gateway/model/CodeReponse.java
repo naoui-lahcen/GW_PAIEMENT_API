@@ -1,5 +1,10 @@
 package ma.m2m.gateway.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
+
 import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -16,6 +21,10 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name="CODEREPONSE")
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@ToString
 public class CodeReponse implements Serializable {
 
 	/**
@@ -39,65 +48,5 @@ public class CodeReponse implements Serializable {
 	
 	@Column(name="RPC_LANGUE")
 	private String rpcLangue;
-
-	public Integer getRpcId() {
-		return rpcId;
-	}
-
-	public void setRpcId(Integer rpcId) {
-		this.rpcId = rpcId;
-	}
-
-	public String getRpcCode() {
-		return rpcCode;
-	}
-
-	public void setRpcCode(String rpcCode) {
-		this.rpcCode = rpcCode;
-	}
-
-	public String getRpcLibelle() {
-		return rpcLibelle;
-	}
-
-	public void setRpcLibelle(String rpcLibelle) {
-		this.rpcLibelle = rpcLibelle;
-	}
-
-	public String getRpcSyspay() {
-		return rpcSyspay;
-	}
-
-	public void setRpcSyspay(String rpcSyspay) {
-		this.rpcSyspay = rpcSyspay;
-	}
-
-	public String getRpcLangue() {
-		return rpcLangue;
-	}
-
-	public void setRpcLangue(String rpcLangue) {
-		this.rpcLangue = rpcLangue;
-	}
-
-	public CodeReponse(Integer rpcId, String rpcCode, String rpcLibelle, String rpcSyspay, String rpcLangue) {
-		super();
-		this.rpcId = rpcId;
-		this.rpcCode = rpcCode;
-		this.rpcLibelle = rpcLibelle;
-		this.rpcSyspay = rpcSyspay;
-		this.rpcLangue = rpcLangue;
-	}
-
-	public CodeReponse() {
-		super();
-	}
-
-	@Override
-	public String toString() {
-		return "CodeReponse [rpcId=" + rpcId + ", rpcCode=" + rpcCode + ", rpcLibelle=" + rpcLibelle + ", rpcSyspay="
-				+ rpcSyspay + ", rpcLangue=" + rpcLangue + "]";
-	}
-	
 
 }

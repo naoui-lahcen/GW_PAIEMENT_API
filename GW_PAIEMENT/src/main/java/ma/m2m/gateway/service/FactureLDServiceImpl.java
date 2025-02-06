@@ -18,10 +18,14 @@ import ma.m2m.gateway.repository.FactureLDDao;
 @Service
 public class FactureLDServiceImpl implements FactureLDService {
 	
-	@Autowired
-	FactureLDDao factureLDDao;
+	//@Autowired
+	private final FactureLDDao factureLDDao;
 	
 	private FactureLDMapper factureLDMapper = new FactureLDMapper();
+
+	public FactureLDServiceImpl(FactureLDDao factureLDDao) {
+		this.factureLDDao = factureLDDao;
+	}
 
 	@Override
 	public List<FactureLDDto> findFactureByIddemande(Integer iddemande) {

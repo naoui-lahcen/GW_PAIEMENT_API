@@ -7,7 +7,10 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 /*
 * @author  LAHCEN NAOUI
@@ -19,6 +22,9 @@ import lombok.Data;
 @Entity
 @Table(name="INTACQUIRING")
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
+@ToString
 public class InternationalAcquiring implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
@@ -29,38 +35,5 @@ public class InternationalAcquiring implements Serializable {
 	
 	@Column(name="iac_intacq")
 	private String isIntAcquiringActive;
-
-	public String getNumCommercant() {
-		return numCommercant;
-	}
-
-	public void setNumCommercant(String numCommercant) {
-		this.numCommercant = numCommercant;
-	}
-
-	public String getIsIntAcquiringActive() {
-		return isIntAcquiringActive;
-	}
-
-	public void setIsIntAcquiringActive(String isIntAcquiringActive) {
-		this.isIntAcquiringActive = isIntAcquiringActive;
-	}
-
-	public InternationalAcquiring(String numCommercant, String isIntAcquiringActive) {
-		super();
-		this.numCommercant = numCommercant;
-		this.isIntAcquiringActive = isIntAcquiringActive;
-	}
-
-	public InternationalAcquiring() {
-		super();
-	}
-
-	@Override
-	public String toString() {
-		return "InternationalAcquiring [numCommercant=" + numCommercant + ", isIntAcquiringActive="
-				+ isIntAcquiringActive + "]";
-	}
-	
 
 }

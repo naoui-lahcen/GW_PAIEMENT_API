@@ -18,6 +18,7 @@ public class ThreeDSecureInvoker {
 
 	
 	protected void callThreeDSS(String folder, String file) {
+		// TODO: Cette méthode est laissée vide à des fins de conception future.
 	}
 
 

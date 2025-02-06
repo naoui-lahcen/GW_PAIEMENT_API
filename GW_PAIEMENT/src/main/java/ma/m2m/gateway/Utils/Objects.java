@@ -1,4 +1,4 @@
-package ma.m2m.gateway.Utils;
+package ma.m2m.gateway.utils;
 
 import org.springframework.beans.BeanUtils;
 
@@ -9,6 +9,10 @@ import org.springframework.beans.BeanUtils;
  */
 
 public class Objects {
+	
+	private Objects() {
+		
+	}
 
 	public static void copyProperties(Object dest, Object src) {
 

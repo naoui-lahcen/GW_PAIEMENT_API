@@ -1,4 +1,4 @@
-package ma.m2m.gateway.Utils;
+package ma.m2m.gateway.utils;
 
 /*
 * @author  LAHCEN NAOUI
@@ -12,14 +12,11 @@ public class StringUtils {
     }
 
     public static boolean isNullOrEmpty(String param) {
-		return param == null || param.trim().length() == 0;
+		return param == null || param.trim().isEmpty();
 	}
     
     public static boolean isEmpty(String in) {
-          if (in == null || "".equals(in)) {
-                 return true;
-          }
-          return false;
+          return in == null || "".equals(in);
     }
 
     public static String prepare(String chaine) {

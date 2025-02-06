@@ -18,8 +18,12 @@ public class ControlRiskCmrServiceImpl implements ControlRiskCmrService {
 	
 	private ControlRiskCmrMapper controlRiskCmrMapper = new ControlRiskCmrMapper();
 	
-	@Autowired
-	ControlRiskCmrDao controlRiskCmrDao;
+	//@Autowired
+	private final ControlRiskCmrDao controlRiskCmrDao;
+
+	public ControlRiskCmrServiceImpl(ControlRiskCmrDao controlRiskCmrDao) {
+		this.controlRiskCmrDao = controlRiskCmrDao;
+	}
 
 	@Override
 	public ControlRiskCmrDto findByNumCommercant(String numCmr) {

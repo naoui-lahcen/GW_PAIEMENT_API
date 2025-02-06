@@ -3,9 +3,9 @@ package ma.m2m.gateway.mappers;
 import java.util.ArrayList;
 import java.util.List;
 
-import ma.m2m.gateway.Utils.Objects;
 import ma.m2m.gateway.dto.HistoAutoGateDto;
 import ma.m2m.gateway.model.HistoAutoGate;
+import ma.m2m.gateway.utils.Objects;
 
 /*
 * @author  LAHCEN NAOUI

@@ -35,7 +35,7 @@ public final class GererEncaissement_GererEncaissement_Client {
                     wsdlURL = new URL(args[0]);
                 }
             } catch (MalformedURLException e) {
-                e.printStackTrace();
+            	// TODO: e.printStackTrace();
             }
         }
 

@@ -20,10 +20,13 @@ public class EmetteurServiceImpl implements EmetteurService {
 	
 	EmetteurMapper emetteurMapper = new EmetteurMapper();
 	
-	@Autowired
-	EmetteurDao emetteurDao;
-
+	//@Autowired
+	private final EmetteurDao emetteurDao;
 	
+	public EmetteurServiceImpl(EmetteurDao emetteurDao) {
+		this.emetteurDao = emetteurDao;
+	}
+
 	@Override
 	public List<EmetteurDto>  findByBindebut(String binDebut) {
 		return emetteurMapper.modelList2VOList(emetteurDao.findByEmtbindebut(binDebut));

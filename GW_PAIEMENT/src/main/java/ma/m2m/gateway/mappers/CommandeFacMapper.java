@@ -1,8 +1,8 @@
 package ma.m2m.gateway.mappers;
 
-import ma.m2m.gateway.Utils.Objects;
 import ma.m2m.gateway.dto.CommandeFacDto;
 import ma.m2m.gateway.model.CommandeFac;
+import ma.m2m.gateway.utils.Objects;
 
 /*
 * @author  LAHCEN NAOUI

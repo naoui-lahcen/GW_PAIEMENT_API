@@ -22,8 +22,12 @@ public class CardtokenServiceImpl implements CardtokenService {
 	
 	CardtokenMapper cardtokenMapper = new CardtokenMapper();
 	
-	@Autowired
-	CardtokenDao cardtokenDao;
+	//@Autowired
+	private final CardtokenDao cardtokenDao;
+
+	public CardtokenServiceImpl(CardtokenDao cardtokenDao) {
+		this.cardtokenDao = cardtokenDao;
+	}
 
 	@Override
 	public CardtokenDto save(CardtokenDto cardtokenDto) {

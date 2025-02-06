@@ -19,6 +19,7 @@ public class TrameTLV implements Serializable {
 	private String valeur;
 
 	public TrameTLV() {
+		// TODO: Cette méthode est laissée vide à des fins de conception future.
 	}
 
 	public String getTag() {

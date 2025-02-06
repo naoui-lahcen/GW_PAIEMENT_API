@@ -4,21 +4,6 @@ package ma.m2m.gateway.lydec;
 import java.math.BigDecimal;
 import java.util.Calendar;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlSchemaType;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.datatype.XMLGregorianCalendar;
-
-//@XmlAccessorType(XmlAccessType.FIELD)
-//@XmlType(name = "MoyenPayement", propOrder = {
-//    "banqCod",
-//    "moyenPai",
-//    "typeMoyPai",
-//    "montant",
-//    "datePai"
-//})
 public class MoyenPayement {
 
     private java.lang.String banq_Cod;

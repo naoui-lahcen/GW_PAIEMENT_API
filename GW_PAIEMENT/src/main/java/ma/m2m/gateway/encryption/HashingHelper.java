@@ -4,7 +4,7 @@ import java.math.BigInteger;
 import java.security.MessageDigest;
 
 import lombok.extern.slf4j.Slf4j;
-import ma.m2m.gateway.Utils.Traces;
+import ma.m2m.gateway.utils.Traces;
 
 /*
 * @author  LAHCEN NAOUI
@@ -14,8 +14,13 @@ import ma.m2m.gateway.Utils.Traces;
 
 @Slf4j
 public class HashingHelper {
-	
-	public static Traces traces = new Traces();
+
+	// Constructeur privé pour empêcher l'instanciation
+	private HashingHelper() {
+		throw new UnsupportedOperationException("Utility class");
+	}
+
+	public static final Traces traces = new Traces();
 
 	public static String hachInMD5(String str, String folder, String file) {
 		String strMD5Hash = "";

@@ -1,8 +1,11 @@
 package ma.m2m.gateway.mappers;
 
-import ma.m2m.gateway.Utils.Objects;
 import ma.m2m.gateway.dto.TransactionDto;
 import ma.m2m.gateway.model.Transaction;
+import ma.m2m.gateway.utils.Objects;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /*
 * @author  LAHCEN NAOUI
@@ -28,6 +31,21 @@ public class TransactionMapper {
 			Objects.copyProperties(model, vo);
 		}
 		return model;
+	}
+
+	public List<TransactionDto> modelList2VOList(List<Transaction> vos) {
+		TransactionDto model = null;
+		List<TransactionDto> dtos = new ArrayList<>();
+		if (vos != null) {
+			for (Transaction vo : vos) {
+
+				model = new TransactionDto();
+				Objects.copyProperties(model, vo);
+				dtos.add(model);
+			}
+
+		}
+		return dtos;
 	}
 
 }

@@ -1,23 +1,23 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
    <head>
-      <meta charset="ISO-8859-1">
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
       <title>GATEWAY NAPS</title>
+
+      <!-- CSS -->
       <link rel="stylesheet"
-         href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
-         integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
-         crossorigin="anonymous">
-      <link
-         href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
-         rel="stylesheet" id="bootstrap-css">
-      <script
-         src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
-      <script
-         src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-      <!------ Include the above in your HEAD tag ---------->
+            href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+            integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+            crossorigin="anonymous">
       <link rel="stylesheet"
-         href="https://use.fontawesome.com/releases/v5.0.8/css/all.css">
-     <meta name="viewport" content="width=device-width, initial-scale=1">
+            href="https://use.fontawesome.com/releases/v5.0.8/css/all.css">
+
+      <!-- JS -->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js" defer></script>
+      <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+              integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+              crossorigin="anonymous" defer></script>
      <style>		 
 	body {
     	font-family: 'Roboto', sans-serif;
@@ -166,6 +166,7 @@
                </div>
                <!-- card-body.// -->
             </article>
+            </aside>
             <!-- card.// -->
          </div>
 <!--         <br class="mobile-hide">-->
@@ -197,6 +198,7 @@
                   </div>
                </div>
             </article>
+            </aside>
             <!-- card.// -->
          </div>
 <!--         <br class="mobile-hide">-->
@@ -213,7 +215,7 @@
                      <label for="num" class="col-sm-3 col-form-label"><strong>N°
                      carte bancaire </strong></label>
                      <div class="col-sm-3" th:if="${demandeDto.cartes == null }">
-                        <input type="number" th:field="*{dem_pan}" class="form-control" id="num" required="required"
+                        <input type="number" th:field="*{demPan}" class="form-control" id="num" required="required"
                            placeholder="Numéro de carte">
                      </div>
                      <div class="col-sm-3" id="cartes" th:if="${demandeDto.cartes != null and demandeDto.cartes.size > 0 }">
@@ -225,12 +227,12 @@
                      </div>
                      <!-- si je clique sur Nouvelle carte jaffiche cette div-->
                      <div class="col-sm-3" id="nvnums" style="display: none;">
-                        <input type="number" th:field="*{dem_pan}" class="form-control" id="nvnum"
+                        <input type="number" th:field="*{demPan}" class="form-control" id="nvnum"
                            placeholder="Nouvelle numéro de carte">
                      </div>
                      <label for="cvv" class="col-sm-3 col-form-label"><strong> CVV </strong></label>
                      <div class="col-sm-3">
-                        <input type="number" th:field="*{dem_cvv}" class="form-control" id="cvv" required="required"
+                        <input type="number" th:field="*{demCvv}" class="form-control" id="cvv" required="required"
                            placeholder="Code à 3 chiffres">
                      </div>
                   </div>
@@ -284,7 +286,7 @@
 <!--                     </label>-->
 <!--                  </div>-->
                   <!-- Sauvegarder la carte -->
-                   <div class="col-md-3" th:if="${demandeDto.id_client != null or demandeDto.token != null}">
+                   <div class="col-md-3" th:if="${demandeDto.idClient != null or demandeDto.token != null}">
                      <label id="saveCard">
                      <input type="checkbox" th:field="*{flagSaveCarte}" /> Sauvegarder la carte
                      </label>
@@ -331,9 +333,10 @@
                   </div>
                </form>
             </div>
+            </article>
+            </aside>
             <!-- card-body.// -->
          </div>
-      </div>
       </div>
       <!-- La div du dialogue -->
       <div id="dialog" class="dialog container my-2" align="center">
@@ -444,178 +447,193 @@
             <p>Traitement en cours...</p>
         </div>
     </div>
-    
+
       <script type="text/javascript">
-		// Gestion du popup Traitement en cours
-		function showProcessingPopup() {
+         // ----------------------------
+         // Utility Functions
+         // ----------------------------
+
+         // Toggle the display style of an element by ID
+         function toggleDisplay(elementId, displayStyle) {
+            console.info(`Element with ID '${elementId}' not found.`);
+            const element = document.getElementById(elementId);
+            if (element) {
+               element.style.display = displayStyle;
+            } else {
+               console.error(`Element with ID '${elementId}' not found.`);
+            }
+         }
+
+         // Limit input field length and allow only numeric values
+         function validateInputField(elementId, maxLength) {
+            const element = document.getElementById(elementId);
+            if (element) {
+               element.addEventListener('input', function () {
+                  this.value = this.value.slice(0, maxLength).replace(/[^0-9]/g, "");
+               });
+            } else {
+               console.error(`Element with ID '${elementId}' not found for validation.`);
+            }
+         }
+
+         // Fetch API Wrapper for POST requests
+         async function postData(url = '', data = {}) {
+            try {
+               const response = await fetch(url, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(data)
+               });
+               return response;
+            } catch (error) {
+               console.error('Error during fetch:', error);
+               throw error;
+            }
+         }
+
+         // ----------------------------
+         // Popup Management
+         // ----------------------------
+
+         function showProcessingPopup() {
             sessionStorage.setItem('showPopup', 'true');
-            document.getElementById("processingPopup").style.display = "flex";
-        }
+            toggleDisplay('processingPopup', 'flex');
+         }
 
-        window.onload = function() {
-            if (sessionStorage.getItem('showPopup') === 'true') {
-                sessionStorage.removeItem('showPopup');
-            } else {
-                document.getElementById("processingPopup").style.display = "none";
-            }
-        }
          function hideProcessingPopup() {
-            document.getElementById("processingPopup").style.display = "none";
-        }
-        window.onpageshow = function(event) {
-            if (event.persisted) {
-				console.error("hideProcessingPopup");
-                hideProcessingPopup();
+            toggleDisplay('processingPopup', 'none');
+         }
+
+         window.onload = function () {
+            if (sessionStorage.getItem('showPopup') === 'true') {
+               sessionStorage.removeItem('showPopup');
             } else {
-           			console.log("Page not loaded from cache");
-       			}
-        }
-		// FIN Gestion du popup Traitement en cours
-		
-         document.getElementById("openDialog").addEventListener("click", function () {
-            document.getElementById("dialog").style.display = "block";
+               hideProcessingPopup();
+            }
+         };
+
+         window.onpageshow = function (event) {
+            if (event.persisted) {
+               console.error('Page loaded from cache. Hiding popup.');
+               hideProcessingPopup();
+            }
+         };
+
+         // ----------------------------
+         // Modal Management
+         // ----------------------------
+
+         document.body.addEventListener('click', function (event) {
+            if (event.target && event.target.id === 'openDialog') {
+               toggleDisplay('dialog', 'block');
+               console.error('Dialog opened.');
+            } else if (event.target && event.target.id === 'closeDialog') {
+               toggleDisplay('dialog', 'none');
+               console.error('Dialog closed.');
+            }
          });
-         
-         document.getElementById("closeDialog").addEventListener("click", function () {
-            document.getElementById("dialog").style.display = "none";
-         });
+
+         // ----------------------------
+         // Payment Cancellation
+         // ----------------------------
+
          function cancelPayment() {
-        	if (window.history.length > 1) {
-            // If there is a previous page, go back
-            window.history.back();
-        	} else {
-            // If there is no previous page, redirect to another page
-            window.location.href = 'https://agent.naps.ma/RCB/FCB.html'; 
-        	}
-   		 }
-         // Add an event listener to the input field
-        document.getElementById('cvv').addEventListener('input', function() {
-            var maxLength = 3; // Change this to your desired maximum length
-            if (this.value.length > maxLength) {
-                this.value = this.value.slice(0, maxLength);
+            const iddemande = document.getElementById('iddemande')?.value;
+            if (!iddemande) {
+               console.error('No iddemande found in the hidden input field.');
+               return;
             }
-            // Change this to your desired min
-            if (this.value < 0) {
-		        this.value = 0;
-		    }
-		    // Supprimez tous les caractères non numériques et non valides (y compris "e")
-    		this.value = this.value.replace(/[^0-9.-]/g, "");
-        });
-         document.getElementById('num').addEventListener('input', function() {
-            var maxLength = 19; // Change this to your desired maximum length
-            if (this.value.length > maxLength) {
-                this.value = this.value.slice(0, maxLength);
+
+            console.log('Cancelling payment with iddemande:', iddemande);
+            postData('/cancelPayment', { iddemande })
+                    .then((response) => {
+                       if (response.ok) {
+                          if (window.history.length > 1) {
+                             window.history.back();
+                          } else {
+                             window.location.href = '/error';
+                          }
+                       } else {
+                          console.error('Failed to cancel payment.');
+                       }
+                    })
+                    .catch((error) => console.error('Error:', error));
+         }
+
+         // ----------------------------
+         // Input Validation
+         // ----------------------------
+
+         validateInputField('cvv', 3);
+         validateInputField('num', 19);
+         validateInputField('nvnum', 19);
+
+         // ----------------------------
+         // Card Expiration Update
+         // ----------------------------
+
+         function updateExpirationDate() {
+            const selectedCard = document.getElementById('carteID')?.value;
+            const yearField = document.getElementById('annee');
+            const monthField = document.getElementById('mois');
+            const saveCard = document.getElementById('saveCard');
+            console.log('selectedCard : ' + selectedCard);
+            if (!selectedCard) {
+               console.log('No card selected. Resetting fields.');
+               if (yearField) yearField.value = '';
+               if (monthField) monthField.value = '';
+               return;
             }
-            // Change this to your desired min
-            if (this.value < 0) {
-		        this.value = 0;
-		    }
-		    // Supprimez tous les caractères non numériques et non valides (y compris "e")
-    		this.value = this.value.replace(/[^0-9.-]/g, "");
-        });
-        
 
-    function updateExpirationDate() {
-		 var checkbox = document.getElementById("addNewCardCheckbox");
-		// if (!checkbox.checked) {
-		var selectedCard = document.getElementById("carteID").value;
-        var anneeToRemplir = document.getElementById("annee");
-        var moisToRemplir = document.getElementById("mois");
-		var saveCard = document.getElementById("saveCard");
-        var nvnums = document.getElementById("nvnums");
-	    var cartes = document.getElementById("cartes");
-	    var cvv = document.getElementById("cvv");
-	    var nvannes = document.getElementById("nvannes");
-	    var annees = document.getElementById("annees");
-	    var moiss = document.getElementById("moiss");
-	    var nvmois = document.getElementById("nvmois");
-	    var nvnumToRemplir = document.getElementById("nvnum");
-	    
-	    console.log('saveCard ' , saveCard);
-		saveCard.style.display = "none";
-		
-		if(selectedCard) {
-			console.log('selectedCard : ' + selectedCard);
-			// Use regular expressions to extract the year value
-		var yearMatch = selectedCard.match(/year=(\d+)/);
-		
-		// Check if the match is found
-		if (yearMatch && yearMatch.length > 1) {
-		    var yearValue = parseInt(yearMatch[1]);
-		    console.log('yearValue : ' + yearValue);
-		    anneeToRemplir.value = yearValue;
-		} else {
-		    console.error("Year not found in the string");
-		    anneeToRemplir.value = '';
-		}
-		// Use regular expression to extract mois information
-		var moisMatch = selectedCard.match(/mois=([^,]+),/);
-		
-		// Check if the match is found
-		if (moisMatch && moisMatch.length > 1) {
-		    var moisValue = moisMatch[1];
-		    console.log("Mois : ", moisValue);
-		    moisToRemplir.value = moisValue;
-		    if(moisValue == 0000) {
-			nvnums.style.display = "block";
-	        cartes.style.display = "none";
-	        annees.style.display = "none";
-	        nvannes.style.display = "block";
-	        moiss.style.display = "none";
-	        nvmois.style.display = "block";
-	        cvv.value = '';
-			saveCard.style.display = "block";
-			}
-			// si la carte expiree on donne la main de saisir nv carte
-			if(moisValue == 'xxxx') {
-	        annees.style.display = "none";
-	        nvannes.style.display = "block";
-	        moiss.style.display = "none";
-	        nvmois.style.display = "block";
-	        cvv.value = '';
-			saveCard.style.display = "block";
-			}
-		} else {
-		    console.error("Mois information not found in the string");
-		    moisToRemplir.value = '';
-		}
-		} else {
-			console.log('selectedCard vide');
-			 anneeToRemplir.value = '';
-			  moisToRemplir.value = '';
-		}		
-	  // }    
-	}
-function toggleNewCardFields() {
-    var checkbox = document.getElementById("addNewCardCheckbox");
-    var nvnums = document.getElementById("nvnums");
-    var cartes = document.getElementById("cartes");
-    var cvv = document.getElementById("cvv");
-    var nvannes = document.getElementById("nvannes");
-    var annees = document.getElementById("annees");
-    var moiss = document.getElementById("moiss");
-    var nvmois = document.getElementById("nvmois");
-    var nvnumToRemplir = document.getElementById("nvnum");
+            const yearMatch = selectedCard.match(/year=(\d+)/);
+            const monthMatch = selectedCard.match(/mois=([^,]+)/);
 
-    if (checkbox.checked) {
-        nvnums.style.display = "block";
-        cartes.style.display = "none";
-        annees.style.display = "none";
-        nvannes.style.display = "block";
-        moiss.style.display = "none";
-        nvmois.style.display = "block";
-        cvv.value = '';
-    } else {
-        nvnums.style.display = "none";
-        nvnumToRemplir.value = '';
-        cartes.style.display = "block";
-       annees.style.display = "block";
-        nvannes.style.display = "none";
-        moiss.style.display = "block";
-        nvmois.style.display = "none";
-        cvv.value = '';
-    }
-}
+            yearField.value = yearMatch?.[1] || '';
+            monthField.value = monthMatch?.[1] || '';
+            console.log('yearField : ' + yearField.value);
+            console.log('monthField : ' + monthField.value);
+            if (monthMatch?.[1] === '0000' || monthMatch?.[1] === 'xxxx') {
+               toggleDisplay('nvnums', 'block');
+               toggleDisplay('cartes', 'none');
+               toggleDisplay('annees', 'none');
+               toggleDisplay('nvannes', 'block');
+               toggleDisplay('moiss', 'none');
+               toggleDisplay('nvmois', 'block');
+               toggleDisplay('saveCard', 'block');
+            } else {
+               toggleDisplay('saveCard', 'none');
+            }
+         }
+
+         // ----------------------------
+         // Toggle New Card Fields
+         // ----------------------------
+
+         function toggleNewCardFields() {
+            const checkbox = document.getElementById('addNewCardCheckbox');
+            if (!checkbox) {
+               console.error('Checkbox not found.');
+               return;
+            }
+
+            if (checkbox.checked) {
+               toggleDisplay('nvnums', 'block');
+               toggleDisplay('cartes', 'none');
+               toggleDisplay('annees', 'none');
+               toggleDisplay('nvannes', 'block');
+               toggleDisplay('moiss', 'none');
+               toggleDisplay('nvmois', 'block');
+               toggleDisplay('saveCard', 'block');
+            } else {
+               toggleDisplay('nvnums', 'none');
+               toggleDisplay('cartes', 'block');
+               toggleDisplay('annees', 'block');
+               toggleDisplay('nvannes', 'none');
+               toggleDisplay('moiss', 'block');
+               toggleDisplay('nvmois', 'none');
+               toggleDisplay('saveCard', 'none');
+            }
+         }
       </script>
    </body>
 </html>

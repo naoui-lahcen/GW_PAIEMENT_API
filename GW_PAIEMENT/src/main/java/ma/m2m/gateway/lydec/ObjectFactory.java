@@ -27,6 +27,7 @@ public class ObjectFactory {
      * 
      */
     public ObjectFactory() {
+    	// TODO: Cette méthode est laissée vide à des fins de conception future.
     }
 
     /**

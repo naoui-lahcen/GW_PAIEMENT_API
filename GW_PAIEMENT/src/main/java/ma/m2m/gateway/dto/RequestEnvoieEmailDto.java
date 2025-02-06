@@ -1,5 +1,10 @@
 package ma.m2m.gateway.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
+
 import java.io.Serializable;
 
 /*
@@ -7,7 +12,10 @@ import java.io.Serializable;
 * @version 1.0
 * @since   2023-11-27 
  */
-
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@ToString
 public class RequestEnvoieEmailDto implements Serializable {
 	
 	/**
@@ -20,46 +28,5 @@ public class RequestEnvoieEmailDto implements Serializable {
 	private String idCommande ;
 	
 	private String numCmr;
-	
-	public int getIdDemande() {
-		return idDemande;
-	}
-
-	public void setIdDemande(int idDemande) {
-		this.idDemande = idDemande;
-	}
-
-	public String getIdCommande() {
-		return idCommande;
-	}
-
-	public void setIdCommande(String idCommande) {
-		this.idCommande = idCommande;
-	}
-
-	public String getNumCmr() {
-		return numCmr;
-	}
-
-	public void setNumCmr(String numCmr) {
-		this.numCmr = numCmr;
-	}
-
-	public RequestEnvoieEmailDto(int idDemande, String idCommande, String numCmr) {
-		super();
-		this.idDemande = idDemande;
-		this.idCommande = idCommande;
-		this.numCmr = numCmr;
-	}
-
-	public RequestEnvoieEmailDto() {
-		super();
-	}
-
-	@Override
-	public String toString() {
-		return "RequestEnvoieEmail [idDemande=" + idDemande + ", idCommande=" + idCommande + ", numCmr=" + numCmr
-				+ "]";
-	}
 
 }

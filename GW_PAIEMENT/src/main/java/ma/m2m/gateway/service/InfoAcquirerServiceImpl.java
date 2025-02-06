@@ -18,8 +18,12 @@ public class InfoAcquirerServiceImpl implements InfoAcquirerService {
 	
 	InfoAcquirerMapper acquirerMapper = new InfoAcquirerMapper();
 	
-	@Autowired
-	InfoAcquirerDao acquirerDao;
+	//@Autowired
+	private final InfoAcquirerDao acquirerDao;
+
+	public InfoAcquirerServiceImpl(InfoAcquirerDao acquirerDao) {
+		this.acquirerDao = acquirerDao;
+	}
 
 	@Override
 	public InfoAcquirerDto findByAcqCom(String acqCom) {

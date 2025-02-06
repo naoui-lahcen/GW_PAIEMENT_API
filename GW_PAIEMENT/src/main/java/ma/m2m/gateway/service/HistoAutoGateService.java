@@ -15,7 +15,7 @@ public interface HistoAutoGateService {
 	HistoAutoGateDto findByHatNumCommande(String commande);
 	
 	HistoAutoGateDto save(HistoAutoGateDto histoAutoGateDto);
-	
+		
 	HistoAutoGateDto findByHatNumCommandeAndHatNumcmr(String commande, String numCmr);
 	
 	HistoAutoGateDto findByHatNumCommandeAndHatNumcmrV1(String commande, String numCmr);
@@ -27,6 +27,10 @@ public interface HistoAutoGateService {
 	HistoAutoGateDto findByHatNumCommandeAndHatNautemtAndHatNumcmrAndHatCoderep(String commande, String numAuth, String numCmr, String codeRep);
 	
 	List<HistoAutoGateDto> findByHatNumcmr(String numCmr);
+	
+	HistoAutoGateDto findByHatNumCommandeAndHatNumcmrAndHatPorteur(String commande, String numCmr, String cardnumber);
+	
+	HistoAutoGateDto findById(Integer id);
 	
 	List<HistoAutoGateDto> findAll();
 	

@@ -1,6 +1,5 @@
 package ma.m2m.gateway.mappers;
 
-import ma.m2m.gateway.Utils.Objects;
 import ma.m2m.gateway.dto.InternationalAcquiringDto;
 import ma.m2m.gateway.model.InternationalAcquiring;
 /*
@@ -8,6 +7,7 @@ import ma.m2m.gateway.model.InternationalAcquiring;
 * @version 1.0
 * @since   2023-07-01 / 2023-09-21 
  */
+import ma.m2m.gateway.utils.Objects;
 
 public class InternationalAcquiringMapper {
 	

@@ -1,23 +1,23 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
    <head>
-      <meta charset="ISO-8859-1">
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
       <title>GATEWAY NAPS</title>
+
+      <!-- CSS -->
       <link rel="stylesheet"
-         href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
-         integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
-         crossorigin="anonymous">
-      <link
-         href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
-         rel="stylesheet" id="bootstrap-css">
-      <script
-         src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
-      <script
-         src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-      <!------ Include the above in your HEAD tag ---------->
+            href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+            integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+            crossorigin="anonymous">
       <link rel="stylesheet"
-         href="https://use.fontawesome.com/releases/v5.0.8/css/all.css">
-     <meta name="viewport" content="width=device-width, initial-scale=1">
+            href="https://use.fontawesome.com/releases/v5.0.8/css/all.css">
+
+      <!-- JS -->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js" defer></script>
+      <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+              integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+              crossorigin="anonymous" defer></script>
      <style>
 	body {
     	font-family: 'Roboto', sans-serif;
@@ -173,6 +173,7 @@
                </div>
                <!-- card-body.// -->
             </article>
+            </aside>
             <!-- card.// -->
          </div>
 <!--         <br class="mobile-hide">-->
@@ -236,6 +237,7 @@
                   
                </div>
             </article>
+            </aside>
             <!-- card.// -->
          </div>
 <!--         <br class="mobile-hide">-->
@@ -252,12 +254,12 @@
                      <label for="num" class="col-sm-3 col-form-label"><strong>N°
                      carte bancaire </strong></label>
                      <div class="col-sm-3">
-                        <input type="number" th:field="*{dem_pan}" class="form-control" id="num" required="required"
+                        <input type="number" th:field="*{demPan}" class="form-control" id="num" required="required"
                            placeholder="Numéro de carte">
                      </div>
                      <label for="cvv" class="col-sm-3 col-form-label"><strong> CVV </strong></label>
                      <div class="col-sm-3">
-                        <input type="number" th:field="*{dem_cvv}" class="form-control" id="cvv" required="required"
+                        <input type="number" th:field="*{demCvv}" class="form-control" id="cvv" required="required"
                            placeholder="Code à 3 chiffres">
                      </div>
                   </div>
@@ -323,9 +325,10 @@
                   </div>
                </form>
             </div>
+            </article>
+            </aside>
             <!-- card-body.// -->
          </div>
-      </div>
       </div>
       <!-- La div du dialogue -->
       <div id="dialog" class="dialog container my-2" align="center">
@@ -436,71 +439,127 @@
             <p>Traitement en cours...</p>
         </div>
     </div>
-      
-      <script type="text/javascript">
-         document.getElementById("openDialog").addEventListener("click", function () {
-            document.getElementById("dialog").style.display = "block";
-         });
-         
-         document.getElementById("closeDialog").addEventListener("click", function () {
-            document.getElementById("dialog").style.display = "none";
-         });
-         function cancelPayment() {
-        	if (window.history.length > 1) {
-            // If there is a previous page, go back
-            window.history.back();
-        	} else {
-            // If there is no previous page, redirect to another page
-            window.location.href = '/error';
-        	}
-   		 }
-         // Add an event listener to the input field
-        document.getElementById('cvv').addEventListener('input', function() {
-            var maxLength = 3; // Change this to your desired maximum length
-            if (this.value.length > maxLength) {
-                this.value = this.value.slice(0, maxLength);
-            }
-            // Change this to your desired min
-            if (this.value < 0) {
-		        this.value = 0;
-		    }
-		    // Supprimez tous les caractères non numériques et non valides (y compris "e")
-    		this.value = this.value.replace(/[^0-9.-]/g, "");
-        });
-         document.getElementById('num').addEventListener('input', function() {
-            var maxLength = 19; // Change this to your desired maximum length
-            if (this.value.length > maxLength) {
-                this.value = this.value.slice(0, maxLength);
-            }
-            // Change this to your desired min
-            if (this.value < 0) {
-		        this.value = 0;
-		    }
-		    // Supprimez tous les caractères non numériques et non valides (y compris "e")
-    		this.value = this.value.replace(/[^0-9.-]/g, "");
-        });
-        
-        // Gestion du popup Traitement en cours
-		function showProcessingPopup() {
-            sessionStorage.setItem('showPopup', 'true');
-            document.getElementById("processingPopup").style.display = "flex";
-        }
 
-        window.onload = function() {
-            if (sessionStorage.getItem('showPopup') === 'true') {
-                sessionStorage.removeItem('showPopup');
+      <script type="text/javascript">
+         // ----------------------------
+         // Utility Functions
+         // ----------------------------
+
+         // Toggle the display style of an element by ID
+         function toggleDisplay(elementId, displayStyle) {
+            console.info(`Element with ID '${elementId}' not found.`);
+            const element = document.getElementById(elementId);
+            if (element) {
+               element.style.display = displayStyle;
             } else {
-                document.getElementById("processingPopup").style.display = "none";
+               console.error(`Element with ID '${elementId}' not found.`);
             }
-        }
+         }
+
+         // Limit input field length and allow only numeric values
+         function validateInputField(elementId, maxLength) {
+            const element = document.getElementById(elementId);
+            if (element) {
+               element.addEventListener('input', function () {
+                  this.value = this.value.slice(0, maxLength).replace(/[^0-9]/g, "");
+               });
+            } else {
+               console.error(`Element with ID '${elementId}' not found for validation.`);
+            }
+         }
+
+         // Fetch API Wrapper for POST requests
+         async function postData(url = '', data = {}) {
+            try {
+               const response = await fetch(url, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(data)
+               });
+               return response;
+            } catch (error) {
+               console.error('Error during fetch:', error);
+               throw error;
+            }
+         }
+
+         // ----------------------------
+         // Popup Management
+         // ----------------------------
+
+         function showProcessingPopup() {
+            sessionStorage.setItem('showPopup', 'true');
+            toggleDisplay('processingPopup', 'flex');
+         }
+
          function hideProcessingPopup() {
-            document.getElementById("processingPopup").style.display = "none";
-        }
-        window.onpageshow = function(event) {
-            if (event.persisted) {
-                hideProcessingPopup();
+            toggleDisplay('processingPopup', 'none');
+         }
+
+         window.onload = function () {
+            if (sessionStorage.getItem('showPopup') === 'true') {
+               sessionStorage.removeItem('showPopup');
+            } else {
+               hideProcessingPopup();
             }
-        }
+         };
+
+         window.onpageshow = function (event) {
+            if (event.persisted) {
+               console.error('Page loaded from cache. Hiding popup.');
+               hideProcessingPopup();
+            }
+         };
+
+         // ----------------------------
+         // Modal Management
+         // ----------------------------
+
+         document.body.addEventListener('click', function (event) {
+            if (event.target && event.target.id === 'openDialog') {
+               toggleDisplay('dialog', 'block');
+               console.error('Dialog opened.');
+            } else if (event.target && event.target.id === 'closeDialog') {
+               toggleDisplay('dialog', 'none');
+               console.error('Dialog closed.');
+            }
+         });
+
+         // ----------------------------
+         // Payment Cancellation
+         // ----------------------------
+
+         function cancelPayment() {
+            const iddemande = document.getElementById('iddemande')?.value;
+            if (!iddemande) {
+               console.error('No iddemande found in the hidden input field.');
+               return;
+            }
+
+            console.log('Cancelling payment with iddemande:', iddemande);
+            postData('/cancelPayment', { iddemande })
+                    .then((response) => {
+                       if (response.ok) {
+                          if (window.history.length > 1) {
+                             window.history.back();
+                          } else {
+                             window.location.href = '/error';
+                          }
+                       } else {
+                          console.error('Failed to cancel payment.');
+                       }
+                    })
+                    .catch((error) => console.error('Error:', error));
+         }
+
+         // ----------------------------
+         // Input Validation
+         // ----------------------------
+
+         validateInputField('cvv', 3);
+         validateInputField('num', 19);
+         validateInputField('nvnum', 19);
+
       </script>
    </body>
 </html>

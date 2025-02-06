@@ -1,15 +1,16 @@
 package ma.m2m.gateway.risk;
 
 import static ma.m2m.gateway.config.FlagActivation.ACTIVE;
+import static ma.m2m.gateway.utils.StringUtils.isNullOrEmpty;
 
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
-import ma.m2m.gateway.Utils.Util;
+
 import ma.m2m.gateway.dto.ControlRiskCmrDto;
 import ma.m2m.gateway.dto.EmetteurDto;
 import ma.m2m.gateway.dto.HistoAutoGateDto;
 import ma.m2m.gateway.service.ControlRiskCmrService;
-import static ma.m2m.gateway.Utils.StringUtils.isNullOrEmpty;
+import ma.m2m.gateway.utils.Util;
 
 
 /*
@@ -21,8 +22,8 @@ import static ma.m2m.gateway.Utils.StringUtils.isNullOrEmpty;
 public class GWRiskAnalysis {
 
 	/* ------------------------ DAO INSTANCES ------------------------- */
-	@Autowired
-	private ControlRiskCmrService controlRiskCmrService;
+	//@Autowired
+	private final ControlRiskCmrService controlRiskCmrService;
 
 	
 	/* --- LOG INSTANCES --- */
@@ -32,8 +33,16 @@ public class GWRiskAnalysis {
 	public GWRiskAnalysis(String logFolder, String logFile) {
 		this.logFolder = logFolder;
 		this.logFile = logFile;
+		 this.controlRiskCmrService = null;
 	}
 
+	public GWRiskAnalysis(ControlRiskCmrService controlRiskCmrService) {
+		this.controlRiskCmrService = controlRiskCmrService;
+		this.logFolder = "";
+        this.logFile = "";
+	}
+
+	@SuppressWarnings("all")
 	public String executeRiskControls(String numCmr, double montant, String cardnumber,
 			ControlRiskCmrDto controlRiskCmr, Double globalFlowPerDay, List<HistoAutoGateDto> porteurFlowPerDay,List<EmetteurDto> listBin) throws GWRiskAnalysisException {
 		
@@ -130,6 +139,7 @@ public class GWRiskAnalysis {
 		return "OK";
 	}
 	
+	@SuppressWarnings("all")
 	public String executeControlInternationalCarte(String numCmr) throws GWRiskAnalysisException {
 		
 		ControlRiskCmrDto controlRiskCmr = controlRiskCmrService.findByNumCommercant(numCmr);

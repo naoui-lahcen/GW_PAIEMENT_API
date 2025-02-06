@@ -1,5 +1,7 @@
-package ma.m2m.gateway.Utils;
+package ma.m2m.gateway.utils;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
@@ -21,8 +23,9 @@ import java.time.format.DateTimeFormatter;
 @Component
 @Slf4j
 public class Traces {
+	
+	private static final Logger logger = LogManager.getLogger(Traces.class);
 
-	// fonction de creation dossier de jour et le fichier trace par transaction
 	public void creatFileTransaction(String input) {
 
 		LocalDateTime date = LocalDateTime.now(ZoneId.systemDefault());
@@ -31,41 +34,28 @@ public class Traces {
 
 		File myObj = new File(path);
 		if (myObj.mkdir()) {
-			//System.out.println("======> New folder: " + myObj.getName());
-		} else {
-			//System.out.println("======> Folder already exists.");
+			logger.info("======> New folder: {}" , myObj.getName());
 		}
 
 		File myfile = new File(path + "/" + input + ".trc");
 		try {
 			if (myfile.createNewFile()) {
-				//System.out.println("======> New file: " + myfile.getName());
-			} else {
-				//System.out.println("======> File already exists.");
+				logger.info("======> New file: {}" , myfile.getName());
 			}
 		} catch (IOException e) {
-			System.out.println("======> Creation file error. " + e);
+			logger.error("======> Creation file error." , e);
 		}
 	}
-
-	// fonction d'ecrire dans le fichier trace
+	
+	@SuppressWarnings("unused") // Indique que certains paramètres ne sont pas utilisés
 	public void writeInFileTransaction(String folder, String file, String input) {
 		LocalDateTime date = LocalDateTime.now(ZoneId.systemDefault());
 		String dateTr = date.format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS"));
-		// 2023-10-06 
-		// traces vide dans le fichier d'aujourdh'ui dans le dossier ddMMyyyy et par contre il trace dans le dossier (dd-1MMyyyy) correctement
-		// corerection initiation du dossier dans chaque trace
-		folder = date.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
-		try {
-
-			FileWriter myWriter = new FileWriter("D:/GW_LOGS/" + folder + "/" + file + ".trc", true);
-
+		String formattedFolder = date.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
+		try(FileWriter myWriter = new FileWriter("D:/GW_LOGS/" + formattedFolder + "/" + file + ".trc", true)) {
 			myWriter.write(dateTr + "   " + input + System.getProperty("line.separator"));
-
-			myWriter.close();
 		} catch (IOException e) {
-			System.out.println("======> An error occurred. ");
-			e.printStackTrace();
+			logger.error("======> An error occurred.", e);
 		}
 	}
 }

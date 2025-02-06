@@ -1,10 +1,19 @@
 package ma.m2m.gateway.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
+
 /*
 * @author  LAHCEN NAOUI
 * @version 1.0
 * @since   2023-11-27
  */
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@ToString
 public class CommandeFacDto {
 	
 	private Integer  id ;
@@ -19,11 +28,11 @@ public class CommandeFacDto {
 	
 	private Double montantTotal;
 	
-	private Double MontantTotalTva;
+	private Double montantTotalTva;
 	
-	private Double MontantTotalTtc;
+	private Double montantTotalTtc;
 	
-	private Double MontantTotalTbr;
+	private Double montantTotalTbr;
 	
 	private String successUrl;
 	
@@ -42,178 +51,5 @@ public class CommandeFacDto {
 	private String xml;
 	
 	private String etat;
-	
-	public CommandeFacDto() {
-		super();
-		// TODO Auto-generated constructor stub
-	}
-
-	public CommandeFacDto(String codeClient, String nomprenom, String numCommande, String email, Double montantTotal,
-			Double montantTotalTva, Double montantTotalTtc, Double montantTotalTbr, String successUrl, String recallUrl,
-			String failurl, String cmr, String gal, String date, String checksum, String xml, String etat) {
-		super();
-		this.codeClient = codeClient;
-		this.nomprenom = nomprenom;
-		this.numCommande = numCommande;
-		this.email = email;
-		this.montantTotal = montantTotal;
-		MontantTotalTva = montantTotalTva;
-		MontantTotalTtc = montantTotalTtc;
-		MontantTotalTbr = montantTotalTbr;
-		this.successUrl = successUrl;
-		this.recallUrl = recallUrl;
-		this.failurl = failurl;
-		this.cmr = cmr;
-		this.gal = gal;
-		this.date = date;
-		this.checksum = checksum;
-		this.xml = xml;
-		this.etat = etat;
-	}
-
-	public Integer getId() {
-		return id;
-	}
-
-	public void setId(Integer id) {
-		this.id = id;
-	}
-
-	public String getCodeClient() {
-		return codeClient;
-	}
-
-	public void setCodeClient(String codeClient) {
-		this.codeClient = codeClient;
-	}
-
-	public String getNomprenom() {
-		return nomprenom;
-	}
-
-	public void setNomprenom(String nomprenom) {
-		this.nomprenom = nomprenom;
-	}
-
-	public String getNumCommande() {
-		return numCommande;
-	}
-
-	public void setNumCommande(String numCommande) {
-		this.numCommande = numCommande;
-	}
-
-	public String getEmail() {
-		return email;
-	}
-
-	public void setEmail(String email) {
-		this.email = email;
-	}
-
-	public Double getMontantTotal() {
-		return montantTotal;
-	}
-
-	public void setMontantTotal(Double montantTotal) {
-		this.montantTotal = montantTotal;
-	}
-
-	public Double getMontantTotalTva() {
-		return MontantTotalTva;
-	}
-
-	public void setMontantTotalTva(Double montantTotalTva) {
-		MontantTotalTva = montantTotalTva;
-	}
-
-	public Double getMontantTotalTtc() {
-		return MontantTotalTtc;
-	}
-
-	public void setMontantTotalTtc(Double montantTotalTtc) {
-		MontantTotalTtc = montantTotalTtc;
-	}
-
-	public Double getMontantTotalTbr() {
-		return MontantTotalTbr;
-	}
-
-	public void setMontantTotalTbr(Double montantTotalTbr) {
-		MontantTotalTbr = montantTotalTbr;
-	}
-
-	public String getSuccessUrl() {
-		return successUrl;
-	}
-
-	public void setSuccessUrl(String successUrl) {
-		this.successUrl = successUrl;
-	}
-
-	public String getRecallUrl() {
-		return recallUrl;
-	}
-
-	public void setRecallUrl(String recallUrl) {
-		this.recallUrl = recallUrl;
-	}
-
-	public String getFailurl() {
-		return failurl;
-	}
-
-	public void setFailurl(String failurl) {
-		this.failurl = failurl;
-	}
-
-	public String getCmr() {
-		return cmr;
-	}
-
-	public void setCmr(String cmr) {
-		this.cmr = cmr;
-	}
-
-	public String getGal() {
-		return gal;
-	}
-
-	public void setGal(String gal) {
-		this.gal = gal;
-	}
-
-	public String getDate() {
-		return date;
-	}
-
-	public void setDate(String date) {
-		this.date = date;
-	}
-
-	public String getChecksum() {
-		return checksum;
-	}
-
-	public void setChecksum(String checksum) {
-		this.checksum = checksum;
-	}
-
-	public String getXml() {
-		return xml;
-	}
-
-	public void setXml(String xml) {
-		this.xml = xml;
-	}
-
-	public String getEtat() {
-		return etat;
-	}
-
-	public void setEtat(String etat) {
-		this.etat = etat;
-	}
-	
 
 }

@@ -8,8 +8,6 @@ import java.util.SplittableRandom;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import ma.m2m.gateway.Utils.Traces;
 import ma.m2m.gateway.dto.DemandePaiementDto;
 import ma.m2m.gateway.mappers.DemandePaiementMapper;
 import ma.m2m.gateway.model.DemandePaiement;
@@ -24,25 +22,14 @@ import ma.m2m.gateway.repository.DemandePaiementDao;
 @Service
 public class DemandePaiementServiceImpl implements DemandePaiementService {
 
-	@Autowired(required = true)
-	DemandePaiementDao demandePaiementDao;
+	//@Autowired(required = true)
+	private final DemandePaiementDao demandePaiementDao;
 	
 	private DemandePaiementMapper demandePaiementMapper = new DemandePaiementMapper();
 	
-	private Traces traces = new Traces();
-	private LocalDateTime date;
-	private String folder;
-	private String file;
-	private SplittableRandom splittableRandom = new SplittableRandom();
-	long randomWithSplittableRandom;
-	
-	public DemandePaiementServiceImpl() {
-		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		file = "T" + randomWithSplittableRandom;
-		// date of folder logs
-		date = LocalDateTime.now(ZoneId.systemDefault());
-		folder = date.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
-		}
+	public DemandePaiementServiceImpl( DemandePaiementDao demandePaiementDao) {
+		this.demandePaiementDao = demandePaiementDao;
+	}
 	
 	@Override
 	public List<DemandePaiementDto> findAllDemandePaiement() {

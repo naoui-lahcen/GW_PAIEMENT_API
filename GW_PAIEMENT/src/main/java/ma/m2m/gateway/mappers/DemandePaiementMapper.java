@@ -2,9 +2,10 @@ package ma.m2m.gateway.mappers;
 
 import java.util.ArrayList;
 import java.util.List;
-import ma.m2m.gateway.Utils.Objects;
+
 import ma.m2m.gateway.dto.DemandePaiementDto;
 import ma.m2m.gateway.model.DemandePaiement;
+import ma.m2m.gateway.utils.Objects;
 
 /*
 * @author  LAHCEN NAOUI

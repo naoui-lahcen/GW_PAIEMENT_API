@@ -17,8 +17,12 @@ public class CodeReponseServiceImpl implements CodeReponseService {
 	
 	CodeReponseMapper codeReponseMapper = new CodeReponseMapper();
 	
-	@Autowired
-	CodeReponseDao codeReponseDao;
+	//@Autowired
+	private final CodeReponseDao codeReponseDao;
+
+	public CodeReponseServiceImpl(CodeReponseDao codeReponseDao) {
+		this.codeReponseDao = codeReponseDao;
+	}
 
 	@Override
 	public CodeReponseDto findByRpcCode(String code) {

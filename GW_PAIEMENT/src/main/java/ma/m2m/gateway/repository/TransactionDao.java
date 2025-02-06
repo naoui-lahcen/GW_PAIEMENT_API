@@ -8,6 +8,8 @@ import org.springframework.stereotype.Repository;
 import ma.m2m.gateway.model.Telecollecte;
 import ma.m2m.gateway.model.Transaction;
 
+import java.util.List;
+
 /*
 * @author  LAHCEN NAOUI
 * @version 1.0
@@ -17,17 +19,19 @@ import ma.m2m.gateway.model.Transaction;
 @Repository
 public interface TransactionDao extends JpaRepository<Transaction, Long> {
 	
-	Transaction findByTrsnumautAndTrsnumcmr(String numAuth, String cumCmr);
+	Transaction findByTrsNumautAndTrsNumcmr(String numAuth, String cumCmr);
 	
-	Transaction findByTrsnumautAndTrsnumcmrAndTrsmontant(String numAuth, String cumCmr, Double montant);
+	Transaction findByTrsNumautAndTrsNumcmrAndTrsMontant(String numAuth, String cumCmr, Double montant);
 	
-	Transaction findByTrsnumautAndTrsnumcmrAndTrscommande(String numAuth, String cumCmr, String commande);
+	Transaction findByTrsNumautAndTrsNumcmrAndTrsCommande(String numAuth, String cumCmr, String commande);
+
+	List<Transaction> findListByTrsNumautAndTrsNumcmrAndTrsCommande(String numAuth, String cumCmr, String commande);
 	
 	@Query(value = "SELECT * FROM MXGATEWAY.TRANSACTION WHERE "
             + "TRS_NUMCMR = :numCmr "
             + "AND TRS_NUMAUT = :numAuth "
             + "AND DATE(TRS_DATTRANS) = :dateTrs", nativeQuery = true)
-    Transaction findByTrsnumautAndTrsnumcmrAndDateTrs(@Param("numAuth") String numAuth, 
+    Transaction findByTrsNumautAndTrsNumcmrAndDateTrs(@Param("numAuth") String numAuth,
                                                       @Param("numCmr") String cumCmr, 
                                                       @Param("dateTrs") String dateTrs);
 	

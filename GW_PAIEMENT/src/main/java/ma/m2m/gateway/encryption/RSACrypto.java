@@ -8,7 +8,7 @@ import java.security.spec.X509EncodedKeySpec;
 import javax.crypto.Cipher;
 import org.apache.commons.codec.binary.Base64;
 import lombok.extern.slf4j.Slf4j;
-import ma.m2m.gateway.Utils.Traces;
+import ma.m2m.gateway.utils.Traces;
 
 /*
 * @author  LAHCEN NAOUI
@@ -21,7 +21,7 @@ public final class RSACrypto {
 
 	public static final String KEY_ALGORITHM = "RSA";
 	
-	public static Traces traces = new Traces();
+	public static final Traces traces = new Traces();
 
 	private RSACrypto() {
 	}

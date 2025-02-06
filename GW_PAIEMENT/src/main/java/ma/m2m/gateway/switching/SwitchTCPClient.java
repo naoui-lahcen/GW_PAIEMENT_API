@@ -35,11 +35,11 @@ public final class SwitchTCPClient {
 	public boolean startConnection(String ip, int port) throws IOException, UnknownHostException {
 		clientSocket = new Socket(ip, port);
 
-		if (clientSocket != null) {
-			clientSocket.setSoTimeout(/* 15000 */90000); // fixpack090922
-			return clientSocket.isConnected();
+		if (clientSocket != null && clientSocket.isConnected() && !clientSocket.isClosed()) {
+			clientSocket.setSoTimeout(/* 15000 */90000); // TODO: fixpack090922
+			// TODO: return clientSocket.isConnected();
+			return true;
 		}
-
 		else
 			return false;
 

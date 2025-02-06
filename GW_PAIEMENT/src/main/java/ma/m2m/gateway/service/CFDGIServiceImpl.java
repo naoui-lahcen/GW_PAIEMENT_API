@@ -16,9 +16,13 @@ import ma.m2m.gateway.repository.CFDGIDao;
 @Service
 public class CFDGIServiceImpl implements CFDGIService {
 	
-	@Autowired
-	CFDGIDao cfdgiDao;
+	//@Autowired
+	private final CFDGIDao cfdgiDao;
 	
+	public CFDGIServiceImpl(CFDGIDao cfdgiDao) {
+		this.cfdgiDao = cfdgiDao;
+	}
+
 	private CFDGIMapper cfdgiMapper = new CFDGIMapper();
 
 	@Override

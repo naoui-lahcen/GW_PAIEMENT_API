@@ -1,27 +1,30 @@
-package ma.m2m.gateway.Utils;
+package ma.m2m.gateway.utils;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
+import ma.m2m.gateway.dto.*;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import java.util.concurrent.ThreadLocalRandom;
 import lombok.extern.slf4j.Slf4j;
-// import org.apache.commons.io.FileUtils;
+import org.json.JSONObject;
+
 
 /*
 * @author  LAHCEN NAOUI
@@ -41,7 +44,7 @@ public class Util {
 
 		private String regex;
 		private String issuerName;
-
+		
 		CardIssuer(String regex, String issuerName) {
 			this.regex = regex;
 			this.issuerName = issuerName;
@@ -61,7 +64,7 @@ public class Util {
 		 * @param card
 		 * @return
 		 */
-		public static CardIssuer checkcard_issuer(String card) {
+		public static CardIssuer checkCardIssuer(String card) {
 			for (CardIssuer cc : CardIssuer.values()) {
 				if (cc.matches(card)) {
 					return cc;
@@ -76,7 +79,7 @@ public class Util {
 		 * @param issuerName
 		 * @return
 		 */
-		public static CardIssuer checkcard_issuerByIssuerName(String issuerName) {
+		public static CardIssuer checkCardIssuerByIssuerName(String issuerName) {
 			for (CardIssuer cc : CardIssuer.values()) {
 				if (cc.getIssuerName().equals(issuerName)) {
 					return cc;
@@ -85,8 +88,17 @@ public class Util {
 			return null;
 		}
 	}
+	
+	private static final Logger logger = LogManager.getLogger(Util.class);
+	public static final String ETOILES = "******";
+	public static final String ETOILESS = "*********";
+	
+	public static final String MERCHANTNAME = "DLOCAL             ";
+	
+	public static final String FORMAT_DEFAUT = "yyyy-MM-dd";
 
-	// fonction de creation dossier de jour et le fichier trace par transaction
+	//public static final DateFormat dateFormatSimple = new SimpleDateFormat(FORMAT_DEFAUT);
+
 	public static void creatFileTransaction(String input) {
 
 		LocalDateTime date = LocalDateTime.now(ZoneId.systemDefault());
@@ -96,102 +108,29 @@ public class Util {
 
 		File myObj = new File(path);
 		if (myObj.mkdir()) {
-			// log.info("======> New folder: " + myObj.getName());
-		} else {
-			// log.info("======> Folder already exists.");
+			logger.info("======> New folder: {}" , myObj.getName());
 		}
 
 		File myfile = new File(path + "/" + input + ".trc");
 		try {
 			if (myfile.createNewFile()) {
-				// log.info("======> New file: " + myfile.getName());
-			} else {
-				// log.info("======> File already exists.");
+				logger.info("======> New file: {}" , myfile.getName());
 			}
 		} catch (IOException e) {
-			// log.error("======> Creation file error. ", e);
+			logger.error("======> Creation file error." , e);
 		}
 	}
-
-	// fonction d'ecrire dans le fichier trace
+	
+	@SuppressWarnings("unused") // Indique que certains paramètres ne sont pas utilisés
 	public static void writeInFileTransaction(String folder, String file, String input) {
 		LocalDateTime date = LocalDateTime.now(ZoneId.systemDefault());
 		String dateTr = date.format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS"));
-		// 2023-10-06 
-		// traces vide dans le fichier d'aujourdh'ui dans le dossier ddMMyyyy et par contre il trace dans le dossier (dd-1MMyyyy) correctement
-		// corerection initiation du dossier dans chaque trace
-		folder = date.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
-		try {
-
-			FileWriter myWriter = new FileWriter("D:/GW_LOGS/" + folder + "/" + file + ".trc", true);
-
+		String formattedFolder = date.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
+		try(FileWriter myWriter = new FileWriter("D:/GW_LOGS/" + formattedFolder + "/" + file + ".trc", true)) {
 			myWriter.write(dateTr + "   " + input + System.getProperty("line.separator"));
-
-			myWriter.close();
 		} catch (IOException e) {
-			System.out.println("======> An error occurred. ");
-			e.printStackTrace();
+			logger.error("======> An error occurred.", e);
 		}
-	}
-
-	// For PADSS 3.2
-	public static void save_dmd_3(String cvv3, String iddmd, String idcmd, String idcomid) {
-
-		char[] acvv = new char[3];
-		acvv[0] = cvv3.charAt(0);
-		acvv[1] = cvv3.charAt(1);
-		acvv[2] = cvv3.charAt(2);
-		String text = new String(acvv);
-		BufferedWriter bw;
-		try {
-			String n_file = "D:/transactions/dmdpay_" + iddmd + "_" + idcmd + "_" + idcomid + ".trc";
-			FileWriter fw = new FileWriter(n_file);
-			bw = new BufferedWriter(fw);
-
-			bw.write(text);
-			bw.close();
-			fw.close();
-		} catch (Exception e) {
-			System.out.println("save_dmd_3 ======> An error occurred. ");
-			e.printStackTrace();
-		}
-
-	}
-
-	public static String read_dmd_3(String iddmd, String idcmd, String idcomid) {
-
-		String cvv3 = null;
-		try {
-			String n_file = "D:/transactions/dmdpay_" + iddmd + "_" + idcmd + "_" + idcomid + ".trc";
-			FileReader freader = new FileReader(n_file);
-			BufferedReader bf = new BufferedReader(freader);
-			String ln = bf.readLine();
-			if (ln != null)
-				cvv3 = ln.trim();
-			bf.close();
-			freader.close();
-
-		} catch (Exception e) {
-			System.out.println("read_dmd_3 ======> An error occurred. ");
-			e.printStackTrace();
-		}
-		return cvv3;
-
-	}
-
-	public static void clean_dmd_3(String iddmd, String idcmd, String idcomid) {
-
-//		try {
-//			String n_file = "D:\\transactions\\dmdpay_" + iddmd + "_" + idcmd + "_" + idcomid + ".trc";
-//			File file_trs = new File(n_file);
-//			boolean isFileDelete = FileUtils.deleteQuietly(file_trs);
-//			System.out.println("isFileDelete :[" + isFileDelete + " [" + n_file + "]");
-//
-//		} catch (Exception e) {
-//			System.out.println("clean_dmd_3 ======> An error occurred. ");
-//			e.printStackTrace();
-//		}
-
 	}
 
 	public static int isCardValid(final String cardnumber) {
@@ -204,23 +143,23 @@ public class Util {
 
 	public static int getCardIss(final String cardnumber) {
 
-		CardIssuer iss = CardIssuer.checkcard_issuer(cardnumber);
+		CardIssuer iss = CardIssuer.checkCardIssuer(cardnumber);
 
 		if (iss == null)
 			return 0;
 
-		String iss_name = iss.getIssuerName();
-		if (iss_name.equals("VISA"))
+		String issName = iss.getIssuerName();
+		if (issName.equals("VISA"))
 			return 1;
-		if (iss_name.equals("MASTER"))
+		if (issName.equals("MASTER"))
 			return 2;
-		if (iss_name.equals("AMEX"))
+		if (issName.equals("AMEX"))
 			return 3;
-		if (iss_name.equals("Diners"))
+		if (issName.equals("Diners"))
 			return 4;
-		if (iss_name.equals("DISCOVER"))
+		if (issName.equals("DISCOVER"))
 			return 5;
-		if (iss_name.equals("JCB"))
+		if (issName.equals("JCB"))
 			return 6;
 		return 0;
 
@@ -228,17 +167,17 @@ public class Util {
 
 	public static boolean luhnCheck(String cardNumber) {
 		int sum = 0;
-		boolean b_flag = false;
+		boolean bFlag = false;
 		for (int i = cardNumber.length() - 1; i >= 0; i--) {
 			int n = Integer.parseInt(cardNumber.substring(i, i + 1));
-			if (b_flag) {
+			if (bFlag) {
 				n *= 2;
 				if (n > 9) {
 					n = (n % 10) + 1;
 				}
 			}
 			sum += n;
-			b_flag = !b_flag;
+			bFlag = !bFlag;
 		}
 		return (sum % 10 == 0);
 
@@ -265,15 +204,15 @@ public class Util {
 		StringBuilder num = new StringBuilder(numCarte);
 
 		if (numCarte.length() == 16) {
-			num.replace(6, 12, "******");
+			num.replace(6, 12, ETOILES);
 			return num.toString();
 		} else if (numCarte.length() == 19) {
 			if (num.substring(16, 19).equals("???")) {
 				num.delete(16, 19);
-				num.replace(6, 12, "******");
+				num.replace(6, 12, ETOILES);
 				return num.toString();
 			} else {
-				num.replace(6, 15, "*********");
+				num.replace(6, 15, ETOILESS);
 				return num.toString();
 			}
 
@@ -303,33 +242,33 @@ public class Util {
 	}
 	
 	public static String pad_merchant(String str, int size, char padChar) {
-		int tmp_size = 0;
+		int tmpSize = 0;
 
 		if (str == null)
-			return "DLOCAL             "; // FIXPACK12082022
+			return MERCHANTNAME;
 		if (str.length() < 1)
-			return "DLOCAL             ";
+			return MERCHANTNAME;
 
-		String s_tmp = "";
+		String sTmp = "";
 		try {
-			tmp_size = str.length();
-			if (tmp_size <= 19) {
-				s_tmp = str;
+			tmpSize = str.length();
+			if (tmpSize <= 19) {
+				sTmp = str;
 			} else {
-				s_tmp = str.substring(0, size);
-			} // FIXPACK29082022
+				sTmp = str.substring(0, size);
+			}
 
-			StringBuilder padded = new StringBuilder(s_tmp);
+			StringBuilder padded = new StringBuilder(sTmp);
 			while (padded.length() < size) {
 				padded.append(padChar);
 			}
 			return padded.toString();
 
 		} catch (Exception e) {
-			return "DLOCAL             ";
+			return MERCHANTNAME;
 		}
 	}
-	
+	@SuppressWarnings("squid:S2245") // Suppression de l'avertissement pour l'utilisation de ThreadLocalRandom
 	public static String getGeneratedRRN() {
 		return Util.getDateNowInJulianSIDFormat()
 				+ LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH"))
@@ -345,20 +284,28 @@ public class Util {
 
 		int i, julianSomme;
 		for (i = 1, julianSomme = 0; i < mois; i++) {
-			if ((i == 1) || (i == 3) || (i == 5) || (i == 7) || (i == 8) || (i == 10) || (i == 12))
+			if ((i == 1) || (i == 3) || (i == 5) || (i == 7) || (i == 8) || (i == 10) || (i == 12)) {
 				julianSomme += 31;
-			if ((i == 4) || (i == 6) || (i == 9) || (i == 11))
+			}
+				
+			if ((i == 4) || (i == 6) || (i == 9) || (i == 11)) {
 				julianSomme += 30;
-			if (i == 2)
-				if (annee % 4 == 0)
+			}
+				
+			if (i == 2) {
+				if (annee % 4 == 0) {
 					julianSomme += 29;
-				else
+				}else {
 					julianSomme += 28;
+				}					
+			}				
 		}
 		julianSomme += jour;
 
 		return String.format("%1d%03d",  annee % 10, julianSomme);
 	}
+	
+	@SuppressWarnings("deprecation")
 	public static int generateNumTransaction(String folder, String file, Date date) {
 		Traces traces = new Traces();
 		
@@ -367,34 +314,28 @@ public class Util {
 		int year = calendar.get(Calendar.YEAR);
 
 		String syear = String.format("%04d", year).substring(2);
-		traces.writeInFileTransaction(folder, file, "syear---> NumSequ: " + syear);
-
+		
 		int msec = calendar.get(Calendar.MILLISECOND);
-		traces.writeInFileTransaction(folder, file, "msec---> NumSequ: " + msec);
 
 		int sec = calendar.get(Calendar.SECOND);
-		traces.writeInFileTransaction(folder, file, "sec---> NumSequ: " + sec);
 
-		// Random randomGenerator = new Random();
-		// int randomInt = randomGenerator.nextInt(99);
-		String formatDateS = String.format("%s%d%d", syear, msec, sec);
-		traces.writeInFileTransaction(folder, file, "formatDateS---> NumSequ: " + sec);
+		String formsdd = "%s%d%d";
 		int Seq = 0;
-		if (String.format("%s%d%d", syear, msec, sec) != null && !String.format("%s%d%d", syear, msec, sec).equals("")
-				&& String.format("%s%d%d", syear, msec, sec).length() >= 6) {
-			traces.writeInFileTransaction(folder, file, "String.format---> NumSequ: " + String.format("%s%d%d", syear, msec, sec));
-			Seq = Integer.parseInt(String.format("%s%d%d", syear, msec, sec).substring(0, 6));
-		} else if (String.format("%s%d%d", syear, msec, sec) != null
-				&& !String.format("%s%d%d", syear, msec, sec).equals("")
-				&& String.format("%s%d%d", syear, msec, sec).length() < 6) {
-			traces.writeInFileTransaction(folder, file, "String.format---> NumSequ: " + String.format("%s%d%d", syear, msec, sec));
-			Seq = Integer.parseInt(String.format("%s%d%d", syear, msec, sec).substring(0,
-					String.format("%s%d%d", syear, msec, sec).length()));
+		if (String.format(formsdd, syear, msec, sec) != null && !String.format(formsdd, syear, msec, sec).isEmpty()
+				&& String.format(formsdd, syear, msec, sec).length() >= 6) {
+			traces.writeInFileTransaction(folder, file, "String.format---> NumSequ: " + String.format(formsdd, syear, msec, sec));
+			Seq = Integer.parseInt(String.format(formsdd, syear, msec, sec).substring(0, 6));
+		} else if (String.format(formsdd, syear, msec, sec) != null
+				&& !String.format(formsdd, syear, msec, sec).isEmpty()
+				&& String.format(formsdd, syear, msec, sec).length() < 6) {
+			traces.writeInFileTransaction(folder, file, "String.format---> NumSequ: " + String.format(formsdd, syear, msec, sec));
+			Seq = Integer.parseInt(String.format(formsdd, syear, msec, sec).substring(0,
+					String.format(formsdd, syear, msec, sec).length()));
 		}
 		return Seq;
 
 	}
-	// display carte pcidss
+
 	public static String displayCard(String numCarte) {
 
 		if (numCarte == null || numCarte.isEmpty()) {
@@ -409,7 +350,7 @@ public class Util {
 
 		if (numCarte.length() == 16) {
 
-			num.replace(6, 12, "******");
+			num.replace(6, 12, ETOILES);
 
 			return num.toString();
 
@@ -419,13 +360,13 @@ public class Util {
 
 				num.delete(16, 19);
 
-				num.replace(6, 12, "******");
+				num.replace(6, 12, ETOILES);
 
 				return num.toString();
 
 			} else {
 
-				num.replace(6, 15, "*********");
+				num.replace(6, 15, ETOILESS);
 
 				return num.toString();
 
@@ -438,22 +379,21 @@ public class Util {
 		}
 
 	}
-
-	public static String genTokenCom(String numcommande, String merchant_id) {
+	@SuppressWarnings("squid:S2245") // Suppression intentionnelle : La sécurité cryptographique n'est pas requise ici
+	public static String genTokenCom(String numcommande, String merchantId) {
 
 		int length = 5;
 		boolean useLetters = true;
 		boolean useNumbers = true;
+		
 		String generatedString1 = RandomStringUtils.random(length, useLetters, useNumbers);
 		String generatedString2 = RandomStringUtils.random(length, useLetters, useNumbers);
 
-		String token = (generatedString1 + numcommande + generatedString2 + merchant_id).toUpperCase();
-
-		return token;
-
+        return (generatedString1 + numcommande + generatedString2 + merchantId).toUpperCase();
 	}
 	
-	public static String genCommande(String merchant_id) {
+	@SuppressWarnings("squid:S2245") // Suppression intentionnelle : La sécurité cryptographique n'est pas requise ici
+	public static String genCommande(String merchantId) {
 
 		int length = 5;
 		boolean useLetters = true;
@@ -461,13 +401,10 @@ public class Util {
 		String generatedString1 = RandomStringUtils.random(length, useLetters, useNumbers);
 		String generatedString2 = RandomStringUtils.random(length, useLetters, useNumbers);
 
-		String token = (generatedString1 + generatedString2 + merchant_id).toUpperCase();
-
-		return token;
-
+        return (generatedString1 + generatedString2 + merchantId).toUpperCase();
 	}
 
-    public static String generateCardToken(String merchant_id) {
+    public static String generateCardToken(String merchantId) {
 
     	  DateFormat dateFormat = new SimpleDateFormat("yyddMMHHmmss");
     	
@@ -477,13 +414,9 @@ public class Util {
 
           UUID randomUUID = UUID.randomUUID();
 
-          String randomtokenCard = randomUUID.toString().replaceAll("-", "").substring(0, 4);
-          
-          String tokenCard = (StrSysDate+randomtokenCard).toUpperCase();
-          
+          String randomtokenCard = randomUUID.toString().replace("-", "").substring(0, 4);
 
-          return tokenCard;
-
+        return (StrSysDate+randomtokenCard).toUpperCase();
     }
 
 
@@ -498,29 +431,7 @@ public class Util {
 		}
 		return strMD5Hash;
 	}
-
-	public enum CODEREP {
-		OK("00"),
-		KO("96");
-
-		 public final String label;
-
-		private CODEREP(String label) {
-		        this.label = label;
-		}
-		
-		 public static CODEREP findCODEREPByCode(String label) {
-		        for (CODEREP code : CODEREP.values()) {
-		            if (code.label.equals(label)) {
-		                return code;
-		            }
-		        }
-		        return null;
-		    }
-
-	}
 	
-	// Méthode pour convertir un CVV numérique en une représentation alphabétique
     public static String convertCVVNumericToAlphabetic(String cvvNumeric) {
         StringBuilder convertedCVV = new StringBuilder();
 
@@ -542,7 +453,6 @@ public class Util {
         return convertedCVV.toString();
     }
 
-    // Méthode pour convertir un CVV alphabétique en une représentation numérique
     public static String convertCVVAlphabeticToNumeric(String cvvAlphabetic) {
         StringBuilder convertedCVV = new StringBuilder();
 
@@ -558,4 +468,206 @@ public class Util {
 
         return convertedCVV.toString();
     }
+    
+	public static void formatAmount(DemandePaiementDto demandeDto) {
+	    DecimalFormat df = new DecimalFormat("0.00");
+	    String formattedAmount = df.format(demandeDto.getMontant()).replace(",", ".");
+	    demandeDto.setMontantStr(formattedAmount);
+	}
+	
+	public static String sanitizeAmount(String amount) {
+	    if (amount == null || amount.isEmpty()) {
+	        amount = "0.00";
+	    }
+	    if (amount.contains(",")) {
+	        amount = amount.replace(",", ".");
+	    }
+	    return amount;
+	}
+	
+	public static void formatDateExp(String expirationDate, Cartes carte, String folder, String file) {
+		try {
+			Traces traces = new Traces();
+			DateFormat dateFormatSimple = new SimpleDateFormat(FORMAT_DEFAUT);
+			LocalDate localDate = LocalDate.parse(expirationDate);
+			Month mois = localDate.getMonth();
+			Integer year = localDate.getYear();
+			carte.setYear(year);
+			String moisStr = String.format("%s", mois);
+			List<String> list = new ArrayList<>();
+			list.add(moisStr);
+			MonthDto month = mapToFrenchMonth(moisStr);
+			carte.setMois(month.getMonth());
+			carte.setMoisValue(month.getValue());
+			
+			Calendar dateCalendar = Calendar.getInstance();
+			Date dateToken = dateCalendar.getTime();
+
+			String expirydateFormated = carte.getYear() + "-" + carte.getMoisValue() + "-" + "01";
+			traces.writeInFileTransaction(folder, file,
+					"cardtokenDto expirydate formated : " + expirydateFormated);
+			Date dateExp = dateFormatSimple.parse(expirydateFormated);
+			if(dateExp.before(dateToken)) {
+				traces.writeInFileTransaction(folder, file, "date exiration est inferieur à l adate systeme : " + dateExp + " < " + dateToken);
+				carte.setMoisValue("xxxx");
+				carte.setMois("xxxx");
+				carte.setYear(1111);
+			}
+		} catch (Exception e) {
+			logger.error("" ,e);
+		}
+	}
+	
+	@SuppressWarnings("all")
+	public static MonthDto mapToFrenchMonth(String month) {
+
+		MonthDto exp = new MonthDto();
+		if (month.equals("JANUARY")) {
+			month = "Janvier";
+			exp.setMonth(month);
+			exp.setValue("01");
+		} else if (month.toString().equals("FEBRUARY")) {
+			month = "Février";
+			exp.setMonth(month);
+			exp.setValue("02");
+		} else if (month.toString().equals("MARCH")) {
+			month = "Mars";
+			exp.setMonth(month);
+			exp.setValue("03");
+		} else if (month.toString().equals("APRIL")) {
+			month = "Avril";
+			exp.setMonth(month);
+			exp.setValue("04");
+		} else if (month.toString().equals("MAY")) {
+			month = "Mai";
+			exp.setMonth(month);
+			exp.setValue("05");
+		} else if (month.toString().equals("JUNE")) {
+			month = "Juin";
+			exp.setMonth(month);
+			exp.setValue("06");
+		} else if (month.toString().equals("JULY")) {
+			month = "Juillet";
+			exp.setMonth(month);
+			exp.setValue("07");
+		} else if (month.toString().equals("AUGUST")) {
+			month = "Aout";
+			exp.setMonth(month);
+			exp.setValue("08");
+		} else if (month.toString().equals("SEPTEMBER")) {
+			month = "Septembre";
+			exp.setMonth(month);
+			exp.setValue("09");
+		} else if (month.toString().equals("OCTOBER")) {
+			month = "Octobre";
+			exp.setMonth(month);
+			exp.setValue("10");
+		} else if (month.toString().equals("NOVEMBER")) {
+			month = "Novembre";
+			exp.setMonth(month);
+			exp.setValue("11");
+		} else if (month.toString().equals("DECEMBER")) {
+			month = "Décembre";
+			exp.setMonth(month);
+			exp.setValue("12");
+		}
+
+		return exp;
+	}
+
+	@SuppressWarnings("all")
+	public static String getMsgError(String folder, String file, LinkRequestDto linkRequestDto, String msg, String coderep) {
+		Traces traces = new Traces();
+		traces.writeInFileTransaction(folder, file, "*********** Start getMsgError() ************** ");
+		logger.info("*********** Start getMsgError() ************** ");
+
+		JSONObject jso = new JSONObject();
+		if (linkRequestDto != null) {
+			jso.put("orderid", linkRequestDto.getOrderid() == null ? "" : linkRequestDto.getOrderid());
+			jso.put("merchantid", linkRequestDto.getMerchantid() == null ? "" : linkRequestDto.getMerchantid());
+			jso.put("amount", linkRequestDto.getAmount() == null ? "" : linkRequestDto.getAmount());
+		}
+		jso.put("statuscode", coderep == null ? "17" : coderep);
+		jso.put("status", msg);
+		jso.put("etataut", "N");
+
+		traces.writeInFileTransaction(folder, file, "json : " + jso.toString());
+		logger.info("json : " + jso.toString());
+
+		traces.writeInFileTransaction(folder, file, "*********** End getMsgError() ************** ");
+		logger.info("*********** End getMsgError() ************** ");
+		return jso.toString();
+	}
+
+	@SuppressWarnings("all")
+	public static String  getMsgErrorV2(String folder, String file, TransactionRequestDto trsRequestDto, String msg, String coderep) {
+		String rep = "";
+		LinkRequestDto linkRequestDto = new LinkRequestDto();
+		if (trsRequestDto != null) {
+			linkRequestDto.setOrderid(trsRequestDto.getOrderid());
+			linkRequestDto.setMerchantid(trsRequestDto.getMerchantid());
+			linkRequestDto.setAmount(trsRequestDto.getAmount());
+		} else {
+			linkRequestDto.setOrderid(null);
+			linkRequestDto.setMerchantid(null);
+			linkRequestDto.setAmount(null);
+		}
+
+		rep = getMsgError(folder,file,linkRequestDto,msg,coderep);
+		return rep;
+	}
+
+	@SuppressWarnings("all")
+	public static String formatMontantTrame(String folder, String file, String amount, String orderid, String merchantid,
+									  LinkRequestDto linkRequestDto) {
+		Traces traces = new Traces();
+		String montanttrame = "";
+		String[] mm;
+		String[] m;
+		try {
+			if (amount.contains(",")) {
+				amount = amount.replace(",", ".");
+			}
+			if (!amount.contains(".") && !amount.contains(",")) {
+				amount = amount + "." + "00";
+			}
+			traces.writeInFileTransaction(folder,  file,"montant : [" + amount + "]");
+
+			String montantt = amount + "";
+
+			mm = montantt.split("\\.");
+			if (mm[1].length() == 1) {
+				montanttrame = amount + "0";
+			} else {
+				montanttrame = amount + "";
+			}
+
+			m = montanttrame.split("\\.");
+			if (m[1].equals("0")) {
+				montanttrame = montanttrame.replace(".", "0");
+			} else
+				montanttrame = montanttrame.replace(".", "");
+			montanttrame = formatageCHamps(montanttrame, 12);
+		} catch (Exception err3) {
+			traces.writeInFileTransaction(folder,  file,
+					"authorization 500 Error during  amount formatting for given orderid:[" + orderid
+							+ "] and merchantid:[" + merchantid + "]" + formatException(err3));
+
+			return getMsgError(folder, file, linkRequestDto, "authorization 500 Error during  amount formatting", null);
+		}
+		return montanttrame;
+	}
+
+	public static String formatException(Exception ex) {
+		StringWriter sw = new StringWriter();
+		PrintWriter pw = new PrintWriter(sw);
+		String stackTrace = "";
+		try {
+			ex.printStackTrace(pw);
+			stackTrace = sw.toString();
+		} catch(Exception e) {
+			stackTrace = "";
+		}
+		return stackTrace;
+	}
 }

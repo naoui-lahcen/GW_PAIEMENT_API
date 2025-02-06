@@ -1,8 +1,8 @@
 package ma.m2m.gateway.mappers;
 
-import ma.m2m.gateway.Utils.Objects;
 import ma.m2m.gateway.dto.InfoAcquirerDto;
 import ma.m2m.gateway.model.InfoAcquirer;
+import ma.m2m.gateway.utils.Objects;
 
 /*
 * @author  LAHCEN NAOUI

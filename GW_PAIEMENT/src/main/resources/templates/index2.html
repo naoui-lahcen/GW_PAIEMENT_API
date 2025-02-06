@@ -1,23 +1,23 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
    <head>
-      <meta charset="ISO-8859-1">
-      <title>GATEWAY NAPS</title>
-      <link rel="stylesheet"
-         href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
-         integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
-         crossorigin="anonymous">
-      <link
-         href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
-         rel="stylesheet" id="bootstrap-css">
-      <script
-         src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
-      <script
-         src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-      <!------ Include the above in your HEAD tag ---------->
-      <link rel="stylesheet"
-         href="https://use.fontawesome.com/releases/v5.0.8/css/all.css">
+      <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>GATEWAY NAPS</title>
+
+      <!-- CSS -->
+      <link rel="stylesheet"
+            href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+            integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+            crossorigin="anonymous">
+      <link rel="stylesheet"
+            href="https://use.fontawesome.com/releases/v5.0.8/css/all.css">
+
+      <!-- JS -->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js" defer></script>
+      <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+              integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+              crossorigin="anonymous" defer></script>
      <style>
 	body {
     	font-family: 'Roboto', sans-serif;
@@ -148,6 +148,7 @@
                </div>
                <!-- card-body.// -->
             </article>
+            </aside>
             <!-- card.// -->
          </div>
          <br class="mobile-hide">
@@ -180,6 +181,7 @@
                   </div>
                </div>
             </article>
+            </aside>
             <!-- card.// -->
          </div>
          <br class="mobile-hide">
@@ -288,6 +290,8 @@
                   </div>
                </form>
             </div>
+            </article>
+            </aside>
             <!-- card-body.// -->
          </div>
       </div>
@@ -300,7 +304,6 @@
 	            </div>
 	            <!-- Copyright -->
 	         </footer>
-      		</div>
       </div>
       <!-- La div du dialogue -->
       <div id="dialog" class="dialog container my-2" align="center">
@@ -458,6 +461,39 @@
                 hideProcessingPopup();
             }
         }
+        
+        // Debut vérification si la page est chargée
+        let isPageLoaded = false;
+        // Stocker les tentatives dans localStorage
+		let reloadAttempts = parseInt(localStorage.getItem('reloadAttempts')) || 0; 
+		const maxReloads = 3;
+
+        // Marquer la page comme chargée lorsque le DOM est prêt
+        window.addEventListener('load', function () {
+            isPageLoaded = true;
+            console.log("Page confirmée comme chargée.");
+            // Réinitialiser le compteur si la page est bien chargée
+    		localStorage.removeItem('reloadAttempts');
+        });
+
+        // Timeout pour vérifier si la page est bien chargée
+        setTimeout(function () {
+			console.log(`isPageLoaded : ${isPageLoaded}`);
+            if (!isPageLoaded) {
+                console.log("Problème détecté, rechargement de la page...");
+                 reloadAttempts++;
+                 console.log(`Tentative de rechargement : ${reloadAttempts}`);
+                if (reloadAttempts < maxReloads) {		
+					// Stocker le nombre de tentatives dans localStorage
+            		localStorage.setItem('reloadAttempts', reloadAttempts);	       			        
+			        location.reload(); // Recharge discrètement la page
+			    } else {
+			        console.log("Trop de tentatives échouées. Aucun rechargement supplémentaire.");
+			    }               
+            }
+        }, 10000); // Vérifie après 10 secondes
+        // Fin vérification si la page est chargée
+    </script>
       </script>
    </body>
 </html>

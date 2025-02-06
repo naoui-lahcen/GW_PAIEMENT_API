@@ -4,24 +4,6 @@ package ma.m2m.gateway.lydec;
 import java.math.BigDecimal;
 import java.util.Date;
 
-
-//@XmlAccessorType(XmlAccessType.FIELD)
-//@XmlType(name = "Impaye", propOrder = {
-//    "numeroFacture",
-//    "numeroLigne",
-//    "codeFourniture",
-//    "numeroPolice",
-//    "montantTTC",
-//    "adresse",
-//    "delegation",
-//    "secteur",
-//    "tournee",
-//    "ordre",
-//    "produit",
-//    "montantTimbre",
-//    "montantTVA",
-//    "dateEcheance"
-//})
 public class Impaye {
 
     private int numeroFacture;

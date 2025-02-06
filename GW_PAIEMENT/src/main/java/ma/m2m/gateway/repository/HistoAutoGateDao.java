@@ -18,6 +18,8 @@ public interface HistoAutoGateDao extends JpaRepository<HistoAutoGate,Long> {
 	
 	HistoAutoGate findByHatNumCommande(String commande);
 	
+	HistoAutoGate findById(Integer id);
+	
 	HistoAutoGate findByHatNumCommandeAndHatNumcmr(String commande, String numCmr);
 	
 	@Query(value="select * FROM  MXGATEWAY.HISTOAUTO_GATE where "
@@ -38,6 +40,12 @@ public interface HistoAutoGateDao extends JpaRepository<HistoAutoGate,Long> {
 	HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmrAndHatCoderep(String commande, String numAuth, String numCmr, String codeRep);
 	
 	List<HistoAutoGate> findByHatNumcmr(String numCmr);
+	
+	@Query(value = "select * from MXGATEWAY.HISTOAUTO_GATE where "
+			+ "HAT_COMMANDE = (?1) "
+			+ "AND HAT_NUMCMR = (?2) "
+			+ "AND HAT_PORTEUR = (?3)", nativeQuery = true)
+	HistoAutoGate findByHatNumCommandeAndHatNumcmrAndHatPorteur(String Commande, String numCmr, String cardnumber);
 	
 	@Query(value="select max(HAT_ID)  FROM  MXGATEWAY.HISTOAUTO_GATE", nativeQuery = true)
 	Integer getMAX_ID();
