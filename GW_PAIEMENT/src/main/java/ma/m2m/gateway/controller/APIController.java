@@ -2518,7 +2518,7 @@ public class APIController {
 			} catch (InterruptedException ie) {
 				Thread.currentThread().interrupt();
 				autorisationService.logMessage(file,"Thread interrompu pendant le délai d'attente" + ie);
-				return Util.getMsgErrorV2(folder, file, trsRequestDto, "capture 500 Error during insert into telecollecte", null);
+				return Util.getMsgErrorV2(folder, file, trsRequestDto, "capture 500 , operation failed please try again", null);
 			}
 
 			try {
@@ -2537,14 +2537,14 @@ public class APIController {
 
 			} catch (DataIntegrityViolationException ex2) {
 				autorisationService.logMessage(file,"Conflit persistant lors de la deuxième tentative d'insertion de telecollecte." + Util.formatException(ex2));
-				return Util.getMsgErrorV2(folder, file, trsRequestDto, "capture 500 Error during insert into telecollecte", null);
+				return Util.getMsgErrorV2(folder, file, trsRequestDto, "capture 500 , operation failed please try again", null);
 			}
 		} catch (Exception err5) {
 			autorisationService.logMessage(file,
 					"capture 500 Error during insert into telec for given authnumber:[" + trsRequestDto.getAuthnumber()
 							+ "] and merchantid:[" + trsRequestDto.getMerchantid() + "]" + Util.formatException(err5));
 
-			return Util.getMsgErrorV2(folder, file, trsRequestDto, "capture 500 Error during insert into telecollecte", null);
+			return Util.getMsgErrorV2(folder, file, trsRequestDto, "capture 500 , operation failed please try again", null);
 		}
 		/*
 		 * } else { lidtelc = n_tlc.getTlc_numtlcolcte(); double nbr_trs =
@@ -2600,7 +2600,7 @@ public class APIController {
 					"capture 500 Error during insert into transaction for given authnumber:[" + trsRequestDto.getAuthnumber()
 							+ "] and merchantid:[" + trsRequestDto.getMerchantid() + "]" + Util.formatException(err6));
 
-			return Util.getMsgErrorV2(folder, file, trsRequestDto, "capture 500 Error during insert into transaction", null);
+			return Util.getMsgErrorV2(folder, file, trsRequestDto, "capture 500 , operation failed please try again", null);
 		}
 
 		try {
@@ -3021,7 +3021,7 @@ public class APIController {
 				} catch (InterruptedException ie) {
 					Thread.currentThread().interrupt();
 					autorisationService.logMessage(file,"Thread interrompu pendant le délai d'attente" + ie);
-					return Util.getMsgErrorV2(folder, file, trsRequestDto, "refund 500 Error during insert into telecollecte", null);
+					return Util.getMsgErrorV2(folder, file, trsRequestDto, "refund 500 , operation failed please try again", null);
 				}
 
 				try {
@@ -3040,7 +3040,7 @@ public class APIController {
 
 				} catch (DataIntegrityViolationException ex2) {
 					autorisationService.logMessage(file,"Conflit persistant lors de la deuxième tentative d'insertion de telecollecte." + Util.formatException(ex2));
-					return Util.getMsgErrorV2(folder, file, trsRequestDto, "refund 500 Error during insert into telecollecte", null);
+					return Util.getMsgErrorV2(folder, file, trsRequestDto, "refund 500 , operation failed please try again", null);
 				}
 			} catch (Exception e) {
 				autorisationService.logMessage(file,
@@ -5195,7 +5195,7 @@ public class APIController {
 							} catch (InterruptedException ie) {
 								Thread.currentThread().interrupt();
 								autorisationService.logMessage(file,"Thread interrompu pendant le délai d'attente" + ie);
-								return Util.getMsgErrorV2(folder, file, trsRequestDto, "cpautorisation 500 Error during insert into telecollecte", null);
+								return Util.getMsgErrorV2(folder, file, trsRequestDto, "cpautorisation 500 , operation failed please try again", null);
 							}
 
 							try {
