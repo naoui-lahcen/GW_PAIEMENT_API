@@ -2511,7 +2511,7 @@ public class APIController {
 
 		} catch (DataIntegrityViolationException ex) {
 			autorisationService.logMessage(file,"Conflit détecté lors de l'insertion de telecollecte, première tentative échouée." + Util.formatException(ex));
-			autorisationService.logMessage(file,"Pause de 5 secondes avant la deuxième tentative");
+			autorisationService.logMessage(file,"Pause de 2 secondes avant la deuxième tentative");
 
 			try {
 				Thread.sleep(2000);
@@ -3014,7 +3014,7 @@ public class APIController {
 
 			} catch (DataIntegrityViolationException ex) {
 				autorisationService.logMessage(file,"Conflit détecté lors de l'insertion de telecollecte, première tentative échouée." + Util.formatException(ex));
-				autorisationService.logMessage(file,"Pause de 5 secondes avant la deuxième tentative");
+				autorisationService.logMessage(file,"Pause de 2 secondes avant la deuxième tentative");
 
 				try {
 					Thread.sleep(2000);
@@ -5188,7 +5188,7 @@ public class APIController {
 
 						} catch (DataIntegrityViolationException ex) {
 							autorisationService.logMessage(file,"Conflit détecté lors de l'insertion de telecollecte, première tentative échouée." + Util.formatException(ex));
-							autorisationService.logMessage(file,"Pause de 5 secondes avant la deuxième tentative");
+							autorisationService.logMessage(file,"Pause de 2 secondes avant la deuxième tentative");
 
 							try {
 								Thread.sleep(2000);
@@ -5648,7 +5648,7 @@ public class APIController {
 
 							} catch (DataIntegrityViolationException ex) {
 								autorisationService.logMessage(file,"Conflit détecté lors de l'insertion de telecollecte, première tentative échouée." + Util.formatException(ex));
-								autorisationService.logMessage(file,"Pause de 5 secondes avant la deuxième tentative");
+								autorisationService.logMessage(file,"Pause de 2 secondes avant la deuxième tentative");
 
 								try {
 									Thread.sleep(2000);
@@ -5882,7 +5882,7 @@ public class APIController {
 
 							} catch (DataIntegrityViolationException ex) {
 								autorisationService.logMessage(file,"Conflit détecté lors de l'insertion de telecollecte, première tentative échouée." + Util.formatException(ex));
-								autorisationService.logMessage(file,"Pause de 5 secondes avant la deuxième tentative");
+								autorisationService.logMessage(file,"Pause de 2 secondes avant la deuxième tentative");
 
 								try {
 									Thread.sleep(2000);
