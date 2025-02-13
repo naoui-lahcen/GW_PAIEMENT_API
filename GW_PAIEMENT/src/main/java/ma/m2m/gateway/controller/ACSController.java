@@ -1421,6 +1421,33 @@ public class ACSController {
 								autorisationService.logMessage(file, "data_noncrypt : " + data_noncrypt);
 								logger.info("data_noncrypt : " + data_noncrypt);
 
+								if (data_noncrypt.length() > 200) {
+									// TODO : First, try reducing the length by adjusting the fname
+									if (!fname.isEmpty()) {
+										fname = fname.length() > 10 ? fname.substring(0, 10) : fname;
+									}
+
+									// TODO : Rebuild the data_noncrypt string with the updated fname
+									data_noncrypt = "id_commande=" + orderid + "&nomprenom=" + fname + "&email="
+											+ email + "&montant=" + amount + "&frais=" + "" + "&repauto=" + coderep
+											+ "&numAuto=" + authnumber + "&numCarte=" + Util.formatCard(cardnumber)
+											+ "&typecarte=" + dmd.getTypeCarte() + "&numTrans=" + transactionid;
+
+									autorisationService.logMessage(file, "data_noncrypt : " + data_noncrypt);
+									// TODO : If the length is still greater than 200, reduce the length of email
+									if (data_noncrypt.length() > 200 && !email.isEmpty()) {
+										email = email.length() > 10 ? email.substring(0, 10) : email;
+									}
+
+									// TODO : Rebuild again with the updated email
+									data_noncrypt = "id_commande=" + orderid + "&nomprenom=" + fname + "&email="
+											+ email + "&montant=" + amount + "&frais=" + "" + "&repauto=" + coderep
+											+ "&numAuto=" + authnumber + "&numCarte=" + Util.formatCard(cardnumber)
+											+ "&typecarte=" + dmd.getTypeCarte() + "&numTrans=" + transactionid;
+
+									autorisationService.logMessage(file, "data_noncrypt : " + data_noncrypt);
+								}
+
 								String plainTxtSignature = orderid + current_infoCommercant.getClePub();
 
 								autorisationService.logMessage(file, "plainTxtSignature : " + plainTxtSignature);

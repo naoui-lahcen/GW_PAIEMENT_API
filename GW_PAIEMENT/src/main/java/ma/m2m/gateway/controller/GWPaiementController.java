@@ -395,6 +395,38 @@ public class GWPaiementController {
 		Util.creatFileTransaction(file);
 		autorisationService.logMessage(file, "return to index.html");
 		logger.info("return to index.html");
+		String fname ="Jose Ignacio FERNANDEZ GO";
+		String email = "ignacio.fernandez@jarama.org";
+		String data_noncrypt = "id_commande=999917393603091707&nomprenom="+ fname+"&email="+ email+ "&montant=11860.0&frais=&repauto=94&numAuto=395876&numCarte=427305******5200&typecarte=1&numTrans=259904";
+		String cle = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnSJF0sXyt2AEe0ZeK20rFJTEUkfuGGBRaj5fnNKNi1rQPvy3sdExybXr61s3zSKbDdVTSV7Uv23qrL6hpOXZGuxQrzmrVXrq9S8tqXGjiLlMntMLtNGupLDTeuSeMmDVxl47mlSTOzEWHdWH6He9bBh8YpYU2mNenueIBsnXzoY1yBf0MpTmi0xJG3qTFNNuJHFAywhH8haogfsM9s71Dj8mF+0Vu6LNQw/a3z0n0jFNz/73cVuAzDPe+1c38aZP+BvFRM1FrXrdc+5NdAC+Mlj9aSX5eZWh1hkxhf0Tyz/SQwNDzYc/AX6tueIh95ElXqtiQwQq69M/QJH2Ej/LQQIDAQAB";
+		String plainTxtSignature = "999917393603091707MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnSJF0sXyt2AEe0ZeK20rFJTEUkfuGGBRaj5fnNKNi1rQPvy3sdExybXr61s3zSKbDdVTSV7Uv23qrL6hpOXZGuxQrzmrVXrq9S8tqXGjiLlMntMLtNGupLDTeuSeMmDVxl47mlSTOzEWHdWH6He9bBh8YpYU2mNenueIBsnXzoY1yBf0MpTmi0xJG3qTFNNuJHFAywhH8haogfsM9s71Dj8mF+0Vu6LNQw/a3z0n0jFNz/73cVuAzDPe+1c38aZP+BvFRM1FrXrdc+5NdAC+Mlj9aSX5eZWh1hkxhf0Tyz/SQwNDzYc/AX6tueIh95ElXqtiQwQq69M/QJH2Ej/LQQIDAQAB";
+		try {
+			if (data_noncrypt.length() > 200) {
+				// TODO : First, try reducing the length by adjusting the fname
+				if (!fname.isEmpty()) {
+					fname = fname.length() > 10 ? fname.substring(0, 10) : fname;
+				}
+
+				// TODO : Rebuild the data_noncrypt string with the updated fname
+				data_noncrypt = "id_commande=999917393603091707&nomprenom="+ fname+"&email="+ email+ "&montant=11860.0&frais=&repauto=94&numAuto=395876&numCarte=427305******5200&typecarte=1&numTrans=259904";
+				System.out.println((data_noncrypt));
+				// TODO : If the length is still greater than 200, reduce the length of email
+				if (data_noncrypt.length() > 200 && !email.isEmpty()) {
+					email = email.length() > 10 ? email.substring(0, 10) : email;
+				}
+
+				// TODO : Rebuild again with the updated email
+				data_noncrypt = "id_commande=999917393603091707&nomprenom="+ fname+"&email="+ email+ "&montant=11860.0&frais=&repauto=94&numAuto=395876&numCarte=427305******5200&typecarte=1&numTrans=259904";
+				System.out.println((data_noncrypt));
+			}
+			String data_crypt = RSACrypto.encryptByPublicKeyWithMD5Sign(
+					data_noncrypt, cle,
+					plainTxtSignature, folder, file);
+			System.out.println((data_crypt));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
 
 		return "index";
 	}
@@ -909,6 +941,7 @@ public class GWPaiementController {
 			transactiondate = formatter_1.format(trsdate);
 			transactiontime = formatter_2.format(trsdate);
 			dmdToEdit.setDemDateTime(dateFormat.format(new Date()));
+			dmdToEdit.setEtatDemande("START_PAYMENT");
 
 			demandeDto = demandePaiementService.save(dmdToEdit);
 			demandeDto.setExpery(expirydate);
@@ -1765,6 +1798,33 @@ public class GWPaiementController {
 
 				autorisationService.logMessage(file, "data_noncrypt : " + data_noncrypt);
 				logger.info("data_noncrypt : " + data_noncrypt);
+
+				if (data_noncrypt.length() > 200) {
+					// TODO : First, try reducing the length by adjusting the fname
+					if (!fname.isEmpty()) {
+						fname = fname.length() > 10 ? fname.substring(0, 10) : fname;
+					}
+
+					// TODO : Rebuild the data_noncrypt string with the updated fname
+					data_noncrypt = "id_commande=" + orderid + "&nomprenom=" + fname + "&email="
+							+ email + "&montant=" + amount + "&frais=" + "" + "&repauto=" + coderep
+							+ "&numAuto=" + authnumber + "&numCarte=" + Util.formatCard(cardnumber)
+							+ "&typecarte=" + dmd.getTypeCarte() + "&numTrans=" + transactionid;
+
+					autorisationService.logMessage(file, "data_noncrypt : " + data_noncrypt);
+					// TODO : If the length is still greater than 200, reduce the length of email
+					if (data_noncrypt.length() > 200 && !email.isEmpty()) {
+						email = email.length() > 10 ? email.substring(0, 10) : email;
+					}
+
+					// TODO : Rebuild again with the updated email
+					data_noncrypt = "id_commande=" + orderid + "&nomprenom=" + fname + "&email="
+							+ email + "&montant=" + amount + "&frais=" + "" + "&repauto=" + coderep
+							+ "&numAuto=" + authnumber + "&numCarte=" + Util.formatCard(cardnumber)
+							+ "&typecarte=" + dmd.getTypeCarte() + "&numTrans=" + transactionid;
+
+					autorisationService.logMessage(file, "data_noncrypt : " + data_noncrypt);
+				}
 
 				String plainTxtSignature = orderid + current_infoCommercant.getClePub();
 
