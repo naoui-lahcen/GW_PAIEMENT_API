@@ -1117,6 +1117,9 @@ public class AppMobileController {
                             page = autorisationService.handleMpiError(errmpi, file, idDemande, threeDSServerTransID, dmd, model, page);
                         }
                     } else {
+                        idDemande = threeDsecureResponse.getIdDemande() == null ? "" : threeDsecureResponse.getIdDemande();
+                        dmd = demandePaiementService.findByIdDemande(Integer.parseInt(idDemande));
+                        dmd.setEtatDemande("AUTH_ACS_FAILED");
                         dmd.setDemxid(threeDSServerTransID);
                         // TODO: stackage de eci dans le chmp date_sendMPI vu que ce chmp nest pas utilisé
                         dmd.setDateSendMPI(eci);

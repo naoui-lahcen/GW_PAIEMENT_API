@@ -1999,9 +1999,11 @@ public class GWPaiementController {
 		try {
 			DemandePaiementDto demandePaiement = demandePaiementService.findByIdDemande(idDemande);
 			if (demandePaiement != null) {
-				demandePaiement.setEtatDemande("P_ABDNEE_CLC_ANNULER");
-				demandePaiement = demandePaiementService.save(demandePaiement);
-				autorisationService.logMessage(file, "cancelPayment : Modification etat_demande to P_ABDNEE_CLC_ANNULER idDemande/Commande : " + idDemande +"/" + demandePaiement.getCommande());
+				if(demandePaiement.getEtatDemande().equals("P_CHRG_OK") || demandePaiement.getEtatDemande().equals("START_PAYMENT")) {
+					demandePaiement.setEtatDemande("P_ABDNEE_CLC_ANNULER");
+					demandePaiement = demandePaiementService.save(demandePaiement);
+					autorisationService.logMessage(file, "cancelPayment : Modification etat_demande to P_ABDNEE_CLC_ANNULER idDemande/Commande : " + idDemande +"/" + demandePaiement.getCommande());
+				}
 				return ResponseEntity.ok(Collections.singletonMap("message", "Paiement annulé avec succès"));
 			}
 		} catch (Exception e) {
@@ -2201,6 +2203,24 @@ public class GWPaiementController {
 		logger.info("*********** End index2 () ************** ");
 
 		return "index2";
+	}
+
+	@RequestMapping(value = "/napspayment/newpage", method = RequestMethod.GET)
+	@SuppressWarnings("all")
+	public String newpage() {
+		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
+		String file = "GW_NEWPAGE_" + randomWithSplittableRandom;
+		Util.creatFileTransaction(file);
+		autorisationService.logMessage(file, "*********** Start newpage () ************** ");
+		logger.info("*********** Start newpage () ************** ");
+
+		autorisationService.logMessage(file, "return to newpage.html");
+		logger.info("return to newpage.html");
+
+		autorisationService.logMessage(file, "*********** End newpage () ************** ");
+		logger.info("*********** End newpage () ************** ");
+
+		return "newpage";
 	}
 	
 	@RequestMapping(value = "/napspayment/operationAnnulee", method = RequestMethod.GET)
