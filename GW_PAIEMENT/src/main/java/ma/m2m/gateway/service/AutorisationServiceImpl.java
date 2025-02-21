@@ -789,7 +789,13 @@ public class AutorisationServiceImpl implements AutorisationService {
 				model.addAttribute("demandeDto", demandeDtoMsg);
 
 				// Mise à jour de l'état de la demande
-				demandeDto.setEtatDemande("TimeOut");
+				if(demandeDto.getEtatDemande() != null) {
+					if(demandeDto.getEtatDemande().equals("P_CHRG_OK")
+							|| demandeDto.getEtatDemande().equals("START_PAYMENT")) {
+						demandeDto.setEtatDemande("TimeOut");
+					}
+				}
+
 				demandeDto.setDemCvv("");
 				demandePaiementService.save(demandeDto);
 

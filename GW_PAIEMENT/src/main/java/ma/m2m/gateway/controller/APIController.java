@@ -2477,37 +2477,49 @@ public class APIController {
 		TelecollecteDto tlc = null;
 
 		try {
-			idtelc = telecollecteService.getMAX_ID(trsRequestDto.getMerchantid());
-			autorisationService.logMessage(file, "getMAX_ID idtelc : " + idtelc);
+			TelecollecteDto n_tlc = telecollecteService.getMAXTLC_N(trsRequestDto.getMerchantid());
+			if (n_tlc == null) {
+				autorisationService.logMessage(file, "getMAXTLC_N n_tlc = null");
+				idtelc = telecollecteService.getMAX_ID(trsRequestDto.getMerchantid());
+				autorisationService.logMessage(file, "getMAX_ID idtelc : " + idtelc);
 
-			if (idtelc != null) {
-				lidtelc = idtelc.longValue() + 1;
+				if (idtelc != null) {
+					lidtelc = idtelc.longValue() + 1;
+				} else {
+					lidtelc = 1;
+				}
+				tlc = new TelecollecteDto();
+				tlc.setTlcNumtlcolcte(lidtelc);
+				tlc.setTlcNumtpe(current_hist.getHatCodtpe());
+
+				tlc.setTlcDatcrtfich(current_date);
+				tlc.setTlcNbrtrans(new Double(1));
+				tlc.setTlcGest("N");
+
+				tlc.setTlcDatremise(current_date);
+				tlc.setTlcNumremise(new Double(lidtelc));
+				// TODO: tlc.setTlc_numfich(new Double(0));
+				String tmpattern = "HH:mm";
+				SimpleDateFormat sftm = new SimpleDateFormat(tmpattern);
+				String stm = sftm.format(current_date);
+				tlc.setTlcHeuremise(stm);
+
+				tlc.setTlcCodbq(acqcode);
+				tlc.setTlcNumcmr(trsRequestDto.getMerchantid());
+				tlc.setTlcNumtpe(websiteid);
+
+				autorisationService.logMessage(file, tlc.toString());
+
+				telecollecteService.save(tlc);
 			} else {
-				lidtelc = 1;
+				lidtelc = n_tlc.getTlcNumtlcolcte();
+				double nbr_trs = n_tlc.getTlcNbrtrans();
+				autorisationService.logMessage(file, "n_tlc !=null lidtelc/nbr_trs " + lidtelc + "/" + nbr_trs);
+				nbr_trs = nbr_trs + 1;
+				n_tlc.setTlcNbrtrans(nbr_trs);
+				autorisationService.logMessage(file, "increment lidtelc/nbr_trs " + lidtelc + "/" + nbr_trs);
+				telecollecteService.save(n_tlc);
 			}
-			tlc = new TelecollecteDto();
-			tlc.setTlcNumtlcolcte(lidtelc);
-			tlc.setTlcNumtpe(current_hist.getHatCodtpe());
-
-			tlc.setTlcDatcrtfich(current_date);
-			tlc.setTlcNbrtrans(new Double(1));
-			tlc.setTlcGest("N");
-
-			tlc.setTlcDatremise(current_date);
-			tlc.setTlcNumremise(new Double(lidtelc));
-			// TODO: tlc.setTlc_numfich(new Double(0));
-			String tmpattern = "HH:mm";
-			SimpleDateFormat sftm = new SimpleDateFormat(tmpattern);
-			String stm = sftm.format(current_date);
-			tlc.setTlcHeuremise(stm);
-
-			tlc.setTlcCodbq(acqcode);
-			tlc.setTlcNumcmr(trsRequestDto.getMerchantid());
-			tlc.setTlcNumtpe(websiteid);
-
-			autorisationService.logMessage(file, tlc.toString());
-
-			telecollecteService.save(tlc);
 
 		} catch (DataIntegrityViolationException ex) {
 			autorisationService.logMessage(file,"Conflit détecté lors de l'insertion de telecollecte, première tentative échouée." + Util.formatException(ex));
@@ -2595,10 +2607,10 @@ public class APIController {
 			trs.setTrsNumfact(0.0);
 			transactionService.save(trs);
 
-		} catch (Exception err6) {
+		} catch (Exception e) {
 			autorisationService.logMessage(file,
 					"capture 500 Error during insert into transaction for given authnumber:[" + trsRequestDto.getAuthnumber()
-							+ "] and merchantid:[" + trsRequestDto.getMerchantid() + "]" + Util.formatException(err6));
+							+ "] and merchantid:[" + trsRequestDto.getMerchantid() + "]" + Util.formatException(e));
 
 			return Util.getMsgErrorV2(folder, file, trsRequestDto, "capture 500 , operation failed please try again", null);
 		}
@@ -2934,83 +2946,54 @@ public class APIController {
 			TelecollecteDto tlc = null;
 
 			try {
-				// TODO: insert into telec
-				idtelc = telecollecteService.getMAX_ID(trsRequestDto.getMerchantid());
-				autorisationService.logMessage(file, "getMAX_ID idtelc : " + idtelc);
+				TelecollecteDto n_tlc = telecollecteService.getMAXTLC_N(trsRequestDto.getMerchantid());
+				if (n_tlc == null) {
+					autorisationService.logMessage(file, "getMAXTLC_N n_tlc = null");
+					// TODO: insert into telec
+					idtelc = telecollecteService.getMAX_ID(trsRequestDto.getMerchantid());
+					autorisationService.logMessage(file, "getMAX_ID idtelc : " + idtelc);
 
-				if (idtelc != null) {
-					lidtelc = idtelc.longValue() + 1;
+					if (idtelc != null) {
+						lidtelc = idtelc.longValue() + 1;
+					} else {
+						lidtelc = 1;
+					}
+
+					tlc = new TelecollecteDto();
+					tlc.setTlcNumtlcolcte(lidtelc);
+					tlc.setTlcNumtpe(current_hist.getHatCodtpe());
+					// TODO: tlc.setTlc_typentre("REFUND");
+					tlc.setTlcDatcrtfich(current_date);
+					tlc.setTlcNbrtrans(new Double(1));
+					tlc.setTlcGest("N");
+
+					tlc.setTlcDatremise(current_date);
+					tlc.setTlcNumremise(new Double(lidtelc));
+					// TODO: tlc.setTlc_numfich(new Double(0));
+					String tmpattern = "HH:mm";
+					SimpleDateFormat sftm = new SimpleDateFormat(tmpattern);
+					String stm = sftm.format(current_date);
+					tlc.setTlcHeuremise(stm);
+					String acqcode = current_merchant.getCmrCodbqe();
+					tlc.setTlcCodbq(acqcode);
+					tlc.setTlcNumcmr(trsRequestDto.getMerchantid());
+					tlc.setTlcNumtpe(websiteid);
+
+					autorisationService.logMessage(file, tlc.toString());
+
+					telecollecteService.save(tlc);
+
+					autorisationService.logMessage(file, "inserting Telecollecte  OK.");
+
 				} else {
-					lidtelc = 1;
+					lidtelc = n_tlc.getTlcNumtlcolcte();
+					double nbr_trs = n_tlc.getTlcNbrtrans();
+					autorisationService.logMessage(file, "n_tlc !=null lidtelc/nbr_trs " + lidtelc + "/" + nbr_trs);
+					nbr_trs = nbr_trs + 1;
+					n_tlc.setTlcNbrtrans(nbr_trs);
+					autorisationService.logMessage(file, "increment lidtelc/nbr_trs " + lidtelc + "/" + nbr_trs);
+					telecollecteService.save(n_tlc);
 				}
-				tlc = new TelecollecteDto();
-				tlc.setTlcNumtlcolcte(lidtelc);
-				tlc.setTlcNumtpe(current_hist.getHatCodtpe());
-				// TODO: tlc.setTlc_typentre("REFUND");
-				tlc.setTlcDatcrtfich(current_date);
-				tlc.setTlcNbrtrans(new Double(1));
-				tlc.setTlcGest("N");
-
-				tlc.setTlcDatremise(current_date);
-				tlc.setTlcNumremise(new Double(lidtelc));
-				// TODO: tlc.setTlc_numfich(new Double(0));
-				String tmpattern = "HH:mm";
-				SimpleDateFormat sftm = new SimpleDateFormat(tmpattern);
-				String stm = sftm.format(current_date);
-				tlc.setTlcHeuremise(stm);
-				String acqcode = current_merchant.getCmrCodbqe();
-				tlc.setTlcCodbq(acqcode);
-				tlc.setTlcNumcmr(trsRequestDto.getMerchantid());
-				tlc.setTlcNumtpe(websiteid);
-
-				autorisationService.logMessage(file, tlc.toString());
-
-				telecollecteService.save(tlc);
-
-				autorisationService.logMessage(file, "inserting Telecollecte  OK.");
-				autorisationService.logMessage(file, "inserting Transaction   ...");
-
-				TransactionDto trs = null;
-				String frmt_cardnumber = "";
-				double dmnt = 0;
-				Integer idtrs = null;
-				long lidtrs = 0;
-				// TODO: insert into transaction
-				trs = new TransactionDto();
-				trs.setTrsNumcmr(trsRequestDto.getMerchantid());
-				trs.setTrsNumtlcolcte(Double.valueOf(lidtelc));
-				frmt_cardnumber = Util.formatagePan(cardnumber);
-				trs.setTrsCodporteur(frmt_cardnumber);
-				dmnt = Double.parseDouble(trsRequestDto.getAmount());
-				trs.setTrsMontant(dmnt);
-				current_date = new Date();
-				Date current_date_1 = getDateWithoutTime(current_date);
-				Date trs_date = dateFormatSimple.parse(current_dmd.getDemDateTime());
-				Date trs_date_1 = getDateWithoutTime(trs_date);
-
-				trs.setTrsDattrans(current_date_1);
-				trs.setTrsNumaut("000000");// TODO: offline mode
-				trs.setTrsEtat("N");
-				trs.setTrsDevise(current_hist.getHatDevise());
-				trs.setTrsCertif("N");
-				idtrs = transactionService.getMAX_ID();
-
-				if (idtrs != null) {
-					lidtrs = idtrs.longValue() + 1;
-				} else {
-					lidtrs = 1;
-				}
-
-				trs.setTrsId(lidtrs);
-				trs.setTrsCommande(trsRequestDto.getOrderid());
-				trs.setTrsProcod("9");
-				trs.setTrsGroupe(websiteid);
-				trs.setTrsCodtpe(0.0);
-				trs.setTrsNumbloc(0.0);
-				trs.setTrsNumfact(0.0);
-				transactionService.save(trs);
-
-				autorisationService.logMessage(file, "inserting Transaction  OK.");
 
 			} catch (DataIntegrityViolationException ex) {
 				autorisationService.logMessage(file,"Conflit détecté lors de l'insertion de telecollecte, première tentative échouée." + Util.formatException(ex));
@@ -3048,6 +3031,57 @@ public class APIController {
 								+ trsRequestDto.getOrderid() + "]" + Util.formatException(e));
 
 				return Util.getMsgErrorV2(folder, file, trsRequestDto, "refund 500, the refund failed", null);
+			}
+
+			TransactionDto trs = null;
+			String frmt_cardnumber = "";
+			double dmnt = 0;
+			Integer idtrs = null;
+			long lidtrs = 0;
+			try {
+				// TODO: insert into transaction
+				autorisationService.logMessage(file, "inserting Transaction   ...");
+				trs = new TransactionDto();
+				trs.setTrsNumcmr(trsRequestDto.getMerchantid());
+				trs.setTrsNumtlcolcte(Double.valueOf(lidtelc));
+				frmt_cardnumber = Util.formatagePan(cardnumber);
+				trs.setTrsCodporteur(frmt_cardnumber);
+				dmnt = Double.parseDouble(trsRequestDto.getAmount());
+				trs.setTrsMontant(dmnt);
+				current_date = new Date();
+				Date current_date_1 = getDateWithoutTime(current_date);
+				Date trs_date = dateFormatSimple.parse(current_dmd.getDemDateTime());
+				Date trs_date_1 = getDateWithoutTime(trs_date);
+
+				trs.setTrsDattrans(current_date_1);
+				trs.setTrsNumaut("000000");// TODO: offline mode
+				trs.setTrsEtat("N");
+				trs.setTrsDevise(current_hist.getHatDevise());
+				trs.setTrsCertif("N");
+				idtrs = transactionService.getMAX_ID();
+
+				if (idtrs != null) {
+					lidtrs = idtrs.longValue() + 1;
+				} else {
+					lidtrs = 1;
+				}
+
+				trs.setTrsId(lidtrs);
+				trs.setTrsCommande(trsRequestDto.getOrderid());
+				trs.setTrsProcod("9");
+				trs.setTrsGroupe(websiteid);
+				trs.setTrsCodtpe(0.0);
+				trs.setTrsNumbloc(0.0);
+				trs.setTrsNumfact(0.0);
+				transactionService.save(trs);
+
+				autorisationService.logMessage(file, "inserting Transaction  OK.");
+			} catch(Exception e) {
+				autorisationService.logMessage(file,
+						"refund 500 Error during insert into transaction for given authnumber:[" + trsRequestDto.getAuthnumber()
+								+ "] and merchantid:[" + trsRequestDto.getMerchantid() + "]" + Util.formatException(e));
+
+				return Util.getMsgErrorV2(folder, file, trsRequestDto, "refund 500 , operation failed please try again", null);
 			}
 
 			try {
@@ -5098,40 +5132,88 @@ public class APIController {
 						TelecollecteDto tlc = null;
 						long lidtelc = 0;
 						try {
-							// TODO: insert into telec
-							idtelc = telecollecteService.getMAX_ID(trsRequestDto.getMerchantid());
-							autorisationService.logMessage(file, "getMAX_ID idtelc : " + idtelc);
+							TelecollecteDto n_tlc = telecollecteService.getMAXTLC_N(trsRequestDto.getMerchantid());
+							if (n_tlc == null) {
+								// TODO: insert into telec
+								autorisationService.logMessage(file, "getMAXTLC_N n_tlc = null");
+								idtelc = telecollecteService.getMAX_ID(trsRequestDto.getMerchantid());
+								autorisationService.logMessage(file, "getMAX_ID idtelc : " + idtelc);
 
-							if (idtelc != null || idtelc == 0) {
-								lidtelc = idtelc.longValue() + 1;
+								if (idtelc != null || idtelc == 0) {
+									lidtelc = idtelc.longValue() + 1;
+								} else {
+									lidtelc = 1;
+								}
+								tlc = new TelecollecteDto();
+								tlc.setTlcNumtlcolcte(lidtelc);
+								tlc.setTlcNumtpe(current_hist.getHatCodtpe());
+								tlc.setTlcDatcrtfich(current_date);
+								tlc.setTlcNbrtrans(new Double(1));
+								tlc.setTlcGest("N");
+								tlc.setTlcDatremise(current_date);
+								tlc.setTlcNumremise(new Double(lidtelc));
+								// TODO: tlc.setTlcNumfich(new Double(0));
+								String tmpattern = "HH:mm";
+								SimpleDateFormat sftm = new SimpleDateFormat(tmpattern);
+								String stm = sftm.format(current_date);
+								tlc.setTlcHeuremise(stm);
+								tlc.setTlcCodbq(acqcode);
+								tlc.setTlcNumcmr(trsRequestDto.getMerchantid());
+								tlc.setTlcNumtpe(websiteid);
+
+								autorisationService.logMessage(file, tlc.toString());
+
+								tlc = telecollecteService.save(tlc);
+
+								autorisationService.logMessage(file,
+										"cpautorisation dateremise : " + tlc.getTlcDatremise());
+								autorisationService.logMessage(file, "inserting into telec ok");
 							} else {
-								lidtelc = 1;
+								lidtelc = n_tlc.getTlcNumtlcolcte();
+								double nbr_trs = n_tlc.getTlcNbrtrans();
+								autorisationService.logMessage(file, "n_tlc !=null lidtelc/nbr_trs " + lidtelc + "/" + nbr_trs);
+								nbr_trs = nbr_trs + 1;
+								n_tlc.setTlcNbrtrans(nbr_trs);
+								autorisationService.logMessage(file, "increment lidtelc/nbr_trs " + lidtelc + "/" + nbr_trs);
+								telecollecteService.save(n_tlc);
 							}
-							tlc = new TelecollecteDto();
-							tlc.setTlcNumtlcolcte(lidtelc);
-							tlc.setTlcNumtpe(current_hist.getHatCodtpe());
-							tlc.setTlcDatcrtfich(current_date);
-							tlc.setTlcNbrtrans(new Double(1));
-							tlc.setTlcGest("N");
-							tlc.setTlcDatremise(current_date);
-							tlc.setTlcNumremise(new Double(lidtelc));
-							// TODO: tlc.setTlcNumfich(new Double(0));
-							String tmpattern = "HH:mm";
-							SimpleDateFormat sftm = new SimpleDateFormat(tmpattern);
-							String stm = sftm.format(current_date);
-							tlc.setTlcHeuremise(stm);
-							tlc.setTlcCodbq(acqcode);
-							tlc.setTlcNumcmr(trsRequestDto.getMerchantid());
-							tlc.setTlcNumtpe(websiteid);
+						} catch (DataIntegrityViolationException ex) {
+							autorisationService.logMessage(file,"Conflit détecté lors de l'insertion de telecollecte, première tentative échouée." + Util.formatException(ex));
+							autorisationService.logMessage(file,"Pause de 2 secondes avant la deuxième tentative");
 
-							autorisationService.logMessage(file, tlc.toString());
+							try {
+								Thread.sleep(2000);
+							} catch (InterruptedException ie) {
+								Thread.currentThread().interrupt();
+								autorisationService.logMessage(file,"Thread interrompu pendant le délai d'attente" + ie);
+								return Util.getMsgErrorV2(folder, file, trsRequestDto, "cpautorisation 500 , operation failed please try again", null);
+							}
 
-							tlc = telecollecteService.save(tlc);
+							try {
+								idtelc = telecollecteService.getMAX_ID(trsRequestDto.getMerchantid());
+								if (idtelc != null) {
+									lidtelc = idtelc + 1;
+								} else {
+									lidtelc = 1;
+								}
+								autorisationService.logMessage(file,"Deuxième tentative lidtelc : " + lidtelc);
+								tlc.setTlcNumtlcolcte(lidtelc);
 
-							autorisationService.logMessage(file,
-									"cpautorisation dateremise : " + tlc.getTlcDatremise());
-							autorisationService.logMessage(file, "inserting into telec ok");
+								autorisationService.logMessage(file, tlc.toString());
 
+							} catch (DataIntegrityViolationException ex2) {
+								autorisationService.logMessage(file,"Conflit persistant lors de la deuxième tentative d'insertion de telecollecte." + Util.formatException(ex2));
+								exp_flag = 1;
+								autorisationService.logMessage(file, "inserting into telec ko..do nothing " + Util.formatException(ex2));
+								codrep = "96";
+								motif = "cpautorisation failed";							}
+						} catch (Exception e) {
+							exp_flag = 1;
+							autorisationService.logMessage(file, "inserting into telec ko..do nothing " + Util.formatException(e));
+							codrep = "96";
+							motif = "cpautorisation failed";
+						}
+						try {
 							// TODO: insert into transaction
 							TransactionDto trs = new TransactionDto();
 							trs.setTrsNumcmr(trsRequestDto.getMerchantid());
@@ -5185,42 +5267,12 @@ public class APIController {
 
 							autorisationService.logMessage(file, "inserting into Trs ok");
 							capture_status = "Y";
-
-						} catch (DataIntegrityViolationException ex) {
-							autorisationService.logMessage(file,"Conflit détecté lors de l'insertion de telecollecte, première tentative échouée." + Util.formatException(ex));
-							autorisationService.logMessage(file,"Pause de 2 secondes avant la deuxième tentative");
-
-							try {
-								Thread.sleep(2000);
-							} catch (InterruptedException ie) {
-								Thread.currentThread().interrupt();
-								autorisationService.logMessage(file,"Thread interrompu pendant le délai d'attente" + ie);
-								return Util.getMsgErrorV2(folder, file, trsRequestDto, "cpautorisation 500 , operation failed please try again", null);
-							}
-
-							try {
-								idtelc = telecollecteService.getMAX_ID(trsRequestDto.getMerchantid());
-								if (idtelc != null) {
-									lidtelc = idtelc + 1;
-								} else {
-									lidtelc = 1;
-								}
-								autorisationService.logMessage(file,"Deuxième tentative lidtelc : " + lidtelc);
-								tlc.setTlcNumtlcolcte(lidtelc);
-
-								autorisationService.logMessage(file, tlc.toString());
-
-							} catch (DataIntegrityViolationException ex2) {
-								autorisationService.logMessage(file,"Conflit persistant lors de la deuxième tentative d'insertion de telecollecte." + Util.formatException(ex2));
-								exp_flag = 1;
-								autorisationService.logMessage(file, "inserting into telec ko..do nothing " + Util.formatException(ex2));
-								codrep = "96";
-								motif = "cpautorisation failed";							}
 						} catch (Exception e) {
-							exp_flag = 1;
-							autorisationService.logMessage(file, "inserting into telec ko..do nothing " + Util.formatException(e));
-							codrep = "96";
-							motif = "cpautorisation failed";
+							autorisationService.logMessage(file,
+									"cpautorisation 500 Error during insert into transaction for given authnumber:[" + trsRequestDto.getAuthnumber()
+											+ "] and merchantid:[" + trsRequestDto.getMerchantid() + "]" + Util.formatException(e));
+
+							return Util.getMsgErrorV2(folder, file, trsRequestDto, "cpautorisation 500 , operation failed please try again", null);
 						}
 					}
 
@@ -5568,40 +5620,90 @@ public class APIController {
 							Integer idtelc = null;
 							TelecollecteDto tlc = null;
 							try {
-								// TODO: insert into telec
-								idtelc = telecollecteService.getMAX_ID(trsRequestDto.getMerchantid());
-								autorisationService.logMessage(file, "getMAX_ID idtelc : " + idtelc);
+								TelecollecteDto n_tlc = telecollecteService.getMAXTLC_N(trsRequestDto.getMerchantid());
+								if (n_tlc == null) {
+									// TODO: insert into telec
+									idtelc = telecollecteService.getMAX_ID(trsRequestDto.getMerchantid());
+									autorisationService.logMessage(file, "getMAX_ID idtelc : " + idtelc);
 
-								if (idtelc != null || idtelc == 0) {
-									lidtelc = idtelc.longValue() + 1;
+									if (idtelc != null || idtelc == 0) {
+										lidtelc = idtelc.longValue() + 1;
+									} else {
+										lidtelc = 1;
+									}
+									tlc = new TelecollecteDto();
+									tlc.setTlcNumtlcolcte(lidtelc);
+									tlc.setTlcNumtpe(current_hist.getHatCodtpe());
+									tlc.setTlcDatcrtfich(current_date);
+									tlc.setTlcNbrtrans(new Double(1));
+									tlc.setTlcGest("N");
+									tlc.setTlcDatremise(current_date);
+									tlc.setTlcNumremise(new Double(lidtelc));
+									// TODO: tlc.setTlc_numfich(new Double(0));
+									String tmpattern = "HH:mm";
+									SimpleDateFormat sftm = new SimpleDateFormat(tmpattern);
+									String stm = sftm.format(current_date);
+									tlc.setTlcHeuremise(stm);
+									tlc.setTlcCodbq(acqcode);
+									tlc.setTlcNumcmr(trsRequestDto.getMerchantid());
+									tlc.setTlcNumtpe(websiteid);
+
+									autorisationService.logMessage(file, tlc.toString());
+
+									tlc = telecollecteService.save(tlc);
+
+									autorisationService.logMessage(file,
+											"cpautorisation dateremise : " + tlc.getTlcDatremise());
+									autorisationService.logMessage(file, "inserting into telec ok");
 								} else {
-									lidtelc = 1;
+									lidtelc = n_tlc.getTlcNumtlcolcte();
+									double nbr_trs = n_tlc.getTlcNbrtrans();
+									autorisationService.logMessage(file, "n_tlc !=null lidtelc/nbr_trs " + lidtelc + "/" + nbr_trs);
+									nbr_trs = nbr_trs + 1;
+									n_tlc.setTlcNbrtrans(nbr_trs);
+									autorisationService.logMessage(file, "increment lidtelc/nbr_trs " + lidtelc + "/" + nbr_trs);
+									telecollecteService.save(n_tlc);
 								}
-								tlc = new TelecollecteDto();
-								tlc.setTlcNumtlcolcte(lidtelc);
-								tlc.setTlcNumtpe(current_hist.getHatCodtpe());
-								tlc.setTlcDatcrtfich(current_date);
-								tlc.setTlcNbrtrans(new Double(1));
-								tlc.setTlcGest("N");
-								tlc.setTlcDatremise(current_date);
-								tlc.setTlcNumremise(new Double(lidtelc));
-								// TODO: tlc.setTlc_numfich(new Double(0));
-								String tmpattern = "HH:mm";
-								SimpleDateFormat sftm = new SimpleDateFormat(tmpattern);
-								String stm = sftm.format(current_date);
-								tlc.setTlcHeuremise(stm);
-								tlc.setTlcCodbq(acqcode);
-								tlc.setTlcNumcmr(trsRequestDto.getMerchantid());
-								tlc.setTlcNumtpe(websiteid);
+							} catch (DataIntegrityViolationException ex) {
+								autorisationService.logMessage(file,"Conflit détecté lors de l'insertion de telecollecte, première tentative échouée." + Util.formatException(ex));
+								autorisationService.logMessage(file,"Pause de 2 secondes avant la deuxième tentative");
 
-								autorisationService.logMessage(file, tlc.toString());
+								try {
+									Thread.sleep(2000);
+								} catch (InterruptedException ie) {
+									Thread.currentThread().interrupt();
+									autorisationService.logMessage(file,"Thread interrompu pendant le délai d'attente" + ie);
+									autorisationService.logMessage(file,"Conflit persistant lors de la deuxième tentative d'insertion de telecollecte." + ie);
+									exp_flag = 1;
+									codrep = "96";
+									motif = "cpautorisation failed";
+								}
 
-								tlc = telecollecteService.save(tlc);
+								try {
+									idtelc = telecollecteService.getMAX_ID(trsRequestDto.getMerchantid());
+									if (idtelc != null) {
+										lidtelc = idtelc + 1;
+									} else {
+										lidtelc = 1;
+									}
+									autorisationService.logMessage(file,"Deuxième tentative lidtelc : " + lidtelc);
+									tlc.setTlcNumtlcolcte(lidtelc);
 
-								autorisationService.logMessage(file,
-										"cpautorisation dateremise : " + tlc.getTlcDatremise());
-								autorisationService.logMessage(file, "inserting into telec ok");
+									autorisationService.logMessage(file, tlc.toString());
 
+								} catch (DataIntegrityViolationException ex2) {
+									autorisationService.logMessage(file,"Conflit persistant lors de la deuxième tentative d'insertion de telecollecte." + Util.formatException(ex2));
+									exp_flag = 1;
+									autorisationService.logMessage(file, "inserting into telec ko..do nothing " + Util.formatException(ex2));
+									codrep = "96";
+									motif = "cpautorisation failed";							}
+							}  catch (Exception e) {
+								exp_flag = 1;
+								autorisationService.logMessage(file, "inserting into telec ko..do nothing " + Util.formatException(e));
+								codrep = "96";
+								motif = "cpautorisation failed";
+							}
+							try {
 								// TODO: insert into transaction
 								TransactionDto trs = new TransactionDto();
 								trs.setTrsNumcmr(trsRequestDto.getMerchantid());
@@ -5645,45 +5747,12 @@ public class APIController {
 
 								autorisationService.logMessage(file, "inserting into Trs ok");
 								capture_status = "Y";
+							} catch (Exception e) {
+								autorisationService.logMessage(file,
+										"cpautorisation 500 Error during insert into transaction for given authnumber:[" + trsRequestDto.getAuthnumber()
+												+ "] and merchantid:[" + trsRequestDto.getMerchantid() + "]" + Util.formatException(e));
 
-							} catch (DataIntegrityViolationException ex) {
-								autorisationService.logMessage(file,"Conflit détecté lors de l'insertion de telecollecte, première tentative échouée." + Util.formatException(ex));
-								autorisationService.logMessage(file,"Pause de 2 secondes avant la deuxième tentative");
-
-								try {
-									Thread.sleep(2000);
-								} catch (InterruptedException ie) {
-									Thread.currentThread().interrupt();
-									autorisationService.logMessage(file,"Thread interrompu pendant le délai d'attente" + ie);
-									autorisationService.logMessage(file,"Conflit persistant lors de la deuxième tentative d'insertion de telecollecte." + ie);
-									exp_flag = 1;
-									codrep = "96";
-									motif = "cpautorisation failed";
-								}
-
-								try {
-									idtelc = telecollecteService.getMAX_ID(trsRequestDto.getMerchantid());
-									if (idtelc != null) {
-										lidtelc = idtelc + 1;
-									} else {
-										lidtelc = 1;
-									}
-									autorisationService.logMessage(file,"Deuxième tentative lidtelc : " + lidtelc);
-									tlc.setTlcNumtlcolcte(lidtelc);
-
-									autorisationService.logMessage(file, tlc.toString());
-
-								} catch (DataIntegrityViolationException ex2) {
-									autorisationService.logMessage(file,"Conflit persistant lors de la deuxième tentative d'insertion de telecollecte." + Util.formatException(ex2));
-									exp_flag = 1;
-									autorisationService.logMessage(file, "inserting into telec ko..do nothing " + Util.formatException(ex2));
-									codrep = "96";
-									motif = "cpautorisation failed";							}
-							}  catch (Exception e) {
-								exp_flag = 1;
-								autorisationService.logMessage(file, "inserting into telec ko..do nothing " + Util.formatException(e));
-								codrep = "96";
-								motif = "cpautorisation failed";
+								return Util.getMsgErrorV2(folder, file, trsRequestDto, "cpautorisation 500 , operation failed please try again", null);
 							}
 
 							autorisationService.logMessage(file, "Insert into Histogate...");
@@ -5799,45 +5868,94 @@ public class APIController {
 							autorisationService.logMessage(file, "Getting authnumberComplent");
 
 							autorisationService.logMessage(file, "inserting complement into telec start ...");
+							lidtelc = 0;
+							idtelc = null;
+							tlc = null;
 							try {
-								lidtelc = 0;
-								idtelc = null;
-								tlc = null;
+								TelecollecteDto n_tlc = telecollecteService.getMAXTLC_N(trsRequestDto.getMerchantid());
+								if (n_tlc == null) {
+									// TODO: insert into telec
+									idtelc = telecollecteService.getMAX_ID(trsRequestDto.getMerchantid());
+									autorisationService.logMessage(file, "getMAX_ID idtelc : " + idtelc);
 
-								// TODO: insert into telec
-								idtelc = telecollecteService.getMAX_ID(trsRequestDto.getMerchantid());
-								autorisationService.logMessage(file, "getMAX_ID idtelc : " + idtelc);
+									if (idtelc != null) {
+										lidtelc = idtelc.longValue() + 1;
+									} else {
+										lidtelc = 1;
+									}
+									tlc = new TelecollecteDto();
+									tlc.setTlcNumtlcolcte(lidtelc);
 
-								if (idtelc != null) {
-									lidtelc = idtelc.longValue() + 1;
+									tlc.setTlcNumtpe(histComlement.getHatCodtpe());
+
+									tlc.setTlcDatcrtfich(current_date);
+									tlc.setTlcNbrtrans(new Double(1));
+									tlc.setTlcGest("N");
+
+									tlc.setTlcDatremise(current_date);
+									tlc.setTlcNumremise(new Double(lidtelc));
+									// TODO: tlc.setTlc_numfich(new Double(0));
+									String tmpattern = "HH:mm";
+									SimpleDateFormat sftm = new SimpleDateFormat(tmpattern);
+									String stm = sftm.format(current_date);
+									tlc.setTlcHeuremise(stm);
+
+									tlc.setTlcCodbq(acqcode);
+									tlc.setTlcNumcmr(trsRequestDto.getMerchantid());
+									tlc.setTlcNumtpe(websiteid);
+
+									autorisationService.logMessage(file, tlc.toString());
+
+									telecollecteService.save(tlc);
 								} else {
-									lidtelc = 1;
+									lidtelc = n_tlc.getTlcNumtlcolcte();
+									double nbr_trs = n_tlc.getTlcNbrtrans();
+									autorisationService.logMessage(file, "n_tlc !=null lidtelc/nbr_trs " + lidtelc + "/" + nbr_trs);
+									nbr_trs = nbr_trs + 1;
+									n_tlc.setTlcNbrtrans(nbr_trs);
+									autorisationService.logMessage(file, "increment lidtelc/nbr_trs " + lidtelc + "/" + nbr_trs);
+									telecollecteService.save(n_tlc);
 								}
-								tlc = new TelecollecteDto();
-								tlc.setTlcNumtlcolcte(lidtelc);
+							} catch (DataIntegrityViolationException ex) {
+								autorisationService.logMessage(file,"Conflit détecté lors de l'insertion de telecollecte, première tentative échouée." + Util.formatException(ex));
+								autorisationService.logMessage(file,"Pause de 2 secondes avant la deuxième tentative");
 
-								tlc.setTlcNumtpe(histComlement.getHatCodtpe());
+								try {
+									Thread.sleep(2000);
+								} catch (InterruptedException ie) {
+									Thread.currentThread().interrupt();
+									autorisationService.logMessage(file,"Thread interrompu pendant le délai d'attente" + ie);
+									autorisationService.logMessage(file,"Conflit persistant lors de la deuxième tentative d'insertion de telecollecte." + ie);
+									exp_flag = 1;
+									codrep = "96";
+									motif = "cpautorisation failed";
+								}
 
-								tlc.setTlcDatcrtfich(current_date);
-								tlc.setTlcNbrtrans(new Double(1));
-								tlc.setTlcGest("N");
+								try {
+									idtelc = telecollecteService.getMAX_ID(trsRequestDto.getMerchantid());
+									if (idtelc != null) {
+										lidtelc = idtelc + 1;
+									} else {
+										lidtelc = 1;
+									}
+									autorisationService.logMessage(file,"Deuxième tentative lidtelc : " + lidtelc);
+									tlc.setTlcNumtlcolcte(lidtelc);
 
-								tlc.setTlcDatremise(current_date);
-								tlc.setTlcNumremise(new Double(lidtelc));
-								// TODO: tlc.setTlc_numfich(new Double(0));
-								String tmpattern = "HH:mm";
-								SimpleDateFormat sftm = new SimpleDateFormat(tmpattern);
-								String stm = sftm.format(current_date);
-								tlc.setTlcHeuremise(stm);
+									autorisationService.logMessage(file, tlc.toString());
 
-								tlc.setTlcCodbq(acqcode);
-								tlc.setTlcNumcmr(trsRequestDto.getMerchantid());
-								tlc.setTlcNumtpe(websiteid);
-
-								autorisationService.logMessage(file, tlc.toString());
-
-								telecollecteService.save(tlc);
-
+								} catch (DataIntegrityViolationException ex2) {
+									autorisationService.logMessage(file,"Conflit persistant lors de la deuxième tentative d'insertion de telecollecte." + Util.formatException(ex2));
+									exp_flag = 1;
+									autorisationService.logMessage(file, "inserting into telec ko..do nothing " + Util.formatException(ex2));
+									codrep = "96";
+									motif = "cpautorisation failed";							}
+							} catch (Exception e) {
+								exp_flag = 1;
+								autorisationService.logMessage(file, "inserting into telec ko..do nothing " + Util.formatException(e));
+								codrep = "96";
+								motif = "cpautorisation pre-autorisation failed";
+							}
+							try {
 								// TODO: insert into transaction for complement (montantComplent)
 								TransactionDto trs = new TransactionDto();
 								trs.setTrsNumcmr(trsRequestDto.getMerchantid());
@@ -5879,47 +5997,13 @@ public class APIController {
 
 								autorisationService.logMessage(file, "inserting into telec ok");
 								capture_status = "Y";
-
-							} catch (DataIntegrityViolationException ex) {
-								autorisationService.logMessage(file,"Conflit détecté lors de l'insertion de telecollecte, première tentative échouée." + Util.formatException(ex));
-								autorisationService.logMessage(file,"Pause de 2 secondes avant la deuxième tentative");
-
-								try {
-									Thread.sleep(2000);
-								} catch (InterruptedException ie) {
-									Thread.currentThread().interrupt();
-									autorisationService.logMessage(file,"Thread interrompu pendant le délai d'attente" + ie);
-									autorisationService.logMessage(file,"Conflit persistant lors de la deuxième tentative d'insertion de telecollecte." + ie);
-									exp_flag = 1;
-									codrep = "96";
-									motif = "cpautorisation failed";
-								}
-
-								try {
-									idtelc = telecollecteService.getMAX_ID(trsRequestDto.getMerchantid());
-									if (idtelc != null) {
-										lidtelc = idtelc + 1;
-									} else {
-										lidtelc = 1;
-									}
-									autorisationService.logMessage(file,"Deuxième tentative lidtelc : " + lidtelc);
-									tlc.setTlcNumtlcolcte(lidtelc);
-
-									autorisationService.logMessage(file, tlc.toString());
-
-								} catch (DataIntegrityViolationException ex2) {
-									autorisationService.logMessage(file,"Conflit persistant lors de la deuxième tentative d'insertion de telecollecte." + Util.formatException(ex2));
-									exp_flag = 1;
-									autorisationService.logMessage(file, "inserting into telec ko..do nothing " + Util.formatException(ex2));
-									codrep = "96";
-									motif = "cpautorisation failed";							}
 							} catch (Exception e) {
-								exp_flag = 1;
-								autorisationService.logMessage(file, "inserting into telec ko..do nothing " + Util.formatException(e));
-								codrep = "96";
-								motif = "cpautorisation pre-autorisation failed";
-							}
+								autorisationService.logMessage(file,
+										"cpautorisation 500 Error during insert into transaction for given authnumber:[" + trsRequestDto.getAuthnumber()
+												+ "] and merchantid:[" + trsRequestDto.getMerchantid() + "]" + Util.formatException(e));
 
+								return Util.getMsgErrorV2(folder, file, trsRequestDto, "cpautorisation 500 , operation failed please try again", null);
+							}
 						} else {
 							codrep = tag20_resp;
 							autorisationService.logMessage(file, "transaction declined !!! ");
@@ -5927,7 +6011,6 @@ public class APIController {
 							motif = "cpautorisation pre-autorisation failed";
 						}
 					}
-
 				}
 				if (capture_status.equalsIgnoreCase("Y") && exp_flag == 1)
 					capture_status = "N";
