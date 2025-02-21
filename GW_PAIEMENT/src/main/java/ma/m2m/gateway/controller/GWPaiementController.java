@@ -48,6 +48,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -2207,18 +2208,47 @@ public class GWPaiementController {
 
 	@RequestMapping(value = "/napspayment/newpage", method = RequestMethod.GET)
 	@SuppressWarnings("all")
-	public String newpage() {
+	public String newpage(Model model, HttpSession session) {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "GW_NEWPAGE_" + randomWithSplittableRandom;
 		Util.creatFileTransaction(file);
 		autorisationService.logMessage(file, "*********** Start newpage () ************** ");
 		logger.info("*********** Start newpage () ************** ");
+		DemandePaiementDto demandeDto = new DemandePaiementDto();
+		demandeDto.setCommande("81375468795252");
+		demandeDto.setMontantStr("96.00");
 
-		autorisationService.logMessage(file, "return to newpage.html");
-		logger.info("return to newpage.html");
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d MMMM yyyy, HH:mm");
+		LocalDateTime now = LocalDateTime.now();
+		String formattedDate = now.format(formatter);
+		System.out.println("<p><strong>Date :</strong> " + formattedDate + "</p>");
+		model.addAttribute("demandeDto", demandeDto);
+		model.addAttribute("formattedDate", formattedDate);
 
 		autorisationService.logMessage(file, "*********** End newpage () ************** ");
 		logger.info("*********** End newpage () ************** ");
+
+		return "newpage";
+	}
+
+	@PostMapping("/processpaiement")
+	@SuppressWarnings("all")
+	public String processpaiement(Model model, @ModelAttribute("demandeDto") DemandePaiementDto dto, HttpServletRequest request,
+								  HttpServletResponse response, HttpSession session,
+								  BindingResult result) throws IOException {
+		System.out.println("processpaiement");
+		System.out.println("carte : " + dto.getDemPan());
+		try {
+			if(dto.getDemPan() != null && dto.getDemPan().length() != 16) {
+				response.sendRedirect(request.getContextPath() + "/napspayment/newpage");
+				session.setAttribute("error", "Le numéro de carte doit contenir exactement 16 chiffres.");
+				return null;
+			}
+		} catch(Exception e) {
+			response.sendRedirect(request.getContextPath() + "/napspayment/newpage");
+			session.setAttribute("error", "Vérifiez les informations de la carte.");
+			return null;
+		}
 
 		return "newpage";
 	}
