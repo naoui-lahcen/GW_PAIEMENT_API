@@ -21,28 +21,24 @@
     <style>
         body {
            width: 100vw;
-           /*background: #f5f5f5;*/
+           background-color: #F9FAFB;
         }
-
        .container {
            display: flex;
            width: 100%;
            height: 100%;
        }
-           /* LEFT PANEL */
        .left-panel {
-           background: #DF6537;
+           background: #FF5F00;
            color: white;
            padding: 20px;
-           /*text-align: center;*/
-           border-radius: 10px;
            flex: 1;
            top: -190px;
            height: 100%;
        }
-           /* BOUTON OUVERTURE (mobile) */
+
    .toggle-btn {
-       background: #DF6537;
+       background: #FF5F00;
        color: white;
        font-size: 24px;
        border: none;
@@ -78,7 +74,9 @@
             height: 18px;
         }
         .text-infos {
-            display: flex;align-items: center;gap: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         .text-content {
             display: flex;
@@ -109,10 +107,25 @@
         .textFooter {
             color: grey;
         }
-
+        .logo {
+            background: #FF5F00;
+        }
+        .logo img {
+          /*width:80px;*/
+          width: 84px;
+          height: 32px;
+          margin-right:0px;
+        }
+        .col-md-5 {
+            padding-right: 0;
+            padding-left: 0;
+       }
            /* PAYMENT PANEL */
            .payment-panel {
-           background: white; padding: 20px; border-radius: 10px;
+           background-color: #F9FAFB;
+           padding: 20px;
+           /*border-radius: 10px;*/
+           border-radius: 0;
            /*box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);*/
            flex: 2;
            min-height: calc(100vh - 80px);
@@ -123,23 +136,40 @@
            .form-group { margin-bottom: 15px; }
            .form-group label { display: block; margin-bottom: 5px; }
            .form-group input, select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 5px; }
-           .subscribe-btn { width: 100%; padding: 10px; background: #DF6537; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+           .subscribe-btn { width: 100%; padding: 10px; background: #FF5F00; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
 
            /* RESPONSIVE */
            @media (max-width: 768px) {
                .container {
-               flex-direction: column;
+                    flex-direction: column;
                }
                .left-panel {
-                width: 100%; position: fixed; top: -190px; left: 0; height: auto; z-index: 10;
-                border-bottom-left-radius: 10px;
-                 border-bottom-right-radius: 10px;
+                    width: 100%; position: fixed; top: -190px; left: 0;
+                    height: auto; z-index: 10;
                  }
                .toggle-btn {
-               display: block;top: 35px; z-index: 11;
+                   display: block;
+                   top: 64px;
+                   margin-right: -12px;
+                   z-index: 11;
                }
+               .logo {
+                    background-color: #F9FAFB;
+               }
+               .logo img {
+                    /*width: 55px;*/
+                    width: 63px;
+                    height: 24px;
+                    margin-left: 30px;
+                    position: relative;
+                    top: -10px;
+               }
+                .text-infos {
+                    display: block;
+                    margin: 0px;
+                }
                .payment-panel {
-                 top: 90px;
+                 top: 105px;
                  position: fixed;
                  margin-left: 0;
                  margin-right: 0;
@@ -201,6 +231,7 @@
                     text-align: left;
                     width: 100%;
                     font-size: 14px;
+                    margin: 8px;
                 }
 
               }
@@ -217,12 +248,15 @@
     <div class="row">
         <!-- Panneau Gauche (1/3) -->
         <div class="col-md-5">
+            <div class="logo">
+                <img th:src="@{/images/powered_by_naps.png}" alt="Image">
+            </div>
             <div class="left-panel" style="position: relative; top: 0px; transition: top 0.3s;">
                 <div class="flex-container">
                     <h2 style="margin-right: auto;"><strong>
                         <span th:text="${demandeDto.montantStr}"></span>
                     </strong> Dhs</h2>
-                    <h2 class="details-message">Afficher les détails</h2>
+                    <h8 class="details-message">Afficher les détails</h8>
                 </div>
                 <div class="details">
                     <p>
