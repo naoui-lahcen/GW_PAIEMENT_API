@@ -2216,7 +2216,7 @@ public class GWPaiementController {
 		logger.info("*********** Start newpage () ************** ");
 		DemandePaiementDto demandeDto = new DemandePaiementDto();
 		demandeDto.setCommande("81375468795252");
-		demandeDto.setMontantStr("96.00");
+		demandeDto.setMontantStr("250.00");
 
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d MMMM yyyy, HH:mm");
 		LocalDateTime now = LocalDateTime.now();

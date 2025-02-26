@@ -85,6 +85,14 @@
         .details-message {
             display: none;
         }
+        .amount {
+            margin-left: 38px;
+            color: #FFFFFF;
+            font-family: Satoshi;
+        }
+        .dhs {
+            font-size: 20px;
+        }
         .lock-label {
             white-space: nowrap;
             overflow: hidden;
@@ -110,11 +118,13 @@
         .logo {
             background: #FF5F00;
         }
-        .logo img {
-          /*width:80px;*/
-          width: 84px;
-          height: 32px;
-          margin-right:0px;
+        .logo .navg {
+          /*width: 84px;
+          height: 32px;*/
+          margin-left: 55px;
+        }
+        .logo .mbl {
+          display: none;
         }
         .col-md-5 {
             padding-right: 0;
@@ -146,24 +156,33 @@
                .left-panel {
                     width: 100%; position: fixed; top: -190px; left: 0;
                     height: auto; z-index: 10;
+                    /*height: 60px;*/
                  }
                .toggle-btn {
                    display: block;
-                   top: 64px;
+                   /*top: 64px;*/
+                   top: 58px;
                    margin-right: -12px;
                    z-index: 11;
+               }
+               .amount {
+                    margin-left: 0;
+                    margin-right: auto;
                }
                .logo {
                     background-color: #F9FAFB;
                }
-               .logo img {
-                    /*width: 55px;*/
-                    width: 63px;
-                    height: 24px;
+               .logo .mbl {
+                    display: block;
+                    /*width: 63px;
+                    height: 24px;*/
                     margin-left: 30px;
                     position: relative;
                     top: -10px;
                }
+               .logo .navg {
+                  display: none;
+                }
                 .text-infos {
                     display: block;
                     margin: 0px;
@@ -175,11 +194,12 @@
                  margin-right: 0;
                }
                .flex-container {
-                    margin-left: 0 !important;
                     display: flex;
                     justify-content: space-between;
-                    align-items: center;
-                    width: 100%;margin-left: 5%;
+                    /*align-items: center;*/
+                    width: 100%;
+                    margin-left: 5%;
+                    height: 20px;
                }
                .left-panel .details {
                     text-align: left;
@@ -200,6 +220,11 @@
                     display: block;
                     margin-right: 10%;
                     white-space: nowrap;
+                    color: #FFFFFF;
+                    font-family: Inter;
+                }
+                .dhs {
+                    font-size: 12px;
                 }
                  .payment-panel h2, h3, h4, h5 {
                     font-size: 16px;
@@ -249,13 +274,14 @@
         <!-- Panneau Gauche (1/3) -->
         <div class="col-md-5">
             <div class="logo">
-                <img th:src="@{/images/powered_by_naps.png}" alt="Image">
+                <img class="navg" th:src="@{/images/logo_naps_nav.png}" alt="Image">
+                <img class="mbl" th:src="@{/images/logo_naps_mb.png}" alt="Image">
             </div>
             <div class="left-panel" style="position: relative; top: 0px; transition: top 0.3s;">
                 <div class="flex-container">
-                    <h2 style="margin-right: auto;"><strong>
-                        <span th:text="${demandeDto.montantStr}"></span>
-                    </strong> Dhs</h2>
+                    <h2 class="amount">
+                        <strong><span th:text="${demandeDto.montantStr}"></span></strong>
+                        <span class ="dhs">Dhs</span></h2>
                     <h8 class="details-message">Afficher les détails</h8>
                 </div>
                 <div class="details">
