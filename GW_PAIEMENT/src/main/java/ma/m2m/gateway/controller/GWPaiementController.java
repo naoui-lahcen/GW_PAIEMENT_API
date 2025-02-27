@@ -1841,9 +1841,11 @@ public class GWPaiementController {
 				if (coderep.equals("00")) {
 					autorisationService.logMessage(file,
 							"coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
-					logger.info("coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
+					autorisationService.logMessage(file,"?data=" + data + "==&codecmr=" + merchantid);
 					if (dmd.getSuccessURL() != null) {
 						response.sendRedirect(dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" + merchantid);
+						autorisationService.logMessage(file, "Fin payer ()");
+						return  null;
 					} else {
 						ResponseDto responseDto = new ResponseDto();
 						responseDto.setLname(dmd.getNom());
@@ -1868,12 +1870,13 @@ public class GWPaiementController {
 				} else {
 					autorisationService.logMessage(file,
 							"coderep = " + coderep + " => Redirect to failURL : " + dmd.getFailURL());
-					logger.info("coderep = " + coderep + " => Redirect to failURL : " + dmd.getFailURL());
-
 					demandeDtoMsg.setMsgRefus(
 							"La transaction en cours n’a pas abouti (" + s_status + ")," + " votre compte ne sera pas débité, merci de réessayer.");
 					model.addAttribute("demandeDto", demandeDtoMsg);
 					page = "result";
+					response.sendRedirect(dmd.getFailURL());
+					autorisationService.logMessage(file, "Fin payer ()");
+					return  null;
 				}
 			} catch (Exception jsouterr) {
 				autorisationService.logMessage(file,

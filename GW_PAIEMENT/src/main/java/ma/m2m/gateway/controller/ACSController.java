@@ -584,10 +584,11 @@ public class ACSController {
 									
 									response.sendRedirect(dmd.getSuccessURL() + "?data=" + data_token
 											+ "==&codecmr=" + merchantid);
+									autorisationService.logMessage(file, "Fin processRequest ()");
 									return null; // TODO: Terminer le traitement ici après avoir envoyé la réponse
 								} catch (Exception e) {
 									autorisationService.logMessage(file,
-											"authorization 500 Error during saving CRADTOKEN]" + Util.formatException(e));
+											"authorization 500 Error during saving CRADTOKEN " + Util.formatException(e));
 									flag = true;
 								}
 								if (flag) {
@@ -1464,11 +1465,12 @@ public class ACSController {
 										// TODO: envoie de la reponse normal
 										autorisationService.logMessage(file,
 											"coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
-										logger.info(
-											"coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
+										autorisationService.logMessage(file,"?data=" + data + "==&codecmr=" + merchantid);
 
 										response.sendRedirect(
-											dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" + merchantid);										
+											dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" + merchantid);
+										autorisationService.logMessage(file, "Fin processRequest ()");
+										return  null;
 									} else {
 										ResponseDto responseDto = new ResponseDto();
 										responseDto.setLname(dmd.getNom());
@@ -1493,18 +1495,16 @@ public class ACSController {
 								} else {
 									autorisationService.logMessage(file,
 											"coderep = " + coderep + " => Redirect to failURL : " + dmd.getFailURL());
-									logger.info(
-											"coderep = " + coderep + " => Redirect to failURL : " + dmd.getFailURL());
-
 									demandeDtoMsg.setMsgRefus(
 											"La transaction en cours n’a pas abouti (Coderep "
 													+ coderep + ":" + s_status + "),"
 													+ " votre compte ne sera pas débité, merci de réessayer.");
 									model.addAttribute("demandeDto", demandeDtoMsg);
 									page = "result";
+									response.sendRedirect(dmd.getFailURL());
 									autorisationService.logMessage(file, "Fin processRequest ()");
-									logger.info("Fin processRequest ()");
-									return page;
+									return  null;
+									//return page;
 								}
 
 							} catch (Exception jsouterr) {
