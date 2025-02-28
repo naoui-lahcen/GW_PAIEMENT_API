@@ -29,7 +29,8 @@
            height: 100%;
        }
        .left-panel {
-           background: #FF5F00;
+           /*background: #FF5F00;*/
+           background: linear-gradient(#FF5F00, #ed6726, #a71313bd);
            color: white;
            padding: 20px;
            flex: 1;
@@ -93,6 +94,14 @@
         .dhs {
             font-size: 20px;
         }
+        #error-message {
+            border-color: #FDA29B;
+            color: #B42318;
+            background-color: #F9FAFB;
+            border-radius: 15px;
+            height: 56px;
+            font-family: Inter;
+        }
         .lock-label {
             white-space: nowrap;
             overflow: hidden;
@@ -119,8 +128,7 @@
             background: #FF5F00;
         }
         .logo .navg {
-          /*width: 84px;
-          height: 32px;*/
+          /*height: 32px;*/
           margin-left: 55px;
         }
         .logo .mbl {
@@ -134,7 +142,6 @@
            .payment-panel {
            background-color: #F9FAFB;
            padding: 20px;
-           /*border-radius: 10px;*/
            border-radius: 0;
            /*box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);*/
            flex: 2;
@@ -156,14 +163,14 @@
                .left-panel {
                     width: 100%; position: fixed; top: -190px; left: 0;
                     height: auto; z-index: 10;
-                    /*height: 60px;*/
+                    background: linear-gradient(#f86712, #f17132, #f11112bd);
                  }
                .toggle-btn {
                    display: block;
-                   /*top: 64px;*/
                    top: 58px;
                    margin-right: -12px;
                    z-index: 11;
+                   background: linear-gradient(#f66f1f, #f3621b);
                }
                .amount {
                     margin-left: 0;
@@ -174,7 +181,6 @@
                }
                .logo .mbl {
                     display: block;
-                    /*width: 63px;
                     height: 24px;*/
                     margin-left: 30px;
                     position: relative;
@@ -196,7 +202,6 @@
                .flex-container {
                     display: flex;
                     justify-content: space-between;
-                    /*align-items: center;*/
                     width: 100%;
                     margin-left: 5%;
                     height: 20px;
@@ -218,7 +223,6 @@
                  .details-message {
                     font-size: 14px;
                     display: block;
-                    /*margin-right: 10%;*/
                     margin-right: 13%;
                     white-space: nowrap;
                     color: #FFFFFF;
@@ -310,7 +314,7 @@
         <div class="col-md-7">
             <div class="payment-panel">
                 <!-- Affichage du message d'erreur -->
-                <div th:if="${session.error}" class="alert alert-danger">
+                <div th:if="${session.error}" class="alert alert-danger" id="error-message">
                     <p th:text="${session.error}"></p>
                 </div>
                 <div class="form-group text-infos">
@@ -327,14 +331,14 @@
                 </div>
                     <h5>Informations de votre carte</h5>
                 <div class="form-group">
-                    <input type="number" th:field="*{demPan}" required="required" placeholder="1234 1234 1234 1234">
+                    <input type="number" th:field="*{demPan}" required="required" placeholder="1234 1234 1234 1234" id="num">
                 </div>
                 <div class="form-group d-flex gap-2">
                     <div class="mr-2" style="width: 50%">
                         <input type="text" placeholder="YY / MM">
                     </div>
                     <div style="width: 50%">
-                        <input type="number" th:field="*{demCvv}" required="required" placeholder="CVV">
+                        <input type="number" th:field="*{demCvv}" required="required" placeholder="CVV" id="cvv">
                     </div>
                 </div>
                     <div class="form-group d-flex align-items-center">
@@ -400,7 +404,48 @@
             }
         }
     }
+    // Cacher le message d'erreur dès que l'utilisateur commence à saisir dans un champ
+    document.querySelectorAll('input').forEach(input => {
+        input.addEventListener('input', () => {
+            const errorMessage = document.getElementById('error-message');
+            if (errorMessage) {
+                errorMessage.style.display = 'none';
+            }
+        });
+    });
+    // Pour les cases à cocher (checkbox), utilisez "change" au lieu de "input" pour détecter l'état de sélection
+    document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+            const errorMessage = document.getElementById('error-message');
+            if (errorMessage) {
+                errorMessage.style.display = 'none';
+            }
+        });
+    });
 
+    // Pour les éléments select (dropdown), vous pouvez aussi écouter les changements de sélection
+    document.querySelectorAll('select').forEach(select => {
+        select.addEventListener('change', () => {
+            const errorMessage = document.getElementById('error-message');
+            if (errorMessage) {
+                errorMessage.style.display = 'none';
+            }
+        });
+    });
+     validateInputField('cvv', 3);
+     validateInputField('num', 19);
+
+     // Limit input field length and allow only numeric values
+     function validateInputField(elementId, maxLength) {
+        const element = document.getElementById(elementId);
+        if (element) {
+           element.addEventListener('input', function () {
+              this.value = this.value.slice(0, maxLength).replace(/[^0-9]/g, "");
+           });
+        } else {
+           console.error(`Element with ID '${elementId}' not found for validation.`);
+        }
+     }
 
 </script>
 

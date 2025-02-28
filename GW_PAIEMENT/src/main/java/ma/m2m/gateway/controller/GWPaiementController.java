@@ -2244,7 +2244,7 @@ public class GWPaiementController {
 		try {
 			if(dto.getDemPan() != null && dto.getDemPan().length() != 16) {
 				response.sendRedirect(request.getContextPath() + "/napspayment/newpage");
-				session.setAttribute("error", "Le numéro de carte doit contenir exactement 16 chiffres.");
+				session.setAttribute("error", "Le numéro de carte incorrect. veuillez réessayer.");
 				return null;
 			}
 		} catch(Exception e) {
