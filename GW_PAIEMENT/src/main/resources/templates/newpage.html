@@ -29,8 +29,8 @@
            height: 100%;
        }
        .left-panel {
-           /*background: #FF5F00;*/
-           background: linear-gradient(#FF5F00, #ed6726, #a71313bd);
+           /*background: linear-gradient(#FF5F00, #ed6726, #a71313bd);*/
+           background: linear-gradient(#FF5F00, #ed6726, #f7400fbd);
            color: white;
            padding: 20px;
            flex: 1;
@@ -61,7 +61,7 @@
             align-items: flex-start;
             padding: 20px;
             text-align: left;
-            margin-top: 30%;
+            margin-top: 25%;
             margin-left: 5%;
             margin-right: 5%;
         }
@@ -86,7 +86,7 @@
         .details-message {
             display: none;
         }
-        .amount {
+        .mont {
             margin-left: 38px;
             color: #FFFFFF;
             font-family: Satoshi;
@@ -107,6 +107,11 @@
             overflow: hidden;
             text-overflow: ellipsis;
             justify-content: center;
+            font-family: Inter;
+            font-weight: 400;
+            /*font-size: 14px;*/
+            line-height: 20px;
+            color: #677489;
         }
         .footer {
             text-align: center;
@@ -116,6 +121,10 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            font-family: Inter;
+            font-weight: 400;
+            line-height: 18px;
+            color: #677489;
         }
         .separator {
             margin: 0 5px;
@@ -134,6 +143,14 @@
         .logo .mbl {
           display: none;
         }
+        .text-infos .frame {
+            border-radius: 10px;
+            padding: 5px;
+            border-style: solid;
+            border-color: #EBEDF1;
+            width: 48px;
+            height: 48px;
+       }
         .numcarte {
             display: flex;
             align-items: center;
@@ -153,6 +170,66 @@
            margin-left: 13%;
            margin-right: 13%;
            }
+           .total-box {
+                color: white;
+                border-radius: 10px;
+                margin-left: 38px;
+                font-family: Arial, sans-serif;
+                width: fit-content;
+            }
+
+            .total-box .label {
+                font-size: 14px;
+                opacity: 0.8;
+            }
+
+            .total-box .amount {
+                font-size: 32px;
+                font-weight: bold;
+            }
+
+            .total-box .currency {
+                font-size: 14px;
+                margin-left: 5px;
+            }
+
+            .details {
+                font-family: Arial, sans-serif;
+            }
+
+        .details h2 {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+
+        .transaction-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .transaction-item i {
+            font-size: 18px;
+            margin-right: 10px;
+            opacity: 0.8;
+        }
+
+        .transaction-item label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-right: 10px;
+            margin: 0;
+        }
+
+        .transaction-item .value {
+            background-color: #f2620d;
+            padding: 0 5px;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
 
            .form-group { margin-bottom: 15px; }
            .form-group label { display: block; margin-bottom: 5px; }
@@ -176,7 +253,7 @@
                    z-index: 11;
                    background: linear-gradient(#f66f1f, #f3621b);
                }
-               .amount {
+               .mont {
                     margin-left: 0;
                     margin-right: auto;
                }
@@ -189,6 +266,7 @@
                     margin-left: 30px;
                     position: relative;
                     top: -10px;
+                    margin-left: 36px;
                }
                .logo .navg {
                   display: none;
@@ -232,8 +310,25 @@
                     color: #FFFFFF;
                     font-family: Inter;
                 }
+                .details h2 {
+                    margin-bottom: 20px;
+                }
                 .dhs {
                     font-size: 12px;
+                }
+                .total-box {
+                    margin-left: 0;
+                }
+                .total-box .label {
+                    display: none;
+                }
+                .total-box .amount {
+                    font-size: 16px;
+                    font-weight: bold;
+                }
+                .total-box .currency {
+                    font-size: 12px;
+                    margin-left: 5px;
                 }
                  .payment-panel h2, h3, h4, h5 {
                     font-size: 16px;
@@ -243,6 +338,9 @@
                     overflow: hidden;
                     text-overflow: ellipsis;
                     font-size: 14px;
+                }
+                 .transaction-item {
+                    margin-bottom: 13px;
                 }
                 .form-group .enter {
                     font-size: 14px;
@@ -283,38 +381,57 @@
         <!-- Panneau Gauche (1/3) -->
         <div class="col-md-5">
             <div class="logo">
-                <img class="navg" th:src="@{/images/logo_naps_nav.png}" alt="Image">
-                <img class="mbl" th:src="@{/images/logo_naps_mb.png}" alt="Image">
+                <img class="navg" th:src="@{/images/logo_naps_nav.svg}" alt="Image">
+                <img class="mbl" th:src="@{/images/logo_naps_mb.svg}" alt="Image">
             </div>
             <div class="left-panel" style="position: relative; top: 0px; transition: top 0.3s;">
                 <div class="flex-container">
-                    <h2 class="amount">
-                        <strong><span th:text="${demandeDto.montantStr}"></span></strong>
-                        <span class ="dhs">Dhs</span></h2>
-                    <h8 class="details-message">Afficher les détails</h8>
-                </div>
-                <div class="details">
-                    <p>
-                        <i class="fas fa-calendar-alt" style="margin-right: 5px;"></i>
-                        <strong>Date :</strong> <span th:text="${formattedDate}"></span>
-                    </p>
-                    <p>
-                        <i class="fas fa-shopping-bag" style="margin-right: 5px;"></i>
-                        <strong>Commerçant :</strong> Pathé Californie Casablanca
-                    </p>
-                    <p>
-                        <i class="fas fa-globe" style="margin-right: 5px;"></i>
-                        <strong>Site web :</strong> www.pathe.ma
-                    </p>
-                    <p>
-                        <i class="fas fa-shopping-cart" style="margin-right: 5px;"></i>
-                        <strong>Commande :</strong> TEST123456789
-                    </p>
-                </div>
-            </div>
+                    <!--<h2 class="mont">
+                       <strong><span th:text="${demandeDto.montantStr}"></span></strong>
+                       <span class ="dhs">Dhs</span></h2>-->
+
+                   <div class="total-box">
+                       <div class="label">Total</div>
+                       <div>
+                           <span class="amount" th:text="${demandeDto.montantStr}"></span>
+                           <span class="currency">Dhs</span>
+                       </div>
+                   </div>
+                    <p class="details-message">Afficher les détails</p>
+               </div>
+               <div class="details">
+
+                   <h2>Détails de votre transaction</h2>
+
+                   <div class="transaction-item">
+                       <i class="fas fa-calendar-alt" style="margin-right: 5px;"></i>
+                       <label>Date</label>
+                       <span class="value" th:text="${formattedDate}"></span>
+                   </div>
+
+                   <div class="transaction-item">
+                       <i class="fas fa-shopping-bag" style="margin-right: 5px;"></i>
+                       <label>Commerçant</label>
+                       <span class="value">Pathé Californie Casablanca</span>
+                   </div>
+
+                   <div class="transaction-item">
+                       <i class="fas fa-globe" style="margin-right: 5px;"></i>
+                       <label>Site web</label>
+                       <span class="value">www.pathe.ma</span>
+                   </div>
+
+                   <div class="transaction-item">
+                       <i class="fas fa-shopping-cart" style="margin-right: 5px;"></i>
+                       <label>Commande</label>
+                       <span class="value">0292DJ92_9238_S201</span>
+                   </div>
+               </div>
+           </div>
+
         </div>
 
-        <!-- Panneau de Paiement (2/3) -->
+       <!-- Panneau de Paiement (2/3) -->
         <div class="col-md-7">
             <div class="payment-panel">
                 <!-- Affichage du message d'erreur -->
@@ -322,7 +439,8 @@
                     <p th:text="${session.error}"></p>
                 </div>
                 <div class="form-group text-infos">
-                    <i class="fas fa-credit-card"></i>
+                    <!-- <i class="fas fa-credit-card"></i> -->
+                    <img class="frame" th:src="@{/images/frame.svg}" alt="frame">
                     <div class="text-content">
                         <h4>Informations de paiement</h4>
                         <p class="enter">Entrez vos informations de paiement pour valider votre achat</p>
@@ -357,22 +475,23 @@
                         </button>
                     </div>
                     <div class="form-group d-flex align-items-center lock-label">
-                        <i class="fas fa-lock mr-2"></i>
-                        <label for="terms" class="mb-0">Toutes vos données personnelles sont chiffrées et sécurisées</label>
+                        <!--<i class="fas fa-lock mr-2"></i> -->
+                        <img class="lock" th:src="@{/images/lock.svg}" alt="lock">
+                        <label for="terms" class="mb-0 dnprchsec">Toutes vos données personnelles sont chiffrées et sécurisées</label>
                     </div>
                 </form>
 
                 <div class="footer">
                     <div class="footer-content">
                         <div class="d-none d-md-inline">
-                            <span class="textFooter">Powered by <img class="navg" th:src="@{/images/powered_naps.png}" alt="Image"></span>
+                            <span class="textFooter">Powered by <img class="navg" th:src="@{/images/powered_naps.svg}" alt="Image"></span>
                             <span class="separator">|</span>
                             <span class="textFooter">Politique de confidentialité</span>
                             <span class="separator"><i class="fas fa-circle" style="font-size: xx-small;"></i></span>
                             <span class="textFooter">Conditions générales</span>
                         </div>
                         <div class="d-inline d-md-none">
-                            <span>Powered by <img class="navg" th:src="@{/images/powered_naps.png}" alt="Image"></span><br>
+                            <span>Powered by <img class="navg" th:src="@{/images/powered_naps.svg}" alt="Image"></span><br>
                             <div class="policy-links">
                                 <span>Politique de confidentialité</span>
                                 <span class="separator"><i class="fas fa-circle" style="font-size: xx-small;"></i></span>
