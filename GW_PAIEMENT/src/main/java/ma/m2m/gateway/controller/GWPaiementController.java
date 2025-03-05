@@ -2218,13 +2218,13 @@ public class GWPaiementController {
 		autorisationService.logMessage(file, "*********** Start newpage () ************** ");
 		logger.info("*********** Start newpage () ************** ");
 		DemandePaiementDto demandeDto = new DemandePaiementDto();
-		demandeDto.setCommande("81375468795252");
+		demandeDto.setCommande("0292DJ92_9238_S201");
 		demandeDto.setMontantStr("250.00");
 
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d MMMM yyyy, HH:mm");
 		LocalDateTime now = LocalDateTime.now();
 		String formattedDate = now.format(formatter);
-		System.out.println("<p><strong>Date :</strong> " + formattedDate + "</p>");
+		System.out.println("Date : " + formattedDate);
 		model.addAttribute("demandeDto", demandeDto);
 		model.addAttribute("formattedDate", formattedDate);
 

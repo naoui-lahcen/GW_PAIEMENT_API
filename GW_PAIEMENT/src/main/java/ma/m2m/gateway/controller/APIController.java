@@ -424,7 +424,7 @@ public class APIController {
 							+ Util.formatException(err1));
 
 			return Util.getMsgError(folder, file, linkRequestDto,
-					"The current transaction was not successful, your account will not be debited, please try again .",
+					"The current transaction was not successful, your account will not be debited, please try again.",
 					null);
 		}
 
@@ -448,7 +448,7 @@ public class APIController {
 					"authorization 500 ControlRiskCmr misconfigured in DB or not existing merchantid:["
 							+ dmdSaved.getComid() + Util.formatException(e));
 			return Util.getMsgError(folder, file, linkRequestDto,
-					"La transaction en cours n’a pas abouti, votre compte ne sera pas débité.", null);
+					"The current transaction was not successful, your account will not be debited, please try again.", null);
 		}
 		autorisationService.logMessage(file, "Fin controlleRisk");
 		String dtpattern, sdt, tmpattern, stm = "";
@@ -473,7 +473,7 @@ public class APIController {
 					"authorization 500 Error during  date formatting for given orderid:[" + linkRequestDto.getOrderid()
 							+ "] and merchantid:[" + linkRequestDto.getMerchantid() + "]" + Util.formatException(err2));
 
-			return Util.getMsgError(folder, file, linkRequestDto, "authorization 500 Error during  date formatting", null);
+			return Util.getMsgError(folder, file, linkRequestDto, "The current transaction was not successful, your account will not be debited, please try again.", null);
 		}
 
 		JSONObject jso = new JSONObject();
@@ -534,7 +534,7 @@ public class APIController {
 			demandePaiementService.save(dmdSaved);
 			autorisationService.logMessage(file,
 					"demandePaiement after update MPI_KO idDemande null : " + dmdSaved.toString());
-			return Util.getMsgError(folder, file, linkRequestDto, "AUTO INVALIDE DEMANDE MPI_KO", "96");
+			return Util.getMsgError(folder, file, linkRequestDto, "The current transaction was not successful, your account will not be debited, please try again.", "96");
 		}
 
 		dmd = demandePaiementService.findByIdDemande(Integer.parseInt(idDemande));
@@ -545,7 +545,7 @@ public class APIController {
 			autorisationService.logMessage(file,
 					"demandePaiement not found !!!! demandePaiement = null  / received idDemande from MPI => "
 							+ idDemande);
-			return Util.getMsgError(folder, file, linkRequestDto, "AUTO INVALIDE DEMANDE NOT FOUND", "96");
+			return Util.getMsgError(folder, file, linkRequestDto, "The current transaction was not successful, your account will not be debited, please try again.", "96");
 		}
 
 		if (reponseMPI.equals("") || reponseMPI == null) {
@@ -654,7 +654,7 @@ public class APIController {
 							"authorization 500 Error during switch tlv buildup for given orderid:[" + linkRequestDto.getOrderid()
 									+ "] and merchantid:[" + linkRequestDto.getMerchantid() + "]" + Util.formatException(err4));
 
-					return Util.getMsgError(folder, file, linkRequestDto, "authorization 500 Error during switch tlv buildup",
+					return Util.getMsgError(folder, file, linkRequestDto, "The current transaction was not successful, your account will not be debited, please try again.",
 							"96");
 				}
 
