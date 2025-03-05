@@ -4449,7 +4449,6 @@ public class APIController {
 								"checkCardToken exist => generate new tokencard : " + tokencard);
 						checkCardToken = cardtokenService.findByIdMerchantAndToken(linkRequestDto.getMerchantid(), tokencard);
 					}
-					logger.info("tokencard : " + tokencard);
 					autorisationService.logMessage(file, "tokencard : " + tokencard);
 
 					cardtokenDto.setToken(tokencard);

@@ -638,7 +638,7 @@ public class AutorisationServiceImpl implements AutorisationService {
 		DemandePaiementDto demandeDtoMsg = new DemandePaiementDto();
 		demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 		model.addAttribute("demandeDto", demandeDtoMsg);
-
+		dmd.setMsgRefus(demandeDtoMsg.getMsgRefus() == null ? "" : demandeDtoMsg.getMsgRefus());
 		return page;
 	}
 

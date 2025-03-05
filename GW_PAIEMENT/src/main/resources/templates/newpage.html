@@ -2,22 +2,23 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
     <title>GATEWAY NAPS</title>
 
     <!-- CSS -->
-    <link rel="stylesheet"
+    <link crossorigin="anonymous"
           href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
           integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
-          crossorigin="anonymous">
-    <link rel="stylesheet"
-          href="https://use.fontawesome.com/releases/v5.0.8/css/all.css">
+          rel="stylesheet">
+    <link href="https://use.fontawesome.com/releases/v5.0.8/css/all.css"
+          rel="stylesheet">
 
     <!-- JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js" defer></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script crossorigin="anonymous"
+            defer
             integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
-            crossorigin="anonymous" defer></script>
+            src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
     <style>
         body {
            width: 100vw;
@@ -30,7 +31,8 @@
        }
        .left-panel {
            /*background: linear-gradient(#FF5F00, #ed6726, #a71313bd);*/
-           background: linear-gradient(#FF5F00, #ed6726, #f7400fbd);
+           /*background: linear-gradient(#FF5F00, #ed6726, #f7400fbd);*/
+           background: linear-gradient(#FF5F00, #f05e18, #D94905);
            color: white;
            padding: 20px;
            flex: 1;
@@ -38,20 +40,20 @@
            height: 100%;
        }
 
-   .toggle-btn {
-       background: #FF5F00;
-       color: white;
-       font-size: 24px;
-       border: none;
-       border-radius: 50%;
-       width: 40px;
-       height: 40px;
-       position: fixed;
-       top: 20px;
-       right: 20px;
-       cursor: pointer;
-       z-index: 5;
-   }
+       .toggle-btn {
+           background: #FF5F00;
+           color: white;
+           font-size: 24px;
+           border: none;
+           border-radius: 50%;
+           width: 40px;
+           height: 40px;
+           position: fixed;
+           top: 20px;
+           right: 20px;
+           cursor: pointer;
+           z-index: 5;
+       }
       .toggle-btn {
          display: none;
       }
@@ -95,12 +97,13 @@
             font-size: 20px;
         }
         #error-message {
-            border-color: #FDA29B;
-            color: #B42318;
-            background-color: #F9FAFB;
-            border-radius: 15px;
-            height: 56px;
             font-family: Inter;
+            font-weight: 600;
+            line-height: 20px;
+            color: #D92D20;
+            background-color: #F9FAFB;
+            height: max-content;
+            border-radius: 15px;
         }
         .lock-label {
             /*white-space: nowrap;*/
@@ -115,7 +118,8 @@
         }
         .footer {
             text-align: center;
-            margin-top: 135px;
+            /*margin-top: 135px;*/
+            margin-top: 145px;
         }
         .footer-content {
             display: flex;
@@ -221,9 +225,9 @@
             margin-right: 10px;
             margin: 0;
         }
-
         .transaction-item .value {
-            background-color: #f2620d;
+            /*background-color: #f2620d;*/
+            background-color: #e85c09;
             padding: 0 5px;
             border-radius: 5px;
             font-size: 14px;
@@ -273,6 +277,10 @@
                 .text-infos {
                     display: block;
                     margin: 0px;
+                }
+                #error-message {
+                    font-size: 14px;
+                    padding: 5px 5px;
                 }
                .payment-panel {
                  top: 105px;
@@ -351,7 +359,8 @@
                 }
                 .footer {
                     text-align: center;
-                    margin-top: 10px;
+                    /*margin-top: 10px;*/
+                    margin-top: 30px;
                 }
                 .footer-content {
                     flex-direction: column;
@@ -380,8 +389,8 @@
         <!-- Panneau Gauche (1/3) -->
         <div class="col-md-5">
             <div class="logo">
-                <img class="navg" th:src="@{/images/logo_naps_nav.svg}" alt="Image">
-                <img class="mbl" th:src="@{/images/logo_naps_mb.svg}" alt="Image">
+                <img alt="Image" class="navg" th:src="@{/images/logo_naps_nav.svg}">
+                <img alt="Image" class="mbl" th:src="@{/images/logo_naps_mb.svg}">
             </div>
             <div class="left-panel" style="position: relative; top: 0px; transition: top 0.3s;">
                 <div class="flex-container">
@@ -389,84 +398,91 @@
                        <strong><span th:text="${demandeDto.montantStr}"></span></strong>
                        <span class ="dhs">Dhs</span></h2>-->
 
-                   <div class="total-box">
-                       <div class="label">Total</div>
-                       <div>
-                           <span class="amount" th:text="${demandeDto.montantStr}"></span>
-                           <span class="currency">Dhs</span>
-                       </div>
-                   </div>
+                    <div class="total-box">
+                        <div class="label">Total</div>
+                        <div>
+                            <span class="amount" th:text="${demandeDto.montantStr}"></span>
+                            <span class="currency">Dhs</span>
+                        </div>
+                    </div>
                     <p class="details-message">Afficher les détails</p>
-               </div>
-               <div class="details">
+                </div>
+                <div class="details">
 
-                   <h2>Détails de votre transaction</h2>
+                    <h2>Détails de votre transaction</h2>
 
-                   <div class="transaction-item">
-                       <i class="fas fa-calendar-alt" style="margin-right: 5px;"></i>
-                       <label>Date</label>
-                       <span class="value" th:text="${formattedDate}"></span>
-                   </div>
+                    <div class="transaction-item">
+                        <i class="fas fa-calendar-alt" style="margin-right: 5px;"></i>
+                        <label>Date</label>
+                        <span class="value" th:text="${formattedDate}"></span>
+                    </div>
 
-                   <div class="transaction-item">
-                       <i class="fas fa-shopping-bag" style="margin-right: 5px;"></i>
-                       <label>Commerçant</label>
-                       <span class="value">Pathé Californie Casablanca</span>
-                   </div>
+                    <div class="transaction-item">
+                        <i class="fas fa-shopping-bag" style="margin-right: 5px;"></i>
+                        <label>Commerçant</label>
+                        <span class="value">Pathé Californie Casablanca</span>
+                    </div>
 
-                   <div class="transaction-item">
-                       <i class="fas fa-globe" style="margin-right: 5px;"></i>
-                       <label>Site web</label>
-                       <span class="value">www.pathe.ma</span>
-                   </div>
+                    <div class="transaction-item">
+                        <i class="fas fa-globe" style="margin-right: 5px;"></i>
+                        <label>Site web</label>
+                        <span class="value">www.pathe.ma</span>
+                    </div>
 
-                   <div class="transaction-item">
-                       <i class="fas fa-shopping-cart" style="margin-right: 5px;"></i>
-                       <label>Commande</label>
-                       <span class="value">0292DJ92_9238_S201</span>
-                   </div>
-               </div>
-           </div>
+                    <div class="transaction-item">
+                        <i class="fas fa-shopping-cart" style="margin-right: 5px;"></i>
+                        <label>Commande</label>
+                        <span class="value">0292DJ92_9238_S201</span>
+                    </div>
+                </div>
+            </div>
 
         </div>
 
-       <!-- Panneau de Paiement (2/3) -->
+        <!-- Panneau de Paiement (2/3) -->
         <div class="col-md-7">
             <div class="payment-panel">
                 <!-- Affichage du message d'erreur -->
-                <div th:if="${session.error}" class="alert alert-danger" id="error-message">
+                <div class="alert alert-danger" id="error-message" th:if="${session.error}">
                     <p th:text="${session.error}"></p>
                 </div>
                 <div class="form-group text-infos">
                     <!-- <i class="fas fa-credit-card"></i> -->
-                    <img class="frame" th:src="@{/images/frame.svg}" alt="frame">
+                    <img alt="frame" class="frame" th:src="@{/images/frame.svg}">
                     <div class="text-content">
                         <h4>Informations de paiement</h4>
                         <p class="enter">Entrez vos informations de paiement pour valider votre achat</p>
                     </div>
                 </div>
-                <form th:action="@{/processpaiement}" th:object="${demandeDto}" method="post">
-                <div class="form-group">
-                    <label>Nom sur la carte</label>
-                    <input type="text" required="required" placeholder="Entrez le nom du porteur de la carte">
-                </div>
+                <form method="post" th:action="@{/processpayment}" th:object="${demandeDto}">
+                    <div class="form-group">
+                        <label>Nom sur la carte</label>
+                        <input placeholder="Entrez le nom du porteur de la carte" required="required" type="text">
+                    </div>
                     <h5>Informations de votre carte</h5>
-                <div class="form-group numcarte">
-                    <input type="number" th:field="*{demPan}" required="required" placeholder="1234 1234 1234 1234" id="num" oninput="checkCardType()">
-                    <img id="card-logo" th:src="@{/images/powered_by_naps.png}" alt="Image" style="width: 30px; margin-left: 10px; display: none;" >
-                </div>
-                <div class="form-group d-flex gap-2">
-                    <div class="mr-2" style="width: 50%">
-                        <input type="text" placeholder="YY / MM">
+                    <div class="form-group numcarte">
+                        <input id="num" oninput="checkCardType()" placeholder="1234 1234 1234 1234" required="required"
+                               th:field="*{demPan}" type="number">
+                        <img alt="Image" id="card-logo" style="width: 30px; margin-left: 10px; display: none;"
+                             th:src="@{/images/powered_by_naps.png}">
                     </div>
-                    <div style="width: 50%">
-                        <input type="number" th:field="*{demCvv}" required="required" placeholder="CVV" id="cvv">
+                    <div class="form-group d-flex gap-2">
+                        <div class="mr-2" style="width: 50%">
+                            <input placeholder="YY / MM" th:field="*{annee}" type="text">
+                        </div>
+                        <div style="width: 50%">
+                            <input id="cvv" placeholder="CVV" required="required" th:field="*{demCvv}" type="number">
+                        </div>
                     </div>
-                </div>
                     <div class="form-group d-flex align-items-center">
-                        <input type="checkbox" id="terms" required="required" class="mr-2">
-                        <label for="terms" class="mb-0">J'ai lu et j'accepte les conditions d'utilisation.</label>
+                        <input class="mr-2" id="terms" required="required" type="checkbox">
+                        <label class="mb-0" for="terms">J'ai lu et j'accepte les conditions d'utilisation.</label>
                     </div>
+                    <input type="hidden" th:field="*{commande}" class="form-control">
+                    <input type="hidden" th:field="*{comid}" class="form-control">
+                    <input type="hidden" th:field="*{galid}" class="form-control">
+                    <input type="hidden" th:field="*{montant}" class="form-control">
+                    <input type="hidden" th:field="*{iddemande}" class="form-control">
 
                     <div class="form-group">
                         <button class="subscribe-btn">
@@ -475,25 +491,30 @@
                     </div>
                     <div class="form-group d-flex align-items-center lock-label">
                         <!--<i class="fas fa-lock mr-2"></i> -->
-                        <img class="lock" th:src="@{/images/lock.svg}" alt="lock">
-                        <label for="terms" class="mb-0 dnprchsec">Toutes vos données personnelles sont chiffrées et sécurisées</label>
+                        <img alt="lock" class="lock" th:src="@{/images/lock.svg}">
+                        <label class="mb-0 dnprchsec" for="terms">Toutes vos données personnelles sont chiffrées et
+                            sécurisées</label>
                     </div>
                 </form>
 
                 <div class="footer">
                     <div class="footer-content">
                         <div class="d-none d-md-inline">
-                            <span class="textFooter">Powered by <img class="navg" th:src="@{/images/powered_naps.svg}" alt="Image"></span>
+                            <span class="textFooter">Powered by <img alt="Image"
+                                                                     class="powered"
+                                                                     th:src="@{/images/powered_naps.svg}"></span>
                             <span class="separator">|</span>
                             <span class="textFooter">Politique de confidentialité</span>
                             <span class="separator"><i class="fas fa-circle" style="font-size: xx-small;"></i></span>
                             <span class="textFooter">Conditions générales</span>
                         </div>
                         <div class="d-inline d-md-none">
-                            <span>Powered by <img class="navg" th:src="@{/images/powered_naps.svg}" alt="Image"></span><br>
+                            <span>Powered by <img alt="Image" class="powered"
+                                                  th:src="@{/images/powered_naps.svg}"></span><br>
                             <div class="policy-links">
                                 <span>Politique de confidentialité</span>
-                                <span class="separator"><i class="fas fa-circle" style="font-size: xx-small;"></i></span>
+                                <span class="separator"><i class="fas fa-circle"
+                                                           style="font-size: xx-small;"></i></span>
                                 <span>Conditions générales</span>
                             </div>
                         </div>

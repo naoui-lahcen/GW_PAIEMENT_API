@@ -526,7 +526,6 @@ public class ACSController {
 										checkCardToken = cardtokenService
 												.findByIdMerchantAndToken(merchantid, tokencard);
 									}
-									logger.info("tokencard : " + tokencard);
 									autorisationService.logMessage(file, "tokencard : " + tokencard);
 
 									cardtokenDto.setToken(tokencard);
@@ -543,8 +542,6 @@ public class ACSController {
 									String MM = expirydate.substring(2, expirydate.length());
 									// TODO: format date to "yyyy-MM-dd"
 									String expirydateFormated = xx + "-" + MM + "-" + "01";
-									logger.info(
-											"cardtokenDto expirydate formated : " + expirydateFormated);
 									autorisationService.logMessage(file,
 											"cardtokenDto expirydate formated : " + expirydateFormated);
 									Date dateExp = dateFormatSimple.parse(expirydateFormated);
@@ -1327,7 +1324,7 @@ public class ACSController {
 											"authorization 500 Error during  DemandePaiement update SW_REJET for given orderid:["
 													+ orderid + "]" + Util.formatException(e));
 									demandeDtoMsg.setMsgRefus(
-											"La transaction en cours n’a pas abouti (Erreur lors de la mise à jour de DemandePaiement SW_REJET), votre compte ne sera pas débité, merci de réessayer.");
+											"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 									model.addAttribute("demandeDto", demandeDtoMsg);
 									page = "result";
 									autorisationService.logMessage(file, "Fin processRequest ()");
@@ -1364,22 +1361,6 @@ public class ACSController {
 								// TODO: 2024-02-27
 							}
 
-							autorisationService.logMessage(file, "Generating paymentid...");
-
-							String uuid_paymentid, paymentid = "";
-							try {
-								uuid_paymentid = String.format("%040d",
-										new BigInteger(UUID.randomUUID().toString().replace("-", ""), 22));
-								paymentid = uuid_paymentid.substring(uuid_paymentid.length() - 22);
-							} catch (Exception e) {
-								autorisationService.logMessage(file,
-										"authorization 500 Error during  paymentid generation for given orderid:["
-												+ orderid + "]" + Util.formatException(e));
-							}
-
-							autorisationService.logMessage(file, "Generating paymentid OK");
-							autorisationService.logMessage(file, "paymentid :[" + paymentid + "]");
-
 							// TODO: JSONObject jso = new JSONObject();
 
 							autorisationService.logMessage(file, "Preparing autorization api response");
@@ -1408,12 +1389,6 @@ public class ACSController {
 							// TODO: reccurent insert and update
 
 							try {
-								/*
-								 * String data_noncrypt = "orderid=" + orderid + "&fname=" + fname + "&lname=" +
-								 * lname + "&email=" + email + "&amount=" + amount + "&coderep=" + coderep +
-								 * "&authnumber=" + authnumber + "&cardnumber=" + Util.formatCard(cardnumber) +
-								 * "&transactionid=" + transactionid + "&paymentid=" + paymentid;
-								 */
 								String data_noncrypt = "id_commande=" + orderid + "&nomprenom=" + fname + "&email="
 										+ email + "&montant=" + amount + "&frais=" + "" + "&repauto=" + coderep
 										+ "&numAuto=" + authnumber + "&numCarte=" + Util.formatCard(cardnumber)

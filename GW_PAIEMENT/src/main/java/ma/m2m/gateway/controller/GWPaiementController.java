@@ -1047,7 +1047,6 @@ public class GWPaiementController {
 								"checkCardToken exist => generate new tokencard : " + tokencard);
 						checkCardToken = cardtokenService.findByIdMerchantAndToken(merchantid, tokencard);
 					}
-					logger.info("tokencard : " + tokencard);
 					autorisationService.logMessage(file, "tokencard : " + tokencard);
 
 					cardtokenDto.setToken(tokencard);
@@ -1703,7 +1702,7 @@ public class GWPaiementController {
 							"payer 500 Error during  DemandePaiement update SW_REJET for given orderid:[" + orderid
 									+ "]" + Util.formatException(e));
 					demandeDtoMsg.setMsgRefus(
-							"La transaction en cours n’a pas abouti (Erreur lors de la mise à jour de DemandePaiement SW_REJET), votre compte ne sera pas débité, merci de réessayer.");
+							"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 					model.addAttribute("demandeDto", demandeDtoMsg);
 					page = "result";
 					return page;
@@ -1736,26 +1735,6 @@ public class GWPaiementController {
 				// TODO: 2024-02-27
 			}
 
-			autorisationService.logMessage(file, "Generating paymentid...");
-
-			String uuid_paymentid, paymentid = "";
-			try {
-				uuid_paymentid = String.format("%040d",
-						new BigInteger(UUID.randomUUID().toString().replace("-", ""), 22));
-				paymentid = uuid_paymentid.substring(uuid_paymentid.length() - 22);
-			} catch (Exception e) {
-				autorisationService.logMessage(file,
-						"payer 500 Error during  paymentid generation for given orderid:[" + orderid + "]" + Util.formatException(e));
-				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Erreur lors de la génération de l'ID de paiement), votre compte ne sera pas débité, merci de réessayer.");
-				model.addAttribute("demandeDto", demandeDtoMsg);
-				page = "result";
-				return page;
-			}
-
-			autorisationService.logMessage(file, "Generating paymentid OK");
-			autorisationService.logMessage(file, "paymentid :[" + paymentid + "]");
-
 			// TODO: JSONObject jso = new JSONObject();
 
 			autorisationService.logMessage(file, "Preparing autorization api response");
@@ -1784,14 +1763,6 @@ public class GWPaiementController {
 			// TODO: reccurent insert and update
 
 			try {
-
-				/*
-				 * String data_noncrypt = "orderid=" + orderid + "&fname=" + fname + "&lname=" +
-				 * lname + "&email=" + email + "&amount=" + amount + "&coderep=" + coderep +
-				 * "&authnumber=" + authnumber + "&cardnumber=" + Util.formatCard(cardnumber) +
-				 * "&transactionid=" + transactionid + "&paymentid=" + paymentid;
-				 */
-
 				String data_noncrypt = "id_commande=" + orderid + "&nomprenom=" + fname + "&email=" + email
 						+ "&montant=" + amount + "&frais=" + "" + "&repauto=" + coderep + "&numAuto=" + authnumber
 						+ "&numCarte=" + Util.formatCard(cardnumber) + "&typecarte=" + dmd.getTypeCarte()
@@ -2216,46 +2187,1284 @@ public class GWPaiementController {
 		String file = "GW_NEWPAGE_" + randomWithSplittableRandom;
 		Util.creatFileTransaction(file);
 		autorisationService.logMessage(file, "*********** Start newpage () ************** ");
-		logger.info("*********** Start newpage () ************** ");
 		DemandePaiementDto demandeDto = new DemandePaiementDto();
 		demandeDto.setCommande("0292DJ92_9238_S201");
 		demandeDto.setMontantStr("250.00");
+		demandeDto.setIddemande(42);
+		demandeDto.setComid("1010101");
 
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d MMMM yyyy, HH:mm");
 		LocalDateTime now = LocalDateTime.now();
 		String formattedDate = now.format(formatter);
-		System.out.println("Date : " + formattedDate);
 		model.addAttribute("demandeDto", demandeDto);
 		model.addAttribute("formattedDate", formattedDate);
 
 		autorisationService.logMessage(file, "*********** End newpage () ************** ");
-		logger.info("*********** End newpage () ************** ");
 
 		return "newpage";
 	}
 
-	@PostMapping("/processpaiement")
+	@PostMapping("/processpayment")
 	@SuppressWarnings("all")
-	public String processpaiement(Model model, @ModelAttribute("demandeDto") DemandePaiementDto dto, HttpServletRequest request,
-								  HttpServletResponse response, HttpSession session,
-								  BindingResult result) throws IOException {
-		System.out.println("processpaiement");
-		System.out.println("carte : " + dto.getDemPan());
+	public String processpayment(Model model, @ModelAttribute("demandeDto") DemandePaiementDto dto, HttpServletRequest request,
+								  HttpServletResponse response, HttpSession session) throws IOException {
+		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
+		String file = "GW_PAYE_" + randomWithSplittableRandom;
+		// TODO: create file log
+		Util.creatFileTransaction(file);
+		autorisationService.logMessage(file, "*********** Start processpayment () ************** ");
+		logger.info("*********** Start processpayment () ************** ");
+
+		String capture, currency, orderid, recurring, amount, promoCode, transactionid, capture_id, merchantid,
+				merchantname, websiteName, websiteid, callbackUrl, cardnumber, token, expirydate, holdername, cvv,
+				fname, lname, email, country, phone, city, state, zipcode, address, mesg_type, merc_codeactivite,
+				acqcode, merchant_name, merchant_city, acq_type, processing_code, reason_code, transaction_condition,
+				transactiondate, transactiontime, date, rrn, heure, montanttrame, num_trs = "", successURL, failURL,
+				transactiontype, idclient;
+
+		DemandePaiementDto demandeDto = new DemandePaiementDto();
+		Objects.copyProperties(demandeDto, dto);
+		autorisationService.logMessage(file, "Commande : " + dto.getCommande());
+		DemandePaiementDto demandeDtoMsg = new DemandePaiementDto();
+		DemandePaiementDto dmd = new DemandePaiementDto();
+
+		SimpleDateFormat formatter_1, formatter_2, formatheure, formatdate = null;
+		Date trsdate = null;
+		Integer Idmd_id = null;
+		String[] mm;
+		String[] m;
+		boolean flagNvCarte, flagSaveCarte;
+
+		String page = "chalenge";
+
 		try {
-			if(dto.getDemPan() != null && dto.getDemPan().length() != 16) {
-				response.sendRedirect(request.getContextPath() + "/napspayment/newpage");
-				session.setAttribute("error", "Le numéro de carte incorrect. veuillez réessayer.");
-				return null;
+			autorisationService.logMessage(file, "" + demandeDto.toString());
+			// TODO: Transaction info
+			orderid = demandeDto.getCommande() == null ? "" : demandeDto.getCommande();
+			if (demandeDto.getMontant() == null) {
+				demandeDto.setMontant(0.00);
 			}
-		} catch(Exception e) {
+			amount = String.valueOf(demandeDto.getMontant());
+			capture = "";
+			currency = "504";
+			recurring = "N";
+			promoCode = "";
+			transactionid = "";
+			transactiontype = "0"; // TODO: 0 payment , P preauto
+
+			// TODO: Merchnat info
+			merchantid = demandeDto.getComid() == null ? "" : demandeDto.getComid();
+			merchantname = "";
+			websiteName = "";
+			websiteid = "";
+			cardnumber = "";
+			expirydate = "";
+			callbackUrl = demandeDto.getCallbackURL() == null ? "" : demandeDto.getCallbackURL();
+			successURL = demandeDto.getSuccessURL() == null ? "" : demandeDto.getSuccessURL();
+			failURL = demandeDto.getFailURL() == null ? "" : demandeDto.getFailURL();
+
+			// TODO: Card info
+			// TODO: if transaction not cof
+			if (demandeDto.getDemPan() != null && !demandeDto.getDemPan().equals("")) {
+				cardnumber = demandeDto.getDemPan();
+				Set<String> uniqueCards = new LinkedHashSet<>(Arrays.asList(cardnumber.split(",")));
+				cardnumber = String.join(",", uniqueCards);
+				demandeDto.setDemPan(cardnumber);
+				if(demandeDto.getAnnee().length() == 4 && demandeDto.getMois()== null) {
+					expirydate = demandeDto.getAnnee();
+				} else {
+					expirydate = demandeDto.getAnnee().substring(2, 4).concat(demandeDto.getMois().substring(0, 2));
+				}
+			}
+			// TODO: if transaction cof
+			if (demandeDto.getInfoCarte() != null && !demandeDto.isFlagNvCarte()
+					&& (demandeDto.getDemPan() == null || demandeDto.getDemPan().equals(""))) {
+				//String infoCard = demandeDto.getInfoCarte().substring(8, demandeDto.getInfoCarte().length());
+				String infoCard = demandeDto.getInfoCarte().replaceAll("Cartes\\(|\\)", "");
+				Cartes carteFormated = fromString(infoCard);
+				demandeDto.setCarte(carteFormated);
+				cardnumber = demandeDto.getCarte().getCarte();
+				String annee = String.valueOf(demandeDto.getCarte().getYear());
+				expirydate = annee.substring(2, 4).concat(demandeDto.getCarte().getMoisValue());
+			}
+			if (demandeDto.getInfoCarte() != null && demandeDto.getDemPan().equals("")) {
+				if(!demandeDto.getAnnee().equals("") && !demandeDto.getMois().equals("")) {
+					expirydate = demandeDto.getAnnee().substring(2, 4).concat(demandeDto.getMois().substring(0, 2));
+				}
+			}
+			flagNvCarte = demandeDto.isFlagNvCarte();
+			flagSaveCarte = demandeDto.isFlagSaveCarte();
+			if (cardnumber.contains(",")) {
+				cardnumber = cardnumber.replace(",", "");
+			}
+			// TODO: cardnumber = demandeDto.getDemPan();
+			token = "";
+			// TODO: expirydate = demandeDto.getAnnee().substring(2, 4).concat(demandeDto.getMois());
+			holdername = "";
+			cvv = demandeDto.getDemCvv() == null ? "" : demandeDto.getDemCvv();
+
+			// TODO: Client info
+			fname = demandeDto.getPrenom() == null ? "" : demandeDto.getPrenom();
+			lname = demandeDto.getNom() == null ? "" : demandeDto.getNom();
+			email = demandeDto.getEmail() == null ? "" : demandeDto.getEmail();
+			country = demandeDto.getCountry() == null ? "" : demandeDto.getCountry();
+			phone = demandeDto.getTel() == null ? "" : demandeDto.getTel();
+			city = demandeDto.getCity() == null ? "" : demandeDto.getCity();
+			state = demandeDto.getState() == null ? "" : demandeDto.getState();
+			zipcode = demandeDto.getPostcode() == null ? "" : demandeDto.getPostcode();
+			address = demandeDto.getAddress() == null ? "" : demandeDto.getAddress();
+
+		} catch (Exception jerr) {
+			autorisationService.logMessage(file, "processpayment 500 malformed json expression" + Util.formatException(jerr));
+			/*demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
+			model.addAttribute("demandeDto", demandeDtoMsg);
+			page = "result";
+			return page;*/
 			response.sendRedirect(request.getContextPath() + "/napspayment/newpage");
-			session.setAttribute("error", "Vérifiez les informations de la carte.");
+			session.setAttribute("error", "La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 			return null;
 		}
 
-		return "newpage";
+		CommercantDto current_merchant = null;
+		try {
+			current_merchant = commercantService.findByCmrNumcmr(merchantid);
+		} catch (Exception e) {
+			return autorisationService.handleMerchantAndInfoCommercantError(file, orderid, merchantid, null, demandeDtoMsg, model, page, true);
+		}
+
+		if (current_merchant == null) {
+			return autorisationService.handleMerchantAndInfoCommercantError(file, orderid, merchantid, null, demandeDtoMsg, model, page, true);
+		}
+
+		if (current_merchant.getCmrCodactivite() == null) {
+			return autorisationService.handleMerchantAndInfoCommercantError(file, orderid, merchantid, null, demandeDtoMsg, model, page, true);
+		}
+
+		if (current_merchant.getCmrCodbqe() == null) {
+			return autorisationService.handleMerchantAndInfoCommercantError(file, orderid, merchantid, null, demandeDtoMsg, model, page, true);
+		}
+
+		InfoCommercantDto current_infoCommercant = null;
+
+		try {
+			current_infoCommercant = infoCommercantService.findByCmrCode(merchantid);
+		} catch (Exception e) {
+			return autorisationService.handleMerchantAndInfoCommercantError(file, orderid, merchantid, websiteid, demandeDtoMsg, model, page, false);
+		}
+
+		if (current_infoCommercant == null) {
+			return autorisationService.handleMerchantAndInfoCommercantError(file, orderid, merchantid, websiteid, demandeDtoMsg, model, page, false);
+		}
+
+		int i_card_valid = Util.isCardValid(cardnumber);
+
+		page = autorisationService.handleCardValidationError(i_card_valid, cardnumber, orderid, merchantid, file,
+				demandeDtoMsg, model, page);
+		if ("result".equals(page)) {
+			// return page;
+			response.sendRedirect(request.getContextPath() + "/napspayment/newpage");
+			session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+			return null;
+		}
+
+		int i_card_type = Util.getCardIss(cardnumber);
+
+		try {
+			DemandePaiementDto dmdToEdit = demandePaiementService.findByIdDemande(demandeDto.getIddemande());
+
+			dmdToEdit.setDemPan(cardnumber);
+			dmdToEdit.setDemCvv(cvv);
+			dmdToEdit.setTypeCarte(i_card_type + "");
+			dmdToEdit.setTransactiontype(transactiontype);
+			int nbr_tv = dmdToEdit.getNbreTenta() + 1;
+			dmdToEdit.setNbreTenta(nbr_tv);
+
+			formatter_1 = new SimpleDateFormat(FORMAT_DEFAUT);
+			formatter_2 = new SimpleDateFormat("HH:mm:ss");
+			trsdate = new Date();
+			transactiondate = formatter_1.format(trsdate);
+			transactiontime = formatter_2.format(trsdate);
+			dmdToEdit.setDemDateTime(dateFormat.format(new Date()));
+			dmdToEdit.setEtatDemande("START_PAYMENT");
+
+			demandeDto = demandePaiementService.save(dmdToEdit);
+			demandeDto.setExpery(expirydate);
+			demandeDto.setFlagNvCarte(flagNvCarte);
+			demandeDto.setFlagSaveCarte(flagSaveCarte);
+			idclient = demandeDto.getIdClient();
+			if (idclient == null) {
+				idclient = "";
+			}
+
+		} catch (Exception err1) {
+			autorisationService.logMessage(file,
+					"processpayment 500 Error during DEMANDE_PAIEMENT insertion for given orderid:[" + orderid + "]" + Util.formatException(err1));
+			demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
+			model.addAttribute("demandeDto", demandeDtoMsg);
+			page = "result";
+			//return page;
+			response.sendRedirect(request.getContextPath() + "/napspayment/newpage");
+			session.setAttribute("error", "La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
+			return null;
+		}
+
+		page = autorisationService.handleSessionTimeout(session, file, timeout, demandeDto, demandeDtoMsg, model);
+
+		if ("timeout".equals(page)) {
+			//return page;
+			response.sendRedirect(request.getContextPath() + "/napspayment/newpage");
+			session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+			return null;
+		}
+
+		if (demandeDto.getEtatDemande().equals("SW_PAYE") || demandeDto.getEtatDemande().equals("PAYE")) {
+			demandeDto.setDemCvv("");
+			demandePaiementService.save(demandeDto);
+			autorisationService.logMessage(file, "Opération déjà effectuée");
+			demandeDto.setMsgRefus(
+					"La transaction en cours est déjà effectuée, votre compte ne sera pas débité.");
+			model.addAttribute("demandeDto", demandeDto);
+			page = "operationEffectue";
+			//return page;
+			response.sendRedirect(request.getContextPath() + "/napspayment/newpage");
+			session.setAttribute("error", "La transaction en cours est déjà effectuée, votre compte ne sera pas débité.");
+			return null;
+		}
+
+		// TODO: for test control risk
+		// TODO: refactoring code 2024-03-20
+		autorisationService.logMessage(file, "Debut controlleRisk");
+		try {
+			String msg = autorisationService.controlleRisk(demandeDto, folder, file);
+			if (!msg.equalsIgnoreCase("OK")) {
+				demandeDto.setDemCvv("");
+				demandeDto.setEtatDemande("REJET_RISK_CTRL");
+				demandePaiementService.save(demandeDto);
+				autorisationService.logMessage(file, msg);
+				demandeDto = new DemandePaiementDto();
+				demandeDtoMsg.setMsgRefus(msg);
+				model.addAttribute("demandeDto", demandeDtoMsg);
+				page = "result";
+				//return page;
+				response.sendRedirect(request.getContextPath() + "/napspayment/newpage");
+				session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+				return null;
+			}
+		} catch (Exception e) {
+			demandeDto.setDemCvv("");
+			demandeDto.setEtatDemande("REJET_RISK_CTRL");
+			demandePaiementService.save(demandeDto);
+			autorisationService.logMessage(file,
+					"processpayment 500 ControlRiskCmr misconfigured in DB or not existing merchantid:[" + demandeDto.getComid()
+							+ Util.formatException(e));
+			demandeDto = new DemandePaiementDto();
+			demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité.");
+			model.addAttribute("demandeDto", demandeDtoMsg);
+			page = "result";
+			//return page;
+			response.sendRedirect(request.getContextPath() + "/napspayment/newpage");
+			session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+			return null;
+		}
+		autorisationService.logMessage(file, "Fin controlleRisk");
+
+		// TODO: saving card if flagSaveCarte true
+		if (demandeDto.isFlagSaveCarte()) {
+			try {
+				List<CardtokenDto> checkCardNumber = cardtokenService.findByIdMerchantClientAndCardNumber(idclient,
+						cardnumber);
+
+				CardtokenDto cardtokenDto = new CardtokenDto();
+				Calendar dateCalendar = Calendar.getInstance();
+				Date dateToken = dateCalendar.getTime();
+
+				autorisationService.logMessage(file, "cardtokenDto expirydate input : " + expirydate);
+				String anne = String.valueOf(dateCalendar.get(Calendar.YEAR));
+				// TODO: get year from date
+				String xx = anne.substring(0, 2) + expirydate.substring(0, 2);
+				String MM = expirydate.substring(2, expirydate.length());
+				// TODO: format date to "yyyy-MM-dd"
+				String expirydateFormated = xx + "-" + MM + "-" + "01";
+				autorisationService.logMessage(file,
+						"cardtokenDto expirydate formated : " + expirydateFormated);
+				Date dateExp;
+				dateExp = dateFormatSimple.parse(expirydateFormated);
+
+				if (checkCardNumber.size() == 0) {
+					// TODO: insert new cardToken
+					String tokencard = Util.generateCardToken(idclient);
+
+					// TODO: test if token not exist in DB
+					CardtokenDto checkCardToken = cardtokenService.findByIdMerchantAndToken(idclient, tokencard);
+
+					while (checkCardToken != null) {
+						tokencard = Util.generateCardToken(idclient);
+						logger.info("checkCardToken exist => generate new tokencard : " + tokencard);
+						autorisationService.logMessage(file,
+								"checkCardToken exist => generate new tokencard : " + tokencard);
+						checkCardToken = cardtokenService.findByIdMerchantAndToken(merchantid, tokencard);
+					}
+					autorisationService.logMessage(file, "tokencard : " + tokencard);
+
+					cardtokenDto.setToken(tokencard);
+					String tokenid = UUID.randomUUID().toString();
+					cardtokenDto.setIdToken(tokenid);
+					cardtokenDto.setExprDate(dateExp);
+					String dateTokenStr = dateFormat.format(dateToken);
+					Date dateTokenFormated = dateFormat.parse(dateTokenStr);
+					cardtokenDto.setTokenDate(dateTokenFormated);
+					cardtokenDto.setCardNumber(cardnumber);
+					cardtokenDto.setIdMerchant(merchantid);
+					cardtokenDto.setIdMerchantClient(idclient);
+					cardtokenDto.setFirstName(fname);
+					cardtokenDto.setLastName(lname);
+					cardtokenDto.setHolderName(holdername);
+					cardtokenDto.setMcc(merchantid);
+
+					CardtokenDto cardtokenSaved = cardtokenService.save(cardtokenDto);
+
+					autorisationService.logMessage(file, "Saving CARDTOKEN OK");
+				} else {
+					autorisationService.logMessage(file, "Carte deja enregistrée");
+					for(CardtokenDto crd : checkCardNumber) {
+						if(crd.getExprDate() != null) {
+							if(crd.getCardNumber().equals(cardnumber)) {
+								if(crd.getExprDate().before(dateToken)) {
+									autorisationService.logMessage(file, "Encienne date expiration est expirée : " + dateFormatSimple.format(crd.getExprDate()));
+									autorisationService.logMessage(file, "Update par nv date expiration saisie : "+ expirydateFormated);
+									crd.setExprDate(dateExp);
+									CardtokenDto cardSaved = cardtokenService.save(crd);
+									logger.info("Update CARDTOKEN OK");
+									autorisationService.logMessage(file, "Update CARDTOKEN OK");
+								}
+							}
+						}
+					}
+				}
+
+			} catch (ParseException e) {
+				logger.error("Exception : " , e);
+				autorisationService.logMessage(file, "savingcardtoken 500 Error during CARDTOKEN Saving " + Util.formatException(e));
+			}
+		}
+
+		try {
+
+			formatheure = new SimpleDateFormat("HHmmss");
+			formatdate = new SimpleDateFormat("ddMMyy");
+			date = formatdate.format(new Date());
+			heure = formatheure.format(new Date());
+			rrn = Util.getGeneratedRRN();
+		} catch (Exception err2) {
+			demandeDto.setDemCvv("");
+			demandePaiementService.save(demandeDto);
+			autorisationService.logMessage(file, "processpayment 500 Error during  date formatting for given orderid:["
+					+ orderid + "] and merchantid:[" + merchantid + "]" + Util.formatException(err2));
+			demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
+			model.addAttribute("demandeDto", demandeDtoMsg);
+			page = "result";
+			// return page;
+			response.sendRedirect(request.getContextPath() + "/napspayment/newpage");
+			session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+			return null;
+		}
+
+		ThreeDSecureResponse threeDsecureResponse = new ThreeDSecureResponse();
+
+		// TODO: appel 3DSSecure ***********************************************************
+
+		/** dans la preprod les tests sans 3DSS on commente l'appel 3DSS et on mj reponseMPI="Y" */
+		autorisationService.logMessage(file, "environement : " + environement);
+		if(environement.equals("PREPROD")) {
+			threeDsecureResponse.setReponseMPI("Y");
+		} else {
+			threeDsecureResponse = autorisationService.preparerReqThree3DSS(demandeDto, folder, file);
+		}
+
+		// TODO: fin 3DSSecure ***********************************************************
+
+		/*
+		 * ------------ DEBUT MPI RESPONSE PARAMS ------------
+		 */
+		String reponseMPI = "";
+		String eci = "";
+		String cavv = "";
+		String threeDSServerTransID = "";
+		String xid = "";
+		String errmpi = "";
+		String idDemande = String.valueOf(demandeDto.getIddemande() == null ? "" : demandeDto.getIddemande());
+		String expiry = ""; // TODO: YYMM
+
+		reponseMPI = threeDsecureResponse.getReponseMPI();
+
+		threeDSServerTransID = threeDsecureResponse.getThreeDSServerTransID();
+
+		eci = threeDsecureResponse.getEci() == null ? "" : threeDsecureResponse.getEci();
+
+		cavv = threeDsecureResponse.getCavv() == null ? "" : threeDsecureResponse.getCavv();
+
+		errmpi = threeDsecureResponse.getErrmpi() == null ? "" : threeDsecureResponse.getErrmpi();
+
+		expiry = threeDsecureResponse.getExpiry() == null ? "" : threeDsecureResponse.getExpiry();
+
+		if (idDemande == null || idDemande.equals("")) {
+			demandeDto.setDemCvv("");
+			demandeDto.setEtatDemande("MPI_KO");
+			demandePaiementService.save(demandeDto);
+			autorisationService.logMessage(file, "received idDemande from MPI is Null or Empty");
+			autorisationService.logMessage(file,
+					"demandePaiement after update MPI_KO idDemande null : " + demandeDto.toString());
+			demandeDtoMsg.setMsgRefus(
+					"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
+			model.addAttribute("demandeDto", demandeDtoMsg);
+			page = "result";
+			// return page;
+			response.sendRedirect(request.getContextPath() + "/napspayment/newpage");
+			session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+			return null;
+		}
+
+		dmd = demandePaiementService.findByIdDemande(Integer.parseInt(idDemande));
+
+		if (dmd == null) {
+			demandeDto.setDemCvv("");
+			demandePaiementService.save(demandeDto);
+			autorisationService.logMessage(file,
+					"demandePaiement not found !!!! demandePaiement = null  / received idDemande from MPI => "
+							+ idDemande);
+			demandeDtoMsg.setMsgRefus(
+					"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
+			model.addAttribute("demandeDto", demandeDtoMsg);
+			page = "result";
+			// return page;
+			response.sendRedirect(request.getContextPath() + "/napspayment/newpage");
+			session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+			return null;
+		}
+
+		if (reponseMPI.equals("") || reponseMPI == null) {
+			dmd.setDemCvv("");
+			dmd.setEtatDemande("MPI_KO");
+			demandePaiementService.save(dmd);
+			autorisationService.logMessage(file,
+					"demandePaiement after update MPI_KO reponseMPI null : " + dmd.toString());
+			autorisationService.logMessage(file, "Response 3DS is null");
+			demandeDtoMsg.setMsgRefus(
+					"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
+			model.addAttribute("demandeDto", demandeDtoMsg);
+			page = "result";
+			// return page;
+			response.sendRedirect(request.getContextPath() + "/napspayment/newpage");
+			session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+			return null;
+		}
+
+		if (reponseMPI.equals("Y")) {
+			// TODO: ********************* Frictionless responseMPI equal Y *********************
+			autorisationService.logMessage(file,
+					"********************* Cas frictionless responseMPI equal Y *********************");
+			if(threeDSServerTransID != null && !threeDSServerTransID.equals("")) {
+				dmd.setDemxid(threeDSServerTransID);
+				dmd.setIs3ds("N");
+				dmd = demandePaiementService.save(dmd);
+			}
+
+			// TODO: 2024-03-05
+			montanttrame = formatMontantTrame(folder, file, amount, orderid, merchantid, model);
+
+			merchantname = current_merchant.getCmrNom();
+			websiteName = "";
+			websiteid = dmd.getGalid();
+			String url = "", status = "", statuscode = "";
+
+			merc_codeactivite = current_merchant.getCmrCodactivite();
+			acqcode = current_merchant.getCmrCodbqe();
+			merchant_name = Util.pad_merchant(merchantname, 19, ' ');
+
+			merchant_city = "MOROCCO        ";
+
+			acq_type = "0000";
+			reason_code = "H";
+			transaction_condition = "6";
+			mesg_type = "0";
+
+			processing_code = "";
+			if (transactiontype.equals("0")) {
+				processing_code = "0";
+			} else if (transactiontype.equals("P")) {
+				processing_code = "P";
+			} else {
+				processing_code = "0";
+			}
+
+			// TODO: ajout cavv (cavv+eci) xid dans la trame
+			String champ_cavv = "";
+			xid = threeDSServerTransID;
+			if (cavv == null || eci == null) {
+				champ_cavv = null;
+				autorisationService.logMessage(file, "cavv == null || eci == null");
+			} else if (cavv != null && eci != null) {
+				champ_cavv = cavv + eci;
+			} else {
+				autorisationService.logMessage(file, "champ_cavv = null");
+				champ_cavv = null;
+			}
+
+			boolean cvv_present = checkCvvPresence(cvv);
+			boolean is_reccuring = isReccuringCheck(recurring);
+			boolean is_first_trs = true;
+
+			String first_auth = "";
+			long lrec_serie = 0;
+
+			// TODO: controls
+			autorisationService.logMessage(file, "Switch processing start ...");
+
+			String tlv = "";
+			autorisationService.logMessage(file, "Preparing Switch TLV Request start ...");
+
+			if (!cvv_present && !is_reccuring) {
+				dmd.setDemCvv("");
+				demandePaiementService.save(dmd);
+				autorisationService.logMessage(file,
+						"processpayment 500 cvv not set , reccuring flag set to N, cvv must be present in normal transaction");
+
+				demandeDtoMsg.setMsgRefus(
+						"Le champ CVV est vide. Veuillez saisir le code de sécurité à trois chiffres situé au dos de votre carte pour continuer.");
+				model.addAttribute("demandeDto", demandeDtoMsg);
+				page = "result";
+				// return page;
+				response.sendRedirect(request.getContextPath() + "/napspayment/newpage");
+				session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+				return null;
+			}
+
+			// TODO: not reccuring , normal
+			if (cvv_present && !is_reccuring) {
+				autorisationService.logMessage(file, "not reccuring , normal cvv_present && !is_reccuring");
+				try {
+
+					tlv = new TLVEncoder().withField(Tags.tag0, mesg_type).withField(Tags.tag1, cardnumber)
+							.withField(Tags.tag3, processing_code).withField(Tags.tag22, transaction_condition)
+							.withField(Tags.tag49, acq_type).withField(Tags.tag14, montanttrame)
+							.withField(Tags.tag15, currency).withField(Tags.tag23, reason_code)
+							.withField(Tags.tag18, "761454").withField(Tags.tag42, expirydate)
+							.withField(Tags.tag16, date).withField(Tags.tag17, heure)
+							.withField(Tags.tag10, merc_codeactivite).withField(Tags.tag8, "0" + merchantid)
+							.withField(Tags.tag9, merchantid).withField(Tags.tag66, rrn).withField(Tags.tag67, cvv)
+							.withField(Tags.tag11, merchant_name).withField(Tags.tag12, merchant_city)
+							.withField(Tags.tag90, acqcode).withField(Tags.tag167, champ_cavv)
+							.withField(Tags.tag168, xid).encode();
+
+				} catch (Exception err4) {
+					dmd.setDemCvv("");
+					demandePaiementService.save(dmd);
+					autorisationService.logMessage(file,
+							"processpayment 500 Error during switch tlv buildup for given orderid:[" + orderid
+									+ "] and merchantid:[" + merchantid + "]" + Util.formatException(err4));
+					demandeDtoMsg.setMsgRefus(
+							"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
+					model.addAttribute("demandeDto", demandeDtoMsg);
+					page = "result";
+					// return page;
+					response.sendRedirect(request.getContextPath() + "/napspayment/newpage");
+					session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+					return null;
+				}
+
+				autorisationService.logMessage(file, "Switch TLV Request :[" + tlv + "]");
+
+			}
+
+			// TODO: reccuring
+			if (is_reccuring) {
+				autorisationService.logMessage(file, "reccuring");
+			}
+
+			autorisationService.logMessage(file, "Preparing Switch TLV Request end.");
+
+			String resp_tlv = "";
+//			SwitchTCPClient sw = SwitchTCPClient.getInstance();
+			int port = 0;
+			String sw_s = "", s_port = "";
+			int switch_ko = 0;
+			try {
+
+				s_port = portSwitch;
+				sw_s = ipSwitch;
+
+				port = Integer.parseInt(s_port);
+
+				autorisationService.logMessage(file, "Switch TCP client V2 Connecting ...");
+
+				SwitchTCPClientV2 switchTCPClient = new SwitchTCPClientV2(sw_s, port);
+
+				boolean s_conn = switchTCPClient.isConnected();
+
+				if (!s_conn) {
+					dmd.setDemCvv("");
+					demandePaiementService.save(dmd);
+					autorisationService.logMessage(file, "Switch  malfunction cannot connect!!!");
+
+					autorisationService.logMessage(file,
+							"processpayment 500 Error Switch communication s_conn false switch ip:[" + sw_s
+									+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
+					demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
+					model.addAttribute("demandeDto", demandeDtoMsg);
+					page = "result";
+					// return page;
+					response.sendRedirect(request.getContextPath() + "/napspayment/newpage");
+					session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+					return null;
+				}
+
+				if (s_conn) {
+					autorisationService.logMessage(file, "Switch Connected.");
+
+					resp_tlv = switchTCPClient.sendMessage(tlv);
+
+					autorisationService.logMessage(file, "Switch TLV Request end.");
+					switchTCPClient.shutdown();
+				}
+
+			} catch (Exception e) {
+				switch_ko = 1;
+				// return autorisationService.handleSwitchError(e, file, orderid, merchantid, resp_tlv, dmd, model, "result");
+				page = autorisationService.handleSwitchError(e, file, orderid, merchantid, resp_tlv, dmd, model, "result");
+				response.sendRedirect(request.getContextPath() + "/napspayment/newpage");
+				session.setAttribute("error", dmd.getMsgRefus());
+				return null;
+			}
+
+			String resp = resp_tlv;
+
+			if (switch_ko == 0 && resp == null) {
+				dmd.setDemCvv("");
+				dmd.setEtatDemande("SW_KO");
+				demandePaiementService.save(dmd);
+				autorisationService.logMessage(file, "Switch  malfunction resp null!!!");
+				switch_ko = 1;
+				autorisationService.logMessage(file, "processpayment 500 Error Switch null response" + "switch ip:[" + sw_s
+						+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
+				demandeDtoMsg.setMsgRefus(
+						"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
+				model.addAttribute("demandeDto", demandeDtoMsg);
+				page = "result";
+				// return page;
+				response.sendRedirect(request.getContextPath() + "/napspayment/newpage");
+				session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+				return null;
+			}
+
+			if (switch_ko == 0 && resp.length() < 3) {
+				dmd.setDemCvv("");
+				dmd.setEtatDemande("SW_KO");
+				demandePaiementService.save(dmd);
+				switch_ko = 1;
+
+				autorisationService.logMessage(file, "Switch  malfunction resp < 3 !!!");
+				autorisationService.logMessage(file, "processpayment 500 Error Switch short response length() < 3 "
+						+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
+				demandeDtoMsg.setMsgRefus(
+						"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
+				model.addAttribute("demandeDto", demandeDtoMsg);
+				page = "result";
+				// return page;
+				response.sendRedirect(request.getContextPath() + "/napspayment/newpage");
+				session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+				return null;
+			}
+
+			autorisationService.logMessage(file, "Switch TLV Respnose :[" + resp + "]");
+
+			TLVParser tlvp = null;
+
+			String tag0_resp = null, tag1_resp = null, tag3_resp = null, tag8_resp = null, tag9_resp = null,
+					tag14_resp = null, tag15_resp = null, tag16_resp = null, tag17_resp = null, tag66_resp = null,
+					tag18_resp = null, tag19_resp = null, tag23_resp = null, tag20_resp = null, tag21_resp = null,
+					tag22_resp = null, tag80_resp = null, tag98_resp = null;
+
+			if (switch_ko == 0) {
+				try {
+					tlvp = new TLVParser(resp);
+
+					tag0_resp = tlvp.getTag(Tags.tag0);
+					tag1_resp = tlvp.getTag(Tags.tag1);
+					tag3_resp = tlvp.getTag(Tags.tag3);
+					tag8_resp = tlvp.getTag(Tags.tag8);
+					tag9_resp = tlvp.getTag(Tags.tag9);
+					tag14_resp = tlvp.getTag(Tags.tag14);
+					tag15_resp = tlvp.getTag(Tags.tag15);
+					tag16_resp = tlvp.getTag(Tags.tag16);
+					tag17_resp = tlvp.getTag(Tags.tag17);
+					tag66_resp = tlvp.getTag(Tags.tag66); // TODO: f1
+					tag18_resp = tlvp.getTag(Tags.tag18);
+					tag19_resp = tlvp.getTag(Tags.tag19); // TODO: f2
+					tag23_resp = tlvp.getTag(Tags.tag23);
+					tag20_resp = tlvp.getTag(Tags.tag20);
+					tag21_resp = tlvp.getTag(Tags.tag21);
+					tag22_resp = tlvp.getTag(Tags.tag22);
+					tag80_resp = tlvp.getTag(Tags.tag80);
+					tag98_resp = tlvp.getTag(Tags.tag98);
+
+				} catch (Exception e) {
+					autorisationService.logMessage(file, "Switch  malfunction tlv parsing !!!" + Util.formatException(e));
+					switch_ko = 1;
+					autorisationService.logMessage(file, "processpayment 500 Error during tlv Switch response parse"
+							+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
+				}
+
+				// TODO: controle switch
+				if (tag1_resp == null || tag1_resp.length() < 3 || tag20_resp == null) {
+					autorisationService.logMessage(file, "Switch  malfunction !!! tag1_resp == null");
+					switch_ko = 1;
+					autorisationService.logMessage(file,
+							"processpayment 500" + "Error during tlv Switch response parse tag1_resp length tag  < 3"
+									+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv
+									+ "]");
+				}
+			}
+			autorisationService.logMessage(file, "Switch TLV Respnose Processed");
+
+			String tag20_resp_verified = "";
+			String tag19_res_verified = "";
+			String tag66_resp_verified = "";
+			tag20_resp_verified = tag20_resp;
+			tag19_res_verified = tag19_resp;
+			tag66_resp_verified = tag66_resp;
+			String s_status, pan_auto = "";
+
+			// TODO: SWHistoAutoDto swhist = null;
+
+			if (switch_ko == 1) {
+				pan_auto = Util.formatagePan(cardnumber);
+				autorisationService.logMessage(file, "getSWHistoAuto pan_auto/rrn/amount/date/merchantid : "
+						+ pan_auto + "/" + rrn + "/" + amount + "/" + date + "/" + merchantid);
+			}
+
+			HistoAutoGateDto hist = null;
+			Integer Ihist_id = null;
+
+			autorisationService.logMessage(file, "Insert into Histogate...");
+
+			s_status = "";
+			try {
+				CodeReponseDto codeReponseDto = codeReponseService.findByRpcCode(tag20_resp_verified);
+				autorisationService.logMessage(file, "" + codeReponseDto);
+				if (codeReponseDto != null) {
+					s_status = codeReponseDto.getRpcLibelle();
+				}
+			} catch (Exception ee) {
+				autorisationService.logMessage(file, "authorization 500 Error codeReponseDto null" + Util.formatException(ee));
+			}
+			autorisationService.logMessage(file, "get status Switch status : [" + s_status + "]");
+
+			try {
+
+				hist = new HistoAutoGateDto();
+				Date curren_date_hist = new Date();
+				int numTransaction = Util.generateNumTransaction(folder, file, curren_date_hist);
+
+				websiteid = dmd.getGalid();
+
+				// TODO: Ihist_id = hist.getMAX_ID("HISTOAUTO_GATE", "HAT_ID");
+				// TODO: Ihist_id = histoAutoGateService.getMAX_ID();
+				// TODO: long currentid = Ihist_id.longValue() + 1;
+				// TODO: hist.setId(currentid);
+
+				autorisationService.logMessage(file, "formatting pan...");
+
+				pan_auto = Util.formatagePan(cardnumber);
+				autorisationService.logMessage(file, "formatting pan Ok pan_auto :[" + pan_auto + "]");
+
+				autorisationService.logMessage(file, "HistoAutoGate data filling start ...");
+
+				autorisationService.logMessage(file, "websiteid : " + websiteid);
+
+				Date current_date_1 = getDateWithoutTime(curren_date_hist);
+				hist.setHatDatdem(current_date_1);
+
+				hist.setHatHerdem(new SimpleDateFormat("HH:mm").format(curren_date_hist));
+				hist.setHatMontant(Double.parseDouble(amount));
+				hist.setHatNumcmr(merchantid);
+				hist.setHatCoderep(tag20_resp_verified);
+				tag20_resp = tag20_resp_verified;
+				hist.setHatDevise(currency);
+				hist.setHatBqcmr(acqcode);
+				hist.setHatPorteur(pan_auto);
+				hist.setHatMtfref1(s_status);
+				hist.setHatNomdeandeur(websiteid);
+				hist.setHatNautemt(tag19_res_verified); // TODO: f2
+				tag19_resp = tag19_res_verified;
+				if (tag22_resp != null)
+					hist.setHatProcode(tag22_resp.charAt(0));
+				else
+					hist.setHatProcode('6');
+				hist.setHatExpdate(expirydate);
+				hist.setHatRepondeur(tag21_resp);
+				hist.setHatTypmsg("3");
+				hist.setHatRrn(tag66_resp_verified); // TODO: f1
+				tag66_resp_verified = tag66_resp;
+				hist.setHatEtat('E');
+				if (websiteid.equals("")) {
+					hist.setHatCodtpe("1");
+				} else {
+					hist.setHatCodtpe(websiteid);
+				}
+				hist.setHatMcc(merc_codeactivite);
+				hist.setHatNumCommande(orderid);
+				hist.setHatNumdem(new Long(numTransaction));
+
+				if (checkCvvPresence(cvv)) {
+
+					hist.setIsCvvVerified("Y");
+				} else {
+
+					hist.setIsCvvVerified("N");
+				}
+
+				hist.setIs3ds("N");
+				hist.setIsAddcard("N");
+				hist.setIsWhitelist("N");
+				hist.setIsWithsave("N");
+				hist.setIsTokenized("N");
+
+				if (recurring.equalsIgnoreCase("Y"))
+					hist.setIsCof("Y");
+				if (recurring.equalsIgnoreCase("N"))
+					hist.setIsCof("N");
+
+				autorisationService.logMessage(file, "HistoAutoGate data filling end ...");
+
+				autorisationService.logMessage(file, "HistoAutoGate Saving ...");
+
+				hist = histoAutoGateService.save(hist);
+
+				autorisationService.logMessage(file, "hatNomdeandeur : " + hist.getHatNomdeandeur());
+
+			} catch (Exception e) {
+				autorisationService.logMessage(file,
+						"processpayment 500 Error during  insert in histoautogate for given orderid:[" + orderid + "]" + Util.formatException(e));
+				try {
+					autorisationService.logMessage(file, "2eme tentative : HistoAutoGate Saving ... ");
+					hist = histoAutoGateService.save(hist);
+				} catch (Exception ex) {
+					autorisationService.logMessage(file,
+							"2eme tentative : processpayment 500 Error during  insert in histoautogate for given orderid:["
+									+ orderid + "]" + Util.formatException(ex));
+				}
+			}
+
+			autorisationService.logMessage(file, "HistoAutoGate OK.");
+
+			if (tag20_resp == null) {
+				tag20_resp = "";
+			}
+
+			if (tag20_resp.equalsIgnoreCase("00"))
+
+			{
+				autorisationService.logMessage(file, "SWITCH RESONSE CODE :[00]");
+
+				try {
+					autorisationService.logMessage(file, "update etat demande : SW_PAYE ...");
+
+					dmd.setEtatDemande("SW_PAYE");
+					if(dmd.getTransactiontype().equals("0")) {
+						dmd.setDemCvv("");
+					}
+					dmd = demandePaiementService.save(dmd);
+					autorisationService.logMessage(file, "update etat demande : SW_PAYE OK");
+				} catch (Exception e) {
+					autorisationService.logMessage(file,
+							"processpayment 500 Error during DEMANDE_PAIEMENT update etat demande for given orderid:[" + orderid
+									+ "]" + Util.formatException(e));
+				}
+
+				// TODO: 2023-01-03 confirmation par Callback URL
+				String resultcallback = "";
+				String callbackURL = dmd.getCallbackURL();
+				autorisationService.logMessage(file, "Call Back URL: " + callbackURL);
+				if (dmd.getCallbackURL() != null && !dmd.getCallbackURL().equals("")
+						&& !dmd.getCallbackURL().equals("NA")) {
+					String clesigne = current_infoCommercant.getClePub();
+
+					String montanttrx = String.format("%.2f", dmd.getMontant()).replace(",", ".");
+					String token_gen = "";
+
+					autorisationService.logMessage(file,
+							"sendPOST(" + callbackURL + "," + clesigne + "," + dmd.getCommande() + ","
+									+ tag20_resp + "," + montanttrx + "," + hist.getHatNautemt() + ","
+									+ hist.getHatNumdem() + "," + dmd.getTypeCarte() + ")");
+
+					resultcallback = sendPOST(callbackURL, clesigne, dmd.getCommande(), tag20_resp,
+							montanttrx, hist.getHatNautemt(), hist.getHatNumdem(), token_gen,
+							Util.formatCard(cardnumber), dmd.getTypeCarte(), folder, file);
+
+					autorisationService.logMessage(file,
+							"resultcallback :[" + resultcallback + "]");
+
+					boolean repsucces = resultcallback.indexOf("GATESUCCESS") != -1 ? true : false;
+
+					boolean repfailed = resultcallback.indexOf("GATEFAILED") != -1 ? true : false;
+
+					autorisationService.logMessage(file, "repsucces : " + repsucces);
+					autorisationService.logMessage(file, "repfailed : " + repfailed);
+					if (repsucces) {
+						autorisationService.logMessage(file,
+								"Reponse recallURL OK => GATESUCCESS");
+						dmd.setRecallRep("Y");
+						dmd = demandePaiementService.save(dmd);
+					} else {
+						if (repfailed) {
+							autorisationService.logMessage(file,
+									"Reponse recallURL KO => GATEFAILED");
+							dmd.setRecallRep("N");
+							dmd = demandePaiementService.save(dmd);
+						}
+						//else {
+						if (!dgiPreprod.equals(merchantid) && !dgiProd.equals(merchantid)) {
+							autorisationService.logMessage(file, "Annulation auto start ...");
+
+							String repAnnu = annulationAuto(dmd, current_merchant, hist, model, folder,
+									file);
+
+							autorisationService.logMessage(file, "Annulation auto end");
+							s_status = "";
+							try {
+								CodeReponseDto codeReponseDto = codeReponseService
+										.findByRpcCode(repAnnu);
+								logger.info("codeReponseDto annulation : " + codeReponseDto);
+								autorisationService.logMessage(file,
+										"codeReponseDto annulation : " + codeReponseDto);
+								if (codeReponseDto != null) {
+									s_status = codeReponseDto.getRpcLibelle();
+								}
+							} catch (Exception ee) {
+								autorisationService.logMessage(file,
+										"Annulation auto 500 Error codeReponseDto null" + Util.formatException(ee));
+								// TODO: ee.printStackTrace();
+							}
+							autorisationService.logMessage(file,
+									"Switch status annulation : [" + s_status + "]");
+							if (repAnnu.equals("00")) {
+								dmd.setEtatDemande("SW_ANNUL_AUTO");
+								dmd.setDemCvv("");
+								demandePaiementService.save(dmd);
+								demandeDtoMsg.setMsgRefus(
+										"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
+								model.addAttribute("demandeDto", demandeDtoMsg);
+								// page = "operationAnnulee";
+								response.sendRedirect(request.getContextPath() + "/napspayment/newpage");
+								session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+								return null;
+							} else {
+								page = "error";
+							}
+
+							response.sendRedirect(dmd.getFailURL());
+
+							autorisationService.logMessage(file, "Fin processRequest ()");
+							logger.info("Fin processRequest ()");
+							// return page;
+							response.sendRedirect(request.getContextPath() + "/napspayment/newpage");
+							session.setAttribute("error", "La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
+							return null;
+						}
+						//}
+					}
+				}
+				// TODO: 2024-02-28 confirmation par Callback URL
+
+			} else {
+
+				autorisationService.logMessage(file, "transaction declined !!! ");
+				autorisationService.logMessage(file, "SWITCH RESONSE CODE :[" + tag20_resp + "]");
+
+				try {
+					autorisationService.logMessage(file,
+							"transaction declinded ==> update Demandepaiement status to SW_REJET ...");
+
+					dmd.setEtatDemande("SW_REJET");
+					dmd.setDemCvv("");
+					dmd = demandePaiementService.save(dmd);
+				} catch (Exception e) {
+					dmd.setDemCvv("");
+					demandePaiementService.save(dmd);
+					autorisationService.logMessage(file,
+							"processpayment 500 Error during  DemandePaiement update SW_REJET for given orderid:[" + orderid
+									+ "]" + Util.formatException(e));
+					demandeDtoMsg.setMsgRefus(
+							"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
+					model.addAttribute("demandeDto", demandeDtoMsg);
+					page = "result";
+					// return page;
+					response.sendRedirect(request.getContextPath() + "/napspayment/newpage");
+					session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+					return null;
+				}
+				autorisationService.logMessage(file, "update Demandepaiement status to SW_REJET OK.");
+				// TODO: 2024-02-27
+				try {
+					if(hist.getId() == null) {
+						// TODO: get histoauto check if exist
+						HistoAutoGateDto histToAnnulle = histoAutoGateService.findByHatNumCommandeAndHatNumcmrV1(orderid, merchantid);
+						if(histToAnnulle != null) {
+							autorisationService.logMessage(file,
+									"transaction declinded ==> update HistoAutoGateDto etat to A ...");
+							histToAnnulle.setHatEtat('A');
+							histToAnnulle = histoAutoGateService.save(histToAnnulle);
+						} else {
+							hist.setHatEtat('A');
+							hist = histoAutoGateService.save(hist);
+						}
+					} else {
+						hist.setHatEtat('A');
+						hist = histoAutoGateService.save(hist);
+					}
+				} catch (Exception err2) {
+					autorisationService.logMessage(file,
+							"processpayment 500 Error during HistoAutoGate findByHatNumCommandeAndHatNumcmrV1 orderid:[" + orderid
+									+ "] and merchantid:[" + merchantid + "]" + Util.formatException(err2));
+				}
+				autorisationService.logMessage(file, "update HistoAutoGateDto etat to A OK.");
+				// TODO: 2024-02-27
+			}
+
+			// TODO: JSONObject jso = new JSONObject();
+
+			autorisationService.logMessage(file, "Preparing autorization api response");
+
+			String authnumber = "", coderep = "", motif, merchnatidauth, dtdem = "";
+
+			try {
+				authnumber = hist.getHatNautemt();
+				coderep = hist.getHatCoderep();
+				motif = hist.getHatMtfref1();
+				merchnatidauth = hist.getHatNumcmr();
+				dtdem = dmd.getDemPan();
+				transactionid = String.valueOf(hist.getHatNumdem());
+			} catch (Exception e) {
+				autorisationService.logMessage(file,
+						"processpayment 500 Error during authdata preparation orderid:[" + orderid + "]" + Util.formatException(e));
+				//demandeDtoMsg.setMsgRefus(
+				//		"La transaction en cours n’a pas abouti (Erreur lors de la préparation des données d'authentification), votre compte ne sera pas débité, merci de réessayer.");
+				//model.addAttribute("demandeDto", demandeDtoMsg);
+				//page = "result";
+				//return page;
+			}
+
+			// TODO: reccurent transaction processing
+
+			// TODO: reccurent insert and update
+
+			try {
+				String data_noncrypt = "id_commande=" + orderid + "&nomprenom=" + fname + "&email=" + email
+						+ "&montant=" + amount + "&frais=" + "" + "&repauto=" + coderep + "&numAuto=" + authnumber
+						+ "&numCarte=" + Util.formatCard(cardnumber) + "&typecarte=" + dmd.getTypeCarte()
+						+ "&numTrans=" + transactionid;
+
+				autorisationService.logMessage(file, "data_noncrypt : " + data_noncrypt);
+				logger.info("data_noncrypt : " + data_noncrypt);
+
+				if (data_noncrypt.length() > 200) {
+					// TODO : First, try reducing the length by adjusting the fname
+					if (!fname.isEmpty()) {
+						fname = fname.length() > 10 ? fname.substring(0, 10) : fname;
+					}
+
+					// TODO : Rebuild the data_noncrypt string with the updated fname
+					data_noncrypt = "id_commande=" + orderid + "&nomprenom=" + fname + "&email="
+							+ email + "&montant=" + amount + "&frais=" + "" + "&repauto=" + coderep
+							+ "&numAuto=" + authnumber + "&numCarte=" + Util.formatCard(cardnumber)
+							+ "&typecarte=" + dmd.getTypeCarte() + "&numTrans=" + transactionid;
+
+					autorisationService.logMessage(file, "data_noncrypt : " + data_noncrypt);
+					// TODO : If the length is still greater than 200, reduce the length of email
+					if (data_noncrypt.length() > 200 && !email.isEmpty()) {
+						email = email.length() > 10 ? email.substring(0, 10) : email;
+					}
+
+					// TODO : Rebuild again with the updated email
+					data_noncrypt = "id_commande=" + orderid + "&nomprenom=" + fname + "&email="
+							+ email + "&montant=" + amount + "&frais=" + "" + "&repauto=" + coderep
+							+ "&numAuto=" + authnumber + "&numCarte=" + Util.formatCard(cardnumber)
+							+ "&typecarte=" + dmd.getTypeCarte() + "&numTrans=" + transactionid;
+
+					autorisationService.logMessage(file, "data_noncrypt : " + data_noncrypt);
+				}
+
+				String plainTxtSignature = orderid + current_infoCommercant.getClePub();
+
+				autorisationService.logMessage(file, "plainTxtSignature : " + plainTxtSignature);
+				logger.info("plainTxtSignature : " + plainTxtSignature);
+
+				String data = RSACrypto.encryptByPublicKeyWithMD5Sign(data_noncrypt, current_infoCommercant.getClePub(),
+						plainTxtSignature, folder, file);
+
+				autorisationService.logMessage(file, "data encrypt : " + data);
+				logger.info("data encrypt : " + data);
+
+				if (coderep.equals("00")) {
+					autorisationService.logMessage(file,
+							"coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
+					autorisationService.logMessage(file,"?data=" + data + "==&codecmr=" + merchantid);
+					if (dmd.getSuccessURL() != null) {
+						response.sendRedirect(dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" + merchantid);
+						autorisationService.logMessage(file, "Fin processpayment ()");
+						return  null;
+					} else {
+						ResponseDto responseDto = new ResponseDto();
+						responseDto.setLname(dmd.getNom());
+						responseDto.setFname(dmd.getPrenom());
+						responseDto.setOrderid(dmd.getCommande());
+						responseDto.setAuthnumber(authnumber);
+						responseDto.setAmount(dmd.getMontant());
+						responseDto.setTransactionid(transactionid);
+						responseDto.setMerchantid(dmd.getComid());
+						responseDto.setEmail(dmd.getEmail());
+						responseDto.setMerchantname(current_infoCommercant.getCmrNom());
+						responseDto.setCardnumber(Util.formatCard(cardnumber));
+						responseDto.setTransactiontime(dateFormat.format(new Date()));
+
+						model.addAttribute("responseDto", responseDto);
+
+						page = "index";
+						autorisationService.logMessage(file, "Fin processpayment ()");
+						logger.info("Fin processpayment ()");
+						return page;
+					}
+				} else {
+					autorisationService.logMessage(file,
+							"coderep = " + coderep + " => Redirect to failURL : " + dmd.getFailURL());
+					demandeDtoMsg.setMsgRefus(
+							"La transaction en cours n’a pas abouti (" + s_status + ")," + " votre compte ne sera pas débité, merci de réessayer.");
+					model.addAttribute("demandeDto", demandeDtoMsg);
+					page = "result";
+					response.sendRedirect(dmd.getFailURL());
+					autorisationService.logMessage(file, "Fin processpayment ()");
+					return  null;
+				}
+			} catch (Exception jsouterr) {
+				autorisationService.logMessage(file,
+						"processpayment 500 Error during jso out processing given authnumber:[" + authnumber + "]" + jsouterr);
+				demandeDtoMsg.setMsgRefus(
+						"La transaction en cours n’a pas abouti (Erreur lors du traitement de sortie JSON), votre compte ne sera pas débité, merci de réessayer.");
+				model.addAttribute("demandeDto", demandeDtoMsg);
+				page = "result";
+				// return page;
+				response.sendRedirect(dmd.getSuccessURL());
+				return null;
+			}
+
+			// TODO: fin
+			// TODO: *******************************************************************************************************************
+		} else if (reponseMPI.equals("C") || reponseMPI.equals("D")) {
+			// TODO: ********************* Cas chalenge responseMPI equal C ou D
+			// TODO: *********************
+			autorisationService.logMessage(file, "****** Cas chalenge responseMPI equal C ou D ******");
+			try {
+				dmd.setCreq(threeDsecureResponse.getHtmlCreq());
+				if(threeDSServerTransID.equals("") || threeDSServerTransID == null) {
+					threeDSServerTransID = threeDsecureResponse.getThreeDSServerTransID();
+				}
+				dmd.setDemxid(threeDSServerTransID);
+				dmd.setEtatDemande("SND_TO_ACS");
+				dmd.setIs3ds("Y");
+				demandeDto = demandePaiementService.save(dmd);
+				autorisationService.logMessage(file, "threeDSServerTransID : " + demandeDto.getDemxid());
+				model.addAttribute("demandeDto", demandeDto);
+				// TODO: 2024-06-20 old
+			/*page = "chalenge";
+
+			autorisationService.logMessage(file, "set demandeDto model creq : " + demandeDto.getCreq());
+			autorisationService.logMessage(file, "return page : " + page);*/
+
+				// TODO: 2024-06-20
+				// TODO: autre façon de faire la soumission automatique de formulaires ACS via le HttpServletResponse.
+
+				String creq = "";
+				String acsUrl = "";
+				String response3DS = threeDsecureResponse.getHtmlCreq();
+				//Pattern pattern = Pattern.compile("action='(.*?)'.*value='(.*?)'");
+				Pattern pattern = Pattern.compile("action='([^']*)'.*?value='([^']*)'");
+				Matcher matcher = pattern.matcher(response3DS);
+
+				// TODO: Si une correspondance est trouvée
+				if (matcher.find()) {
+					acsUrl = matcher.group(1);
+					creq = matcher.group(2);
+					logger.info("L'URL ACS est : " + acsUrl);
+					logger.info("La valeur de creq est : " + creq);
+					autorisationService.logMessage(file, "L'URL ACS est : " + acsUrl);
+					autorisationService.logMessage(file, "La valeur de creq est : " + creq);
+
+					String decodedCreq = new String(Base64.decodeBase64(creq.getBytes()));
+					logger.info("La valeur de decodedCreq est : " + decodedCreq);
+					autorisationService.logMessage(file, "La valeur de decodedCreq est : " + decodedCreq);
+
+					// TODO: URL de feedback après soumission ACS
+					String feedbackUrl = request.getContextPath() + "/acsFeedback";
+
+					// TODO: Afficher le formulaire HTML dans la réponse
+					response.setContentType("text/html");
+					response.setCharacterEncoding("UTF-8");
+					response.getWriter().println("<html><body>");
+					response.getWriter().println("<form id=\"acsForm\" action=\"" + acsUrl + "\" method=\"post\">");
+					response.getWriter().println("<input type=\"hidden\" name=\"creq\" value=\"" + creq + "\">");
+					response.getWriter().println("</form>");
+					response.getWriter().println("<script>document.getElementById('acsForm').submit();</script>");
+
+				/* a revoir apres pour la confirmation de l'affichage acs
+				response.getWriter().println("document.getElementById('acsForm').submit();");
+				response.getWriter().println("fetch('" + feedbackUrl + "', { method: 'POST' });");  // TODO: Envoi du feedback
+				response.getWriter().println("</script>");
+				*/
+					response.getWriter().println("</body></html>");
+
+					logger.info("Le Creq a été envoyé à l'ACS par soumission automatique du formulaire.");
+					autorisationService.logMessage(file, "Le Creq a été envoyé à l'ACS par soumission automatique du formulaire.");
+
+					return null;  // TODO: Terminer le traitement ici après avoir envoyé le formulaire
+				} else {
+					logger.info("Aucune correspondance pour l'URL ACS et creq trouvée dans la réponse HTML.");
+					autorisationService.logMessage(file, "Aucune correspondance pour l'URL ACS et creq trouvée dans la réponse HTML.");
+					page = "error";  // TODO: Définir la page d'erreur appropriée
+					response.sendRedirect(request.getContextPath() + "/napspayment/newpage");
+					session.setAttribute("error", "Aucune correspondance pour l'URL ACS et creq trouvée dans la réponse HTML.");
+					return null;
+				}
+
+				// TODO: 2024-06-20
+			} catch (Exception ex) {
+				autorisationService.logMessage(file, "Aucune correspondance pour l'URL ACS et creq trouvée dans la réponse HTML " + Util.formatException(ex));
+				demandeDtoMsg.setMsgRefus(
+						"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
+				model.addAttribute("demandeDto", demandeDtoMsg);
+				dmd.setDemCvv("");
+				demandePaiementService.save(dmd);
+				page = "result";
+				// return page;
+				response.sendRedirect(request.getContextPath() + "/napspayment/newpage");
+				session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+				return null;
+			}
+		} else if (reponseMPI.equals("E")) {
+			// TODO: ********************* Cas responseMPI equal E
+			// TODO: *********************
+			page = autorisationService.handleMpiError(errmpi, file, idDemande, threeDSServerTransID, dmd, model, page);
+		} else {
+			page = autorisationService.handleMpiError(errmpi, file, idDemande, threeDSServerTransID, dmd, model, page);
+		}
+
+		logger.info("return page : " + page);
+
+		autorisationService.logMessage(file, "*********** End processpayment () ************** ");
+		logger.info("*********** End processpayment () ************** ");
+
+		return page;
 	}
-	
+
 	@RequestMapping(value = "/napspayment/operationAnnulee", method = RequestMethod.GET)
 	@SuppressWarnings("all")
 	public String operationAnnulee() {

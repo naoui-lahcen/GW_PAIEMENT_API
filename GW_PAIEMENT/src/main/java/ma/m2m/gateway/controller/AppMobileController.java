@@ -892,7 +892,7 @@ public class AppMobileController {
                                             "authorization 500 Error during  DemandePaiement update SW_REJET for given orderid:["
                                                     + orderid + "]" + Util.formatException(e));
                                     demandeDtoMsg.setMsgRefus(
-                                            "La transaction en cours n’a pas abouti (Erreur lors de la mise à jour de DemandePaiement SW_REJET), votre compte ne sera pas débité, merci de réessayer.");
+                                            "La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
                                     model.addAttribute("demandeDto", demandeDtoMsg);
                                     page = "result";
                                     autorisationService.logMessage(file, "Fin processRequestMobile ()");
@@ -929,22 +929,6 @@ public class AppMobileController {
                                 // TODO: 2024-02-27
                             }
 
-                            autorisationService.logMessage(file, "Generating paymentid...");
-
-                            String uuid_paymentid, paymentid = "";
-                            try {
-                                uuid_paymentid = String.format("%040d",
-                                        new BigInteger(UUID.randomUUID().toString().replace("-", ""), 22));
-                                paymentid = uuid_paymentid.substring(uuid_paymentid.length() - 22);
-                            } catch (Exception e) {
-                                autorisationService.logMessage(file,
-                                        "authorization 500 Error during  paymentid generation for given orderid:["
-                                                + orderid + "]" + Util.formatException(e));
-                            }
-
-                            autorisationService.logMessage(file, "Generating paymentid OK");
-                            autorisationService.logMessage(file, "paymentid :[" + paymentid + "]");
-
                             // TODO: JSONObject jso = new JSONObject();
 
                             autorisationService.logMessage(file, "Preparing autorization api response");
@@ -974,12 +958,6 @@ public class AppMobileController {
                             }
 
                             try {
-                                /*
-                                 * String data_noncrypt = "orderid=" + orderid + "&fname=" + fname + "&lname=" +
-                                 * lname + "&email=" + email + "&amount=" + amount + "&coderep=" + coderep +
-                                 * "&authnumber=" + authnumber + "&cardnumber=" + Util.formatCard(cardnumber) +
-                                 * "&transactionid=" + transactionid + "&paymentid=" + paymentid;
-                                 */
                                 String data_noncrypt = "id_commande=" + orderid + "&nomprenom=" + fname + "&email="
                                         + email + "&montant=" + montantSansFrais + "&frais=" + frais + "&repauto="
                                         + coderep + "&numAuto=" + authnumber + "&numCarte="
@@ -2426,7 +2404,7 @@ public class AppMobileController {
                             "recharger 500 Error during  DemandePaiement update SW_REJET for given orderid:[" + orderid
                                     + "]" + Util.formatException(e));
                     demandeDtoMsg.setMsgRefus(
-                            "La transaction en cours n’a pas abouti (Erreur lors de la mise à jour de DemandePaiement SW_REJET), votre compte ne sera pas débité, merci de réessayer.");
+                            "La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
                     model.addAttribute("demandeDto", demandeDtoMsg);
                     page = "result";
                     return page;
@@ -2459,21 +2437,6 @@ public class AppMobileController {
                 // TODO: 2024-02-27
             }
 
-            autorisationService.logMessage(file, "Generating paymentid...");
-
-            String uuid_paymentid, paymentid = "";
-            try {
-                uuid_paymentid = String.format("%040d",
-                        new BigInteger(UUID.randomUUID().toString().replace("-", ""), 22));
-                paymentid = uuid_paymentid.substring(uuid_paymentid.length() - 22);
-            } catch (Exception e) {
-                autorisationService.logMessage(file,
-                        "recharger 500 Error during  paymentid generation for given orderid:[" + orderid + "]" + Util.formatException(e));
-            }
-
-            autorisationService.logMessage(file, "Generating paymentid OK");
-            autorisationService.logMessage(file, "paymentid :[" + paymentid + "]");
-
             // TODO: JSONObject jso = new JSONObject();
 
             autorisationService.logMessage(file, "Preparing autorization api response");
@@ -2500,14 +2463,6 @@ public class AppMobileController {
             // TODO: reccurent insert and update
 
             try {
-
-                /*
-                 * String data_noncrypt = "orderid=" + orderid + "&fname=" + fname + "&lname=" +
-                 * lname + "&email=" + email + "&amount=" + amount + "&coderep=" + coderep +
-                 * "&authnumber=" + authnumber + "&cardnumber=" + Util.formatCard(cardnumber) +
-                 * "&transactionid=" + transactionid + "&paymentid=" + paymentid;
-                 */
-
                 String data_noncrypt = "id_commande=" + orderid + "&nomprenom=" + fname + "&email=" + email
                         + "&montant=" + montantSansFrais + "&frais=" + frais + "&repauto=" + coderep + "&numAuto="
                         + authnumber + "&numCarte=" + Util.formatCard(cardnumber) + "&typecarte=" + dmd.getTypeCarte()
@@ -2988,7 +2943,6 @@ public class AppMobileController {
             String expirydateFormated = carte.getYear() + "-" + carte.getMoisValue() + "-" + "01";
             // TODO: exp
             // TODO: String expirydateFormated = "2020" + "-" + "05" + "-" + "01";
-            logger.info("cardtokenDto expirydate : " + expirydateFormated);
             autorisationService.logMessage(file, "cardtokenDto expirydate formated : " + expirydateFormated);
             Date dateExp = dateFormatSimple.parse(expirydateFormated);
             if (dateExp.before(dateToken)) {
