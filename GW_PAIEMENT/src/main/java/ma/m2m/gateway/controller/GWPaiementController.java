@@ -2180,24 +2180,130 @@ public class GWPaiementController {
 		return "index2";
 	}
 
-	@RequestMapping(value = "/napspayment/newpage", method = RequestMethod.GET)
+	@RequestMapping(value = "/napspayment/newpage/token/{token}", method = RequestMethod.GET)
 	@SuppressWarnings("all")
-	public String newpage(Model model, HttpSession session) {
+	public String newpage(@PathVariable(value = "token") String token, Model model, HttpSession session) {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "GW_NEWPAGE_" + randomWithSplittableRandom;
 		Util.creatFileTransaction(file);
 		autorisationService.logMessage(file, "*********** Start newpage () ************** ");
-		DemandePaiementDto demandeDto = new DemandePaiementDto();
-		demandeDto.setCommande("0292DJ92_9238_S201");
-		demandeDto.setMontantStr("250.00");
-		demandeDto.setIddemande(42);
-		demandeDto.setComid("1010101");
 
+		DemandePaiementDto demandeDto = new DemandePaiementDto();
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d MMMM yyyy, HH:mm");
 		LocalDateTime now = LocalDateTime.now();
 		String formattedDate = now.format(formatter);
-		model.addAttribute("demandeDto", demandeDto);
 		model.addAttribute("formattedDate", formattedDate);
+
+		CommercantDto merchant = null;
+		GalerieDto galerie = null;
+		String merchantid = "";
+		String orderid = "";
+
+		String page = "newpage";
+
+		try {
+			demandeDto = demandePaiementService.findByTokencommande(token);
+
+			if (demandeDto != null) {
+				autorisationService.logMessage(file, "DemandePaiement is found iddemande/Commande : "
+						+ demandeDto.getIddemande() + "/" + demandeDto.getCommande());
+
+				// TODO: get list of years + 10
+				int currentYear = Year.now().getValue();
+				List<Integer> years = generateYearList(currentYear, currentYear + 10);
+
+				demandeDto.setYears(years);
+
+				// TODO: get list of months
+				List<Month> months = Arrays.asList(Month.values());
+				List<String> monthNames = convertMonthListToStringList(months);
+				List<MonthDto> monthValues = convertStringAGListToFR(monthNames);
+
+				demandeDto.setMonths(monthValues);
+
+				autorisationService.processPaymentPageData(demandeDto, page, file);
+
+				Util.formatAmount(demandeDto);
+
+				model.addAttribute("demandeDto", demandeDto);
+
+				if (demandeDto.getEtatDemande().equals("SW_PAYE") || demandeDto.getEtatDemande().equals("PAYE")) {
+					autorisationService.logMessage(file, "Opération déjà effectuée");
+					demandeDto.setMsgRefus(
+							"La transaction en cours n’a pas abouti (Opération déjà effectuée), votre compte ne sera pas débité, merci de réessayer.");
+					model.addAttribute("demandeDto", demandeDto);
+					page = "operationEffectue";
+				} else if (demandeDto.getEtatDemande().equals("SW_REJET")) {
+					autorisationService.logMessage(file, "Transaction rejetée");
+					demandeDto.setMsgRefus(
+							"La transaction en cours n’a pas abouti (Transaction rejetée), votre compte ne sera pas débité, merci de réessayer.");
+					model.addAttribute("demandeDto", demandeDto);
+					page = "result";
+				} else {
+					autorisationService.processInfosMerchant(demandeDto, folder, file);
+				}
+			} else {
+				autorisationService.logMessage(file, "demandeDto not found token : " + token);
+				demandeDto = new DemandePaiementDto();
+				demandeDto.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité.");
+				model.addAttribute("demandeDto", demandeDto);
+				page = "result";
+			}
+
+		} catch (Exception e) {
+			autorisationService.logMessage(file,
+					"showPagePayment 500 DEMANDE_PAIEMENT misconfigured in DB or not existing token:[" + token + "]"
+							+ Util.formatException(e));
+
+			autorisationService.logMessage(file, "showPagePayment 500 exception" + Util.formatException(e));
+			logger.error("Exception : " , e);
+			demandeDto = new DemandePaiementDto();
+			demandeDto.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité.");
+			model.addAttribute("demandeDto", demandeDto);
+			page = "result";
+		}
+
+		// TODO: gestion expiration de la session on stoque la date en millisecond
+		session.setAttribute("paymentStartTime", System.currentTimeMillis());
+		autorisationService.logMessage(file, "paymentStartTime : " + System.currentTimeMillis());
+		demandeDto.setTimeoutURL(String.valueOf(System.currentTimeMillis()));
+
+		if (page.equals("newpage")) {
+			if(demandeDto.getEtatDemande().equals("INIT")) {
+				demandeDto.setEtatDemande("P_CHRG_OK");
+				demandePaiementService.save(demandeDto);
+				autorisationService.logMessage(file, "update Demandepaiement status to P_CHRG_OK");
+			}
+			if (demandeDto.getComid().equals(lydecPreprod) || demandeDto.getComid().equals(lydecProd)) {
+				autorisationService.logMessage(file, "Si le commercant est LYDEC : " + demandeDto.getComid());
+				List<FactureLDDto> listFactureLD = new ArrayList<>();
+				listFactureLD = factureLDService.findFactureByIddemande(demandeDto.getIddemande());
+				if (listFactureLD != null && listFactureLD.size() > 0) {
+					autorisationService.logMessage(file, "listFactureLD : " + listFactureLD.size());
+					demandeDto.setFactures(listFactureLD);
+				} else {
+					autorisationService.logMessage(file, "listFactureLD vide ");
+					demandeDto.setFactures(null);
+				}
+				model.addAttribute("demandeDto", demandeDto);
+				page = "napspaymentlydec";
+			}
+			if (demandeDto.getComid().equals(dgiPreprod) || demandeDto.getComid().equals(dgiProd)) {
+				autorisationService.logMessage(file, "Si le commercant est DGI : " + demandeDto.getComid());
+				List<ArticleDGIDto> articles = new ArrayList<>();
+				articles = articleDGIService.findArticleByIddemande(demandeDto.getIddemande());
+				if (articles != null && articles.size() > 0) {
+					autorisationService.logMessage(file, "articles : " + articles.size());
+					demandeDto.setArticles(articles);
+				} else {
+					autorisationService.logMessage(file, "articles vide ");
+					demandeDto.setArticles(null);
+				}
+				model.addAttribute("demandeDto", demandeDto);
+				page = "napspaymentdgi";
+			}
+
+		}
 
 		autorisationService.logMessage(file, "*********** End newpage () ************** ");
 
