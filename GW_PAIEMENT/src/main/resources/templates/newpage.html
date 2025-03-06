@@ -156,8 +156,21 @@
             height: 48px;
        }
         .numcarte {
+            position: relative;
             display: flex;
             align-items: center;
+        }
+        .numcarte input {
+            width: 100%;
+            padding-right: 40px; /* Espace pour l'icône */
+            height: 40px;
+        }
+        .numcarte img {
+            position: absolute;
+            right: 10px;
+            width: 30px;
+            height: auto;
+            display: none;
         }
         .col-md-5 {
             padding-right: 0;
@@ -463,7 +476,7 @@
                     <div class="form-group numcarte">
                         <input id="num" oninput="checkCardType()" placeholder="1234 1234 1234 1234" required="required"
                                th:field="*{demPan}" type="number">
-                        <img alt="Image" id="card-logo" style="width: 30px; margin-left: 10px; display: none;"
+                        <img alt="Image" id="card-logo"
                              th:src="@{/images/powered_by_naps.png}">
                     </div>
                     <div class="form-group d-flex gap-2">
