@@ -1739,7 +1739,7 @@ public class GWPaiementController {
 
 			autorisationService.logMessage(file, "Preparing autorization api response");
 
-			String authnumber, coderep, motif, merchnatidauth, dtdem = "";
+			String authnumber, coderep, motif, merchnatidauth, dtdem = "", data = "";
 
 			try {
 				authnumber = hist.getHatNautemt();
@@ -1803,60 +1803,57 @@ public class GWPaiementController {
 				autorisationService.logMessage(file, "plainTxtSignature : " + plainTxtSignature);
 				logger.info("plainTxtSignature : " + plainTxtSignature);
 
-				String data = RSACrypto.encryptByPublicKeyWithMD5Sign(data_noncrypt, current_infoCommercant.getClePub(),
+				data = RSACrypto.encryptByPublicKeyWithMD5Sign(data_noncrypt, current_infoCommercant.getClePub(),
 						plainTxtSignature, folder, file);
 
 				autorisationService.logMessage(file, "data encrypt : " + data);
 				logger.info("data encrypt : " + data);
 
-				if (coderep.equals("00")) {
-					autorisationService.logMessage(file,
-							"coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
-					autorisationService.logMessage(file,"?data=" + data + "==&codecmr=" + merchantid);
-					if (dmd.getSuccessURL() != null) {
-						response.sendRedirect(dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" + merchantid);
-						autorisationService.logMessage(file, "Fin payer ()");
-						return  null;
-					} else {
-						ResponseDto responseDto = new ResponseDto();
-						responseDto.setLname(dmd.getNom());
-						responseDto.setFname(dmd.getPrenom());
-						responseDto.setOrderid(dmd.getCommande());
-						responseDto.setAuthnumber(authnumber);
-						responseDto.setAmount(dmd.getMontant());
-						responseDto.setTransactionid(transactionid);
-						responseDto.setMerchantid(dmd.getComid());
-						responseDto.setEmail(dmd.getEmail());
-						responseDto.setMerchantname(current_infoCommercant.getCmrNom());
-						responseDto.setCardnumber(Util.formatCard(cardnumber));
-						responseDto.setTransactiontime(dateFormat.format(new Date()));
-
-						model.addAttribute("responseDto", responseDto);
-
-						page = "index";
-						autorisationService.logMessage(file, "Fin payer ()");
-						logger.info("Fin payer ()");
-						return page;
-					}
-				} else {
-					autorisationService.logMessage(file,
-							"coderep = " + coderep + " => Redirect to failURL : " + dmd.getFailURL());
-					demandeDtoMsg.setMsgRefus(
-							"La transaction en cours n’a pas abouti (" + s_status + ")," + " votre compte ne sera pas débité, merci de réessayer.");
-					model.addAttribute("demandeDto", demandeDtoMsg);
-					page = "result";
-					response.sendRedirect(dmd.getFailURL());
-					autorisationService.logMessage(file, "Fin payer ()");
-					return  null;
-				}
 			} catch (Exception jsouterr) {
 				autorisationService.logMessage(file,
 						"payer 500 Error during jso out processing given authnumber:[" + authnumber + "]" + jsouterr);
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Erreur lors du traitement de sortie JSON), votre compte ne sera pas débité, merci de réessayer.");
+						"Erreur lors du traitement de sortie, transaction abouti redirection to SuccessUrl");
+			}
+			if (coderep.equals("00")) {
+				autorisationService.logMessage(file,
+						"coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
+				autorisationService.logMessage(file,"?data=" + data + "==&codecmr=" + merchantid);
+				if (dmd.getSuccessURL() != null) {
+					response.sendRedirect(dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" + merchantid);
+					autorisationService.logMessage(file, "Fin payer ()");
+					return  null;
+				} else {
+					ResponseDto responseDto = new ResponseDto();
+					responseDto.setLname(dmd.getNom());
+					responseDto.setFname(dmd.getPrenom());
+					responseDto.setOrderid(dmd.getCommande());
+					responseDto.setAuthnumber(authnumber);
+					responseDto.setAmount(dmd.getMontant());
+					responseDto.setTransactionid(transactionid);
+					responseDto.setMerchantid(dmd.getComid());
+					responseDto.setEmail(dmd.getEmail());
+					responseDto.setMerchantname(current_infoCommercant.getCmrNom());
+					responseDto.setCardnumber(Util.formatCard(cardnumber));
+					responseDto.setTransactiontime(dateFormat.format(new Date()));
+
+					model.addAttribute("responseDto", responseDto);
+
+					page = "index";
+					autorisationService.logMessage(file, "Fin payer ()");
+					logger.info("Fin payer ()");
+					return page;
+				}
+			} else {
+				autorisationService.logMessage(file,
+						"coderep = " + coderep + " => Redirect to failURL : " + dmd.getFailURL());
+				demandeDtoMsg.setMsgRefus(
+						"La transaction en cours n’a pas abouti (" + s_status + ")," + " votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
-				return page;
+				response.sendRedirect(dmd.getFailURL());
+				autorisationService.logMessage(file, "Fin payer ()");
+				return  null;
 			}
 
 			// TODO: fin
@@ -3341,7 +3338,7 @@ public class GWPaiementController {
 
 			autorisationService.logMessage(file, "Preparing autorization api response");
 
-			String authnumber = "", coderep = "", motif, merchnatidauth, dtdem = "";
+			String authnumber = "", coderep = "", motif, merchnatidauth, dtdem = "", data = "";
 
 			try {
 				authnumber = hist.getHatNautemt();
@@ -3353,11 +3350,8 @@ public class GWPaiementController {
 			} catch (Exception e) {
 				autorisationService.logMessage(file,
 						"processpayment 500 Error during authdata preparation orderid:[" + orderid + "]" + Util.formatException(e));
-				//demandeDtoMsg.setMsgRefus(
-				//		"La transaction en cours n’a pas abouti (Erreur lors de la préparation des données d'authentification), votre compte ne sera pas débité, merci de réessayer.");
-				//model.addAttribute("demandeDto", demandeDtoMsg);
-				//page = "result";
-				//return page;
+				autorisationService.logMessage(file,
+						"La transaction en cours n’a pas abouti (Erreur lors de la préparation des données d'authentification), votre compte ne sera pas débité, merci de réessayer.");
 			}
 
 			// TODO: reccurent transaction processing
@@ -3405,62 +3399,58 @@ public class GWPaiementController {
 				autorisationService.logMessage(file, "plainTxtSignature : " + plainTxtSignature);
 				logger.info("plainTxtSignature : " + plainTxtSignature);
 
-				String data = RSACrypto.encryptByPublicKeyWithMD5Sign(data_noncrypt, current_infoCommercant.getClePub(),
+				data = RSACrypto.encryptByPublicKeyWithMD5Sign(data_noncrypt, current_infoCommercant.getClePub(),
 						plainTxtSignature, folder, file);
 
 				autorisationService.logMessage(file, "data encrypt : " + data);
 				logger.info("data encrypt : " + data);
 
-				if (coderep.equals("00")) {
-					autorisationService.logMessage(file,
-							"coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
-					autorisationService.logMessage(file,"?data=" + data + "==&codecmr=" + merchantid);
-					if (dmd.getSuccessURL() != null) {
-						response.sendRedirect(dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" + merchantid);
-						autorisationService.logMessage(file, "Fin processpayment ()");
-						return  null;
-					} else {
-						ResponseDto responseDto = new ResponseDto();
-						responseDto.setLname(dmd.getNom());
-						responseDto.setFname(dmd.getPrenom());
-						responseDto.setOrderid(dmd.getCommande());
-						responseDto.setAuthnumber(authnumber);
-						responseDto.setAmount(dmd.getMontant());
-						responseDto.setTransactionid(transactionid);
-						responseDto.setMerchantid(dmd.getComid());
-						responseDto.setEmail(dmd.getEmail());
-						responseDto.setMerchantname(current_infoCommercant.getCmrNom());
-						responseDto.setCardnumber(Util.formatCard(cardnumber));
-						responseDto.setTransactiontime(dateFormat.format(new Date()));
-
-						model.addAttribute("responseDto", responseDto);
-
-						page = "index";
-						autorisationService.logMessage(file, "Fin processpayment ()");
-						logger.info("Fin processpayment ()");
-						return page;
-					}
-				} else {
-					autorisationService.logMessage(file,
-							"coderep = " + coderep + " => Redirect to failURL : " + dmd.getFailURL());
-					demandeDtoMsg.setMsgRefus(
-							"La transaction en cours n’a pas abouti (" + s_status + ")," + " votre compte ne sera pas débité, merci de réessayer.");
-					model.addAttribute("demandeDto", demandeDtoMsg);
-					page = "result";
-					response.sendRedirect(dmd.getFailURL());
-					autorisationService.logMessage(file, "Fin processpayment ()");
-					return  null;
-				}
 			} catch (Exception jsouterr) {
 				autorisationService.logMessage(file,
 						"processpayment 500 Error during jso out processing given authnumber:[" + authnumber + "]" + jsouterr);
+				autorisationService.logMessage(file,
+						"Erreur lors du traitement de sortie, transaction abouti redirection to SuccessUrl");
+			}
+
+			if (coderep.equals("00")) {
+				autorisationService.logMessage(file,
+						"coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
+				autorisationService.logMessage(file,"?data=" + data + "==&codecmr=" + merchantid);
+				if (dmd.getSuccessURL() != null) {
+					response.sendRedirect(dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" + merchantid);
+					autorisationService.logMessage(file, "Fin processpayment ()");
+					return  null;
+				} else {
+					ResponseDto responseDto = new ResponseDto();
+					responseDto.setLname(dmd.getNom());
+					responseDto.setFname(dmd.getPrenom());
+					responseDto.setOrderid(dmd.getCommande());
+					responseDto.setAuthnumber(authnumber);
+					responseDto.setAmount(dmd.getMontant());
+					responseDto.setTransactionid(transactionid);
+					responseDto.setMerchantid(dmd.getComid());
+					responseDto.setEmail(dmd.getEmail());
+					responseDto.setMerchantname(current_infoCommercant.getCmrNom());
+					responseDto.setCardnumber(Util.formatCard(cardnumber));
+					responseDto.setTransactiontime(dateFormat.format(new Date()));
+
+					model.addAttribute("responseDto", responseDto);
+
+					page = "index";
+					autorisationService.logMessage(file, "Fin processpayment ()");
+					logger.info("Fin processpayment ()");
+					return page;
+				}
+			} else {
+				autorisationService.logMessage(file,
+						"coderep = " + coderep + " => Redirect to failURL : " + dmd.getFailURL());
 				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (Erreur lors du traitement de sortie JSON), votre compte ne sera pas débité, merci de réessayer.");
+						"La transaction en cours n’a pas abouti (" + s_status + ")," + " votre compte ne sera pas débité, merci de réessayer.");
 				model.addAttribute("demandeDto", demandeDtoMsg);
 				page = "result";
-				// return page;
-				response.sendRedirect(dmd.getSuccessURL());
-				return null;
+				response.sendRedirect(dmd.getFailURL());
+				autorisationService.logMessage(file, "Fin processpayment ()");
+				return  null;
 			}
 
 			// TODO: fin

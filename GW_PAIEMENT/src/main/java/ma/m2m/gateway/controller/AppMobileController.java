@@ -940,7 +940,7 @@ public class AppMobileController {
                             String dtdem = "";
                             String frais = "";
                             String montantSansFrais = "";
-
+                            String data = "";
                             try {
                                 authnumber = hist.getHatNautemt();
                                 coderep = hist.getHatCoderep();
@@ -1001,64 +1001,60 @@ public class AppMobileController {
                                 autorisationService.logMessage(file, "plainTxtSignature : " + plainTxtSignature);
                                 logger.info("plainTxtSignature : " + plainTxtSignature);
 
-                                String data = RSACrypto.encryptByPublicKeyWithMD5Sign(data_noncrypt,
+                                data = RSACrypto.encryptByPublicKeyWithMD5Sign(data_noncrypt,
                                         current_infoCommercant.getClePub(), plainTxtSignature, folder, file);
 
                                 autorisationService.logMessage(file, "data encrypt : " + data);
                                 logger.info("data encrypt : " + data);
 
-                                if (coderep.equals("00")) {
-                                    autorisationService.logMessage(file,
-                                            "coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
-                                    autorisationService.logMessage(file,"?data=" + data + "==&codecmr=" + merchantid);
-                                    if (dmd.getSuccessURL() != null) {
-                                        response.sendRedirect(
-                                                dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" + merchantid);
-                                    } else {
-                                        ResponseDto responseDto = new ResponseDto();
-                                        responseDto.setLname(dmd.getNom());
-                                        responseDto.setFname(dmd.getPrenom());
-                                        responseDto.setOrderid(dmd.getCommande());
-                                        responseDto.setAuthnumber(authnumber);
-                                        responseDto.setAmount(dmd.getMontant());
-                                        responseDto.setTransactionid(transactionid);
-                                        responseDto.setMerchantid(dmd.getComid());
-                                        responseDto.setEmail(dmd.getEmail());
-                                        responseDto.setMerchantname(current_infoCommercant.getCmrNom());
-                                        responseDto.setCardnumber(Util.formatCard(cardnumber));
-                                        responseDto.setTransactiontime(dateFormat.format(new Date()));
-
-                                        model.addAttribute("responseDto", responseDto);
-
-                                        page = "index";
-                                        autorisationService.logMessage(file, "Fin processRequestMobile ()");
-                                        logger.info("Fin processRequestMobile ()");
-                                        return page;
-                                    }
-                                } else {
-                                    autorisationService.logMessage(file,
-                                            "coderep = " + coderep + " => Redirect to failURL : " + dmd.getFailURL());
-                                    demandeDtoMsg.setMsgRefus(
-                                            "La transaction en cours n’a pas abouti (" + s_status + "),"
-                                                    + " votre compte ne sera pas débité, merci de réessayer.");
-                                    model.addAttribute("demandeDto", demandeDtoMsg);
-                                    page = "result";
-                                    autorisationService.logMessage(file, "Fin processRequestMobile ()");
-                                    logger.info("Fin processRequestMobile ()");
-                                    return page;
-                                }
-
                             } catch (Exception jsouterr) {
                                 autorisationService.logMessage(file,
                                         "authorization 500 Error during jso out processing given authnumber:["
                                                 + authnumber + "]" + jsouterr);
+                                autorisationService.logMessage(file,
+                                        "Erreur lors du traitement de sortie, transaction abouti redirection to SuccessUrl");
+                            }
+                            if (coderep.equals("00")) {
+                                autorisationService.logMessage(file,
+                                        "coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
+                                autorisationService.logMessage(file,"?data=" + data + "==&codecmr=" + merchantid);
+                                if (dmd.getSuccessURL() != null) {
+                                    response.sendRedirect(
+                                            dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" + merchantid);
+                                } else {
+                                    ResponseDto responseDto = new ResponseDto();
+                                    responseDto.setLname(dmd.getNom());
+                                    responseDto.setFname(dmd.getPrenom());
+                                    responseDto.setOrderid(dmd.getCommande());
+                                    responseDto.setAuthnumber(authnumber);
+                                    responseDto.setAmount(dmd.getMontant());
+                                    responseDto.setTransactionid(transactionid);
+                                    responseDto.setMerchantid(dmd.getComid());
+                                    responseDto.setEmail(dmd.getEmail());
+                                    responseDto.setMerchantname(current_infoCommercant.getCmrNom());
+                                    responseDto.setCardnumber(Util.formatCard(cardnumber));
+                                    responseDto.setTransactiontime(dateFormat.format(new Date()));
+
+                                    model.addAttribute("responseDto", responseDto);
+
+                                    page = "index";
+                                    autorisationService.logMessage(file, "Fin processRequestMobile ()");
+                                    logger.info("Fin processRequestMobile ()");
+                                    return page;
+                                }
+                            } else {
+                                autorisationService.logMessage(file,
+                                        "coderep = " + coderep + " => Redirect to failURL : " + dmd.getFailURL());
                                 demandeDtoMsg.setMsgRefus(
-                                        "La transaction en cours n’a pas abouti (Erreur lors du traitement de sortie JSON), votre compte ne sera pas débité, merci de réessayer.");
+                                        "La transaction en cours n’a pas abouti (" + s_status + "),"
+                                                + " votre compte ne sera pas débité, merci de réessayer.");
                                 model.addAttribute("demandeDto", demandeDtoMsg);
                                 page = "result";
+                                response.sendRedirect(dmd.getFailURL());
                                 autorisationService.logMessage(file, "Fin processRequestMobile ()");
                                 logger.info("Fin processRequestMobile ()");
-                                return page;
+                                return null;
+                                //return page;
                             }
                         } else if (reponseMPI.equals("C") || reponseMPI.equals("D")) {
                             try {
@@ -1563,7 +1559,7 @@ public class AppMobileController {
     @PostMapping("/recharger")
     @SuppressWarnings("all")
     public String recharger(Model model, @ModelAttribute("demandeDto") DemandePaiementDto dto,
-                            HttpServletRequest request, HttpServletResponse response, HttpSession session) {
+                            HttpServletRequest request, HttpServletResponse response, HttpSession session) throws IOException {
         randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
         String file = "MB_RECHARGER_" + randomWithSplittableRandom;
         // TODO: create file log
@@ -2441,7 +2437,7 @@ public class AppMobileController {
 
             autorisationService.logMessage(file, "Preparing autorization api response");
 
-            String authnumber = "", coderep = "", motif, merchnatidauth, dtdem = "", frais = "", montantSansFrais = "";
+            String authnumber = "", coderep = "", motif, merchnatidauth, dtdem = "", frais = "", montantSansFrais = "", data = "";
 
             try {
                 authnumber = hist.getHatNautemt();
@@ -2501,60 +2497,58 @@ public class AppMobileController {
 
                 autorisationService.logMessage(file, "plainTxtSignature : " + plainTxtSignature);
 
-                String data = RSACrypto.encryptByPublicKeyWithMD5Sign(data_noncrypt, current_infoCommercant.getClePub(),
+                data = RSACrypto.encryptByPublicKeyWithMD5Sign(data_noncrypt, current_infoCommercant.getClePub(),
                         plainTxtSignature, folder, file);
 
                 autorisationService.logMessage(file, "data encrypt : " + data);
 
-                if (coderep.equals("00")) {
-                    autorisationService.logMessage(file,
-                            "coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
-                    autorisationService.logMessage(file,"?data=" + data + "==&codecmr=" + merchantid);
-                    if (dmd.getSuccessURL() != null) {
-                        response.sendRedirect(dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" + merchantid);
-                        autorisationService.logMessage(file, "Fin recharger ()");
-                        return  null;
-                    } else {
-                        ResponseDto responseDto = new ResponseDto();
-                        responseDto.setLname(dmd.getNom());
-                        responseDto.setFname(dmd.getPrenom());
-                        responseDto.setOrderid(dmd.getCommande());
-                        responseDto.setAuthnumber(authnumber);
-                        responseDto.setAmount(dmd.getMontant());
-                        responseDto.setTransactionid(transactionid);
-                        responseDto.setMerchantid(dmd.getComid());
-                        responseDto.setEmail(dmd.getEmail());
-                        responseDto.setMerchantname(current_infoCommercant.getCmrNom());
-                        responseDto.setCardnumber(Util.formatCard(cardnumber));
-                        responseDto.setTransactiontime(dateFormat.format(new Date()));
-
-                        model.addAttribute("responseDto", responseDto);
-
-                        page = "index";
-                        autorisationService.logMessage(file, "Fin recharger ()");
-                        return page;
-                    }
-                } else {
-                    autorisationService.logMessage(file,
-                            "coderep = " + coderep + " => Redirect to failURL : " + dmd.getFailURL());
-
-                    demandeDtoMsg.setMsgRefus(
-                            "La transaction en cours n’a pas abouti (" + s_status + ")," + " votre compte ne sera pas débité, merci de réessayer.");
-                    model.addAttribute("demandeDto", demandeDtoMsg);
-                    page = "result";
-                    response.sendRedirect(dmd.getFailURL());
-                    autorisationService.logMessage(file, "Fin recharger ()");
-                    return  null;
-                }
             } catch (Exception jsouterr) {
                 autorisationService.logMessage(file,
                         "recharger 500 Error during jso out processing given authnumber:[" + authnumber + "]"
                                 + jsouterr);
+                autorisationService.logMessage(file,
+                        "Erreur lors du traitement de sortie, transaction abouti redirection to SuccessUrl");
+            }
+
+            if (coderep.equals("00")) {
+                autorisationService.logMessage(file,
+                        "coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
+                autorisationService.logMessage(file,"?data=" + data + "==&codecmr=" + merchantid);
+                if (dmd.getSuccessURL() != null) {
+                    response.sendRedirect(dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" + merchantid);
+                    autorisationService.logMessage(file, "Fin recharger ()");
+                    return  null;
+                } else {
+                    ResponseDto responseDto = new ResponseDto();
+                    responseDto.setLname(dmd.getNom());
+                    responseDto.setFname(dmd.getPrenom());
+                    responseDto.setOrderid(dmd.getCommande());
+                    responseDto.setAuthnumber(authnumber);
+                    responseDto.setAmount(dmd.getMontant());
+                    responseDto.setTransactionid(transactionid);
+                    responseDto.setMerchantid(dmd.getComid());
+                    responseDto.setEmail(dmd.getEmail());
+                    responseDto.setMerchantname(current_infoCommercant.getCmrNom());
+                    responseDto.setCardnumber(Util.formatCard(cardnumber));
+                    responseDto.setTransactiontime(dateFormat.format(new Date()));
+
+                    model.addAttribute("responseDto", responseDto);
+
+                    page = "index";
+                    autorisationService.logMessage(file, "Fin recharger ()");
+                    return page;
+                }
+            } else {
+                autorisationService.logMessage(file,
+                        "coderep = " + coderep + " => Redirect to failURL : " + dmd.getFailURL());
+
                 demandeDtoMsg.setMsgRefus(
-                        "La transaction en cours n’a pas abouti (Erreur lors du traitement de sortie JSON), votre compte ne sera pas débité, merci de réessayer.");
+                        "La transaction en cours n’a pas abouti (" + s_status + ")," + " votre compte ne sera pas débité, merci de réessayer.");
                 model.addAttribute("demandeDto", demandeDtoMsg);
                 page = "result";
-                return page;
+                response.sendRedirect(dmd.getFailURL());
+                autorisationService.logMessage(file, "Fin recharger ()");
+                return  null;
             }
 
             // TODO: fin

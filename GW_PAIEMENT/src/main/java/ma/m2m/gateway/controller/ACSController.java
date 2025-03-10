@@ -1370,7 +1370,7 @@ public class ACSController {
 							String motif = "";
 							String merchnatidauth = "";
 							String dtdem = "";
-
+							String data = "";
 							try {
 								authnumber = hist.getHatNautemt();
 								coderep = hist.getHatCoderep();
@@ -1429,70 +1429,65 @@ public class ACSController {
 								autorisationService.logMessage(file, "plainTxtSignature : " + plainTxtSignature);
 								logger.info("plainTxtSignature : " + plainTxtSignature);
 
-								String data = RSACrypto.encryptByPublicKeyWithMD5Sign(data_noncrypt,
+								data = RSACrypto.encryptByPublicKeyWithMD5Sign(data_noncrypt,
 										current_infoCommercant.getClePub(), plainTxtSignature, folder, file);
 
 								autorisationService.logMessage(file, "data encrypt : " + data);
 								logger.info("data encrypt : " + data);
 
-								if (coderep.equals("00")) {
-									if (dmd.getSuccessURL() != null) {
-										// TODO: envoie de la reponse normal
-										autorisationService.logMessage(file,
-											"coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
-										autorisationService.logMessage(file,"?data=" + data + "==&codecmr=" + merchantid);
-
-										response.sendRedirect(
-											dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" + merchantid);
-										autorisationService.logMessage(file, "Fin processRequest ()");
-										return  null;
-									} else {
-										ResponseDto responseDto = new ResponseDto();
-										responseDto.setLname(dmd.getNom());
-										responseDto.setFname(dmd.getPrenom());
-										responseDto.setOrderid(dmd.getCommande());
-										responseDto.setAuthnumber(authnumber);
-										responseDto.setAmount(dmd.getMontant());
-										responseDto.setTransactionid(transactionid);
-										responseDto.setMerchantid(dmd.getComid());
-										responseDto.setEmail(dmd.getEmail());
-										responseDto.setMerchantname(current_infoCommercant.getCmrNom());
-										responseDto.setCardnumber(Util.formatCard(cardnumber));
-										responseDto.setTransactiontime(dateFormat.format(new Date()));
-
-										model.addAttribute("responseDto", responseDto);
-
-										page = "index";
-										autorisationService.logMessage(file, "Fin processRequest ()");
-										logger.info("Fin processRequest ()");
-										return page;
-									}
-								} else {
-									autorisationService.logMessage(file,
-											"coderep = " + coderep + " => Redirect to failURL : " + dmd.getFailURL());
-									demandeDtoMsg.setMsgRefus(
-											"La transaction en cours n’a pas abouti (Coderep "
-													+ coderep + ":" + s_status + "),"
-													+ " votre compte ne sera pas débité, merci de réessayer.");
-									model.addAttribute("demandeDto", demandeDtoMsg);
-									page = "result";
-									response.sendRedirect(dmd.getFailURL());
-									autorisationService.logMessage(file, "Fin processRequest ()");
-									return  null;
-									//return page;
-								}
-
 							} catch (Exception jsouterr) {
 								autorisationService.logMessage(file,
 										"authorization 500 Error during jso out processing given authnumber:["
 												+ authnumber + "]" + jsouterr);
+								autorisationService.logMessage(file,
+										"Erreur lors du traitement de sortie, transaction abouti redirection to SuccessUrl");
+							}
+
+							if (coderep.equals("00")) {
+								if (dmd.getSuccessURL() != null) {
+									// TODO: envoie de la reponse normal
+									autorisationService.logMessage(file,
+											"coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
+									autorisationService.logMessage(file,"?data=" + data + "==&codecmr=" + merchantid);
+
+									response.sendRedirect(
+											dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" + merchantid);
+									autorisationService.logMessage(file, "Fin processRequest ()");
+									return  null;
+								} else {
+									ResponseDto responseDto = new ResponseDto();
+									responseDto.setLname(dmd.getNom());
+									responseDto.setFname(dmd.getPrenom());
+									responseDto.setOrderid(dmd.getCommande());
+									responseDto.setAuthnumber(authnumber);
+									responseDto.setAmount(dmd.getMontant());
+									responseDto.setTransactionid(transactionid);
+									responseDto.setMerchantid(dmd.getComid());
+									responseDto.setEmail(dmd.getEmail());
+									responseDto.setMerchantname(current_infoCommercant.getCmrNom());
+									responseDto.setCardnumber(Util.formatCard(cardnumber));
+									responseDto.setTransactiontime(dateFormat.format(new Date()));
+
+									model.addAttribute("responseDto", responseDto);
+
+									page = "index";
+									autorisationService.logMessage(file, "Fin processRequest ()");
+									logger.info("Fin processRequest ()");
+									return page;
+								}
+							} else {
+								autorisationService.logMessage(file,
+										"coderep = " + coderep + " => Redirect to failURL : " + dmd.getFailURL());
 								demandeDtoMsg.setMsgRefus(
-										"La transaction en cours n’a pas abouti (Erreur lors du traitement de sortie JSON), votre compte ne sera pas débité, merci de réessayer.");
+										"La transaction en cours n’a pas abouti (Coderep "
+												+ coderep + ":" + s_status + "),"
+												+ " votre compte ne sera pas débité, merci de réessayer.");
 								model.addAttribute("demandeDto", demandeDtoMsg);
 								page = "result";
+								response.sendRedirect(dmd.getFailURL());
 								autorisationService.logMessage(file, "Fin processRequest ()");
-								logger.info("Fin processRequest ()");
-								return page;
+								return  null;
+								//return page;
 							}
 						} else if (reponseMPI.equals("C") || reponseMPI.equals("D")) {
 							try {
