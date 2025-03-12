@@ -15,19 +15,19 @@ import javax.servlet.http.HttpSession;
 
 public interface AutorisationService {
 	
-	ThreeDSecureResponse preparerReqThree3DSS(DemandePaiementDto demandeDto,String folder,String file);
+	ThreeDSecureResponse preparerAeqThree3DSS(DemandePaiementDto demandeDto,String folder,String file);
 	
-	ThreeDSecureResponse callThree3DSSAfterACS(String decodedCres, String folder, String file);
+	ThreeDSecureResponse getRreqFromThree3DSSAfterACS(String decodedCres, String folder, String file);
 	
 	 String controllerDataRequest(DemandePaiementDto demandeDto);
 
 	 ThreeDSecureResponse autoriser(ThreeDSecureResponse reponse, String folder, String file);
 	 
-	 ThreeDSecureResponse preparerReqMobileThree3DSS(DemandePaiementDto demandeDto,String folder,String file);
+	 ThreeDSecureResponse preparerAeqMobileThree3DSS(DemandePaiementDto demandeDto,String folder,String file);
 	 
 	 String controlleRisk(DemandePaiementDto demandeDto,String folder,String file);
 	 
-	 ThreeDSecureResponse preparerProcessOutReqThree3DSS(DemandePaiementDto demandeDto,String folder,String file);
+	 ThreeDSecureResponse preparerProcessOutAeqThree3DSS(DemandePaiementDto demandeDto,String folder,String file);
 	 
 	 void processPaymentPageData(DemandePaiementDto demandeDto,String folder, String file);
 	 

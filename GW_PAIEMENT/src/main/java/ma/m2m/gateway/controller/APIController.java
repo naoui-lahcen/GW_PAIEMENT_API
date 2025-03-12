@@ -487,9 +487,6 @@ public class APIController {
 		 */
 		autorisationService.logMessage(file, "environement : " + environement);
 		if (environement.equals("PREPROD")) {
-			// TODO: threeDsecureResponse = autorisationService.preparerReqThree3DSS(dmdSaved,
-			// TODO: folder, file);
-
 			threeDsecureResponse.setReponseMPI("Y");
 		} else {
 			if (auth3ds.equals("N")) {
@@ -497,7 +494,7 @@ public class APIController {
 				threeDsecureResponse.setReponseMPI("Y");
 			} else {
 				autorisationService.logMessage(file, "Si auth3ds = Y passer avec 3DS ");
-				threeDsecureResponse = autorisationService.preparerReqThree3DSS(dmdSaved, folder, file);
+				threeDsecureResponse = autorisationService.preparerAeqThree3DSS(dmdSaved, folder, file);
 			}
 		}
 		// TODO: fin 3DSSecure ***********************************************************
@@ -3957,12 +3954,9 @@ public class APIController {
 			 */
 			autorisationService.logMessage(file, "environement : " + environement);
 			if (environement.equals("PREPROD")) {
-				// TODO: threeDsecureResponse = autorisationService.preparerReqThree3DSS(dmdSaved,
-				// TODO: folder, file);
-
 				threeDsecureResponse.setReponseMPI("Y");
 			} else {
-				threeDsecureResponse = autorisationService.preparerReqThree3DSS(dmdSaved, folder, file);
+				threeDsecureResponse = autorisationService.preparerAeqThree3DSS(dmdSaved, folder, file);
 			}
 
 			// TODO: fin 3DSSecure ***********************************************************

@@ -195,9 +195,9 @@ public class AutorisationServiceImpl implements AutorisationService {
 
 	@Override
 	@SuppressWarnings("all")
-	public ThreeDSecureResponse preparerReqThree3DSS(DemandePaiementDto demandeDto, String folder, String file) {
-		Util.writeInFileTransaction(folder, file, "Debut preparerReqThree3DSS()");
-		logger.info("Start preparerReqThree3DSS()");
+	public ThreeDSecureResponse preparerAeqThree3DSS(DemandePaiementDto demandeDto, String folder, String file) {
+		Util.writeInFileTransaction(folder, file, "Debut preparerAeqThree3DSS()");
+		logger.info("Start preparerAeqThree3DSS()");
 
 		typeCarte = demandeDto.getTypeCarte();
 
@@ -248,16 +248,16 @@ public class AutorisationServiceImpl implements AutorisationService {
 			Util.writeInFileTransaction(folder, file, "ThreeDSecureRequestorException " + Util.formatException(e));
 		}
 
-		Util.writeInFileTransaction(folder, file, "fin preparerReqThree3DSS ");
+		Util.writeInFileTransaction(folder, file, "fin preparerAeqThree3DSS ");
 
 		return threeDsecureResponse;
 	}
 
 	@Override
 	@SuppressWarnings("all")
-	public ThreeDSecureResponse preparerReqMobileThree3DSS(DemandePaiementDto demandeDto, String folder, String file) {
-		Util.writeInFileTransaction(folder, file, "Debut preparerReqMobileThree3DSS()");
-		logger.info("Start preparerReqMobileThree3DSS()");
+	public ThreeDSecureResponse preparerAeqMobileThree3DSS(DemandePaiementDto demandeDto, String folder, String file) {
+		Util.writeInFileTransaction(folder, file, "Debut preparerAeqMobileThree3DSS()");
+		logger.info("Start preparerAeqMobileThree3DSS()");
 
 		typeCarte = demandeDto.getTypeCarte();
 
@@ -309,17 +309,17 @@ public class AutorisationServiceImpl implements AutorisationService {
 			Util.writeInFileTransaction(folder, file, "ThreeDSecureRequestorException " + Util.formatException(e));
 		}
 
-		Util.writeInFileTransaction(folder, file, "fin preparerReqMobileThree3DSS ");
-		logger.info("Fin preparerReqMobileThree3DSS()");
+		Util.writeInFileTransaction(folder, file, "fin preparerAeqMobileThree3DSS ");
+		logger.info("Fin preparerAeqMobileThree3DSS()");
 
 		return threeDsecureResponse;
 	}
 
 	@Override
 	@SuppressWarnings("all")
-	public ThreeDSecureResponse preparerProcessOutReqThree3DSS(DemandePaiementDto demandeDto, String folder, String file) {
-		Util.writeInFileTransaction(folder, file, "Debut preparerProcessOutReqThree3DSS()");
-		logger.info("Start preparerProcessOutReqThree3DSS()");
+	public ThreeDSecureResponse preparerProcessOutAeqThree3DSS(DemandePaiementDto demandeDto, String folder, String file) {
+		Util.writeInFileTransaction(folder, file, "Debut preparerProcessOutAeqThree3DSS()");
+		logger.info("Start preparerProcessOutAeqThree3DSS()");
 
 		typeCarte = demandeDto.getTypeCarte();
 
@@ -370,17 +370,17 @@ public class AutorisationServiceImpl implements AutorisationService {
 			Util.writeInFileTransaction(folder, file, "ThreeDSecureRequestorException " + Util.formatException(e));
 		}
 
-		Util.writeInFileTransaction(folder, file, "fin preparerProcessOutReqThree3DSS ");
+		Util.writeInFileTransaction(folder, file, "fin preparerProcessOutAeqThree3DSS ");
 
 		return threeDsecureResponse;
 	}
 
 	@Override
 	@SuppressWarnings("all")
-	public ThreeDSecureResponse callThree3DSSAfterACS(String decodedCres, String folder, String file) {
+	public ThreeDSecureResponse getRreqFromThree3DSSAfterACS(String decodedCres, String folder, String file) {
 		ThreeDSecureResponse threeDsecureResponse = new ThreeDSecureResponse();
 
-		Util.writeInFileTransaction(folder, file, "*********** DEBUT callThree3DSSAfterACS ***********");
+		Util.writeInFileTransaction(folder, file, "*********** DEBUT getRreqFromThree3DSSAfterACS ***********");
 
 		// soit visa soit mastercard il a aucun impact apres auth
 		Util.writeInFileTransaction(folder, file, "UrlThreeDSS : " + urlThreeDssM);
@@ -419,7 +419,7 @@ public class AutorisationServiceImpl implements AutorisationService {
 			Util.writeInFileTransaction(folder, file, "[GW-EXCEPTION-ClientProtocolException] " + Util.formatException(e));
 		}
 
-		Util.writeInFileTransaction(folder, file, "*********** End callThree3DSSAfterACS ***********");
+		Util.writeInFileTransaction(folder, file, "*********** End getRreqFromThree3DSSAfterACS ***********");
 		return threeDsecureResponse;
 	}
 
@@ -707,6 +707,7 @@ public class AutorisationServiceImpl implements AutorisationService {
 		// Enregistrer la demande et ajouter le message d'erreur au modèle
 		demandePaiementService.save(dmd);
 		model.addAttribute("demandeDto", demandeDtoMsg);
+		dmd.setMsgRefus(demandeDtoMsg.getMsgRefus() == null ? "" : demandeDtoMsg.getMsgRefus());
 
 		String pageR = "result";
 		logMessage(file, "Fin handleMpiError ()");

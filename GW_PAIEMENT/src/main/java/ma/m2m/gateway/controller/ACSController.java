@@ -243,10 +243,10 @@ public class ACSController {
 			// TODO: cleanCres.setTransStatus("N");
 
 			if (cleanCres.getTransStatus().equals("Y") || cleanCres.getTransStatus().equals("N")) {
-				logger.info("ACSController RETOUR ACS =====> callThree3DSSAfterACS ");
-				autorisationService.logMessage(file, "ACSController RETOUR ACS =====> callThree3DSSAfterACS ");
+				logger.info("ACSController RETOUR ACS =====> getRreqFromThree3DSSAfterACS ");
+				autorisationService.logMessage(file, "ACSController RETOUR ACS =====> getRreqFromThree3DSSAfterACS ");
 
-				ThreeDSecureResponse threeDsecureResponse = autorisationService.callThree3DSSAfterACS(decodedCres,
+				ThreeDSecureResponse threeDsecureResponse = autorisationService.getRreqFromThree3DSSAfterACS(decodedCres,
 						folder, file);
 
 				DemandePaiementDto dmd = new DemandePaiementDto();
