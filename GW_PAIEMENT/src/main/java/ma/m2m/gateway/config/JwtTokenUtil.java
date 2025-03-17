@@ -68,8 +68,11 @@ public class JwtTokenUtil implements Serializable {
         Date now = new Date();
         
         logger.info("jwtTokenValidity : {} min" , jwtTokenValidity/60000);
-        
-        Date expiryDate = new Date(now.getTime() + jwtTokenValidity);
+        // Date expiryDate = new Date(now.getTime() + jwtTokenValidity);
+
+        long jwtTokEx24H = 86400000; // 24H conv to milisec
+        logger.info("jwtTokEx24H : {} min" , jwtTokEx24H/60000);
+        Date expiryDate = new Date(now.getTime() + jwtTokEx24H);
         
         secretKey = secret;
         

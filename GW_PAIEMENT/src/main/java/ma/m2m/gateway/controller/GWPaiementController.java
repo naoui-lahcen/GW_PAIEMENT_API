@@ -406,6 +406,7 @@ public class GWPaiementController {
 		String file = "GW_NEWPAGE_" + randomWithSplittableRandom;
 		Util.creatFileTransaction(file);
 		autorisationService.logMessage(file, "*********** Start newpage () ************** ");
+		autorisationService.logMessage(file, "findByTokencommande token : " + token);
 
 		DemandePaiementDto demandeDto = new DemandePaiementDto();
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d MMMM yyyy, HH:mm");

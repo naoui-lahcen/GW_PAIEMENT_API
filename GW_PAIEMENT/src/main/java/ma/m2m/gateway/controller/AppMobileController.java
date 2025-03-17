@@ -1568,6 +1568,11 @@ public class AppMobileController {
         autorisationService.logMessage(file, "findByTokencommande token : " + token);
 
         DemandePaiementDto demandeDto = new DemandePaiementDto();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d MMMM yyyy, HH:mm");
+        LocalDateTime now = LocalDateTime.now();
+        String formattedDate = now.format(formatter);
+        model.addAttribute("formattedDate", formattedDate);
+
         CommercantDto merchant = null;
         GalerieDto galerie = null;
         String merchantid = "";
