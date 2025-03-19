@@ -476,6 +476,20 @@ public class APIController {
 			return Util.getMsgError(folder, file, linkRequestDto, "The current transaction was not successful, your account will not be debited, please try again.", null);
 		}
 
+		autorisationService.logMessage(file, "Generating paymentid...");
+
+		String uuid_paymentid, paymentid = "";
+		try {
+			uuid_paymentid = String.format("%040d",	new BigInteger(UUID.randomUUID().toString().replace("-", ""), 36));
+			paymentid = uuid_paymentid.substring(uuid_paymentid.length() - 22);
+		} catch (Exception e) {
+			autorisationService.logMessage(file,
+					"authorization 500 Error during  paymentid generation for given orderid:[" + linkRequestDto.getOrderid() + "]" + Util.formatException(e));
+		}
+
+		autorisationService.logMessage(file, "Generating paymentid OK");
+		autorisationService.logMessage(file, "paymentid :[" + paymentid + "]");
+
 		JSONObject jso = new JSONObject();
 		ThreeDSecureResponse threeDsecureResponse = new ThreeDSecureResponse();
 
@@ -1132,21 +1146,6 @@ public class APIController {
 				// TODO: 2024-02-27
 			}
 
-			autorisationService.logMessage(file, "Generating paymentid...");
-
-			String uuid_paymentid, paymentid = "";
-			try {
-				uuid_paymentid = String.format("%040d",
-						new BigInteger(UUID.randomUUID().toString().replace("-", ""), 22));
-				paymentid = uuid_paymentid.substring(uuid_paymentid.length() - 22);
-			} catch (Exception e) {
-				autorisationService.logMessage(file,
-						"authorization 500 Error during  paymentid generation for given orderid:[" + linkRequestDto.getOrderid() + "]" + Util.formatException(e));
-			}
-
-			autorisationService.logMessage(file, "Generating paymentid OK");
-			autorisationService.logMessage(file, "paymentid :[" + paymentid + "]");
-
 			// TODO: JSONObject jso = new JSONObject();
 
 			autorisationService.logMessage(file, "Preparing autorization api response");
@@ -1227,7 +1226,7 @@ public class APIController {
 				jso.put("transactiondate", sdt);
 				jso.put("transactiontime", stm);
 				// TODO: jso.put("authnumber", authnumber);
-				// TODO: jso.put("paymentid", paymentid);
+				jso.put("paymentid", paymentid);
 				jso.put("transactionid", linkRequestDto.getTransactionid());
 
 				// TODO: Merchant info
@@ -2636,13 +2635,15 @@ public class APIController {
 			return Util.getMsgErrorV2(folder, file, trsRequestDto, "capture 500 Error during histoauto_gate update", null);
 		}
 
-		String capture_id = "", dtpattern, sdt = "", tmpattern, stm = "";
+		String capture_id = "", dtpattern, sdt = "", tmpattern, stm = "", uuid_captureid = "", operation_id ="";
 		Date dt = null;
 		SimpleDateFormat sfdt = null;
 		SimpleDateFormat sftm = null;
 
 		try {
-			capture_id = String.format("%040d", new BigInteger(UUID.randomUUID().toString().replace("-", ""), 36));
+			uuid_captureid = String.format("%040d", new BigInteger(UUID.randomUUID().toString().replace("-", ""), 36));
+			capture_id = uuid_captureid.substring(uuid_captureid.length() - 22);
+			operation_id = capture_id;
 			dt = new Date();
 			dtpattern = FORMAT_DEFAUT;
 			sfdt = new SimpleDateFormat(dtpattern);
@@ -2665,6 +2666,8 @@ public class APIController {
 			jso.put("capture_state", "Y");
 			jso.put("capture_label", "Captured");
 			jso.put("transactionid", trsRequestDto.getTransactionid());
+			jso.put("operation_id", operation_id);
+			jso.put("acquRefNbr", "11010");
 
 			jso.put("merchantid", trsRequestDto.getMerchantid());
 			jso.put("merchantname", trsRequestDto.getMerchantname());
@@ -3112,13 +3115,15 @@ public class APIController {
 
 		}
 
-		String refund_id = "", dtpattern, sdt = "", tmpattern, stm = "";
+		String refund_id = "", dtpattern, sdt = "", tmpattern, stm = "", uuid_refundid = "", operation_id = "";
 		Date dt = null;
 		SimpleDateFormat sfdt = null;
 		SimpleDateFormat sftm = null;
 
 		try {
-			refund_id = String.format("%040d", new BigInteger(UUID.randomUUID().toString().replace("-", ""), 36));
+			uuid_refundid = String.format("%040d", new BigInteger(UUID.randomUUID().toString().replace("-", ""), 36));
+			refund_id = uuid_refundid.substring(uuid_refundid.length() - 22);
+			operation_id = refund_id;
 			dt = new Date();
 			dtpattern = FORMAT_DEFAUT;
 			sfdt = new SimpleDateFormat(dtpattern);
@@ -3142,6 +3147,8 @@ public class APIController {
 			jso.put("authnumber", trsRequestDto.getAuthnumber());
 			jso.put("refundid", refund_id);
 			jso.put("transactionid", trsRequestDto.getTransactionid());
+			jso.put("operation_id", operation_id);
+			jso.put("acquRefNbr", "11010");
 
 			// TODO: Merchant info
 			jso.put("merchantid", trsRequestDto.getMerchantid());
@@ -3593,13 +3600,14 @@ public class APIController {
 
 		autorisationService.logMessage(file, "Generating reversalid");
 
-		String uuid_reversalid, reversalid = "", dtpattern, sdt = "", tmpattern, stm = "";
+		String uuid_reversalid, reversal_id = "", dtpattern, sdt = "", tmpattern, stm = "" , operation_id = "";
 		Date dt = null;
 		SimpleDateFormat sfdt = null;
 		SimpleDateFormat sftm = null;
 		try {
 			uuid_reversalid = String.format("%040d", new BigInteger(UUID.randomUUID().toString().replace("-", ""), 22));
-			reversalid = uuid_reversalid.substring(uuid_reversalid.length() - 22);
+			reversal_id = uuid_reversalid.substring(uuid_reversalid.length() - 22);
+			operation_id = reversal_id;
 			dt = new Date();
 			dtpattern = FORMAT_DEFAUT;
 			sfdt = new SimpleDateFormat(dtpattern);
@@ -3621,8 +3629,10 @@ public class APIController {
 			jso.put("reversaldate", sdt);
 			jso.put("reversaltime", stm);
 			jso.put("authnumber", trsRequestDto.getAuthnumber());
-			jso.put("reversalid", reversalid);
-			jso.put("transactionid", reversalid);
+			jso.put("reversalid", reversal_id);
+			jso.put("transactionid", reversal_id);
+			jso.put("operation_id", operation_id);
+			jso.put("acquRefNbr", "11010");
 
 			// TODO: TODO: Merchant info
 			jso.put("merchantid", trsRequestDto.getMerchantid());
@@ -4918,9 +4928,9 @@ public class APIController {
 			return Util.getMsgErrorV2(folder, file, null, "cpautorisation 500 malformed json expression", null);
 		}
 
-		String cvv, acqcode, acq_type, date, rrn, heure, authnumber, websiteid, cardnumber,capture_id,currency, recurring,expirydate,
+		String cvv, acqcode, acq_type, date, rrn, heure, authnumber, websiteid, cardnumber, currency, recurring,expirydate,
 				transactiontype, promoCode, mesg_type, merc_codeactivite, merchant_city, processing_code, reason_code,merchant_name,
-				transaction_condition, transactiondate, transactiontime, montanttrame, num_trs = "";
+				transaction_condition, transactiondate, transactiontime, montanttrame, num_trs = "", operation_id = "";
 
 		SimpleDateFormat formatter_1, formatter_2, formatheure, formatdate = null;
 
@@ -5254,9 +5264,6 @@ public class APIController {
 							}
 
 							motif = motif + " and captured";
-
-							capture_id = String.format("%040d",
-									new BigInteger(UUID.randomUUID().toString().replace("-", ""), 36));
 
 							autorisationService.logMessage(file, "inserting into Trs ok");
 							capture_status = "Y";
@@ -5735,9 +5742,6 @@ public class APIController {
 
 								motif = motif + " and captured";
 
-								capture_id = String.format("%040d",
-										new BigInteger(UUID.randomUUID().toString().replace("-", ""), 36));
-
 								autorisationService.logMessage(file, "inserting into Trs ok");
 								capture_status = "Y";
 							} catch (Exception e) {
@@ -5985,9 +5989,6 @@ public class APIController {
 
 								motif = motif + " and captured";
 
-								capture_id = String.format("%040d",
-										new BigInteger(UUID.randomUUID().toString().replace("-", ""), 36));
-
 								autorisationService.logMessage(file, "inserting into telec ok");
 								capture_status = "Y";
 							} catch (Exception e) {
@@ -6014,14 +6015,16 @@ public class APIController {
 				autorisationService.logMessage(file, "SWITCH RESONSE CODE :[" + codrep + "]");
 			}
 		}
-
+		String uuid_captureid = "", capture_id = "";
 		String dtpattern, sdt = "", tmpattern, stm = "";
 		Date dt = null;
 		SimpleDateFormat sfdt = null;
 		SimpleDateFormat sftm = null;
 
 		try {
-			capture_id = String.format("%040d", new BigInteger(UUID.randomUUID().toString().replace("-", ""), 36));
+			uuid_captureid = String.format("%040d", new BigInteger(UUID.randomUUID().toString().replace("-", ""), 36));
+			capture_id = uuid_captureid.substring(uuid_captureid.length() - 22);
+			operation_id = capture_id;
 			dt = new Date();
 			dtpattern = FORMAT_DEFAUT;
 			sfdt = new SimpleDateFormat(dtpattern);
@@ -6048,7 +6051,10 @@ public class APIController {
 			jso.put("transactiontime", stm);
 			jso.put("authnumber", trsRequestDto.getAuthnumber());
 			jso.put("paymentid", trsRequestDto.getPaymentid());
+			jso.put("capture_id", capture_id);
 			jso.put("transactionid", trsRequestDto.getTransactionid());
+			jso.put("operation_id", operation_id);
+			jso.put("acquRefNbr", "11010");
 
 			// TODO: Merchant info
 			jso.put("merchantid", merchnatidauth);
