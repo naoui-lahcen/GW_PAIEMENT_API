@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta content="width=device-width, initial-scale=1" name="viewport">
@@ -21,434 +21,652 @@
             integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
             src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
     <style>
-        body {
-           width: 100vw;
-           background-color: #F9FAFB;
-        }
-       .container {
-           display: flex;
-           width: 100%;
-           height: 100%;
-       }
-       .left-panel {
-           /*background: linear-gradient(#FF5F00, #ed6726, #a71313bd);*/
-           /*background: linear-gradient(#FF5F00, #ed6726, #f7400fbd);*/
-           /*background: linear-gradient(#FF5F00, #f05e18, #D94905);*/
-           background: linear-gradient(#FF5F00, #da4d0a, #bd4309);
-           color: white;
-           padding: 20px;
-           flex: 1;
-           height: 100%;
-       }
 
-       .toggle-btn {
-           background: #FF5F00;
-           color: white;
-           font-size: 24px;
-           border: none;
-           border-radius: 50%;
-           width: 40px;
-           height: 40px;
-           position: fixed;
-           top: 20px;
-           right: 20px;
-           cursor: pointer;
-           z-index: 5;
-       }
-      .toggle-btn {
-         display: none;
-      }
-        .left-panel .details {
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f8f9fc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* Conteneur principal (PLEIN ÉCRAN) */
+        .container {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+            background: white;
+            border-radius: 0;
+            overflow: hidden;
+        }
+
+        /* SECTION GAUCHE - Détails transaction */
+        .left-panel {
+            background: linear-gradient(#FF5F00, #da4d0a, #bd4309);
+            color: white;
+            width: 100%;
+            padding: 50px;
             display: flex;
             flex-direction: column;
             align-items: flex-start;
-            padding: 20px;
-            text-align: left;
-            /*margin-top: 25%;*/
-            margin-top: 40px;
-            margin-left: 5%;
-            margin-right: 5%;
+            flex: 1;
+            height: 100%;
         }
-        .left-panel .details p {
-            font-size: 20px;
-            line-height: 2;
-            margin-bottom: 20px;
+
+        .total {
+            font-size: 22px;
+            margin-top: 20px;
         }
-        .form-group input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
+
+        .total span {
+            font-size: 36px;
+            font-weight: bold;
         }
-        .text-infos {
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        .detsimg {
+            margin-bottom: 25px;
         }
-        .text-content {
+        .icondetails {
+            width: 120px;
+        }
+        .details p {
+            margin: 15px 0;
+            font-size: 16px;
+        }
+
+        .details a {
+            color: white;
+            text-decoration: underline;
+        }
+
+        /* SECTION DROITE - Formulaire paiement */
+        .payment-panel {
+            padding: 50px;
             display: flex;
             flex-direction: column;
-        }
-        .details-message {
-            display: none;
-        }
-        .labInput {
-            color: #344054;
-        }
-        #error-message {
-            font-family: Inter;
-            font-weight: 600;
-            line-height: 20px;
-            color: #D92D20;
+            justify-content: center;
             background-color: #F9FAFB;
-            height: max-content;
-            border-radius: 15px;
+            border-radius: 0;
+            flex: 2;
         }
-        .lock-label {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            justify-content: center;
-            font-family: Inter;
-            font-weight: 400;
-            line-height: 20px;
-            color: #677489;
-        }
-        .sec {
-            margin-left: 4px;
-        }
-        .footer {
-            text-align: center;
-            /*margin-top: 145px;*/
-            margin-top: 160px;
-        }
-        .footer-content {
+
+        .payment-header {
             display: flex;
-            justify-content: center;
             align-items: center;
-            font-family: Inter;
-            font-weight: 400;
-            line-height: 18px;
-            color: #677489;
+            margin-bottom: 80px;
         }
-        .separator {
-            margin: 0 5px;
-            color: #adb5bd;
+        .formm {
+            width: 530px;
         }
-        .textFooter {
-            color: grey;
-        }
-        .logoMbl {
-            display: none;
-        }
-        .logo {
-            /*background: #FF5F00;*/
-        }
-        .logo .navg {
-          /*margin-left: 55px;*/
-          margin-left: 37px;
-          margin-top: 25px;
-        }
-        .logo .mbl {
-          display: none;
-        }
-        .flex-container {
-            margin-top: 20px;
-       }
-        .text-infos .frame {
-            border-radius: 10px;
-            padding: 5px;
-            border-style: solid;
-            border-color: #EBEDF1;
+
+        .icon-container {
             width: 48px;
             height: 48px;
-       }
-        .numcarte {
-            position: relative;
+            border-radius: 15px;
             display: flex;
             align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            border-style: solid;
+            border: 1px solid #EAECF0;
+            background-color: #FFFFFF;
         }
-        .numcarte input {
-            width: 100%;
-            padding-right: 40px;
-            height: 40px;
-        }
-        .numcarte img {
-            position: absolute;
-            right: 10px;
-            width: 30px;
-            height: auto;
-            display: none;
-        }
-        .cvc {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
-        .cvc img {
-            position: absolute;
-            right: 10px;
-            width: 30px;
-            height: auto;
-        }
-        .col-md-5 {
-            padding-right: 0;
-            padding-left: 0;
-        }
-           .payment-panel {
-               background-color: #F9FAFB;
-               padding: 20px;
-               border-radius: 0;
-               flex: 2;
-               /*margin-left: 13%;
-               margin-right: 13%;*/
-               width: 530px;
-               margin-left: 197px;
-               margin-right: 197px;
-           }
-           .total-box {
-                color: white;
-                border-radius: 10px;
-                margin-left: 38px;
-                font-family: Arial, sans-serif;
-                width: fit-content;
-            }
 
-            .total-box .label {
-                font-size: 14px;
-                opacity: 0.8;
-            }
+        .icon-container i {
+            font-size: 24px;
+            color: #2d3748;
+        }
 
-            .total-box .amount {
-                font-size: 32px;
-                font-weight: bold;
-            }
-
-            .total-box .currency {
-                font-size: 14px;
-                margin-left: 5px;
-            }
-
-            .details {
-                font-family: Arial, sans-serif;
-            }
-
-        .details h2 {
-            margin-bottom: 30px;
-            font-family: Inter;
-            font-weight: 600;
+        .text-container h3 {
             font-size: 18px;
+            font-weight: bold;
+            color: #2d3748;
         }
 
-        .transaction-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 30px;
+        .text-container p {
+            font-size: 14px;
+            line-height: 0.2;
+            margin: 2px 0 0;
+            font-size: 14px;
+            color: #718096;
         }
 
-        .transaction-item i {
-            font-size: 18px;
-            margin-right: 10px;
-            opacity: 0.8;
-        }
-
-        .transaction-item label {
-            font-family: Inter;
-            font-weight: 500;
-            font-size: 16px;
-            line-height: 24px;
-            letter-spacing: 0%;
-            text-align: center;
-            margin: 0;
-        }
-        .transaction-item .value {
-            background-color: #da5200;
-            padding: 0 5px;
-            border-radius: 5px;
+        .payment-form label {
+            display: block;
             font-size: 16px;
             font-weight: bold;
-            font-family: Inter;
-            color: #FFFFFF;
+            margin-top: 15px;
         }
 
-           .form-group { margin-bottom: 15px; }
-           .form-group label { display: block; margin-bottom: 5px; }
-           .form-group input, select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 5px; }
-           .subscribe-btn { width: 100%; padding: 10px; background: #FF5F00; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        .payment-form input {
+            width: 100%;
+            padding: 12px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
 
-           /* RESPONSIVE */
-           @media (max-width: 768px) {
+        .card-input {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: white;
+            border: 1px solid #ccc;
+            padding: 12px;
+            border-radius: 5px;
+        }
+
+        .card-input img {
+            height: 25px;
+        }
+
+        .card-details {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .card-details input {
+            flex: 1;
+        }
+
+        .terms {
+            display: flex;
+            align-items: center;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .terms input {
+            margin-right: 10px;
+        }
+
+        .terms a {
+            color: #ff6b00;
+            text-decoration: none;
+        }
+
+        .pay-button {
+            width: 100%;
+            padding: 15px;
+            background: #ff6b00;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .pay-button:hover {
+            background: #e65a00;
+        }
+
+        .secure-info {
+            text-align: center;
+            font-size: 14px;
+            color: #718096;
+            margin-top: 15px;
+        }
+        .sec {
+            font-family: Inter;
+            font-weight: 400;
+            line-height: 20px;
+            color: #677489;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 14px;
+            margin-top: 20px;
+            color: #718096;
+        }
+
+        footer a {
+            color: #ff6b00;
+            text-decoration: none;
+        }
+
+             body {
+                   width: 100vw;
+                   background-color: #F9FAFB;
+                }
                .container {
-                    flex-direction: column;
+                   display: flex;
+                   width: 100%;
+                   height: 100%;
+                   max-width: none;
                }
-               .logo {
-                    display: none;
-               }
-               .logoMbl {
-                    display: block;
-                    margin-top: -53px;
-                    position: absolute;
-                    margin-left: 17px;
-                }
-               .left-panel {
-                    width: 100%;
-                    position: fixed !important;
-                    top: 49px !important;
-                    left: 0;
-                    height: auto; z-index: 10;
-                    background: linear-gradient(#f86712, #f17132, #f11112bd);
-                 }
+
                .toggle-btn {
-                   display: block;
-                   top: 58px;
-                   margin-right: -12px;
-                   z-index: 11;
-                   background: linear-gradient(#f66f1f, #f3621b);
+                   background: #FF5F00;
+                   color: white;
+                   font-size: 24px;
+                   border: none;
+                   border-radius: 50%;
+                   width: 40px;
+                   height: 40px;
+                   position: fixed;
+                   top: 20px;
+                   right: 20px;
+                   cursor: pointer;
+                   z-index: 5;
                }
-               .logo {
-                    background-color: #F9FAFB;
-                    margin-top: 25px;
-               }
-               .logo .mbl {
-                    display: block;
-                    height: 24px;*/
-                    margin-left: 30px;
-                    position: relative;
-                    top: -10px;
-                    margin-left: 36px;
-               }
-               .logo .navg {
-                  display: none;
-                }
-                .text-infos {
-                    display: block;
-                    margin: 0px;
-                }
-                #error-message {
-                    font-size: 14px;
-                    padding: 5px 5px;
-                }
-               .payment-panel {
-                 top: 105px;
-                 position: fixed;
-                 margin-left: 0;
-                 margin-right: 0;
-                 width: auto;
-               }
-               .flex-container {
+              .toggle-btn {
+                 display: none;
+              }
+                .left-panel .details {
                     display: flex;
-                    justify-content: space-between;
-                    width: 100%;
-                    margin-left: 5%;
-                    height: 20px;
-                    margin-top: 0px;
-               }
-               .left-panel .details {
+                    flex-direction: column;
+                    align-items: flex-start;
                     text-align: left;
-                    padding: 10px;
-                    display: none;
-                    margin-top: 0;
-                 }
-                 .left-panel .details p {
-                    font-size: 14px;
-                    line-height: 1.4;
-                    margin-bottom: 10px;
+                    width: inherit;
+                    margin-top: 50px;
+                    margin-left: 10%;
+                    margin-right: 10%;
                 }
-                .left-panel h2 {
-                   font-size: 16px;
-                 }
-                 .details-message {
-                    font-size: 14px;
-                    display: block;
-                    margin-right: 13%;
-                    white-space: nowrap;
-                    color: #FFFFFF;
-                    font-family: Inter;
+                .left-panel .sidbar {
+                    margin-left: 10%;
+                    margin-right: 10%;
                 }
-                .transaction-item label {
-                    font-size: 14px;
-                }
-                .transaction-item .value {
-                    background-color: #f2620d;
-                    font-size: 14px;
-                }
-                .details h2 {
+                .left-panel .details p {
+                    font-size: 20px;
+                    line-height: 2;
                     margin-bottom: 20px;
                 }
-                .dhs {
-                    font-size: 12px;
+                .form-group input[type="checkbox"] {
+                    width: 18px;
+                    height: 18px;
                 }
-                .total-box {
-                    margin-left: 0;
+                .text-infos {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
                 }
-                .total-box .label {
+                .text-content {
+                    display: flex;
+                    flex-direction: column;
+                }
+                .details-message {
                     display: none;
                 }
-                .total-box .amount {
-                    font-size: 16px;
-                    font-weight: bold;
+                .labInput {
+                    color: #344054;
+                    font-family: Inter;
                 }
-                .total-box .currency {
-                    font-size: 12px;
-                    margin-left: 5px;
+                #error-message {
+                    font-family: Inter;
+                    font-weight: 600;
+                    line-height: 20px;
+                    color: #D92D20;
+                    background-color: #F9FAFB;
+                    height: max-content;
+                    border-radius: 15px;
                 }
-                 .payment-panel h2, h3, h4, h5 {
-                    font-size: 16px;
-                }
-                .form-group.d-flex {
-                    white-space: nowrap;
+                .lock-label {
                     overflow: hidden;
                     text-overflow: ellipsis;
-                    font-size: 14px;
+                    justify-content: center;
+                    font-family: Inter;
+                    font-weight: 400;
+                    line-height: 20px;
+                    color: #677489;
                 }
-                 .transaction-item {
-                    margin-bottom: 13px;
-                }
-                .form-group .enter {
-                    font-size: 14px;
-                }
-                 .form-group.lock-label {
-                    white-space: normal;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                }
-                .footer {
-                    text-align: center;
-                    /*margin-top: 10px;*/
-                    /*margin-top: 0px;*/
-                    /*top: 240px;
-                    position: relative;*/
-                    top: 495px;
-                    position: fixed;
+                .sec {
+                    margin-left: 4px;
                 }
                 .footer-content {
-                    flex-direction: column;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    font-family: Inter;
+                    font-weight: 400;
+                    line-height: 18px;
+                    color: #677489;
+                }
+                .separator {
+                    margin: 0 5px;
+                    color: #adb5bd;
+                }
+                .textFooter {
+                    /*color: grey;*/
+                    font-family: Inter;
+                    color: #6C6C84;
+                }
+                .logoMbl {
+                    display: none;
+                }
+                .logo .navg {
+                  /*margin-left: 37px;
+                  margin-top: 25px;*/
+                }
+                .logo .mbl {
+                  display: none;
+                }
+                .flex-container {
+                    margin-top: 50px;
+               }
+                .text-infos .frame {
+                    border-radius: 10px;
+                    padding: 5px;
+                    border-style: solid;.text-content
+                    background-color: #FFFFFF;
+                    border: 1px solid #EAECF0;
+                    width: 48px;
+                    height: 48px;
+               }
+                .numcarte {
+                    position: relative;
+                    display: flex;
                     align-items: center;
                 }
-                 .policy-links {
-                    align-self: flex-start;
-                    text-align: left;
+                .numcarte input {
                     width: 100%;
-                    font-size: 14px;
-                    margin: 8px;
-                    margin-top: 15px;
+                    padding-right: 40px;
+                    height: 40px;
+                }
+                .numcarte img {
+                    position: absolute;
+                    right: 10px;
+                    width: 30px;
+                    height: auto;
+                    display: none;
+                }
+                .cvc {
+                    position: relative;
+                    display: flex;
+                    align-items: center;
+                }
+                .cvc img {
+                    position: absolute;
+                    right: 10px;
+                    width: 30px;
+                    height: auto;
+                }
+                .col-md-5 {
+                    padding-right: 0;
+                    padding-left: 0;
+                }
+                   .total-box {
+                        color: white;
+                        border-radius: 10px;
+                        /*margin-left: 38px;*/
+                        font-family: Arial, sans-serif;
+                        width: fit-content;
+                    }
+
+                    .total-box .label {
+                        font-size: 14px;
+                        opacity: 0.8;
+                    }
+
+                    .total-box .amount {
+                        font-size: 32px;
+                        font-weight: bold;
+                    }
+
+                    .total-box .currency {
+                        font-size: 14px;
+                        margin-left: 5px;
+                    }
+
+                    .details {
+                        font-family: Arial, sans-serif;
+                    }
+
+                .details h2 {
+                    margin-bottom: 30px;
+                    font-family: Inter;
+                    font-weight: 600;
+                    font-size: 18px;
                 }
 
-              }
+                .transaction-item {
+                    display: flex;
+                    align-items: center;
+                    /*margin-bottom: 30px;*/
+                    margin-bottom: 20px;
+                }
+
+                .transaction-item i {
+                    font-size: 18px;
+                    margin-right: 10px;
+                    opacity: 0.8;
+                }
+
+                .transaction-item label {
+                    font-family: Inter;
+                    font-weight: 500;
+                    font-size: 16px;
+                    line-height: 24px;
+                    letter-spacing: 0%;
+                    text-align: center;
+                    margin: 0;
+                }
+                .transaction-item .value {
+                    background-color: #da5200;
+                    /*padding: 0 5px;*/
+                    margin: 0 30px;
+                    border-radius: 5px;
+                    font-size: 16px;
+                    font-weight: bold;
+                    font-family: Inter;
+                    color: #FFFFFF;
+                }
+
+                   .form-group { margin-bottom: 15px; }
+                   .form-group label { display: block; margin-bottom: 5px; }
+                   .form-group input, select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 5px; }
+                   .subscribe-btn {
+                       width: 100%;
+                       padding: 10px;
+                       background: #FF5F00;
+                       color: white;
+                       border: none;
+                       border-radius: 5px;
+                       cursor: pointer;
+                       font-family: Inter;
+                       font-weight: 500;
+                       font-size: 18px;
+                       line-height: 28px;
+                   }
+
+                   /* RESPONSIVE */
+                   @media (max-width: 768px) {
+                       .container {
+                            flex-direction: column;
+                       }
+                       .logo {
+                            display: none;
+                       }
+                       .logoMbl {
+                            display: block;
+                            margin-top: 15px;
+                            position: fixed;
+                            margin-left: 15px;
+                        }
+                    .left-panel {
+                        width: 100%;
+                        text-align: center;
+                        align-items: center;
+                        padding: 17px 20px;
+                        width: 100%;
+                        position: fixed !important;
+                        top: 49px !important;
+                        height: auto;
+                        z-index: 10;
+                        background: linear-gradient(#f86712, #f17132, #f11112bd);
+                    }
+                    .payment-header {
+                        display: block;
+                        margin-bottom: 20px;
+                    }
+                    .text-container p {
+                        line-height: normal;
+                    }
+                       .toggle-btn {
+                           display: block;
+                           top: 58px;
+                           margin-right: -12px;
+                           z-index: 11;
+                           background: linear-gradient(#f66f1f, #f3621b);
+                       }
+                       .logo {
+                            background-color: #F9FAFB;
+                            margin-top: 25px;
+                       }
+                       .logo .mbl {
+                            display: block;
+                            height: 24px;*/
+                            margin-left: 30px;
+                            position: relative;
+                            top: -10px;
+                            margin-left: 36px;
+                       }
+                       .logo .navg {
+                          display: none;
+                        }
+                        .text-infos {
+                            display: block;
+                            margin: 0px;
+                        }
+                        #error-message {
+                            font-size: 14px;
+                            padding: 5px 5px;
+                        }
+                       .payment-panel {
+                         top: 100px;
+                         position: fixed;
+                         /*margin-left: 0;
+                         margin-right: 0;*/
+                         width: 100%;
+                         padding: 15px;
+                       }
+                       .flex-container {
+                            display: flex;
+                            justify-content: space-between;
+                            width: 100%;
+                            /*margin-left: 5%;*/
+                            height: 20px;
+                            margin-top: 0px;
+                       }
+                       .left-panel .details {
+                            text-align: left;
+                            padding: 10px;
+                            display: none;
+                            margin-top: 0;
+                         }
+                         .left-panel .details p {
+                            font-size: 14px;
+                            line-height: 1.4;
+                            margin-bottom: 10px;
+                        }
+                        .left-panel h2 {
+                           font-size: 16px;
+                         }
+                         .details-message {
+                            font-size: 14px;
+                            display: block;
+                            margin-right: 30px;
+                            white-space: nowrap;
+                            color: #FFFFFF;
+                            font-family: Inter;
+                        }
+                        .transaction-item label {
+                            font-size: 14px;
+                        }
+                        .transaction-item .value {
+                            background-color: #f2620d;
+                            font-size: 14px;
+                        }
+                        .details h2 {
+                            margin-bottom: 20px;
+                        }
+                        .dhs {
+                            font-size: 12px;
+                        }
+                        .total-box {
+                            margin-left: 0;
+                        }
+                        .total-box .label {
+                            display: none;
+                        }
+                        .total-box .amount {
+                            font-size: 16px;
+                            font-weight: bold;
+                        }
+                        .total-box .currency {
+                            font-size: 12px;
+                            margin-left: 5px;
+                        }
+                         .payment-panel h2, h3, h4, h5 {
+                            font-size: 16px;
+                        }
+                        .form-group.d-flex {
+                            white-space: nowrap;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            font-size: 14px;
+                        }
+                         .transaction-item {
+                            margin-bottom: 13px;
+                        }
+                        .form-group .enter {
+                            font-size: 14px;
+                        }
+                         .form-group.lock-label {
+                            white-space: normal;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                        }
+                        .footer {
+                            text-align: center;
+                            /*margin-top: 10px;*/
+                            /*margin-top: 0px;*/
+                            /*top: 240px;
+                            position: relative;*/
+                            top: 495px;
+                            position: fixed;
+                        }
+                        .footer-content {
+                            flex-direction: column;
+                            align-items: center;
+                        }
+                         .policy-links {
+                            align-self: flex-start;
+                            text-align: left;
+                            width: 100%;
+                            font-size: 14px;
+                            margin: 8px;
+                            margin-top: 15px;
+                        }
+                        .formm {
+                            width: auto;
+                        }
+
+                      }
+
     </style>
 </head>
 <body>
 
-<!--  <i class="fas fa-plus"></i> <i class="fas fa-caret-down"></i> <i class="fas fa-chevron-down"></i> <i class="fas fa-bars"></i> <i class="fas fa-eye"></i>
-<i class="fas fa-arrow-circle-down"></i> <i class="fas fa-chevron-circle-down"></i> -->
-<div class="container-fluid" style="height: 100vh;">
-    <div class="row" style="height: 100%;display: flex;">
-        <!-- Panneau Gauche (1/3) -->
-        <div class="col-md-4">
-            <div class="left-panel" style="position: relative; top: 0px; transition: top 0.3s;">
+<div class="container-fluid h-100">
+    <!-- SECTION GAUCHE -->
+    <div class="row h-100">
+        <img alt="Image" class="logoMbl" th:src="@{/images/logo_naps_mb.svg}">
+        <div class="col-md-4 col-12 left-panel d-flex flex-column">
+            <div class="sidbar content-wrapper d-flex flex-column w-100">
                 <div class="logo">
                     <img alt="Image" class="navg" th:src="@{/images/logo_naps_nav.svg}">
-                    <img alt="Image" class="mbl" th:src="@{/images/logo_naps_mb.svg}">
                 </div>
-                <img alt="Image" class="logoMbl" th:src="@{/images/logo_naps_mb.svg}">
-                <button class="toggle-btn" onclick="togglePanel()"><i class="fas fa-chevron-circle-down"></i></button>
                 <div class="flex-container">
                     <div class="total-box">
                         <div class="label">Total</div>
@@ -457,55 +675,65 @@
                             <span class="currency">Dhs</span>
                         </div>
                     </div>
-                    <p class="details-message">Afficher les détails</p>
-                </div>
-                <div class="details">
-
-                    <h2>Détails de votre transaction</h2>
-
-                    <div class="transaction-item">
-                        <i class="fas fa-calendar-alt" style="margin-right: 5px;"></i>
-                        <label>Date</label>
-                        <span class="value" th:text="${formattedDate}"></span>
-                    </div>
-
-                    <div class="transaction-item">
-                        <i class="fas fa-shopping-bag" style="margin-right: 5px;"></i>
-                        <label>Commerçant</label>
-                        <span class="value">Pathé Californie Casablanca</span>
-                    </div>
-
-                    <div class="transaction-item">
-                        <i class="fas fa-globe" style="margin-right: 5px;"></i>
-                        <label>Site web</label>
-                        <span class="value">www.pathe.ma</span>
-                    </div>
-
-                    <div class="transaction-item">
-                        <i class="fas fa-shopping-cart" style="margin-right: 5px;"></i>
-                        <label>Commande</label>
-                        <span class="value">0292DJ92_9238_S201</span>
-                    </div>
+                    <p class="details-message"><img alt="Image" class="affich_dets" th:src="@{/images/affich_dets.svg}"></p>
                 </div>
             </div>
 
+
+            <button class="toggle-btn" onclick="togglePanel()">
+                <img alt="Image" class="flech" th:src="@{/images/flech.svg}">
+            </button>
+
+            <div class="details">
+
+                <!--<h2>Détails de votre transaction</h2>-->
+                <div class="detsimg">
+                    <img alt="Image" class="dets" th:src="@{/images/detailsTrs.svg}">
+                </div>
+
+                <div class="transaction-item">
+                    <!--<img alt="Image" class="date" th:src="@{/images/icondate.svg}">
+                    <label>Date</label>-->
+                    <div class="icondetails"><img alt="Image" class="dets" th:src="@{/images/iconetdate.svg}"></div>
+                    <div class="value"><span th:text="${formattedDate}"></span></div>
+                </div>
+
+                <div class="transaction-item">
+                    <!--<img alt="Image" class="cmr" th:src="@{/images/iconcmr.svg}">
+                    <label>Commerçant</label>-->
+                    <div class="icondetails"><img alt="Image" class="dets" th:src="@{/images/iconetcmr.svg}"></div>
+                    <div class="value"><span >Pathé Californie Casablanca</span></div>
+                </div>
+
+                <div class="transaction-item">
+                    <!--<img alt="Image" class="site" th:src="@{/images/iconsite.svg}">
+                    <label>Site web</label>-->
+                    <div class="icondetails"><img alt="Image" class="dets" th:src="@{/images/iconetsite.svg}"></div>
+                    <div class="value"><span >www.pathe.ma</span></div>
+                </div>
+
+                <div class="transaction-item">
+                    <!--<img alt="Image" class="comd" th:src="@{/images/iconcomd.svg}">
+                    <label>Commande</label>-->
+                    <div class="icondetails"><img alt="Image" class="dets" th:src="@{/images/iconetcomd.svg}"></div>
+                    <div class="value"><span >0292DJ92_9238_S201</span></div>
+                </div>
+            </div>
         </div>
 
-        <!-- Panneau de Paiement (2/3) -->
-        <div class="col-md-8">
-            <div class="payment-panel">
-                <!-- Affichage du message d'erreur -->
-                <div class="alert alert-danger" id="error-message" th:if="${session.error}">
-                    <p th:text="${session.error}"></p>
-                </div>
-                <div class="form-group text-infos">
-                    <!-- <i class="fas fa-credit-card"></i> -->
-                    <img alt="frame" class="frame" th:src="@{/images/frame.svg}">
-                    <div class="text-content">
-                        <h4>Informations de paiement</h4>
-                        <p class="enter">Entrez vos informations de paiement pour valider votre achat</p>
+        <!-- SECTION DROITE -->
+        <div class="col-md-8 col-12 payment-panel d-flex flex-column justify-content-center align-items-center">
+            <div class="formm">
+                <div class="payment-header">
+                    <div class="icon-container">
+                        <img alt="frame" class="frame" th:src="@{/images/frame.svg}">
+                    </div>
+                    <div class="text-container">
+                        <h3>Informations de paiement</h3>
+                        <p>Entrez vos informations de paiement pour valider votre achat.</p>
                     </div>
                 </div>
+
                 <form method="post" th:action="@{/processpayment}" th:object="${demandeDto}">
                     <div class="form-group">
                         <label class="labInput">Nom sur la carte</label>
@@ -520,7 +748,7 @@
                     </div>
                     <div class="form-group d-flex gap-2">
                         <div class="mr-2" style="width: 50%">
-                            <input placeholder="YY / MM" th:field="*{annee}" type="text">
+                            <input placeholder="MM / AA" th:field="*{annee}" type="text">
                         </div>
                         <div class="cvc" style="width: 50%">
                             <input id="cvv" placeholder="CVC" required="required" th:field="*{demCvv}" type="number">
@@ -540,31 +768,32 @@
 
                     <div class="form-group">
                         <button class="subscribe-btn">
-                            <i class="fas fa-check"></i> Payer <span th:text="${demandeDto.montantStr}"></span> Dhs
+                            <img alt="flch" class="flch" th:src="@{/images/flechpayer.svg}">
+                            Payer <span th:text="${demandeDto.montantStr}"></span> Dhs
                         </button>
                     </div>
                     <div class="form-group d-flex align-items-center lock-label">
-                        <!--<i class="fas fa-lock mr-2"></i> -->
                         <img alt="lock" class="lock" th:src="@{/images/lock.svg}">
                         <label class="mb-0 sec" for="terms">Toutes vos données personnelles sont chiffrées et
                             sécurisées</label>
                     </div>
                 </form>
             </div>
-            <div class="footer">
+            <div class="footer-container">
                 <div class="footer-content">
                     <div class="d-none d-md-inline">
-                            <span class="textFooter">Powered by <img alt="Image"
-                                                                     class="powered"
-                                                                     th:src="@{/images/powered_naps.svg}"></span>
+                            <span class="textFooter">Powered by
+                                <img alt="Image" class="powered" th:src="@{/images/powered_naps.svg}">
+                            </span>
                         <span class="separator">|</span>
                         <span class="textFooter">Politique de confidentialité</span>
                         <span class="separator"><i class="fas fa-circle" style="font-size: xx-small;"></i></span>
                         <span class="textFooter">Conditions générales</span>
                     </div>
-                    <div class="d-inline d-md-none">
-                            <span>Powered by <img alt="Image" class="powered"
-                                                  th:src="@{/images/powered_naps.svg}"></span><br>
+                    <div class="d-inline d-md-none text-center">
+                            <span>Powered by
+                                <img alt="Image" class="powered" th:src="@{/images/powered_naps.svg}">
+                            </span><br>
                         <div class="policy-links">
                             <span>Politique de confidentialité</span>
                             <span class="separator"><i class="fas fa-circle"
@@ -575,9 +804,10 @@
                 </div>
             </div>
         </div>
+
+
     </div>
 </div>
-
 <script>
     let panelState = 0;
     // 0 = état initial, 1 = ouvert complètement
@@ -658,6 +888,5 @@
     }
 
 </script>
-
 </body>
 </html>

@@ -156,7 +156,8 @@
             border-radius: 10px;
             padding: 5px;
             border-style: solid;
-            border-color: #EBEDF1;
+            background-color: #FFFFFF;
+            border: 1px solid #EAECF0;
             width: 48px;
             height: 48px;
        }
@@ -506,7 +507,7 @@
                         <p class="enter">Entrez vos informations de paiement pour valider votre achat</p>
                     </div>
                 </div>
-                <form method="post" th:action="@{/processrecharge}" th:object="${demandeDto}">
+                <form method="post" th:action="@{/processpayment}" th:object="${demandeDto}">
                     <div class="form-group">
                         <label class="labInput">Nom sur la carte</label>
                         <input placeholder="Entrez le nom du porteur de la carte" required="required" type="text">
