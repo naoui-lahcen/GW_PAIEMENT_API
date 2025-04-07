@@ -2,7 +2,10 @@ package ma.m2m.gateway.controller;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -23,13 +26,23 @@ import javax.net.ssl.X509TrustManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.xml.namespace.QName;
+
+import com.google.gson.Gson;
+import ma.m2m.gateway.dto.*;
+import ma.m2m.gateway.lydec.*;
+import ma.m2m.gateway.service.*;
+import ma.m2m.gateway.threedsecure.RequestEnvoieEmail;
+import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
+import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
@@ -62,31 +75,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.ui.Model;
 
 import ma.m2m.gateway.config.JwtTokenUtil;
-import ma.m2m.gateway.dto.ArticleDGIDto;
-import ma.m2m.gateway.dto.CardtokenDto;
-import ma.m2m.gateway.dto.Cartes;
-import ma.m2m.gateway.dto.CodeReponseDto;
-import ma.m2m.gateway.dto.CommercantDto;
-import ma.m2m.gateway.dto.DemandePaiementDto;
-import ma.m2m.gateway.dto.FactureLDDto;
-import ma.m2m.gateway.dto.MonthDto;
-import ma.m2m.gateway.dto.GalerieDto;
-import ma.m2m.gateway.dto.HistoAutoGateDto;
-import ma.m2m.gateway.dto.InfoCommercantDto;
-import ma.m2m.gateway.dto.ResponseDto;
 import ma.m2m.gateway.encryption.RSACrypto;
-import ma.m2m.gateway.lydec.Impaye;
-import ma.m2m.gateway.lydec.Portefeuille;
 import ma.m2m.gateway.reporting.GenerateExcel;
-import ma.m2m.gateway.service.ArticleDGIService;
-import ma.m2m.gateway.service.AutorisationService;
-import ma.m2m.gateway.service.CardtokenService;
-import ma.m2m.gateway.service.CodeReponseService;
-import ma.m2m.gateway.service.CommercantService;
-import ma.m2m.gateway.service.DemandePaiementService;
-import ma.m2m.gateway.service.FactureLDService;
-import ma.m2m.gateway.service.HistoAutoGateService;
-import ma.m2m.gateway.service.InfoCommercantService;
 import ma.m2m.gateway.switching.SwitchTCPClient;
 import ma.m2m.gateway.switching.SwitchTCPClientV2;
 import ma.m2m.gateway.threedsecure.ThreeDSecureResponse;
@@ -95,6 +85,7 @@ import ma.m2m.gateway.tlv.TLVParser;
 import ma.m2m.gateway.tlv.Tags;
 import ma.m2m.gateway.utils.Objects;
 import ma.m2m.gateway.utils.Util;
+import org.springframework.web.servlet.view.RedirectView;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -139,6 +130,9 @@ public class GWPaiementController {
 
 	@Value("${key.DGI_PROD}")
 	private String dgiProd;
+
+	@Value("${key.LIEN_ENVOIE_EMAIL_DGI}")
+	private String lienEnvoieEmailDgi;
 	
 	@Value("${key.ENVIRONEMENT}")
 	private String environement;
@@ -173,6 +167,9 @@ public class GWPaiementController {
 	//@Autowired
 	private final ArticleDGIService articleDGIService;
 
+	//@Autowired
+	private final CFDGIService cfdgiService;
+
 	private LocalDateTime date;
 	private String folder;
 	private String file;
@@ -185,13 +182,14 @@ public class GWPaiementController {
 	DateFormat dateFormat = new SimpleDateFormat(DF_YYYY_MM_DD_HH_MM_SS);
 	DateFormat dateFormatSimple = new SimpleDateFormat(FORMAT_DEFAUT);
 
-	// private static final QName serviceName = new QName("http://service.lydec.com", "GererEncaissementService");
+	private static final QName SERVICE_NAME = new QName("http://service.lydec.com", "GererEncaissementService");
 
 	public GWPaiementController(DemandePaiementService demandePaiementService, AutorisationService autorisationService,
 			HistoAutoGateService histoAutoGateService, CommercantService commercantService, 
 			InfoCommercantService infoCommercantService,
 			CardtokenService cardtokenService, CodeReponseService codeReponseService,
-			FactureLDService factureLDService, ArticleDGIService articleDGIService) {
+			FactureLDService factureLDService, ArticleDGIService articleDGIService,
+								CFDGIService cfdgiService) {
 		date = LocalDateTime.now(ZoneId.systemDefault());
 		folder = date.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
 		this.demandePaiementService = demandePaiementService;
@@ -203,22 +201,7 @@ public class GWPaiementController {
 		this.codeReponseService = codeReponseService;
 		this.factureLDService = factureLDService;
 		this.articleDGIService = articleDGIService;
-	}
-
-	public static Portefeuille[] preparerTabEcritureLydecListe(List<Impaye> facListe) {
-		Portefeuille[] tabEcr = new Portefeuille[facListe.size()];
-		int i = 0;
-		for (Impaye fac : facListe) {
-			Portefeuille ecr = new Portefeuille();
-			ecr.setFac_Num(fac.getNumeroFacture());
-			ecr.setLigne(fac.getNumeroLigne());
-			tabEcr[i] = ecr;
-
-			i++;
-
-		}
-
-		return tabEcr;
+		this.cfdgiService = cfdgiService;
 	}
 
 	//@RequestMapping(path = "/")
@@ -528,6 +511,89 @@ public class GWPaiementController {
 		autorisationService.logMessage(file, "*********** End newpage () ************** ");
 
 		return "newpage";
+	}
+
+	@GetMapping("/napspayment/autho/token/{token}")
+	public RedirectView redirectToNextJs(@PathVariable String token) {
+		// URL de Next.js avec le token
+		String nextJsUrl = "http://localhost:3000/payment/" + token;
+		return new RedirectView(nextJsUrl);
+	}
+
+	@GetMapping("/napspayment/page/details/token/{token}")
+	@ResponseBody
+	public ResponseEntity<?> getPaymentDetails(@PathVariable String token) {
+		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
+		String file = "GW_PAGE_" + randomWithSplittableRandom;
+		// TODO: create file log
+		Util.creatFileTransaction(file);
+		autorisationService.logMessage(file, "*********** Start getPaymentDetails ***********");
+		PaymentDTO paymentDTO = new PaymentDTO();
+		DemandePaiementDto demandeDto = new DemandePaiementDto();
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d MMMM yyyy, HH:mm");
+		LocalDateTime now = LocalDateTime.now();
+		String formattedDate = now.format(formatter);
+		paymentDTO.setFormattedDate(formattedDate);
+		autorisationService.logMessage(file, "findByTokencommande token : " + token);
+		try {
+			demandeDto = demandePaiementService.findByTokencommande(token);
+			if (demandeDto != null) {
+				autorisationService.logMessage(file, "DemandePaiement recuperee avec success token/Commande : "
+						+ demandeDto.getTokencommande() + "/" + demandeDto.getCommande());
+
+				// TODO: get list of years + 10
+				int currentYear = Year.now().getValue();
+				List<Integer> years = generateYearList(currentYear, currentYear + 10);
+
+				demandeDto.setYears(years);
+
+				// TODO: get list of months
+				List<Month> months = Arrays.asList(Month.values());
+				List<String> monthNames = convertMonthListToStringList(months);
+				List<MonthDto> monthValues = convertStringAGListToFR(monthNames);
+
+				demandeDto.setMonths(monthValues);
+
+				autorisationService.processPaymentPageData(demandeDto, folder, file);
+
+				Util.formatAmount(demandeDto);
+				if (demandeDto.getEtatDemande().equals("SW_PAYE") || demandeDto.getEtatDemande().equals("PAYE")) {
+					autorisationService.logMessage(file, "Opération déjà effectuée");
+					ResponseDto res = new ResponseDto();
+					res.setStatuscode("400");
+					res.setStatus("Opération déjà effectuée");
+					return new ResponseEntity<>(res, HttpStatus.BAD_REQUEST);
+				} else {
+					autorisationService.processInfosMerchant(demandeDto, folder, file);
+				}
+				Objects.copyProperties(paymentDTO, demandeDto);
+				if(demandeDto.getCommercantDto() != null) {
+					paymentDTO.setNameCmr(demandeDto.getCommercantDto().getCmrNom());
+				}
+				if(demandeDto.getGalerieDto() != null) {
+					paymentDTO.setSiteWeb(demandeDto.getGalerieDto().getUrlGal());
+				}
+
+			} else {
+				autorisationService.logMessage(file, "DemandePaiement introuvable token : " +  token);
+				ResponseDto res = new ResponseDto();
+				res.setStatuscode("400");
+				res.setStatus("DemandePaiement introuvable");
+				return new ResponseEntity<>(res, HttpStatus.BAD_REQUEST);
+			}
+		} catch (Exception e) {
+			autorisationService.logMessage(file,
+					"getPaymentDetails 500 DEMANDE_PAIEMENT misconfigured in DB or not existing token:[" + token + "]"
+							+ Util.formatException(e));
+			ResponseDto res = new ResponseDto();
+			res.setStatuscode("500");
+			res.setStatus("Internal server error");
+			return new ResponseEntity<>(res, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		autorisationService.logMessage(file, "*********** End getPaymentDetails ***********");
+
+		return new ResponseEntity<>(paymentDTO, HttpStatus.OK);
+
 	}
 
 	@RequestMapping(value = "/napspayment/authorization/token/{token}", method = RequestMethod.GET)
@@ -883,7 +949,7 @@ public class GWPaiementController {
 				merchantname, websiteName, websiteid, callbackUrl, cardnumber, token, expirydate, holdername, cvv,
 				fname, lname, email, country, phone, city, state, zipcode, address, mesg_type, merc_codeactivite,
 				acqcode, merchant_name, merchant_city, acq_type, processing_code, reason_code, transaction_condition,
-				transactiondate, transactiontime, date, rrn, heure, montanttrame, num_trs = "", successURL, failURL,
+				transactiondate, transactiontime, date, rrn, heure, montanttrame, num_trs = "", successURL, failURL = "",
 				transactiontype, idclient;
 
 		DemandePaiementDto demandeDto = new DemandePaiementDto();
@@ -915,7 +981,8 @@ public class GWPaiementController {
 			recurring = "N";
 			promoCode = "";
 			transactionid = "";
-			transactiontype = "0"; // TODO: 0 payment , P preauto
+			// TODO: 0 payment , P preauto
+			transactiontype = demandeDto.getTransactiontype() == null ? "0" : demandeDto.getTransactiontype();
 
 			// TODO: Merchnat info
 			merchantid = demandeDto.getComid() == null ? "" : demandeDto.getComid();
@@ -977,10 +1044,12 @@ public class GWPaiementController {
 
 		} catch (Exception jerr) {
 			autorisationService.logMessage(file, "payer 500 malformed json expression" + Util.formatException(jerr));
-			demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
+			/*demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
-			return page;
+			return page;*/
+			response.sendRedirect(failURL);
+			return null;
 		}
 
 		CommercantDto current_merchant = null;
@@ -1057,7 +1126,9 @@ public class GWPaiementController {
 			demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
-			return page;
+			//return page;
+			response.sendRedirect(failURL);
+			return null;
 		}
 
 		page = autorisationService.handleSessionTimeout(session, file, timeout, demandeDto, demandeDtoMsg, model);
@@ -1104,7 +1175,9 @@ public class GWPaiementController {
 			demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité.");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
-			return page;
+			//return page;
+			response.sendRedirect(failURL);
+			return null;
 		}
 		autorisationService.logMessage(file, "Fin controlleRisk");
 		
@@ -1121,10 +1194,10 @@ public class GWPaiementController {
 				autorisationService.logMessage(file, "cardtokenDto expirydate input : " + expirydate);
 				String anne = String.valueOf(dateCalendar.get(Calendar.YEAR));
 				// TODO: get year from date
-				String xx = anne.substring(0, 2) + expirydate.substring(0, 2);
-				String MM = expirydate.substring(2, expirydate.length());
+				String year = anne.substring(0, 2) + expirydate.substring(0, 2);
+				String moi = expirydate.substring(2, expirydate.length());
 				// TODO: format date to "yyyy-MM-dd"
-				String expirydateFormated = xx + "-" + MM + "-" + "01";
+				String expirydateFormated = year + "-" + moi + "-" + "01";
 				logger.info("cardtokenDto expirydate : " + expirydateFormated);
 				autorisationService.logMessage(file,
 						"cardtokenDto expirydate formated : " + expirydateFormated);
@@ -1190,7 +1263,6 @@ public class GWPaiementController {
 		}
 		
 		try {
-
 			formatheure = new SimpleDateFormat("HHmmss");
 			formatdate = new SimpleDateFormat("ddMMyy");
 			date = formatdate.format(new Date());
@@ -1204,7 +1276,9 @@ public class GWPaiementController {
 			demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
-			return page;
+			//return page;
+			response.sendRedirect(failURL);
+			return null;
 		}
 
 		ThreeDSecureResponse threeDsecureResponse = new ThreeDSecureResponse();
@@ -1252,11 +1326,8 @@ public class GWPaiementController {
 			autorisationService.logMessage(file, "received idDemande from MPI is Null or Empty");
 			autorisationService.logMessage(file,
 					"demandePaiement after update MPI_KO idDemande null : " + demandeDto.toString());
-			demandeDtoMsg.setMsgRefus(
-					"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
-			model.addAttribute("demandeDto", demandeDtoMsg);
-			page = "result";
-			return page;
+			response.sendRedirect(failURL);
+			return null;
 		}
 
 		dmd = demandePaiementService.findByIdDemande(Integer.parseInt(idDemande));
@@ -1267,25 +1338,19 @@ public class GWPaiementController {
 			autorisationService.logMessage(file,
 					"demandePaiement not found !!!! demandePaiement = null  / received idDemande from MPI => "
 							+ idDemande);
-			demandeDtoMsg.setMsgRefus(
-					"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
-			model.addAttribute("demandeDto", demandeDtoMsg);
-			page = "result";
-			return page;
+			response.sendRedirect(failURL);
+			return null;
 		}
 
-		if (reponseMPI.equals("") || reponseMPI == null) {
+		if (reponseMPI == null || reponseMPI.equals("")) {
 			dmd.setDemCvv("");
 			dmd.setEtatDemande("MPI_KO");
 			demandePaiementService.save(dmd);
 			autorisationService.logMessage(file,
 					"demandePaiement after update MPI_KO reponseMPI null : " + dmd.toString());
 			autorisationService.logMessage(file, "Response 3DS is null");
-			demandeDtoMsg.setMsgRefus(
-					"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
-			model.addAttribute("demandeDto", demandeDtoMsg);
-			page = "result";
-			return page;
+			response.sendRedirect(failURL);
+			return null;
 		}
 
 		if (reponseMPI.equals("Y")) {
@@ -1299,7 +1364,7 @@ public class GWPaiementController {
 			}
 			
 			// TODO: 2024-03-05
-			montanttrame = formatMontantTrame(folder, file, amount, orderid, merchantid, model);
+			montanttrame = Util.formatMontantTrame(folder, file, amount, orderid, merchantid, dmd, model);
 
 			merchantname = current_merchant.getCmrNom();
 			websiteName = "";
@@ -1357,12 +1422,8 @@ public class GWPaiementController {
 				demandePaiementService.save(dmd);
 				autorisationService.logMessage(file,
 						"payer 500 cvv not set , reccuring flag set to N, cvv must be present in normal transaction");
-
-				demandeDtoMsg.setMsgRefus(
-						"Le champ CVV est vide. Veuillez saisir le code de sécurité à trois chiffres situé au dos de votre carte pour continuer.");
-				model.addAttribute("demandeDto", demandeDtoMsg);
-				page = "result";
-				return page;
+				response.sendRedirect(failURL);
+				return null;
 			}
 
 			// TODO: not reccuring , normal
@@ -1388,11 +1449,8 @@ public class GWPaiementController {
 					autorisationService.logMessage(file,
 							"payer 500 Error during switch tlv buildup for given orderid:[" + orderid
 									+ "] and merchantid:[" + merchantid + "]" + Util.formatException(err4));
-					demandeDtoMsg.setMsgRefus(
-							"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
-					model.addAttribute("demandeDto", demandeDtoMsg);
-					page = "result";
-					return page;
+					response.sendRedirect(failURL);
+					return null;
 				}
 
 				autorisationService.logMessage(file, "Switch TLV Request :[" + tlv + "]");
@@ -1432,10 +1490,8 @@ public class GWPaiementController {
 					autorisationService.logMessage(file,
 							"payer 500 Error Switch communication s_conn false switch ip:[" + sw_s
 									+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-					demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
-					model.addAttribute("demandeDto", demandeDtoMsg);
-					page = "result";
-					return page;
+					response.sendRedirect(failURL);
+					return null;
 				}
 
 				if (s_conn) {
@@ -1449,7 +1505,12 @@ public class GWPaiementController {
 
 			} catch (Exception e) {
 				switch_ko = 1;
-				return autorisationService.handleSwitchError(e, file, orderid, merchantid, resp_tlv, dmd, model, "result");
+				// return autorisationService.handleSwitchError(e, file, orderid, merchantid, resp_tlv, dmd, model, "result");
+				dmd.setDemCvv("");
+				dmd.setEtatDemande("SW_KO");
+				demandePaiementService.save(dmd);
+				response.sendRedirect(failURL);
+				return null;
 			}
 
 			String resp = resp_tlv;
@@ -1462,11 +1523,8 @@ public class GWPaiementController {
 				switch_ko = 1;
 				autorisationService.logMessage(file, "payer 500 Error Switch null response" + "switch ip:[" + sw_s
 						+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
-				model.addAttribute("demandeDto", demandeDtoMsg);
-				page = "result";
-				return page;
+				response.sendRedirect(failURL);
+				return null;
 			}
 
 			if (switch_ko == 0 && resp.length() < 3) {
@@ -1478,11 +1536,8 @@ public class GWPaiementController {
 				autorisationService.logMessage(file, "Switch  malfunction resp < 3 !!!");
 				autorisationService.logMessage(file, "payer 500 Error Switch short response length() < 3 "
 						+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
-				model.addAttribute("demandeDto", demandeDtoMsg);
-				page = "result";
-				return page;
+				response.sendRedirect(failURL);
+				return null;
 			}
 
 			autorisationService.logMessage(file, "Switch TLV Respnose :[" + resp + "]");
@@ -1577,15 +1632,9 @@ public class GWPaiementController {
 				
 				websiteid = dmd.getGalid();
 
-				// TODO: Ihist_id = hist.getMAX_ID("HISTOAUTO_GATE", "HAT_ID");
-				// TODO: Ihist_id = histoAutoGateService.getMAX_ID();
-				// TODO: long currentid = Ihist_id.longValue() + 1;
-				// TODO: hist.setId(currentid);
-
 				autorisationService.logMessage(file, "formatting pan...");
 
 				pan_auto = Util.formatagePan(cardnumber);
-				autorisationService.logMessage(file, "formatting pan Ok pan_auto :[" + pan_auto + "]");
 
 				autorisationService.logMessage(file, "HistoAutoGate data filling start ...");
 				
@@ -1773,8 +1822,8 @@ public class GWPaiementController {
 
 								autorisationService.logMessage(file, "Fin processRequest ()");
 								logger.info("Fin processRequest ()");
-								return page;
-
+								//return page;
+								return null;
 							}
 						//}
 					}
@@ -1799,11 +1848,8 @@ public class GWPaiementController {
 					autorisationService.logMessage(file,
 							"payer 500 Error during  DemandePaiement update SW_REJET for given orderid:[" + orderid
 									+ "]" + Util.formatException(e));
-					demandeDtoMsg.setMsgRefus(
-							"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
-					model.addAttribute("demandeDto", demandeDtoMsg);
-					page = "result";
-					return page;
+					response.sendRedirect(failURL);
+					return null;
 				}
 				autorisationService.logMessage(file, "update Demandepaiement status to SW_REJET OK.");
 				// TODO: 2024-02-27
@@ -2038,22 +2084,63 @@ public class GWPaiementController {
 				dmd.setDemCvv("");
 				demandePaiementService.save(dmd);
 				page = "result";
-				return page;
+				response.sendRedirect(failURL);
+				return null;
 			}
 		} else if (reponseMPI.equals("E")) {
 			// TODO: ********************* Cas responseMPI equal E
 			// TODO: *********************
 			page = autorisationService.handleMpiError(errmpi, file, idDemande, threeDSServerTransID, dmd, model, page);
+			response.sendRedirect(failURL);
+			return null;
 		} else {
 			page = autorisationService.handleMpiError(errmpi, file, idDemande, threeDSServerTransID, dmd, model, page);
+			response.sendRedirect(failURL);
+			return null;
 		}
 
 		logger.info("return page : " + page);
+
+		if(page.equals("error")) {
+			response.sendRedirect(failURL);
+			return null;
+		}
 
 		autorisationService.logMessage(file, "*********** End payer () ************** ");
 		logger.info("*********** End payer () ************** ");
 
 		return page;
+	}
+
+	@PostMapping("/check")
+	@SuppressWarnings("all")
+	public ResponseEntity<Map<String, String>> checkChargementPage(@RequestBody Map<String, String> requestData) {
+		String file = "GW_Check_PAGE_" + randomWithSplittableRandom;
+		autorisationService.logMessage(file, "checkChargementPage : La page est visible, l'utilisateur interagit.");
+		String idDemandeStr = requestData.get("iddemande");
+		Integer idDemande = null;
+		if (idDemandeStr != null) {
+			idDemande = Integer.valueOf(idDemandeStr);
+		}
+		try {
+			DemandePaiementDto demandePaiement = demandePaiementService.findByIdDemande(idDemande);
+			if (demandePaiement != null) {
+				if(demandePaiement.getEtatDemande().equals("P_CHRG_OK")) {
+					demandePaiement.setEtatDemande("CL_TOUCH_SCROL_PAGE");
+					demandePaiement = demandePaiementService.save(demandePaiement);
+					autorisationService.logMessage(file, "checkChargementPage : mj etat_demande to CL_TOUCH_SCROL_PAGE idDemande : "
+							+ idDemande);
+					return ResponseEntity.ok(Collections.singletonMap("message", "check chargement page avec succès"));
+				}
+			}
+		} catch (Exception e) {
+			autorisationService.logMessage(file, "checkChargementPage : Erreur lors du traitement du mj etat_demande : " + idDemande);
+			autorisationService.logMessage(file, "checkChargementPage Exception : " + Util.formatException(e));
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(Collections.singletonMap("message", "Erreur lors du traitement du Mise a jour etat_demande"));
+		}
+		return ResponseEntity.ok(Collections.singletonMap("message", "etat_demande deja changée"));
 	}
 	
 	@PostMapping("/cancelPayment")
@@ -2290,8 +2377,8 @@ public class GWPaiementController {
 				merchantname, websiteName, websiteid, callbackUrl, cardnumber, token, expirydate, holdername, cvv,
 				fname, lname, email, country, phone, city, state, zipcode, address, mesg_type, merc_codeactivite,
 				acqcode, merchant_name, merchant_city, acq_type, processing_code, reason_code, transaction_condition,
-				transactiondate, transactiontime, date, rrn, heure, montanttrame, num_trs = "", successURL, failURL,
-				transactiontype, idclient;
+				transactiondate, transactiontime, date, rrn, heure, montanttrame, montantRechgtrame, num_trs = "", successURL, failURL = "",
+				transactiontype,cartenaps, dateExnaps, idclient;
 
 		DemandePaiementDto demandeDto = new DemandePaiementDto();
 		Objects.copyProperties(demandeDto, dto);
@@ -2335,42 +2422,30 @@ public class GWPaiementController {
 			failURL = demandeDto.getFailURL() == null ? "" : demandeDto.getFailURL();
 
 			// TODO: Card info
-			// TODO: if transaction not cof
+			// TODO: if transaction cof or not cof
 			if (demandeDto.getDemPan() != null && !demandeDto.getDemPan().equals("")) {
 				cardnumber = demandeDto.getDemPan();
 				Set<String> uniqueCards = new LinkedHashSet<>(Arrays.asList(cardnumber.split(",")));
 				cardnumber = String.join(",", uniqueCards);
 				demandeDto.setDemPan(cardnumber);
-				if(demandeDto.getAnnee().length() == 4 && demandeDto.getMois()== null) {
-					expirydate = demandeDto.getAnnee();
-				} else {
-					expirydate = demandeDto.getAnnee().substring(2, 4).concat(demandeDto.getMois().substring(0, 2));
+				if(demandeDto.getExpery() != null) {
+					String dateToformat = demandeDto.getExpery();
+					autorisationService.logMessage(file,"dateToformat " + dateToformat);
+					String expirydateFormated = dateToformat.substring(5,7).concat(dateToformat.substring(0,2));
+					autorisationService.logMessage(file,"expirydateFormated " + expirydateFormated);
+					expirydate = expirydateFormated;
 				}
 			}
-			// TODO: if transaction cof
-			if (demandeDto.getInfoCarte() != null && !demandeDto.isFlagNvCarte()
-					&& (demandeDto.getDemPan() == null || demandeDto.getDemPan().equals(""))) {
-				//String infoCard = demandeDto.getInfoCarte().substring(8, demandeDto.getInfoCarte().length());
-				String infoCard = demandeDto.getInfoCarte().replaceAll("Cartes\\(|\\)", "");
-				Cartes carteFormated = fromString(infoCard);
-				demandeDto.setCarte(carteFormated);
-				cardnumber = demandeDto.getCarte().getCarte();
-				String annee = String.valueOf(demandeDto.getCarte().getYear());
-				expirydate = annee.substring(2, 4).concat(demandeDto.getCarte().getMoisValue());
-			}
-			if (demandeDto.getInfoCarte() != null && demandeDto.getDemPan().equals("")) {
-				if(!demandeDto.getAnnee().equals("") && !demandeDto.getMois().equals("")) {
-					expirydate = demandeDto.getAnnee().substring(2, 4).concat(demandeDto.getMois().substring(0, 2));
-				}
-			}
+
 			flagNvCarte = demandeDto.isFlagNvCarte();
 			flagSaveCarte = demandeDto.isFlagSaveCarte();
+			autorisationService.logMessage(file,"flagSaveCarte " + flagSaveCarte);
 			if (cardnumber.contains(",")) {
 				cardnumber = cardnumber.replace(",", "");
 			}
-			// TODO: cardnumber = demandeDto.getDemPan();
+			cardnumber = cardnumber.replaceAll("\\s", "");
+
 			token = "";
-			// TODO: expirydate = demandeDto.getAnnee().substring(2, 4).concat(demandeDto.getMois());
 			holdername = "";
 			cvv = demandeDto.getDemCvv() == null ? "" : demandeDto.getDemCvv();
 
@@ -2391,8 +2466,7 @@ public class GWPaiementController {
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			return page;*/
-			response.sendRedirect(request.getContextPath() + "/napspayment/auth/token/"+demandeDto.getTokencommande());
-			session.setAttribute("error", "La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
+			response.sendRedirect(failURL);
 			return null;
 		}
 
@@ -2466,6 +2540,8 @@ public class GWPaiementController {
 			if (idclient == null) {
 				idclient = "";
 			}
+			cartenaps = demandeDto.getCartenaps() == null ? "" : demandeDto.getCartenaps();
+			dateExnaps = demandeDto.getDateexpnaps() == null ? "" : demandeDto.getDateexpnaps();
 
 		} catch (Exception err1) {
 			autorisationService.logMessage(file,
@@ -2474,8 +2550,7 @@ public class GWPaiementController {
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			//return page;
-			response.sendRedirect(request.getContextPath() + "/napspayment/auth/token/"+demandeDto.getTokencommande());
-			session.setAttribute("error", "La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
+			response.sendRedirect(failURL);
 			return null;
 		}
 
@@ -2485,6 +2560,7 @@ public class GWPaiementController {
 			//return page;
 			response.sendRedirect(request.getContextPath() + "/napspayment/auth/token/"+demandeDto.getTokencommande());
 			session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+			System.out.println(session.getAttribute("error"));
 			return null;
 		}
 
@@ -2533,8 +2609,7 @@ public class GWPaiementController {
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			//return page;
-			response.sendRedirect(request.getContextPath() + "/napspayment/auth/token/"+demandeDto.getTokencommande());
-			session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+			response.sendRedirect(failURL);
 			return null;
 		}
 		autorisationService.logMessage(file, "Fin controlleRisk");
@@ -2552,10 +2627,10 @@ public class GWPaiementController {
 				autorisationService.logMessage(file, "cardtokenDto expirydate input : " + expirydate);
 				String anne = String.valueOf(dateCalendar.get(Calendar.YEAR));
 				// TODO: get year from date
-				String xx = anne.substring(0, 2) + expirydate.substring(0, 2);
-				String MM = expirydate.substring(2, expirydate.length());
+				String year = anne.substring(0, 2) + expirydate.substring(0, 2);
+				String moi = expirydate.substring(2, expirydate.length());
 				// TODO: format date to "yyyy-MM-dd"
-				String expirydateFormated = xx + "-" + MM + "-" + "01";
+				String expirydateFormated = year + "-" + moi + "-" + "01";
 				autorisationService.logMessage(file,
 						"cardtokenDto expirydate formated : " + expirydateFormated);
 				Date dateExp;
@@ -2620,7 +2695,6 @@ public class GWPaiementController {
 		}
 
 		try {
-
 			formatheure = new SimpleDateFormat("HHmmss");
 			formatdate = new SimpleDateFormat("ddMMyy");
 			date = formatdate.format(new Date());
@@ -2635,8 +2709,7 @@ public class GWPaiementController {
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			// return page;
-			response.sendRedirect(request.getContextPath() + "/napspayment/auth/token/"+demandeDto.getTokencommande());
-			session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+			response.sendRedirect(failURL);
 			return null;
 		}
 
@@ -2649,7 +2722,13 @@ public class GWPaiementController {
 		if(environement.equals("PREPROD")) {
 			threeDsecureResponse.setReponseMPI("Y");
 		} else {
-			threeDsecureResponse = autorisationService.preparerAeqThree3DSS(demandeDto, folder, file);
+			if((cartenaps != null && !cartenaps.equals("")) && (dateExnaps != null && !dateExnaps.equals(""))) {
+				autorisationService.logMessage(file,"preparerAeqMobileThree3DSS CCB");
+				threeDsecureResponse = autorisationService.preparerAeqMobileThree3DSS(demandeDto, folder, file);
+			} else {
+				autorisationService.logMessage(file,"preparerAeqThree3DSS payment");
+				threeDsecureResponse = autorisationService.preparerAeqThree3DSS(demandeDto, folder, file);
+			}
 		}
 
 		// TODO: fin 3DSSecure ***********************************************************
@@ -2685,13 +2764,7 @@ public class GWPaiementController {
 			autorisationService.logMessage(file, "received idDemande from MPI is Null or Empty");
 			autorisationService.logMessage(file,
 					"demandePaiement after update MPI_KO idDemande null : " + demandeDto.toString());
-			demandeDtoMsg.setMsgRefus(
-					"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
-			model.addAttribute("demandeDto", demandeDtoMsg);
-			page = "result";
-			// return page;
-			response.sendRedirect(request.getContextPath() + "/napspayment/auth/token/"+demandeDto.getTokencommande());
-			session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+			response.sendRedirect(failURL);
 			return null;
 		}
 
@@ -2703,30 +2776,18 @@ public class GWPaiementController {
 			autorisationService.logMessage(file,
 					"demandePaiement not found !!!! demandePaiement = null  / received idDemande from MPI => "
 							+ idDemande);
-			demandeDtoMsg.setMsgRefus(
-					"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
-			model.addAttribute("demandeDto", demandeDtoMsg);
-			page = "result";
-			// return page;
-			response.sendRedirect(request.getContextPath() + "/napspayment/auth/token/"+demandeDto.getTokencommande());
-			session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+			response.sendRedirect(failURL);
 			return null;
 		}
 
-		if (reponseMPI.equals("") || reponseMPI == null) {
+		if (reponseMPI == null || reponseMPI.equals("")) {
 			dmd.setDemCvv("");
 			dmd.setEtatDemande("MPI_KO");
 			demandePaiementService.save(dmd);
 			autorisationService.logMessage(file,
 					"demandePaiement after update MPI_KO reponseMPI null : " + dmd.toString());
 			autorisationService.logMessage(file, "Response 3DS is null");
-			demandeDtoMsg.setMsgRefus(
-					"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
-			model.addAttribute("demandeDto", demandeDtoMsg);
-			page = "result";
-			// return page;
-			response.sendRedirect(request.getContextPath() + "/napspayment/auth/token/"+demandeDto.getTokencommande());
-			session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+			response.sendRedirect(failURL);
 			return null;
 		}
 
@@ -2741,7 +2802,10 @@ public class GWPaiementController {
 			}
 
 			// TODO: 2024-03-05
-			montanttrame = formatMontantTrame(folder, file, amount, orderid, merchantid, model);
+			montanttrame = Util.formatMontantTrame(folder, file, amount, orderid, merchantid, dmd, model);
+
+			// TODO: 2024-03-05
+			montantRechgtrame = Util.formatMontantRechargeTrame(folder, file, amount, orderid, merchantid, dmd, page, model);
 
 			merchantname = current_merchant.getCmrNom();
 			websiteName = "";
@@ -2799,14 +2863,7 @@ public class GWPaiementController {
 				demandePaiementService.save(dmd);
 				autorisationService.logMessage(file,
 						"processpayment 500 cvv not set , reccuring flag set to N, cvv must be present in normal transaction");
-
-				demandeDtoMsg.setMsgRefus(
-						"Le champ CVV est vide. Veuillez saisir le code de sécurité à trois chiffres situé au dos de votre carte pour continuer.");
-				model.addAttribute("demandeDto", demandeDtoMsg);
-				page = "result";
-				// return page;
-				response.sendRedirect(request.getContextPath() + "/napspayment/auth/token/"+demandeDto.getTokencommande());
-				session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+				response.sendRedirect(failURL);
 				return null;
 			}
 
@@ -2814,6 +2871,13 @@ public class GWPaiementController {
 			if (cvv_present && !is_reccuring) {
 				autorisationService.logMessage(file, "not reccuring , normal cvv_present && !is_reccuring");
 				try {
+					// TODO: tag 046 tlv info carte naps
+					String tlvCCB = "";
+					if((cartenaps != null && !cartenaps.equals("")) && (dateExnaps != null && !dateExnaps.equals(""))) {
+						autorisationService.logMessage(file,"Recharge CCB");
+							tlvCCB = new TLVEncoder().withField(Tags.tag1, cartenaps)
+									.withField(Tags.tag14, montantRechgtrame).withField(Tags.tag42, dateExnaps).encode();
+					}
 
 					tlv = new TLVEncoder().withField(Tags.tag0, mesg_type).withField(Tags.tag1, cardnumber)
 							.withField(Tags.tag3, processing_code).withField(Tags.tag22, transaction_condition)
@@ -2825,7 +2889,7 @@ public class GWPaiementController {
 							.withField(Tags.tag9, merchantid).withField(Tags.tag66, rrn).withField(Tags.tag67, cvv)
 							.withField(Tags.tag11, merchant_name).withField(Tags.tag12, merchant_city)
 							.withField(Tags.tag90, acqcode).withField(Tags.tag167, champ_cavv)
-							.withField(Tags.tag168, xid).encode();
+							.withField(Tags.tag168, xid).withField(Tags.tag46, tlvCCB).encode();
 
 				} catch (Exception err4) {
 					dmd.setDemCvv("");
@@ -2833,13 +2897,7 @@ public class GWPaiementController {
 					autorisationService.logMessage(file,
 							"processpayment 500 Error during switch tlv buildup for given orderid:[" + orderid
 									+ "] and merchantid:[" + merchantid + "]" + Util.formatException(err4));
-					demandeDtoMsg.setMsgRefus(
-							"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
-					model.addAttribute("demandeDto", demandeDtoMsg);
-					page = "result";
-					// return page;
-					response.sendRedirect(request.getContextPath() + "/napspayment/auth/token/"+demandeDto.getTokencommande());
-					session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+					response.sendRedirect(failURL);
 					return null;
 				}
 
@@ -2880,12 +2938,7 @@ public class GWPaiementController {
 					autorisationService.logMessage(file,
 							"processpayment 500 Error Switch communication s_conn false switch ip:[" + sw_s
 									+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-					demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
-					model.addAttribute("demandeDto", demandeDtoMsg);
-					page = "result";
-					// return page;
-					response.sendRedirect(request.getContextPath() + "/napspayment/auth/token/"+demandeDto.getTokencommande());
-					session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+					response.sendRedirect(failURL);
 					return null;
 				}
 
@@ -2901,9 +2954,10 @@ public class GWPaiementController {
 			} catch (Exception e) {
 				switch_ko = 1;
 				// return autorisationService.handleSwitchError(e, file, orderid, merchantid, resp_tlv, dmd, model, "result");
-				page = autorisationService.handleSwitchError(e, file, orderid, merchantid, resp_tlv, dmd, model, "result");
-				response.sendRedirect(request.getContextPath() + "/napspayment/auth/token/"+demandeDto.getTokencommande());
-				session.setAttribute("error", dmd.getMsgRefus());
+				dmd.setDemCvv("");
+				dmd.setEtatDemande("SW_KO");
+				demandePaiementService.save(dmd);
+				response.sendRedirect(failURL);
 				return null;
 			}
 
@@ -2917,13 +2971,7 @@ public class GWPaiementController {
 				switch_ko = 1;
 				autorisationService.logMessage(file, "processpayment 500 Error Switch null response" + "switch ip:[" + sw_s
 						+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
-				model.addAttribute("demandeDto", demandeDtoMsg);
-				page = "result";
-				// return page;
-				response.sendRedirect(request.getContextPath() + "/napspayment/auth/token/"+demandeDto.getTokencommande());
-				session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+				response.sendRedirect(failURL);
 				return null;
 			}
 
@@ -2936,13 +2984,7 @@ public class GWPaiementController {
 				autorisationService.logMessage(file, "Switch  malfunction resp < 3 !!!");
 				autorisationService.logMessage(file, "processpayment 500 Error Switch short response length() < 3 "
 						+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
-				model.addAttribute("demandeDto", demandeDtoMsg);
-				page = "result";
-				// return page;
-				response.sendRedirect(request.getContextPath() + "/napspayment/auth/token/"+demandeDto.getTokencommande());
-				session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+				response.sendRedirect(failURL);
 				return null;
 			}
 
@@ -3005,7 +3047,12 @@ public class GWPaiementController {
 			tag66_resp_verified = tag66_resp;
 			String s_status, pan_auto = "";
 
-			// TODO: SWHistoAutoDto swhist = null;
+			try {
+				// TODO: calcule du montant avec les frais
+				amount = Util.calculMontantTotalOperation(dmd);
+			} catch (Exception ex) {
+				autorisationService.logMessage(file, "calcule du montant avec les frais : " + Util.formatException(ex));
+			}
 
 			if (switch_ko == 1) {
 				pan_auto = Util.formatagePan(cardnumber);
@@ -3038,15 +3085,9 @@ public class GWPaiementController {
 
 				websiteid = dmd.getGalid();
 
-				// TODO: Ihist_id = hist.getMAX_ID("HISTOAUTO_GATE", "HAT_ID");
-				// TODO: Ihist_id = histoAutoGateService.getMAX_ID();
-				// TODO: long currentid = Ihist_id.longValue() + 1;
-				// TODO: hist.setId(currentid);
-
 				autorisationService.logMessage(file, "formatting pan...");
 
 				pan_auto = Util.formatagePan(cardnumber);
-				autorisationService.logMessage(file, "formatting pan Ok pan_auto :[" + pan_auto + "]");
 
 				autorisationService.logMessage(file, "HistoAutoGate data filling start ...");
 
@@ -3152,6 +3193,212 @@ public class GWPaiementController {
 									+ "]" + Util.formatException(e));
 				}
 
+				// TODO: 2023-11-27 preparation reconciliation Ecom Lydec
+				if (lydecPreprod.equals(merchantid) || lydecProd.equals(merchantid)) {
+					List<FactureLDDto> listFactureLD = new ArrayList<>();
+					listFactureLD = factureLDService.findFactureByIddemande(dmd.getIddemande());
+					java.util.Calendar datePai = Calendar.getInstance();
+					// TODO: Date date = Calendar.getInstance().getTime();
+					DateFormat dateFormat = new SimpleDateFormat(DF_YYYY_MM_DD_HH_MM_SS);
+					String strDate_Pai = dateFormat.format(datePai.getTime());
+
+					ReponseReglements reponseRegelemnt = preparerReglementLydec(listFactureLD,
+							hist.getHatNautemt(), datePai, dmd, current_infoCommercant, folder, file);
+					autorisationService.logMessage(file, "commande/reponseRegelemnt : "
+							+ dmd.getCommande() + "/" + reponseRegelemnt.getMessage());
+
+					if (reponseRegelemnt.getMessage() != null && !reponseRegelemnt.isOk()) {
+
+						autorisationService.logMessage(file, "reponseRegelemnt KO ");
+						autorisationService.logMessage(file, "Annulation auto LYDEC Start ... ");
+
+						String repAnnu = annulationAuto(dmd, current_merchant, hist,model, folder, file);
+
+						autorisationService.logMessage(file, "Annulation auto LYDEC end");
+						s_status = "";
+						try {
+							CodeReponseDto codeReponseDto = codeReponseService.findByRpcCode(repAnnu);
+							autorisationService.logMessage(file,
+									"codeReponseDto annulation : " + codeReponseDto);
+							if (codeReponseDto != null) {
+								s_status = codeReponseDto.getRpcLibelle();
+							}
+						} catch (Exception ee) {
+							autorisationService.logMessage(file,
+									"Annulation auto 500 Error codeReponseDto null" + Util.formatException(ee));
+							// TODO: TODO: ee.printStackTrace();
+						}
+						autorisationService.logMessage(file,
+								"Switch status annulation : [" + s_status + "]");
+
+						if (repAnnu.equals("00")) {
+							dmd.setEtatDemande("SW_ANNUL_AUTO");
+							dmd.setDemCvv("");
+							demandePaiementService.save(dmd);
+							demandeDtoMsg.setMsgRefus(
+									"La transaction en cours n’a pas abouti (Web service LYDEC Hors service), votre compte ne sera pas débité, merci de réessayer.");
+							model.addAttribute("demandeDto", demandeDtoMsg);
+							page = "operationAnnulee";
+						} else {
+							page = "error";
+						}
+						response.sendRedirect(failURL);
+
+						autorisationService.logMessage(file, "Fin processRequest ()");
+						logger.info("Fin processRequest ()");
+						//return page;
+						return null;
+					} else {
+						autorisationService.logMessage(file, "reponseRegelemnt OK ");
+						for (FactureLDDto facLD : listFactureLD) {
+							facLD.setEtat("O");
+							facLD.setDatepai(strDate_Pai);
+							facLD.setTrxFactureLydec(
+									String.valueOf(reponseRegelemnt.getNumeroTransaction()));
+							factureLDService.save(facLD);
+							autorisationService.logMessage(file,
+									"facLD commande/etat/numrecnaps/TrxFactureLydec : "
+											+ facLD.getNumCommande() + "/" + facLD.getEtat() + "/"
+											+ facLD.getNumrecnaps() + "/" + facLD.getTrxFactureLydec());
+						}
+						ResponseDto responseDto = new ResponseDto();
+						responseDto.setLname(dmd.getNom());
+						responseDto.setFname(dmd.getPrenom());
+						responseDto.setOrderid(dmd.getCommande());
+						responseDto.setAuthnumber(hist.getHatNautemt());
+						responseDto.setAmount(dmd.getMontant());
+						responseDto.setTransactionid(transactionid);
+						responseDto.setMerchantid(dmd.getComid());
+						responseDto.setEmail(dmd.getEmail());
+						responseDto.setMerchantname(current_infoCommercant.getCmrNom());
+						responseDto.setCardnumber(Util.formatCard(cardnumber));
+						responseDto.setTransactiontime(dateFormat.format(new Date()));
+						responseDto.setNumTransLydec(
+								String.valueOf(reponseRegelemnt.getNumeroTransaction()));
+
+						model.addAttribute("responseDto", responseDto);
+
+						page = "recapLydec";
+						autorisationService.logMessage(file, "Fin processRequest ()");
+						logger.info("Fin processRequest ()");
+						return page;
+					}
+				}
+				// TODO: 2023-12-27 confirmation DGI
+				if (dgiPreprod.equals(merchantid) || dgiProd.equals(merchantid)) {
+
+					String resultcallback = envoyerConfirmation(dmd, response, hist.getHatNautemt(),
+							folder, file);
+					String resultFormat= "";
+					if (!resultcallback.equals("")) {
+						//JSONObject json = new JSONObject(resultcallback);
+						//String msg = (String) json.get("msg");
+						//String refReglement = (String) json.get("refReglement");
+						//String codeRetour = (String) json.get("codeRetour");
+						//String refcanal = (String) json.get("refcanal");
+						String msg = "";
+						String refReglement = "";
+						String codeRetour = "";
+						String refcanal = "";
+						resultFormat = resultcallback.substring(1, resultcallback.length());
+						JSONObject json = new JSONObject(resultFormat);
+						// TODO: JSONObject json = new JSONObject(result);
+
+						try {
+							msg = (String) json.get("msg");
+						} catch (Exception ex) {
+							autorisationService.logMessage(file, "msg : " + Util.formatException(ex));
+						}
+						try {
+							codeRetour = (String) json.get("codeRetour");
+						} catch (Exception ex) {
+							autorisationService.logMessage(file, "codeRetour : " + Util.formatException(ex));
+						}
+						try {
+							refcanal = (String) json.get("refcanal");
+						} catch (Exception ex) {
+							autorisationService.logMessage(file, "refcanal : " + Util.formatException(ex));
+						}
+						try {
+							refReglement = (String) json.get("refReglement");
+						} catch (Exception ex) {
+							autorisationService.logMessage(file, "refReglement : " + Util.formatException(ex));
+						}
+
+						// TODO: fin enregistrement des infos de retour WS de la DGI
+						if (codeRetour.equals("000")) {
+							autorisationService.logMessage(file,
+									" ******** coreRetour 000 : Envoyer email au client ******** ");
+							// TODO: pour envoyer un email au client
+							envoyerEmail(dmd, response, folder, file);
+							// TODO: envoyer le lien de recu au client
+							autorisationService.logMessage(file,
+									" ******** coreRetour 000 : envoyer le lien de recu au client ******** ");
+							confirmerTrs(dmd, response, hist.getHatNautemt(), folder, file);
+
+							ResponseDto responseDto = new ResponseDto();
+							responseDto.setLname(dmd.getNom());
+							responseDto.setFname(dmd.getPrenom());
+							responseDto.setOrderid(dmd.getCommande());
+							responseDto.setAuthnumber(hist.getHatNautemt());
+							responseDto.setAmount(dmd.getMontant());
+							responseDto.setTransactionid(transactionid);
+							responseDto.setMerchantid(dmd.getComid());
+							responseDto.setEmail(dmd.getEmail());
+							responseDto.setMerchantname(current_infoCommercant.getCmrNom());
+							responseDto.setCardnumber(Util.formatCard(cardnumber));
+							responseDto.setTransactiontime(dateFormat.format(new Date()));
+
+							model.addAttribute("responseDto", responseDto);
+
+							page = "recapDGI";
+							autorisationService.logMessage(file, "Fin processRequest ()");
+							logger.info("Fin processRequest ()");
+							return page;
+						} else {
+							autorisationService.logMessage(file, "Annulation auto DGI start ...");
+
+							String repAnnu = annulationAuto(dmd, current_merchant, hist, model, folder, file);
+
+							autorisationService.logMessage(file, "Annulation auto DGI end");
+							s_status = "";
+							try {
+								CodeReponseDto codeReponseDto = codeReponseService
+										.findByRpcCode(repAnnu);
+								logger.info("codeReponseDto annulation : " + codeReponseDto);
+								autorisationService.logMessage(file,
+										"codeReponseDto annulation : " + codeReponseDto);
+								if (codeReponseDto != null) {
+									s_status = codeReponseDto.getRpcLibelle();
+								}
+							} catch (Exception ee) {
+								autorisationService.logMessage(file,
+										"Annulation auto 500 Error codeReponseDto null" + Util.formatException(ee));
+								// TODO: TODO: ee.printStackTrace();
+							}
+							autorisationService.logMessage(file,
+									"Switch status annulation : [" + s_status + "]");
+							if (repAnnu.equals("00")) {
+								dmd.setEtatDemande("SW_ANNUL_AUTO");
+								demandePaiementService.save(dmd);
+								demandeDtoMsg.setMsgRefus(
+										"La transaction en cours n’a pas abouti (Web service DGI Hors service), votre compte ne sera pas débité, merci de réessayer.");
+								model.addAttribute("demandeDto", demandeDtoMsg);
+								page = "operationAnnulee";
+							} else {
+								page = "error";
+							}
+							response.sendRedirect(failURL);
+
+							autorisationService.logMessage(file, "Fin processRequest ()");
+							logger.info("Fin processRequest ()");
+							//return page;
+							return null;
+						}
+					}
+					// TODO: fin confirmation DGI
+				}
+
 				// TODO: 2023-01-03 confirmation par Callback URL
 				String resultcallback = "";
 				String callbackURL = dmd.getCallbackURL();
@@ -3226,9 +3473,6 @@ public class GWPaiementController {
 										"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 								model.addAttribute("demandeDto", demandeDtoMsg);
 								// page = "operationAnnulee";
-								response.sendRedirect(request.getContextPath() + "/napspayment/auth/token/"+demandeDto.getTokencommande());
-								session.setAttribute("error", demandeDtoMsg.getMsgRefus());
-								return null;
 							} else {
 								page = "error";
 							}
@@ -3237,9 +3481,6 @@ public class GWPaiementController {
 
 							autorisationService.logMessage(file, "Fin processRequest ()");
 							logger.info("Fin processRequest ()");
-							// return page;
-							response.sendRedirect(request.getContextPath() + "/napspayment/auth/token/"+demandeDto.getTokencommande());
-							session.setAttribute("error", "La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 							return null;
 						}
 						//}
@@ -3265,13 +3506,7 @@ public class GWPaiementController {
 					autorisationService.logMessage(file,
 							"processpayment 500 Error during  DemandePaiement update SW_REJET for given orderid:[" + orderid
 									+ "]" + Util.formatException(e));
-					demandeDtoMsg.setMsgRefus(
-							"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
-					model.addAttribute("demandeDto", demandeDtoMsg);
-					page = "result";
-					// return page;
-					response.sendRedirect(request.getContextPath() + "/napspayment/auth/token/"+demandeDto.getTokencommande());
-					session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+					response.sendRedirect(failURL);
 					return null;
 				}
 				autorisationService.logMessage(file, "update Demandepaiement status to SW_REJET OK.");
@@ -3306,7 +3541,7 @@ public class GWPaiementController {
 
 			autorisationService.logMessage(file, "Preparing autorization api response");
 
-			String authnumber = "", coderep = "", motif, merchnatidauth, dtdem = "", data = "";
+			String authnumber = "", coderep = "", motif, merchnatidauth, dtdem = "",frais = "", montantSansFrais = "", data = "";
 
 			try {
 				authnumber = hist.getHatNautemt();
@@ -3315,6 +3550,8 @@ public class GWPaiementController {
 				merchnatidauth = hist.getHatNumcmr();
 				dtdem = dmd.getDemPan();
 				transactionid = String.valueOf(hist.getHatNumdem());
+				montantSansFrais = String.valueOf(dmd.getMontant());
+				frais = String.valueOf(dmd.getFrais());
 			} catch (Exception e) {
 				autorisationService.logMessage(file,
 						"processpayment 500 Error during authdata preparation orderid:[" + orderid + "]" + Util.formatException(e));
@@ -3328,7 +3565,7 @@ public class GWPaiementController {
 
 			try {
 				String data_noncrypt = "id_commande=" + orderid + "&nomprenom=" + fname + "&email=" + email
-						+ "&montant=" + amount + "&frais=" + "" + "&repauto=" + coderep + "&numAuto=" + authnumber
+						+ "&montant=" + montantSansFrais + "&frais=" + frais + "&repauto=" + coderep + "&numAuto=" + authnumber
 						+ "&numCarte=" + Util.formatCard(cardnumber) + "&typecarte=" + dmd.getTypeCarte()
 						+ "&numTrans=" + transactionid;
 
@@ -3412,10 +3649,6 @@ public class GWPaiementController {
 			} else {
 				autorisationService.logMessage(file,
 						"coderep = " + coderep + " => Redirect to failURL : " + dmd.getFailURL());
-				demandeDtoMsg.setMsgRefus(
-						"La transaction en cours n’a pas abouti (" + s_status + ")," + " votre compte ne sera pas débité, merci de réessayer.");
-				model.addAttribute("demandeDto", demandeDtoMsg);
-				page = "result";
 				response.sendRedirect(dmd.getFailURL());
 				autorisationService.logMessage(file, "Fin processpayment ()");
 				return  null;
@@ -3439,10 +3672,10 @@ public class GWPaiementController {
 				autorisationService.logMessage(file, "threeDSServerTransID : " + demandeDto.getDemxid());
 				model.addAttribute("demandeDto", demandeDto);
 				// TODO: 2024-06-20 old
-			/*page = "chalenge";
+				/*page = "chalenge";
 
-			autorisationService.logMessage(file, "set demandeDto model creq : " + demandeDto.getCreq());
-			autorisationService.logMessage(file, "return page : " + page);*/
+				autorisationService.logMessage(file, "set demandeDto model creq : " + demandeDto.getCreq());
+				autorisationService.logMessage(file, "return page : " + page);*/
 
 				// TODO: 2024-06-20
 				// TODO: autre façon de faire la soumission automatique de formulaires ACS via le HttpServletResponse.
@@ -3479,24 +3712,19 @@ public class GWPaiementController {
 					response.getWriter().println("</form>");
 					response.getWriter().println("<script>document.getElementById('acsForm').submit();</script>");
 
-				/* a revoir apres pour la confirmation de l'affichage acs
-				response.getWriter().println("document.getElementById('acsForm').submit();");
-				response.getWriter().println("fetch('" + feedbackUrl + "', { method: 'POST' });");  // TODO: Envoi du feedback
-				response.getWriter().println("</script>");
-				*/
+					/* a revoir apres pour la confirmation de l'affichage acs
+					response.getWriter().println("document.getElementById('acsForm').submit();");
+					response.getWriter().println("fetch('" + feedbackUrl + "', { method: 'POST' });");  // TODO: Envoi du feedback
+					response.getWriter().println("</script>");
+					*/
 					response.getWriter().println("</body></html>");
 
-					logger.info("Le Creq a été envoyé à l'ACS par soumission automatique du formulaire.");
 					autorisationService.logMessage(file, "Le Creq a été envoyé à l'ACS par soumission automatique du formulaire.");
 
 					return null;  // TODO: Terminer le traitement ici après avoir envoyé le formulaire
 				} else {
-					logger.info("Aucune correspondance pour l'URL ACS et creq trouvée dans la réponse HTML.");
 					autorisationService.logMessage(file, "Aucune correspondance pour l'URL ACS et creq trouvée dans la réponse HTML.");
 					page = "error";  // TODO: Définir la page d'erreur appropriée
-					response.sendRedirect(request.getContextPath() + "/napspayment/auth/token/"+demandeDto.getTokencommande());
-					session.setAttribute("error", "Aucune correspondance pour l'URL ACS et creq trouvée dans la réponse HTML.");
-					return null;
 				}
 
 				// TODO: 2024-06-20
@@ -3508,23 +3736,24 @@ public class GWPaiementController {
 				dmd.setDemCvv("");
 				demandePaiementService.save(dmd);
 				page = "result";
-				// return page;
-				response.sendRedirect(request.getContextPath() + "/napspayment/auth/token/"+demandeDto.getTokencommande());
-				session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+				response.sendRedirect(failURL);
 				return null;
 			}
 		} else if (reponseMPI.equals("E")) {
 			// TODO: ********************* Cas responseMPI equal E
 			// TODO: *********************
 			page = autorisationService.handleMpiError(errmpi, file, idDemande, threeDSServerTransID, dmd, model, page);
-			response.sendRedirect(request.getContextPath() + "/napspayment/auth/token/"+demandeDto.getTokencommande());
-			session.setAttribute("error", dmd.getMsgRefus());
+			response.sendRedirect(failURL);
 			return null;
 		} else {
 			page = autorisationService.handleMpiError(errmpi, file, idDemande, threeDSServerTransID, dmd, model, page);
-			response.sendRedirect(request.getContextPath() + "/napspayment/auth/token/"+demandeDto.getTokencommande());
-			session.setAttribute("error", dmd.getMsgRefus());
-			page = null;
+			response.sendRedirect(failURL);
+			page = "error";
+		}
+
+		if(page.equals("error")) {
+			response.sendRedirect(failURL);
+			return null;
 		}
 
 		autorisationService.logMessage(file, "*********** End processpayment () ************** ");
@@ -3620,7 +3849,7 @@ public class GWPaiementController {
 		}
 
 		// TODO: 2024-03-05
-		montanttrame = formatMontantTrame(folder, file, amount, orderid, merchantid, model);
+		montanttrame = Util.formatMontantTrame(folder, file, amount, orderid, merchantid, current_dmd, model);
 
 		autorisationService.logMessage(file, "Switch processing start ...");
 
@@ -3845,51 +4074,6 @@ public class GWPaiementController {
 		return tag20_resp;
 	}
 
-	@SuppressWarnings("all")
-	private String formatMontantTrame(String folder, String file, String amount, String orderid, String merchantid, 
-			Model model) {
-		String montanttrame = "";
-		String[] mm;
-		String[] m;
-		DemandePaiementDto demandeDtoMsg = new DemandePaiementDto();
-		try {
-			if (amount.contains(",")) {
-				amount = amount.replace(",", ".");
-			}
-			if (!amount.contains(".") && !amount.contains(",")) {
-				amount = amount + "." + "00";
-			}
-			autorisationService.logMessage(file, "montant : [" + amount + "]");
-
-			String montantt = amount + "";
-
-			mm = montantt.split("\\.");
-			if (mm[1].length() == 1) {
-				montanttrame = amount + "0";
-			} else {
-				montanttrame = amount + "";
-			}
-
-			m = montanttrame.split("\\.");
-			if (m[1].equals("0")) {
-				montanttrame = montanttrame.replace(".", "0");
-			} else
-				montanttrame = montanttrame.replace(".", "");
-			montanttrame = Util.formatageCHamps(montanttrame, 12);
-		} catch (Exception err3) {
-			autorisationService.logMessage(file,
-					"authorization 500 Error during  amount formatting for given orderid:["
-							+ orderid + "] and merchantid:[" + merchantid + "]" + Util.formatException(err3));
-			demandeDtoMsg.setMsgRefus("Erreur lors du formatage du montant");
-			model.addAttribute("demandeDto", demandeDtoMsg);
-			String page0 = "result";
-			autorisationService.logMessage(file, "Fin processRequest ()");
-			logger.info("Fin processRequest ()");
-			return page0;
-		}
-		return montanttrame;
-	}
-
 	private List<Integer> generateYearList(int startYear, int endYear) {
 		List<Integer> years = new ArrayList<>();
 		for (int year = startYear; year <= endYear; year++) {
@@ -4090,6 +4274,531 @@ public class GWPaiementController {
 		}
 
 		return result;
+	}
+
+
+	@SuppressWarnings("all")
+	public ReponseReglements preparerReglementLydec(List<FactureLDDto> listFactureLD, String num_auto,
+													java.util.Calendar datePai, DemandePaiementDto demandePaiement, InfoCommercantDto infoCommercant,
+													String folder, String file) throws IOException {
+		autorisationService.logMessage(file, "Debut preparerReglementLydec");
+		ReponseReglements reponseReglement = null;
+		try {
+			// TODO: java.util.Calendar date = Calendar.getInstance();
+			DemandesReglements demReglement = new DemandesReglements();
+			demReglement.setAgc_Cod((short) 840);
+			BigDecimal b2 = new BigDecimal("-1");
+
+			List<Impaye> factListImpayes = new ArrayList<Impaye>();
+			BigDecimal montant = new BigDecimal(0);
+			BigDecimal montantTimbre = new BigDecimal(0);
+			// TODO: BigDecimal montantTotalSansTimbre = new BigDecimal(0).setScale(2, BigDecimal.ROUND_HALF_UP);
+			BigDecimal montantTotalSansTimbre = BigDecimal.valueOf(0).setScale(2, BigDecimal.ROUND_HALF_UP);
+			for (FactureLDDto facLD : listFactureLD) {
+				Impaye imp = new Impaye();
+				imp.setNumeroFacture(Integer.valueOf(facLD.getNumfacture()));
+				if (facLD.getNumligne() != null) {
+					imp.setNumeroLigne(Integer.valueOf(facLD.getNumligne()));
+				} else {
+					imp.setNumeroLigne(0);
+				}
+				imp.setCodeFourniture(facLD.getFourniture());
+				imp.setNumeroPolice(facLD.getNumPolice());
+				imp.setProduit(Integer.valueOf(facLD.getProduit()));
+				imp.setMontantTTC(BigDecimal.valueOf(facLD.getMontantTtc()).setScale(2, BigDecimal.ROUND_HALF_UP));
+				imp.setMontantTimbre(BigDecimal.valueOf(facLD.getMontantTbr()).setScale(2, BigDecimal.ROUND_HALF_UP));
+				imp.setMontantTVA(BigDecimal.valueOf(facLD.getMontantTva()).setScale(2, BigDecimal.ROUND_HALF_UP));
+				montant = montant.add(BigDecimal.valueOf(facLD.getMontantTtc()).setScale(2, BigDecimal.ROUND_HALF_UP));
+				montantTimbre = montantTimbre
+						.add(BigDecimal.valueOf(facLD.getMontantTbr()).setScale(2, BigDecimal.ROUND_HALF_UP));
+				autorisationService.logMessage(file, "preparerReglementLydec imp  : " + imp.toString());
+				factListImpayes.add(imp);
+			}
+			autorisationService.logMessage(file,
+					"preparerReglementLydec factListImpayes size : " + factListImpayes.size());
+
+			montantTotalSansTimbre = montant.subtract(montantTimbre);
+
+			Portefeuille[] listePortefeuilles = preparerTabEcritureLydecListe(factListImpayes);
+			autorisationService.logMessage(file,
+					"preparerReglementLydec listePortefeuilles size : " + listePortefeuilles.length);
+
+			MoyenPayement[] listeMoyensPayement = new MoyenPayement[1];
+
+			MoyenPayement ecr = new MoyenPayement();
+
+			ecr.setType_Moy_Pai("C");
+			ecr.setBanq_Cod("NPS");
+
+			ecr.setDate_Pai(datePai);
+			ecr.setMontant(montantTotalSansTimbre);
+			ecr.setMoyen_Pai(num_auto);
+			listeMoyensPayement[0] = ecr;
+			autorisationService.logMessage(file,
+					"preparerReglementLydec listeMoyensPayement[0] : " + listeMoyensPayement[0].toString());
+			Transaction transaction = new Transaction();
+			transaction.setNum_Trans(Integer.valueOf(listeMoyensPayement[0].getMoyen_Pai()));
+			transaction.setAgc_Cod((short) 840);
+			transaction.setDate_Trans(listeMoyensPayement[0].getDate_Pai());
+			transaction.setDate_Val(new Date());
+			transaction.setEtat_Trans("R");
+			transaction.setType_Trans("RX");
+			transaction.setGuichet_Cod((short) 3);
+			transaction.setMatr(12345);
+			transaction.setMt_Annule_Timbre(montantTimbre);
+			transaction.setMt_Facture(BigDecimal.valueOf(0));
+			transaction.setMt_Credite_Cred(BigDecimal.valueOf(0));
+			transaction.setMt_Credite_Vers(BigDecimal.valueOf(0));
+			transaction.setMt_Credite_Prov(BigDecimal.valueOf(0));
+			transaction.setMt_Remb_Cheq(BigDecimal.valueOf(0));
+			transaction.setMt_Od(BigDecimal.valueOf(0));
+			transaction.setMt_Enc_Mp(montant.subtract(montantTimbre));
+			transaction.setMt_Debite(montant.multiply(b2));
+			transaction.setMt_Enc_Esp(BigDecimal.valueOf(0));
+			transaction.setTr_Recu("");
+
+			demReglement.setTransaction(transaction);
+			demReglement.setListeMoyensPayement(listeMoyensPayement);
+			demReglement.setListePortefeuilles(listePortefeuilles);
+
+			// TODO: URL wsdlURL = GererEncaissementService.WSDL_LOCATION;
+			URL wsdlURL = new URL(urlWsdlLydec);
+			autorisationService.logMessage(file, "wsdlURL : " + wsdlURL);
+
+			GererEncaissementService ss = new GererEncaissementService(wsdlURL, SERVICE_NAME);
+			GererEncaissement port = ss.getGererEncaissement();
+			autorisationService.logMessage(file, "preparerReglementLydec transaction : " + transaction.toString());
+			autorisationService.logMessage(file,
+					"preparerReglementLydec demReglement : " + demReglement.toString());
+
+			reponseReglement = port.ecrireReglements(demReglement);
+
+			if (reponseReglement != null) {
+				logger.info("reponseReglement isOk/message : " + reponseReglement.isOk() + "/"
+						+ reponseReglement.getMessage());
+				autorisationService.logMessage(file, "reponseReglement isOk/message : " + reponseReglement.isOk()
+						+ "/" + reponseReglement.getMessage());
+			} else {
+				logger.info("reponseReglement : " + null);
+				autorisationService.logMessage(file, "reponseReglement : " + null);
+			}
+
+		} catch (Exception e) {
+			autorisationService.logMessage(file, "preparerReglementLydec Exception =>" + e.getMessage());
+			autorisationService.logMessage(file, "preparerReglementLydec Exception =>" + e.getStackTrace());
+		}
+		autorisationService.logMessage(file, "Fin preparerReglementLydec");
+		return reponseReglement;
+	}
+
+	public Portefeuille[] preparerTabEcritureLydecListe(List<Impaye> facListe) {
+		Portefeuille[] tabEcr = new Portefeuille[facListe.size()];
+		int i = 0;
+		for (Impaye fac : facListe) {
+			Portefeuille ecr = new Portefeuille();
+			ecr.setFac_Num(fac.getNumeroFacture());
+			ecr.setLigne(fac.getNumeroLigne());
+			tabEcr[i] = ecr;
+
+			i++;
+
+		}
+
+		return tabEcr;
+	}
+
+	@SuppressWarnings("all")
+	public String envoyerConfirmation(DemandePaiementDto demandePaiementDto, HttpServletResponse response,
+									  String numAuto, String folder, String file) throws IOException {
+
+		autorisationService.logMessage(file,
+				" *************************************** Debut envoyerConfirmation DGI *************************************** ");
+		autorisationService.logMessage(file, "Commande : " + demandePaiementDto.getCommande());
+		CFDGIDto cfDGI = new CFDGIDto();
+		cfDGI = cfdgiService.findCFDGIByIddemande(demandePaiementDto.getIddemande());
+		List<ArticleDGIDto> articles = articleDGIService
+				.getArticlesByIddemandeSansFrais(demandePaiementDto.getIddemande());
+
+		String num_taxe = cfDGI.getCF_R_OINReference();
+		String montantTotal = String.valueOf(demandePaiementDto.getMontant());
+		String montantTrans = cfDGI.getCF_R_OIMtTotal();
+		String concatcreanceConfirmesIds = "";
+		// TODO: concatcreanceConfirmesIds = la concaténation de la valeur 'UniqueID' des
+		// TODO: balises <Article>
+		// TODO: en excluant celle avec la valeur 111111111111 qui correspond au frais.
+		// TODO: (cet
+		// TODO: UniqueID est sur 13 caractère)
+		for (ArticleDGIDto art : articles) {
+			concatcreanceConfirmesIds = concatcreanceConfirmesIds + art.getUniqueID();
+		}
+
+		String dateTX;
+		String creancier_id = concatcreanceConfirmesIds;
+		String email = cfDGI.getCF_R_OIemail();
+		dateTX = demandePaiementDto.getDateRetourSWT().replaceAll("\\s+", "").replace("-", "").replace(":", "");
+		dateTX = dateTX.substring(0, Math.min(dateTX.length(), 14));
+		String date_taxe = dateTX;
+		String type_creance_id = cfDGI.getCF_R_OICodeOper(); // TODO: "03";
+		String callbackURL = demandePaiementDto.getCallbackURL();
+
+		String resultcallback = sendPOSTDGIInsert(callbackURL, montantTrans, montantTotal, creancier_id,
+				type_creance_id, num_taxe, email, date_taxe, cfDGI, articles);
+
+		autorisationService.logMessage(file,
+				"envoyerConfirmation resultcallbackDGI : " + resultcallback.toString());
+		String msg = "";
+		String refReglement = "";
+		String codeRetour = "";
+		String refcanal = "";
+		String resultFormat = "";
+		if (!resultcallback.equals("")) {
+			if (!resultcallback.equals("ko")) {
+				resultFormat = resultcallback.substring(1, resultcallback.length());
+				JSONObject json = new JSONObject(resultFormat);
+				// TODO: JSONObject json = new JSONObject(resultcallback);
+				try {
+					msg = (String) json.get("msg");
+				} catch (Exception ex) {
+					autorisationService.logMessage(file, "envoyerConfirmation result 1 msg : " + Util.formatException(ex));
+				}
+				try {
+					codeRetour = (String) json.get("codeRetour");
+				} catch (Exception ex) {
+					autorisationService.logMessage(file, "envoyerConfirmation result 1 codeRetour : " + Util.formatException(ex));
+				}
+				try {
+					refcanal = (String) json.get("refcanal");
+				} catch (Exception ex) {
+					autorisationService.logMessage(file, "envoyerConfirmation result 1 refcanal : " + Util.formatException(ex));
+				}
+				try {
+					refReglement = (String) json.get("refReglement");
+				} catch (Exception ex) {
+					autorisationService.logMessage(file, "envoyerConfirmation result 1 refReglement : " + Util.formatException(ex));
+				}
+				autorisationService.logMessage(file,
+						"envoyerConfirmation resultcallbackDGI => codeRetour/refReglement/msg/refcanal : " + codeRetour
+								+ "/" + refReglement + "/" + msg + "/" + refcanal);
+				// TODO: enregistrement des infos de retour WS de la DGI
+				cfDGI.setRefReglement(refReglement);
+				cfDGI.setCodeRtour(codeRetour);
+				cfDGI.setMsg(msg);
+				cfDGI.setRefcanal(refcanal);
+				cfdgiService.save(cfDGI);
+				autorisationService.logMessage(file, "update cfDGI apres retour WS de la DGI : " + cfDGI.toString());
+
+				// TODO: fin enregistrement des infos de retour WS de la DGI
+
+			}
+
+
+		}
+		autorisationService.logMessage(file,
+				" *************************************** End envoyerConfirmation DGI *************************************** ");
+
+		return resultcallback;
+	}
+
+	@SuppressWarnings("all")
+	public String sendPOSTDGIInsert(String urlcalback, String montant, String montantTotal, String creancier_id,
+									String type_creance_id, String num_taxe, String email, String date_taxe, CFDGIDto cfDGI,
+									List<ArticleDGIDto> articles) throws IOException {
+		autorisationService.logMessage(file,
+				" *************************************** Debut sendPOSTDGIInsert DGI *************************************** ");
+		String list_taxe = new Gson().toJson(articles);
+		String cf = new Gson().toJson(cfDGI);
+		String result = "";
+		HttpPost post = new HttpPost(urlcalback);
+		String msg = "";
+		String refReglement = "";
+		String codeRetour = "";
+		String refcanal = "";
+		String resultFormat = "";
+
+		// TODO: add request parameters or form parameters
+		List<NameValuePair> urlParameters = new ArrayList<>();
+
+		urlParameters.add(new BasicNameValuePair("montantTotal", montantTotal));
+		urlParameters.add(new BasicNameValuePair("montant", montant));
+		urlParameters.add(new BasicNameValuePair("creancier_id", creancier_id));
+		urlParameters.add(new BasicNameValuePair("type_creance_id", type_creance_id));
+		urlParameters.add(new BasicNameValuePair("num_taxe", num_taxe));
+		urlParameters.add(new BasicNameValuePair("email", email));
+		urlParameters.add(new BasicNameValuePair("date_taxe", date_taxe));
+		urlParameters.add(new BasicNameValuePair("list_taxe", list_taxe));
+		urlParameters.add(new BasicNameValuePair("cf", cf));
+		post.setEntity(new UrlEncodedFormEntity(urlParameters));
+		autorisationService.logMessage(file,
+				"sendPOSTDGIInsert commande / urlParameters :" + cfDGI.getCF_R_OINReference() + " / " + urlParameters);
+		try {
+			CloseableHttpClient httpClient = HttpClients.createDefault();
+
+			try {
+				httpClient = (CloseableHttpClient) getAllSSLClient();
+			} catch (KeyManagementException | KeyStoreException | NoSuchAlgorithmException e1) {
+				autorisationService.logMessage(file,
+						"[GW-EXCEPTION-KeyManagementException] sendPOSTDGIInsert " + e1);
+			}
+
+			CloseableHttpResponse response = httpClient.execute(post);
+
+			result = EntityUtils.toString(response.getEntity());
+			autorisationService.logMessage(file, "sendPOSTDGIInsert result 1 : " + result);
+
+		} catch (Exception ex) {
+			result = "ko";
+			autorisationService.logMessage(file, "sendPOSTDGIInsert result 1 : " + result + Util.formatException(ex));
+		}
+		if (!result.equals("ko")) {
+			resultFormat = result.substring(1, result.length());
+			JSONObject json = new JSONObject(resultFormat);
+			// TODO: JSONObject json = new JSONObject(result);
+
+			try {
+				msg = (String) json.get("msg");
+			} catch (Exception ex) {
+				autorisationService.logMessage(file, "sendPOSTDGIInsert result 1 msg : " + Util.formatException(ex));
+			}
+			try {
+				codeRetour = (String) json.get("codeRetour");
+			} catch (Exception ex) {
+				autorisationService.logMessage(file, "sendPOSTDGIInsert result 1 codeRetour : " + Util.formatException(ex));
+			}
+			try {
+				refcanal = (String) json.get("refcanal");
+			} catch (Exception ex) {
+				autorisationService.logMessage(file, "sendPOSTDGIInsert result 1 refcanal : " + Util.formatException(ex));
+			}
+			try {
+				refReglement = (String) json.get("refReglement");
+			} catch (Exception ex) {
+				autorisationService.logMessage(file, "sendPOSTDGIInsert result 1 refReglement : " + Util.formatException(ex));
+			}
+			autorisationService.logMessage(file,
+					"sendPOSTDGIInsert resultcallbackDGI => codeRetour/refReglement/msg/refcanal : " + codeRetour + "/"
+							+ refReglement + "/" + msg + "/" + refcanal);
+		}
+		if (!codeRetour.equals("000")) {
+			try {
+				Thread.sleep(10000);
+
+				// TODO: tentative 2 apès 10 s
+				autorisationService.logMessage(file, "sendPOSTDGIInsert tentative 2 apès 10 s: ");
+				try {
+					CloseableHttpClient httpClient = HttpClients.createDefault();
+
+					try {
+						httpClient = (CloseableHttpClient) getAllSSLClient();
+					} catch (KeyManagementException | KeyStoreException | NoSuchAlgorithmException e1) {
+						autorisationService.logMessage(file,
+								"[GW-EXCEPTION-KeyManagementException] sendPOSTDGIInsert " + e1);
+					}
+
+					CloseableHttpResponse response = httpClient.execute(post);
+
+					result = EntityUtils.toString(response.getEntity());
+					autorisationService.logMessage(file, "sendPOSTDGIInsert result 2 : " + result);
+
+				} catch (Exception ex) {
+					result = "ko";
+					autorisationService.logMessage(file, "sendPOSTDGIInsert result 2 : " + result + Util.formatException(ex));
+				}
+			} catch (Exception e) {
+				result = "ko";
+				autorisationService.logMessage(file, "sendPOSTDGIInsert result 2 : " + result + Util.formatException(e));
+			}
+			if (!result.equals("ko")) {
+				resultFormat = result.substring(1, result.length());
+				JSONObject json = new JSONObject(resultFormat);
+				// TODO: JSONObject json = new JSONObject(result);
+				try {
+					msg = (String) json.get("msg");
+				} catch (Exception ex) {
+					autorisationService.logMessage(file, "sendPOSTDGIInsert result 2 msg : " + Util.formatException(ex));
+				}
+				try {
+					codeRetour = (String) json.get("codeRetour");
+				} catch (Exception ex) {
+					autorisationService.logMessage(file, "sendPOSTDGIInsert result 2 codeRetour : " + Util.formatException(ex));
+				}
+				try {
+					refcanal = (String) json.get("refcanal");
+				} catch (Exception ex) {
+					autorisationService.logMessage(file, "sendPOSTDGIInsert result 2 refcanal : " + Util.formatException(ex));
+				}
+				try {
+					refReglement = (String) json.get("refReglement");
+				} catch (Exception ex) {
+					autorisationService.logMessage(file, "sendPOSTDGIInsert result 2 refReglement : " + Util.formatException(ex));
+				}
+				autorisationService.logMessage(file,
+						"sendPOSTDGIInsert resultcallbackDGI => codeRetour/refReglement/msg/refcanal : " + codeRetour
+								+ "/" + refReglement + "/" + msg + "/" + refcanal);
+			}
+
+			if (!codeRetour.equals("000")) {
+				try {
+					Thread.sleep(10000);
+
+					// TODO: tentative 3 apès 10 s
+					autorisationService.logMessage(file, "sendPOSTDGIInsert tentative 3 apès 10 s: ");
+					try {
+						CloseableHttpClient httpClient = HttpClients.createDefault();
+
+						try {
+							httpClient = (CloseableHttpClient) getAllSSLClient();
+						} catch (KeyManagementException | KeyStoreException | NoSuchAlgorithmException e1) {
+							autorisationService.logMessage(file,
+									"[GW-EXCEPTION-KeyManagementException] sendPOSTDGIInsert " + e1);
+						}
+
+						CloseableHttpResponse response = httpClient.execute(post);
+
+						result = EntityUtils.toString(response.getEntity());
+						autorisationService.logMessage(file, "sendPOSTDGIInsert result 3 : " + result);
+
+					} catch (Exception ex) {
+						result = "ko";
+						autorisationService.logMessage(file, "sendPOSTDGIInsert result 3 : " + result + Util.formatException(ex));
+					}
+				} catch (Exception e) {
+					result = "ko";
+					autorisationService.logMessage(file, "sendPOSTDGIInsert result 3 : " + result + Util.formatException(e));
+				}
+			}
+		}
+		if (result.equals("ko")) {
+			result = "{\"msg\":\"GATEFAILED\",\"refReglement\":\"\",\"codeRetour\":\"\",\"refcanal\":\"\"}";
+		}
+		autorisationService.logMessage(file,
+				" *************************************** End sendPOSTDGIInsert DGI *************************************** ");
+		return result;
+	}
+
+
+	@SuppressWarnings("all")
+	public void confirmerTrs(DemandePaiementDto demandePaiementDto, HttpServletResponse response, String numAuto,
+							 String folder, String file) throws IOException {
+		autorisationService.logMessage(file,
+				" *************************************** Debut confirmerTrs DGI *************************************** ");
+		// TODO: Fields DGI
+		String link;
+		String ref;
+		String idService;
+		String idTxMTC;
+		String statut;
+		String retourWSKey5 = "";
+		String sec;
+		String idTxSysPmt;
+		String dateTX;
+		int idsysPmt;
+		try {
+
+			autorisationService.logMessage(file, "Commande : " + demandePaiementDto.getCommande());
+			ArticleDGIDto artdgi = new ArticleDGIDto();
+			CFDGIDto cfDGI = new CFDGIDto();
+			artdgi = articleDGIService.findVraiArticleByIddemande(demandePaiementDto.getIddemande());
+			// TODO: retourWSKey5 = "A7D87E2HQ185BA70EBPXA017A325D777" ;
+			// TODO: clé retour ws : preprod dgi
+			if (dgiPreprod.equals(demandePaiementDto.getComid())) {
+				retourWSKey5 = "A7D87E2HQ185BA70EBPXA017A325D777";
+			}
+			// TODO: clé retour ws : prod dgi
+			if (dgiProd.equals(demandePaiementDto.getComid())) {
+				retourWSKey5 = "543D523A710AXPBE07AB581QH2E78D8R";
+			}
+			cfDGI = cfdgiService.findCFDGIByIddemande(demandePaiementDto.getIddemande());
+			idTxSysPmt = artdgi.getUniqueID();
+			link = cfDGI.getCF_R_OIConfirmUrl();
+			ref = cfDGI.getCF_R_OINReference();
+			idService = cfDGI.getCF_R_OICodeOper();
+			Double montant = demandePaiementDto.getMontant();
+			idsysPmt = 302; // TODO: par defaut 100 selon les spec
+			dateTX = demandePaiementDto.getDateRetourSWT().replaceAll("\\s+", "").replace("-", "").replaceAll(":",
+					"");
+			dateTX = dateTX.substring(0, Math.min(dateTX.length(), 14));
+			idTxMTC = numAuto; // TODO: autorisation
+			statut = "C";
+
+			sec = Util.hachInMD5(ref + idTxSysPmt + dateTX + montant + statut + idsysPmt + idService + retourWSKey5);
+
+			String linkDGI = link + "&ref=" + ref + "&idService=" + idService + "&statut=" + statut + "&montant="
+					+ montant + "&idsysPmt=" + idsysPmt + "&idTxSysPmt=" + idTxSysPmt + "&IdTxMTC=" + idTxMTC
+					+ "&dateTX=" + dateTX + "&Sec=" + sec;
+
+			autorisationService.logMessage(file, "linkDGI : " + linkDGI);
+
+			response.sendRedirect(linkDGI);
+
+			return;
+		} catch (Exception e) {
+
+			autorisationService.logMessage(file, "[GW-EXCEPTION-CONFIRMERTRS] " + Util.formatException(e));
+
+		}
+		autorisationService.logMessage(file,
+				" *************************************** End confirmerTrs DGI *************************************** ");
+	}
+
+	@SuppressWarnings("all")
+	public void envoyerEmail(DemandePaiementDto demandePaiementDto, HttpServletResponse response, String folder,
+							 String file) throws IOException {
+
+		autorisationService.logMessage(file,
+				" *************************************** Debut envoie email au client DGI *************************************** ");
+
+		Gson gson = new Gson();
+
+		String urlSendEmailDGI = lienEnvoieEmailDgi;
+		autorisationService.logMessage(file, "envoie email au client =====> urlSendEmailDGI : " + urlSendEmailDGI);
+
+		HttpClient httpClient = HttpClientBuilder.create().build();
+		try {
+			httpClient = getAllSSLClient();
+		} catch (KeyManagementException | KeyStoreException | NoSuchAlgorithmException e1) {
+			autorisationService.logMessage(file,
+					"[GW-EXCEPTION-KeyManagementException] RecapDGI envoyerEmail  " + e1);
+		}
+
+		HttpPost httpPost = new HttpPost(urlSendEmailDGI);
+
+		RequestEnvoieEmail requestEnvoieEmail = new RequestEnvoieEmail();
+
+		requestEnvoieEmail.setIdDemande(demandePaiementDto.getIddemande());
+		requestEnvoieEmail.setIdCommande(demandePaiementDto.getCommande());
+		requestEnvoieEmail.setNumCmr(demandePaiementDto.getComid());
+		autorisationService.logMessage(file,
+				"envoie email au client =====> requestEnvoieEmail : " + requestEnvoieEmail);
+
+		final String jsonBody = gson.toJson(requestEnvoieEmail);
+
+		autorisationService.logMessage(file, "envoie email au client =====> jsonBody : " + jsonBody);
+
+		final StringEntity entity = new StringEntity(jsonBody, StandardCharsets.UTF_8);
+
+		httpPost.setEntity(entity);
+		httpPost.setHeader("Accept", "application/json");
+		httpPost.setHeader("Content-type", "application/json");
+
+		try {
+			HttpResponse responseTheeDs = httpClient.execute(httpPost);
+
+			StatusLine responseStatusLine = responseTheeDs.getStatusLine();
+			autorisationService.logMessage(file, "RecapDGI envoyerEmail =====> RETOUR API response StatusCode : "
+					+ responseTheeDs.getStatusLine().getStatusCode());
+			autorisationService.logMessage(file,
+					"RecapDGI envoyerEmail =====> RETOUR API responseStatusLine : " + responseStatusLine);
+			String respStr = EntityUtils.toString(responseTheeDs.getEntity());
+
+			autorisationService.logMessage(file, "RecapDGI envoyerEmail =====> RETOUR API respStr : " + respStr);
+
+		} catch (Exception e) {
+
+			autorisationService.logMessage(file, "[GW-EXCEPTION-ENVOYEREMAIL] " + Util.formatException(e));
+
+		}
+		autorisationService.logMessage(file,
+				" *************************************** End envoie email au client DGI *************************************** ");
 	}
 	
 	@SuppressWarnings("all")

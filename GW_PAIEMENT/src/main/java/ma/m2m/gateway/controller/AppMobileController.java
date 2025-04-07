@@ -264,7 +264,7 @@ public class AppMobileController {
                 String montantRechgtrame = "", cartenaps = "", dateExnaps = "";
                 String num_trs = "";
                 String successURL = "";
-                String failURL;
+                String failURL = "";
 
                 if (threeDsecureResponse != null && threeDsecureResponse.getEci() != null) {
                     if (threeDsecureResponse.getEci().equals("05") || threeDsecureResponse.getEci().equals("02")
@@ -411,28 +411,21 @@ public class AppMobileController {
                             autorisationService.logMessage(file,
                                     "authorization 500 Error during  date formatting for given orderid:[" + orderid
                                             + "] and merchantid:[" + merchantid + "]" + Util.formatException(err2));
-                            demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
-                            model.addAttribute("demandeDto", demandeDtoMsg);
-                            page = "result";
-                            autorisationService.logMessage(file, "Fin processRequestMobile ()");
-                            logger.info("Fin processRequestMobile ()");
-                            return page;
+                            response.sendRedirect(failURL);
+                            return null;
                         }
 
-                        if (reponseMPI.equals("") || reponseMPI == null) {
+                        if (reponseMPI == null || reponseMPI.equals("")) {
                             dmd.setEtatDemande("MPI_KO");
                             dmd.setDemCvv("");
                             demandePaiementService.save(dmd);
                             autorisationService.logMessage(file,
                                     "demandePaiement after update MPI_KO reponseMPI null : " + dmd.toString());
                             autorisationService.logMessage(file, "Response 3DS is null");
-                            demandeDtoMsg.setMsgRefus(
-                                    "La transaction en cours n’a pas abouti (MPI_KO reponseMPI null), votre compte ne sera pas débité, merci de réessayer.");
-                            model.addAttribute("demandeDto", demandeDtoMsg);
-                            page = "result";
                             autorisationService.logMessage(file, "Fin processRequestMobile ()");
                             logger.info("Fin processRequestMobile ()");
-                            return page;
+                            response.sendRedirect(failURL);
+                            return null;
                         }
 
                         if (reponseMPI.equals("Y")) {
@@ -450,10 +443,10 @@ public class AppMobileController {
                             }
 
                             // TODO: 2024-03-05
-                            montanttrame = formatMontantTrame(folder, file, amount, orderid, merchantid, dmd, model);
+                            montanttrame = Util.formatMontantTrame(folder, file, amount, orderid, merchantid, dmd, model);
 
                             // TODO: 2024-03-05
-                            montantRechgtrame = formatMontantRechargeTrame(folder, file, amount, orderid, merchantid, dmd, page, model);
+                            montantRechgtrame = Util.formatMontantRechargeTrame(folder, file, amount, orderid, merchantid, dmd, page, model);
 
                             boolean cvv_present = checkCvvPresence(cvv);
                             boolean is_reccuring = isReccuringCheck(recurring);
@@ -495,13 +488,10 @@ public class AppMobileController {
                                 demandePaiementService.save(dmd);
                                 autorisationService.logMessage(file,
                                         "authorization 500 cvv not set , reccuring flag set to N, cvv must be present in normal transaction");
-                                demandeDtoMsg.setMsgRefus(
-                                        "La transaction en cours n’a pas abouti (cvv doit être présent dans la transaction normale), votre compte ne sera pas débité, merci de réessayer.");
-                                model.addAttribute("demandeDto", demandeDtoMsg);
-                                page = "result";
                                 autorisationService.logMessage(file, "Fin processRequestMobile ()");
                                 logger.info("Fin processRequestMobile ()");
-                                return page;
+                                response.sendRedirect(failURL);
+                                return null;
                             }
 
                             // TODO: not reccuring , normal
@@ -534,13 +524,10 @@ public class AppMobileController {
                                     autorisationService.logMessage(file,
                                             "authorization 500 Error during switch tlv buildup for given orderid:["
                                                     + orderid + "] and merchantid:[" + merchantid + "]" + Util.formatException(err4));
-                                    demandeDtoMsg.setMsgRefus(
-                                            "La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
-                                    model.addAttribute("demandeDto", demandeDtoMsg);
-                                    page = "result";
                                     autorisationService.logMessage(file, "Fin processRequestMobile ()");
                                     logger.info("Fin processRequestMobile ()");
-                                    return page;
+                                    response.sendRedirect(failURL);
+                                    return null;
                                 }
 
                                 autorisationService.logMessage(file, "Switch TLV Request :[" + tlv + "]");
@@ -580,13 +567,10 @@ public class AppMobileController {
                                             "authorization 500 Error Switch communication s_conn false switch ip:["
                                                     + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv
                                                     + "]");
-                                    demandeDtoMsg
-                                            .setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
-                                    model.addAttribute("demandeDto", demandeDtoMsg);
-                                    page = "result";
                                     autorisationService.logMessage(file, "Fin processRequestMobile ()");
                                     logger.info("Fin processRequestMobile ()");
-                                    return page;
+                                    response.sendRedirect(failURL);
+                                    return null;
                                 }
 
                                 if (s_conn) {
@@ -600,7 +584,12 @@ public class AppMobileController {
 
                             } catch (Exception e) {
                                 switch_ko = 1;
-                                return autorisationService.handleSwitchError(e, file, orderid, merchantid, resp_tlv, dmd, model, "result");
+                                // return autorisationService.handleSwitchError(e, file, orderid, merchantid, resp_tlv, dmd, model, "result");
+                                dmd.setDemCvv("");
+                                dmd.setEtatDemande("SW_KO");
+                                demandePaiementService.save(dmd);
+                                response.sendRedirect(failURL);
+                                return null;
                             }
 
                             String resp = resp_tlv;
@@ -618,13 +607,10 @@ public class AppMobileController {
                                 autorisationService.logMessage(file,
                                         "authorization 500 Error Switch null response" + "switch ip:[" + sw_s
                                                 + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-                                demandeDtoMsg.setMsgRefus(
-                                        "La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
-                                model.addAttribute("demandeDto", demandeDtoMsg);
-                                page = "result";
                                 autorisationService.logMessage(file, "Fin processRequestMobile ()");
                                 logger.info("Fin processRequestMobile ()");
-                                return page;
+                                response.sendRedirect(failURL);
+                                return null;
                             }
 
                             if (switch_ko == 0 && resp.length() < 3) {
@@ -638,13 +624,10 @@ public class AppMobileController {
                                         "authorization 500 Error Switch short response length() < 3 " + "switch ip:["
                                                 + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv
                                                 + "]");
-                                demandeDtoMsg.setMsgRefus(
-                                        "La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
-                                model.addAttribute("demandeDto", demandeDtoMsg);
-                                page = "result";
                                 autorisationService.logMessage(file, "Fin processRequestMobile ()");
                                 logger.info("Fin processRequestMobile ()");
-                                return page;
+                                response.sendRedirect(failURL);
+                                return null;
                             }
 
                             autorisationService.logMessage(file, "Switch TLV Respnose :[" + resp + "]");
@@ -691,13 +674,10 @@ public class AppMobileController {
                                             "authorization 500 Error during tlv Switch response parse" + "switch ip:["
                                                     + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv
                                                     + "]");
-                                    demandeDtoMsg.setMsgRefus(
-                                            "La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
-                                    model.addAttribute("demandeDto", demandeDtoMsg);
-                                    page = "result";
                                     autorisationService.logMessage(file, "Fin processRequestMobile ()");
                                     logger.info("Fin processRequestMobile ()");
-                                    return page;
+                                    response.sendRedirect(failURL);
+                                    return null;
                                 }
 
                                 // TODO: TODO: controle switch
@@ -765,8 +745,6 @@ public class AppMobileController {
                                 autorisationService.logMessage(file, "formatting pan...");
 
                                 pan_auto = Util.formatagePan(cardnumber);
-                                autorisationService.logMessage(file,
-                                        "formatting pan Ok pan_auto :[" + pan_auto + "]");
 
                                 autorisationService.logMessage(file, "HistoAutoGate data filling start ...");
 
@@ -891,13 +869,10 @@ public class AppMobileController {
                                     autorisationService.logMessage(file,
                                             "authorization 500 Error during  DemandePaiement update SW_REJET for given orderid:["
                                                     + orderid + "]" + Util.formatException(e));
-                                    demandeDtoMsg.setMsgRefus(
-                                            "La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
-                                    model.addAttribute("demandeDto", demandeDtoMsg);
-                                    page = "result";
                                     autorisationService.logMessage(file, "Fin processRequestMobile ()");
                                     logger.info("Fin processRequestMobile ()");
-                                    return page;
+                                    response.sendRedirect(failURL);
+                                    return null;
                                 }
                                 autorisationService.logMessage(file,
                                         "update Demandepaiement status to SW_REJET OK.");
@@ -1021,6 +996,8 @@ public class AppMobileController {
                                 if (dmd.getSuccessURL() != null) {
                                     response.sendRedirect(
                                             dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" + merchantid);
+                                    autorisationService.logMessage(file, "Fin processRequestMobile ()");
+                                    return null;
                                 } else {
                                     ResponseDto responseDto = new ResponseDto();
                                     responseDto.setLname(dmd.getNom());
@@ -1045,11 +1022,6 @@ public class AppMobileController {
                             } else {
                                 autorisationService.logMessage(file,
                                         "coderep = " + coderep + " => Redirect to failURL : " + dmd.getFailURL());
-                                demandeDtoMsg.setMsgRefus(
-                                        "La transaction en cours n’a pas abouti (" + s_status + "),"
-                                                + " votre compte ne sera pas débité, merci de réessayer.");
-                                model.addAttribute("demandeDto", demandeDtoMsg);
-                                page = "result";
                                 response.sendRedirect(dmd.getFailURL());
                                 autorisationService.logMessage(file, "Fin processRequestMobile ()");
                                 logger.info("Fin processRequestMobile ()");
@@ -1083,10 +1055,19 @@ public class AppMobileController {
                             autorisationService.logMessage(file, "****** Cas responseMPI equal E ******");
                             autorisationService.logMessage(file, "errmpi/idDemande : " + errmpi + "/" + idDemande);
                             page = autorisationService.handleMpiError(errmpi, file, idDemande, threeDSServerTransID, dmd, model, page);
-
+                            response.sendRedirect(dmd.getFailURL());
+                            return null;
                         } else {
                             page = autorisationService.handleMpiError(errmpi, file, idDemande, threeDSServerTransID, dmd, model, page);
+                            response.sendRedirect(dmd.getFailURL());
+                            page = "error";
                         }
+
+                        if(page.equals("error")) {
+                            response.sendRedirect(dmd.getFailURL());
+                            return null;
+                        }
+
                     } else {
                         idDemande = threeDsecureResponse.getIdDemande() == null ? "" : threeDsecureResponse.getIdDemande();
                         dmd = demandePaiementService.findByIdDemande(Integer.parseInt(idDemande));
@@ -1106,7 +1087,9 @@ public class AppMobileController {
                         page = "result";
                         autorisationService.logMessage(file, "Fin processRequestMobile ()");
                         logger.info("Fin processRequestMobile ()");
-                        return page;
+                        //return page;
+                        response.sendRedirect(dmd.getFailURL());
+                        return null;
                     }
                 } else {
                     autorisationService.logMessage(file, "threeDsecureResponse null");
@@ -1142,16 +1125,11 @@ public class AppMobileController {
                             "TransStatus != N && TransStatus != Y => Redirect to FailURL : " + demandeP.getFailURL());
                     logger.info(
                             "TransStatus != N && TransStatus != Y => Redirect to FailURL : " + demandeP.getFailURL());
-
-                    msgRefus = "La transaction en cours n’a pas abouti (TransStatus = " + cleanCres.getTransStatus()
-                            + "), votre compte ne sera pas débité, merci de réessayer.";
-
-                    demandeDtoMsg.setMsgRefus(msgRefus);
-                    model.addAttribute("demandeDto", demandeDtoMsg);
-                    page = "result";
                     autorisationService.logMessage(file, "Fin processRequestMobile ()");
                     logger.info("Fin processRequestMobile ()");
-                    return page;
+                    //return page;
+                    response.sendRedirect(demandeP.getFailURL());
+                    return null;
                 } else {
                     msgRefus = "La transaction en cours n’a pas abouti (TransStatus = " + cleanCres.getTransStatus()
                             + "), votre compte ne sera pas débité, merci de réessayer.";
@@ -1407,6 +1385,14 @@ public class AppMobileController {
                 // TODO: generer token
                 tokencommande = Util.genTokenCom(dmd.getCommande(), dmd.getComid());
                 dmd.setTokencommande(tokencommande);
+
+                if(linkRequestDto.getTransactiontype() == null) {
+                    linkRequestDto.setTransactiontype("0");
+                }
+                if(linkRequestDto.getTransactiontype() != null && linkRequestDto.getTransactiontype().isEmpty()) {
+                    linkRequestDto.setTransactiontype("0");
+                }
+                dmd.setTransactiontype(linkRequestDto.getTransactiontype());
 
                 dmdSaved = demandePaiementService.save(dmd);
 
@@ -1674,7 +1660,7 @@ public class AppMobileController {
                 fname, lname, email, country, phone, city, state, zipcode, address, mesg_type, merc_codeactivite,
                 acqcode, merchant_name, merchant_city, acq_type, processing_code, reason_code, transaction_condition,
                 transactiondate, transactiontime, date, rrn, heure, montanttrame, montantRechgtrame, cartenaps,
-                dateExnaps, num_trs = "", successURL, failURL, transactiontype, idclient;
+                dateExnaps, num_trs = "", successURL, failURL = "", transactiontype, idclient;
 
         DemandePaiementDto demandeDto = new DemandePaiementDto();
         Objects.copyProperties(demandeDto, dto);
@@ -1703,7 +1689,8 @@ public class AppMobileController {
             recurring = "N";
             promoCode = "";
             transactionid = "";
-            transactiontype = "0"; // TODO: 0 payment , P preauto
+            // TODO: 0 payment , P preauto
+            transactiontype = demandeDto.getTransactiontype() == null ? "0" : demandeDto.getTransactiontype();
 
             // TODO: Merchnat info
             merchantid = demandeDto.getComid() == null ? "" : demandeDto.getComid();
@@ -1766,10 +1753,12 @@ public class AppMobileController {
 
         } catch (Exception jerr) {
             autorisationService.logMessage(file, "recharger 500 malformed json expression" + Util.formatException(jerr));
-            demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
+            /*demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
             model.addAttribute("demandeDto", demandeDtoMsg);
             page = "result";
-            return page;
+            return page;*/
+            response.sendRedirect(failURL);
+            return null;
         }
 
         CommercantDto current_merchant = null;
@@ -1846,7 +1835,9 @@ public class AppMobileController {
             demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
             model.addAttribute("demandeDto", demandeDtoMsg);
             page = "result";
-            return page;
+            //return page;
+            response.sendRedirect(failURL);
+            return null;
         }
 
         page = autorisationService.handleSessionTimeout(session, file, timeout, demandeDto, demandeDtoMsg, model);
@@ -1893,7 +1884,9 @@ public class AppMobileController {
             demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité.");
             model.addAttribute("demandeDto", demandeDtoMsg);
             page = "result";
-            return page;
+            //return page;
+            response.sendRedirect(failURL);
+            return null;
         }
         autorisationService.logMessage(file, "Fin controlleRisk");
 
@@ -1910,10 +1903,10 @@ public class AppMobileController {
                 autorisationService.logMessage(file, "cardtokenDto expirydate input : " + expirydate);
                 String anne = String.valueOf(dateCalendar.get(Calendar.YEAR));
                 // TODO: get year from date
-                String xx = anne.substring(0, 2) + expirydate.substring(0, 2);
-                String MM = expirydate.substring(2, expirydate.length());
+                String year = anne.substring(0, 2) + expirydate.substring(0, 2);
+                String moi = expirydate.substring(2, expirydate.length());
                 // TODO: format date to "yyyy-MM-dd"
-                String expirydateFormated = xx + "-" + MM + "-" + "01";
+                String expirydateFormated = year + "-" + moi + "-" + "01";
                 autorisationService.logMessage(file, "cardtokenDto expirydate formated : " + expirydateFormated);
                 Date dateExp;
                 dateExp = dateFormatSimple.parse(expirydateFormated);
@@ -1990,7 +1983,9 @@ public class AppMobileController {
             demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
             model.addAttribute("demandeDto", demandeDtoMsg);
             page = "result";
-            return page;
+            //return page;
+            response.sendRedirect(failURL);
+            return null;
         }
 
         ThreeDSecureResponse threeDsecureResponse = new ThreeDSecureResponse();
@@ -2040,11 +2035,8 @@ public class AppMobileController {
             demandePaiementService.save(demandeDto);
             autorisationService.logMessage(file,
                     "demandePaiement after update MPI_KO idDemande null : " + demandeDto.toString());
-            demandeDtoMsg.setMsgRefus(
-                    "La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
-            model.addAttribute("demandeDto", demandeDtoMsg);
-            page = "result";
-            return page;
+            response.sendRedirect(failURL);
+            return null;
         }
 
         dmd = demandePaiementService.findByIdDemande(Integer.parseInt(idDemande));
@@ -2055,25 +2047,19 @@ public class AppMobileController {
             autorisationService.logMessage(file,
                     "demandePaiement not found !!!! demandePaiement = null  / received idDemande from MPI => "
                             + idDemande);
-            demandeDtoMsg.setMsgRefus(
-                    "La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
-            model.addAttribute("demandeDto", demandeDtoMsg);
-            page = "result";
-            return page;
+            response.sendRedirect(failURL);
+            return null;
         }
 
-        if (reponseMPI.equals("") || reponseMPI == null) {
+        if (reponseMPI == null || reponseMPI.equals("")) {
             dmd.setDemCvv("");
             dmd.setEtatDemande("MPI_KO");
             demandePaiementService.save(dmd);
             autorisationService.logMessage(file,
                     "demandePaiement after update MPI_KO reponseMPI null : " + dmd.toString());
             autorisationService.logMessage(file, "Response 3DS is null");
-            demandeDtoMsg.setMsgRefus(
-                    "La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
-            model.addAttribute("demandeDto", demandeDtoMsg);
-            page = "result";
-            return page;
+            response.sendRedirect(failURL);
+            return null;
         }
 
         if (reponseMPI.equals("Y")) {
@@ -2089,10 +2075,10 @@ public class AppMobileController {
             dateExnaps = dmd.getDateexpnaps();
 
             // TODO: 2024-03-05
-            montanttrame = formatMontantTrame(folder, file, amount, orderid, merchantid, dmd, model);
+            montanttrame = Util.formatMontantTrame(folder, file, amount, orderid, merchantid, dmd, model);
 
             // TODO: 2024-03-05
-            montantRechgtrame = formatMontantRechargeTrame(folder, file, amount, orderid, merchantid, dmd, page, model);
+            montantRechgtrame = Util.formatMontantRechargeTrame(folder, file, amount, orderid, merchantid, dmd, page, model);
 
             merchantname = current_merchant.getCmrNom();
             websiteName = "";
@@ -2150,12 +2136,8 @@ public class AppMobileController {
                 demandePaiementService.save(dmd);
                 autorisationService.logMessage(file,
                         "recharger 500 cvv not set , reccuring flag set to N, cvv must be present in normal transaction");
-
-                demandeDtoMsg.setMsgRefus(
-                        "Le champ CVV est vide. Veuillez saisir le code de sécurité à trois chiffres situé au dos de votre carte pour continuer.");
-                model.addAttribute("demandeDto", demandeDtoMsg);
-                page = "result";
-                return page;
+                response.sendRedirect(failURL);
+                return null;
             }
 
             // TODO: not reccuring , normal
@@ -2184,11 +2166,8 @@ public class AppMobileController {
                     autorisationService.logMessage(file,
                             "recharger 500 Error during switch tlv buildup for given orderid:[" + orderid
                                     + "] and merchantid:[" + merchantid + "]" + Util.formatException(err4));
-                    demandeDtoMsg.setMsgRefus(
-                            "La transaction en cours n’a pas abouti (Erreur lors de la création du switch tlv), votre compte ne sera pas débité, merci de réessayer.");
-                    model.addAttribute("demandeDto", demandeDtoMsg);
-                    page = "result";
-                    return page;
+                    response.sendRedirect(failURL);
+                    return null;
                 }
 
                 autorisationService.logMessage(file, "Switch TLV Request :[" + tlv + "]");
@@ -2228,10 +2207,8 @@ public class AppMobileController {
                     autorisationService.logMessage(file,
                             "recharger 500 Error Switch communication s_conn false switch ip:[" + sw_s
                                     + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-                    demandeDtoMsg.setMsgRefus("Un dysfonctionnement du switch ne peut pas se connecter !!!");
-                    model.addAttribute("demandeDto", demandeDtoMsg);
-                    page = "result";
-                    return page;
+                    response.sendRedirect(failURL);
+                    return null;
                 }
 
                 if (s_conn) {
@@ -2245,7 +2222,12 @@ public class AppMobileController {
 
             } catch (Exception e) {
                 switch_ko = 1;
-                return autorisationService.handleSwitchError(e, file, orderid, merchantid, resp_tlv, dmd, model, "result");
+                //return autorisationService.handleSwitchError(e, file, orderid, merchantid, resp_tlv, dmd, model, "result");
+                dmd.setDemCvv("");
+                dmd.setEtatDemande("SW_KO");
+                demandePaiementService.save(dmd);
+                response.sendRedirect(failURL);
+                return null;
             }
 
             String resp = resp_tlv;
@@ -2257,11 +2239,8 @@ public class AppMobileController {
                 switch_ko = 1;
                 autorisationService.logMessage(file, "recharger 500 Error Switch null response" + "switch ip:["
                         + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-                demandeDtoMsg.setMsgRefus(
-                        "La transaction en cours n’a pas abouti (Dysfonctionnement du switch resp null), votre compte ne sera pas débité, merci de réessayer.");
-                model.addAttribute("demandeDto", demandeDtoMsg);
-                page = "result";
-                return page;
+                response.sendRedirect(failURL);
+                return null;
             }
 
             if (switch_ko == 0 && resp.length() < 3) {
@@ -2272,11 +2251,8 @@ public class AppMobileController {
                 autorisationService.logMessage(file, "Switch  malfunction resp < 3 !!!");
                 autorisationService.logMessage(file, "recharger 500 Error Switch short response length() < 3 "
                         + "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-                demandeDtoMsg.setMsgRefus(
-                        "La transaction en cours n’a pas abouti (Dysfonctionnement du switch resp < 3 !!!), votre compte ne sera pas débité, merci de réessayer.");
-                model.addAttribute("demandeDto", demandeDtoMsg);
-                page = "result";
-                return page;
+                response.sendRedirect(failURL);
+                return null;
             }
 
             autorisationService.logMessage(file, "Switch TLV Respnose :[" + resp + "]");
@@ -2379,7 +2355,6 @@ public class AppMobileController {
                 autorisationService.logMessage(file, "formatting pan...");
 
                 pan_auto = Util.formatagePan(cardnumber);
-                autorisationService.logMessage(file, "formatting pan Ok pan_auto :[" + pan_auto + "]");
 
                 autorisationService.logMessage(file, "HistoAutoGate data filling start ...");
 
@@ -2502,11 +2477,8 @@ public class AppMobileController {
                     autorisationService.logMessage(file,
                             "recharger 500 Error during  DemandePaiement update SW_REJET for given orderid:[" + orderid
                                     + "]" + Util.formatException(e));
-                    demandeDtoMsg.setMsgRefus(
-                            "La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
-                    model.addAttribute("demandeDto", demandeDtoMsg);
-                    page = "result";
-                    return page;
+                    response.sendRedirect(failURL);
+                    return null;
                 }
                 autorisationService.logMessage(file, "update Demandepaiement status to SW_REJET OK.");
                 // TODO: 2024-02-27
@@ -2672,10 +2644,10 @@ public class AppMobileController {
                 autorisationService.logMessage(file, "threeDSServerTransID : " + demandeDto.getDemxid());
                 model.addAttribute("demandeDto", demandeDto);
                 // TODO: 2024-06-27 old
-			/*page = "chalenge";
+                /*page = "chalenge";
 
-			autorisationService.logMessage(file, "set demandeDto model creq : " + demandeDto.getCreq());
-			autorisationService.logMessage(file, "return page : " + page);*/
+                autorisationService.logMessage(file, "set demandeDto model creq : " + demandeDto.getCreq());
+                autorisationService.logMessage(file, "return page : " + page);*/
 
                 // TODO: 2024-06-27
                 // TODO: autre façon de faire la soumission automatique de formulaires ACS via le HttpServletResponse.
@@ -2709,11 +2681,11 @@ public class AppMobileController {
                     response.getWriter().println("</form>");
                     response.getWriter().println("<script>document.getElementById('acsForm').submit();</script>");
 
-				/* a revoir apres pour la confirmation de l'affichage acs
-				response.getWriter().println("document.getElementById('acsForm').submit();");
-				response.getWriter().println("fetch('" + feedbackUrl + "', { method: 'POST' });");  // TODO: Envoi du feedback
-				response.getWriter().println("</script>");
-				*/
+                    /* a revoir apres pour la confirmation de l'affichage acs
+                    response.getWriter().println("document.getElementById('acsForm').submit();");
+                    response.getWriter().println("fetch('" + feedbackUrl + "', { method: 'POST' });");  // TODO: Envoi du feedback
+                    response.getWriter().println("</script>");
+                    */
                     response.getWriter().println("</body></html>");
 
                     autorisationService.logMessage(file, "Le Creq a été envoyé à l'ACS par soumission automatique du formulaire.");
@@ -2733,19 +2705,28 @@ public class AppMobileController {
                 dmd.setDemCvv("");
                 demandePaiementService.save(dmd);
                 page = "result";
-                return page;
+                response.sendRedirect(failURL);
+                return null;
             }
         } else if (reponseMPI.equals("E")) {
             // TODO: ********************* Cas responseMPI equal E
             // TODO: *********************
             page = autorisationService.handleMpiError(errmpi, file, idDemande, threeDSServerTransID, dmd, model, page);
-
+            response.sendRedirect(failURL);
+            return null;
         } else {
             page = autorisationService.handleMpiError(errmpi, file, idDemande, threeDSServerTransID, dmd, model, page);
+            response.sendRedirect(failURL);
+            return null;
         }
 
-        logger.info("demandeDto htmlCreq : " + demandeDto.getCreq());
-        logger.info("return page : " + page);
+        autorisationService.logMessage(file,"demandeDto htmlCreq : " + demandeDto.getCreq());
+        autorisationService.logMessage(file,"return page : " + page);
+
+        if(page.equals("error")) {
+            response.sendRedirect(failURL);
+            return null;
+        }
 
         autorisationService.logMessage(file, "*********** End recharger () ************** ");
         logger.info("*********** End recharger () ************** ");
@@ -2768,7 +2749,7 @@ public class AppMobileController {
                 fname, lname, email, country, phone, city, state, zipcode, address, mesg_type, merc_codeactivite,
                 acqcode, merchant_name, merchant_city, acq_type, processing_code, reason_code, transaction_condition,
                 transactiondate, transactiontime, date, rrn, heure, montanttrame, montantRechgtrame, cartenaps,
-                dateExnaps, num_trs = "", successURL, failURL, transactiontype, idclient;
+                dateExnaps, num_trs = "", successURL, failURL = "", transactiontype, idclient;
 
         DemandePaiementDto demandeDto = new DemandePaiementDto();
         Objects.copyProperties(demandeDto, dto);
@@ -2864,8 +2845,7 @@ public class AppMobileController {
             model.addAttribute("demandeDto", demandeDtoMsg);
             page = "result";
             //return page;
-            response.sendRedirect(request.getContextPath() + "/napspayment/auth/ccb/token/"+demandeDto.getTokencommande());
-            session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+            response.sendRedirect(failURL);
             return null;
         }
 
@@ -2947,8 +2927,7 @@ public class AppMobileController {
             model.addAttribute("demandeDto", demandeDtoMsg);
             page = "result";
             //return page;
-            response.sendRedirect(request.getContextPath() + "/napspayment/auth/ccb/token/"+demandeDto.getTokencommande());
-            session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+            response.sendRedirect(failURL);
             return null;
         }
 
@@ -3006,8 +2985,7 @@ public class AppMobileController {
             model.addAttribute("demandeDto", demandeDtoMsg);
             page = "result";
             //return page;
-            response.sendRedirect(request.getContextPath() + "/napspayment/auth/ccb/token/"+demandeDto.getTokencommande());
-            session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+            response.sendRedirect(failURL);
             return null;
         }
         autorisationService.logMessage(file, "Fin controlleRisk");
@@ -3025,10 +3003,10 @@ public class AppMobileController {
                 autorisationService.logMessage(file, "cardtokenDto expirydate input : " + expirydate);
                 String anne = String.valueOf(dateCalendar.get(Calendar.YEAR));
                 // TODO: get year from date
-                String xx = anne.substring(0, 2) + expirydate.substring(0, 2);
-                String MM = expirydate.substring(2, expirydate.length());
+                String year = anne.substring(0, 2) + expirydate.substring(0, 2);
+                String moi = expirydate.substring(2, expirydate.length());
                 // TODO: format date to "yyyy-MM-dd"
-                String expirydateFormated = xx + "-" + MM + "-" + "01";
+                String expirydateFormated = year + "-" + moi + "-" + "01";
                 autorisationService.logMessage(file, "cardtokenDto expirydate formated : " + expirydateFormated);
                 Date dateExp;
                 dateExp = dateFormatSimple.parse(expirydateFormated);
@@ -3106,8 +3084,7 @@ public class AppMobileController {
             model.addAttribute("demandeDto", demandeDtoMsg);
             page = "result";
             //return page;
-            response.sendRedirect(request.getContextPath() + "/napspayment/auth/ccb/token/"+demandeDto.getTokencommande());
-            session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+            response.sendRedirect(failURL);
             return null;
         }
 
@@ -3158,13 +3135,7 @@ public class AppMobileController {
             demandePaiementService.save(demandeDto);
             autorisationService.logMessage(file,
                     "demandePaiement after update MPI_KO idDemande null : " + demandeDto.toString());
-            demandeDtoMsg.setMsgRefus(
-                    "La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
-            model.addAttribute("demandeDto", demandeDtoMsg);
-            page = "result";
-            //return page;
-            response.sendRedirect(request.getContextPath() + "/napspayment/auth/ccb/token/"+demandeDto.getTokencommande());
-            session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+            response.sendRedirect(failURL);
             return null;
         }
 
@@ -3176,30 +3147,18 @@ public class AppMobileController {
             autorisationService.logMessage(file,
                     "demandePaiement not found !!!! demandePaiement = null  / received idDemande from MPI => "
                             + idDemande);
-            demandeDtoMsg.setMsgRefus(
-                    "La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
-            model.addAttribute("demandeDto", demandeDtoMsg);
-            page = "result";
-            //return page;
-            response.sendRedirect(request.getContextPath() + "/napspayment/auth/ccb/token/"+demandeDto.getTokencommande());
-            session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+            response.sendRedirect(failURL);
             return null;
         }
 
-        if (reponseMPI.equals("") || reponseMPI == null) {
+        if (reponseMPI == null || reponseMPI.equals("")) {
             dmd.setDemCvv("");
             dmd.setEtatDemande("MPI_KO");
             demandePaiementService.save(dmd);
             autorisationService.logMessage(file,
                     "demandePaiement after update MPI_KO reponseMPI null : " + dmd.toString());
             autorisationService.logMessage(file, "Response 3DS is null");
-            demandeDtoMsg.setMsgRefus(
-                    "La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
-            model.addAttribute("demandeDto", demandeDtoMsg);
-            page = "result";
-            //return page;
-            response.sendRedirect(request.getContextPath() + "/napspayment/auth/ccb/token/"+demandeDto.getTokencommande());
-            session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+            response.sendRedirect(failURL);
             return null;
         }
 
@@ -3216,10 +3175,10 @@ public class AppMobileController {
             dateExnaps = dmd.getDateexpnaps();
 
             // TODO: 2024-03-05
-            montanttrame = formatMontantTrame(folder, file, amount, orderid, merchantid, dmd, model);
+            montanttrame = Util.formatMontantTrame(folder, file, amount, orderid, merchantid, dmd, model);
 
             // TODO: 2024-03-05
-            montantRechgtrame = formatMontantRechargeTrame(folder, file, amount, orderid, merchantid, dmd, page, model);
+            montantRechgtrame = Util.formatMontantRechargeTrame(folder, file, amount, orderid, merchantid, dmd, page, model);
 
             merchantname = current_merchant.getCmrNom();
             websiteName = "";
@@ -3277,14 +3236,7 @@ public class AppMobileController {
                 demandePaiementService.save(dmd);
                 autorisationService.logMessage(file,
                         "processrecharge 500 cvv not set , reccuring flag set to N, cvv must be present in normal transaction");
-
-                demandeDtoMsg.setMsgRefus(
-                        "Le champ CVV est vide. Veuillez saisir le code de sécurité à trois chiffres situé au dos de votre carte pour continuer.");
-                model.addAttribute("demandeDto", demandeDtoMsg);
-                page = "result";
-                //return page;
-                response.sendRedirect(request.getContextPath() + "/napspayment/auth/ccb/token/"+demandeDto.getTokencommande());
-                session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+                response.sendRedirect(failURL);
                 return null;
             }
 
@@ -3314,13 +3266,7 @@ public class AppMobileController {
                     autorisationService.logMessage(file,
                             "processrecharge 500 Error during switch tlv buildup for given orderid:[" + orderid
                                     + "] and merchantid:[" + merchantid + "]" + Util.formatException(err4));
-                    demandeDtoMsg.setMsgRefus(
-                            "La transaction en cours n’a pas abouti (Erreur lors de la création du switch tlv), votre compte ne sera pas débité, merci de réessayer.");
-                    model.addAttribute("demandeDto", demandeDtoMsg);
-                    page = "result";
-                    //return page;
-                    response.sendRedirect(request.getContextPath() + "/napspayment/auth/ccb/token/"+demandeDto.getTokencommande());
-                    session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+                    response.sendRedirect(failURL);
                     return null;
                 }
 
@@ -3361,12 +3307,7 @@ public class AppMobileController {
                     autorisationService.logMessage(file,
                             "processrecharge 500 Error Switch communication s_conn false switch ip:[" + sw_s
                                     + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-                    demandeDtoMsg.setMsgRefus("Un dysfonctionnement du switch ne peut pas se connecter !!!");
-                    model.addAttribute("demandeDto", demandeDtoMsg);
-                    page = "result";
-                    //return page;
-                    response.sendRedirect(request.getContextPath() + "/napspayment/auth/ccb/token/"+demandeDto.getTokencommande());
-                    session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+                    response.sendRedirect(failURL);
                     return null;
                 }
 
@@ -3382,9 +3323,10 @@ public class AppMobileController {
             } catch (Exception e) {
                 switch_ko = 1;
                 // return autorisationService.handleSwitchError(e, file, orderid, merchantid, resp_tlv, dmd, model, "result");
-                page =  autorisationService.handleSwitchError(e, file, orderid, merchantid, resp_tlv, dmd, model, "result");
-                response.sendRedirect(request.getContextPath() + "/napspayment/auth/ccb/token/"+demandeDto.getTokencommande());
-                session.setAttribute("error", dmd.getMsgRefus());
+                dmd.setDemCvv("");
+                dmd.setEtatDemande("SW_KO");
+                demandePaiementService.save(dmd);
+                response.sendRedirect(failURL);
                 return null;
             }
 
@@ -3392,18 +3334,13 @@ public class AppMobileController {
 
             if (switch_ko == 0 && resp == null) {
                 dmd.setDemCvv("");
+                dmd.setEtatDemande("SW_KO");
                 demandePaiementService.save(dmd);
                 autorisationService.logMessage(file, "Switch  malfunction resp null!!!");
                 switch_ko = 1;
                 autorisationService.logMessage(file, "processrecharge 500 Error Switch null response" + "switch ip:["
                         + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-                demandeDtoMsg.setMsgRefus(
-                        "La transaction en cours n’a pas abouti (Dysfonctionnement du switch resp null), votre compte ne sera pas débité, merci de réessayer.");
-                model.addAttribute("demandeDto", demandeDtoMsg);
-                page = "result";
-                //return page;
-                response.sendRedirect(request.getContextPath() + "/napspayment/auth/ccb/token/"+demandeDto.getTokencommande());
-                session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+                response.sendRedirect(failURL);
                 return null;
             }
 
@@ -3415,13 +3352,7 @@ public class AppMobileController {
                 autorisationService.logMessage(file, "Switch  malfunction resp < 3 !!!");
                 autorisationService.logMessage(file, "processrecharge 500 Error Switch short response length() < 3 "
                         + "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-                demandeDtoMsg.setMsgRefus(
-                        "La transaction en cours n’a pas abouti (Dysfonctionnement du switch resp < 3 !!!), votre compte ne sera pas débité, merci de réessayer.");
-                model.addAttribute("demandeDto", demandeDtoMsg);
-                page = "result";
-                //return page;
-                response.sendRedirect(request.getContextPath() + "/napspayment/auth/ccb/token/"+demandeDto.getTokencommande());
-                session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+                response.sendRedirect(failURL);
                 return null;
             }
 
@@ -3525,7 +3456,6 @@ public class AppMobileController {
                 autorisationService.logMessage(file, "formatting pan...");
 
                 pan_auto = Util.formatagePan(cardnumber);
-                autorisationService.logMessage(file, "formatting pan Ok pan_auto :[" + pan_auto + "]");
 
                 autorisationService.logMessage(file, "HistoAutoGate data filling start ...");
 
@@ -3648,13 +3578,7 @@ public class AppMobileController {
                     autorisationService.logMessage(file,
                             "processrecharge 500 Error during  DemandePaiement update SW_REJET for given orderid:[" + orderid
                                     + "]" + Util.formatException(e));
-                    demandeDtoMsg.setMsgRefus(
-                            "La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
-                    model.addAttribute("demandeDto", demandeDtoMsg);
-                    page = "result";
-                    //return page;
-                    response.sendRedirect(request.getContextPath() + "/napspayment/auth/ccb/token/"+demandeDto.getTokencommande());
-                    session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+                    response.sendRedirect(failURL);
                     return null;
                 }
                 autorisationService.logMessage(file, "update Demandepaiement status to SW_REJET OK.");
@@ -3821,10 +3745,10 @@ public class AppMobileController {
                 autorisationService.logMessage(file, "threeDSServerTransID : " + demandeDto.getDemxid());
                 model.addAttribute("demandeDto", demandeDto);
                 // TODO: 2024-06-27 old
-		/*page = "chalenge";
+                /*page = "chalenge";
 
-		autorisationService.logMessage(file, "set demandeDto model creq : " + demandeDto.getCreq());
-		autorisationService.logMessage(file, "return page : " + page);*/
+                autorisationService.logMessage(file, "set demandeDto model creq : " + demandeDto.getCreq());
+                autorisationService.logMessage(file, "return page : " + page);*/
 
                 // TODO: 2024-06-27
                 // TODO: autre façon de faire la soumission automatique de formulaires ACS via le HttpServletResponse.
@@ -3858,11 +3782,11 @@ public class AppMobileController {
                     response.getWriter().println("</form>");
                     response.getWriter().println("<script>document.getElementById('acsForm').submit();</script>");
 
-			/* a revoir apres pour la confirmation de l'affichage acs
-			response.getWriter().println("document.getElementById('acsForm').submit();");
-			response.getWriter().println("fetch('" + feedbackUrl + "', { method: 'POST' });");  // TODO: Envoi du feedback
-			response.getWriter().println("</script>");
-			*/
+                    /* a revoir apres pour la confirmation de l'affichage acs
+                    response.getWriter().println("document.getElementById('acsForm').submit();");
+                    response.getWriter().println("fetch('" + feedbackUrl + "', { method: 'POST' });");  // TODO: Envoi du feedback
+                    response.getWriter().println("</script>");
+                    */
                     response.getWriter().println("</body></html>");
 
                     autorisationService.logMessage(file, "Le Creq a été envoyé à l'ACS par soumission automatique du formulaire.");
@@ -3882,23 +3806,24 @@ public class AppMobileController {
                 dmd.setDemCvv("");
                 demandePaiementService.save(dmd);
                 page = "result";
-                //return page;
-                response.sendRedirect(request.getContextPath() + "/napspayment/auth/ccb/token/"+demandeDto.getTokencommande());
-                session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+                response.sendRedirect(failURL);
                 return null;
             }
         } else if (reponseMPI.equals("E")) {
             // TODO: ********************* Cas responseMPI equal E
             // TODO: *********************
             page = autorisationService.handleMpiError(errmpi, file, idDemande, threeDSServerTransID, dmd, model, page);
-            response.sendRedirect(request.getContextPath() + "/napspayment/auth/ccb/token/"+demandeDto.getTokencommande());
-            session.setAttribute("error", dmd.getMsgRefus());
+            response.sendRedirect(failURL);
             return null;
         } else {
             page = autorisationService.handleMpiError(errmpi, file, idDemande, threeDSServerTransID, dmd, model, page);
-            response.sendRedirect(request.getContextPath() + "/napspayment/auth/ccb/token/"+demandeDto.getTokencommande());
-            session.setAttribute("error", dmd.getMsgRefus());
-            page = null;
+            response.sendRedirect(failURL);
+            page = "error";
+        }
+
+        if(page.equals("error")) {
+            response.sendRedirect(failURL);
+            return null;
         }
 
         autorisationService.logMessage(file, "*********** End processrecharge () ************** ");
@@ -3917,13 +3842,13 @@ public class AppMobileController {
         double mnttotalopp = dto.getMontant() + dto.getFrais();
         return String.format("%.2f", mnttotalopp).replace(",", ".");
     }
-
+    /*
     public String calculMontantSansOperation(DemandePaiementDto dto) {
         if (dto.getMontant() == null) {
             dto.setMontant(0.00);
         }
         return String.format("%.2f", dto.getMontant()).replace(",", ".");
-    }
+    }*/
 
     @SuppressWarnings("all")
     public Cartes fromString(String input) {
@@ -3989,107 +3914,6 @@ public class AppMobileController {
         }
         return dNotime;
 
-    }
-
-    @SuppressWarnings("all")
-    private String formatMontantTrame(String folder, String file, String amount, String orderid, String merchantid,
-                                      DemandePaiementDto dmd, Model model) {
-        String montanttrame = "";
-        String[] mm;
-        String[] m;
-        DemandePaiementDto demandeDtoMsg = new DemandePaiementDto();
-        try {
-            amount = calculMontantTotalOperation(dmd);
-
-            if (amount.contains(",")) {
-                amount = amount.replace(",", ".");
-            }
-            if (!amount.contains(".") && !amount.contains(",")) {
-                amount = amount + "." + "00";
-            }
-            //logger.info("montant recharge avec frais : [" + amount + "]");
-            autorisationService.logMessage(file,
-                    "montant recharge avec frais : [" + amount + "]");
-
-            String montantt = amount + "";
-
-            mm = montantt.split("\\.");
-            if (mm[1].length() == 1) {
-                montanttrame = amount + "0";
-            } else {
-                montanttrame = amount + "";
-            }
-
-            m = montanttrame.split("\\.");
-            if (m[1].equals("0")) {
-                montanttrame = montanttrame.replace(".", "0");
-            } else
-                montanttrame = montanttrame.replace(".", "");
-            montanttrame = Util.formatageCHamps(montanttrame, 12);
-        } catch (Exception err3) {
-            autorisationService.logMessage(file,
-                    "authorization 500 Error during  amount formatting for given orderid:["
-                            + orderid + "] and merchantid:[" + merchantid + "]" + Util.formatException(err3));
-            demandeDtoMsg.setMsgRefus("Erreur lors du formatage du montant");
-            model.addAttribute("demandeDto", demandeDtoMsg);
-            String page0 = "result";
-            autorisationService.logMessage(file, "Fin processRequestMobile ()");
-            logger.info("Fin processRequestMobile ()");
-            return page0;
-        }
-        return montanttrame;
-    }
-
-    @SuppressWarnings("all")
-    private String formatMontantRechargeTrame(String folder, String file, String amount, String orderid, String merchantid,
-                                              DemandePaiementDto dmd, String page, Model model) {
-        String montantRechgtrame;
-        String[] mm;
-        String[] m;
-        DemandePaiementDto demandeDtoMsg = new DemandePaiementDto();
-        try {
-            montantRechgtrame = "";
-
-            String amount1 = calculMontantSansOperation(dmd);
-
-            if (amount1.contains(",")) {
-                amount1 = amount1.replace(",", ".");
-            }
-            if (!amount1.contains(".") && !amount1.contains(",")) {
-                amount1 = amount1 + "." + "00";
-            }
-            //logger.info("montant recharge sans frais : [" + amount1 + "]");
-            autorisationService.logMessage(file,
-                    "montant recharge sans frais : [" + amount1 + "]");
-
-            String montantt = amount1 + "";
-
-            mm = montantt.split("\\.");
-            if (mm[1].length() == 1) {
-                montantRechgtrame = amount1 + "0";
-            } else {
-                montantRechgtrame = amount1 + "";
-            }
-
-            m = montantRechgtrame.split("\\.");
-            if (m[1].equals("0")) {
-                montantRechgtrame = montantRechgtrame.replace(".", "0");
-            } else
-                montantRechgtrame = montantRechgtrame.replace(".", "");
-            montantRechgtrame = Util.formatageCHamps(montantRechgtrame, 12);
-            //logger.info("montantRechgtrame sans frais: [" + montantRechgtrame + "]");
-            autorisationService.logMessage(file,
-                    "montantRechgtrame sans frais : [" + montantRechgtrame + "]");
-        } catch (Exception err3) {
-            autorisationService.logMessage(file,
-                    "recharger 500 Error during  amount formatting for given orderid:[" + orderid
-                            + "] and merchantid:[" + merchantid + "]" + Util.formatException(err3));
-            demandeDtoMsg.setMsgRefus("Erreur lors du formatage du montant");
-            model.addAttribute("demandeDto", demandeDtoMsg);
-            page = "result";
-            return page;
-        }
-        return montantRechgtrame;
     }
 
     private List<Integer> generateYearList(int startYear, int endYear) {

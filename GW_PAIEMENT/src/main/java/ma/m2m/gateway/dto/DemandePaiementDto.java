@@ -91,6 +91,9 @@ public class DemandePaiementDto implements Serializable {
 	private String msgRefus;
 	private String transactiontype;
 	private boolean condition;
+	private String nameCmr;
+	private String siteWeb;
+	private String formattedDate;
 	
 	private String creq;
 	private List<Integer> years;

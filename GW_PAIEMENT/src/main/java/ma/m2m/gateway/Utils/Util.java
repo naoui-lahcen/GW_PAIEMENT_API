@@ -24,6 +24,7 @@ import org.apache.logging.log4j.Logger;
 import java.util.concurrent.ThreadLocalRandom;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
+import org.springframework.ui.Model;
 
 
 /*
@@ -669,5 +670,125 @@ public class Util {
 			stackTrace = "";
 		}
 		return stackTrace;
+	}
+
+
+	@SuppressWarnings("all")
+	public static String formatMontantRechargeTrame(String folder, String file, String amount, String orderid, String merchantid,
+											  DemandePaiementDto dmd, String page, Model model) {
+		Traces traces = new Traces();
+		String montantRechgtrame;
+		String[] mm;
+		String[] m;
+		DemandePaiementDto demandeDtoMsg = new DemandePaiementDto();
+		try {
+			montantRechgtrame = "";
+
+			String amount1 = calculMontantSansOperation(dmd);
+
+			if (amount1.contains(",")) {
+				amount1 = amount1.replace(",", ".");
+			}
+			if (!amount1.contains(".") && !amount1.contains(",")) {
+				amount1 = amount1 + "." + "00";
+			}
+			traces.writeInFileTransaction(folder, file,
+					"montant recharge sans frais : [" + amount1 + "]");
+
+			String montantt = amount1 + "";
+
+			mm = montantt.split("\\.");
+			if (mm[1].length() == 1) {
+				montantRechgtrame = amount1 + "0";
+			} else {
+				montantRechgtrame = amount1 + "";
+			}
+
+			m = montantRechgtrame.split("\\.");
+			if (m[1].equals("0")) {
+				montantRechgtrame = montantRechgtrame.replace(".", "0");
+			} else
+				montantRechgtrame = montantRechgtrame.replace(".", "");
+			montantRechgtrame = Util.formatageCHamps(montantRechgtrame, 12);
+			traces.writeInFileTransaction(folder, file,
+					"montantRechgtrame sans frais : [" + montantRechgtrame + "]");
+		} catch (Exception err3) {
+			traces.writeInFileTransaction(folder, file,
+					"recharger 500 Error during  amount formatting for given orderid:[" + orderid
+							+ "] and merchantid:[" + merchantid + "]" + Util.formatException(err3));
+			demandeDtoMsg.setMsgRefus("Erreur lors du formatage du montant");
+			model.addAttribute("demandeDto", demandeDtoMsg);
+			page = "result";
+			return page;
+		}
+		return montantRechgtrame;
+	}
+
+	@SuppressWarnings("all")
+	public static String formatMontantTrame(String folder, String file, String amount, String orderid, String merchantid,
+									  DemandePaiementDto dmd, Model model) {
+		Traces traces = new Traces();
+		String montanttrame = "";
+		String[] mm;
+		String[] m;
+		DemandePaiementDto demandeDtoMsg = new DemandePaiementDto();
+		try {
+			amount = calculMontantTotalOperation(dmd);
+
+			if (amount.contains(",")) {
+				amount = amount.replace(",", ".");
+			}
+			if (!amount.contains(".") && !amount.contains(",")) {
+				amount = amount + "." + "00";
+			}
+			//logger.info("montant recharge avec frais : [" + amount + "]");
+			traces.writeInFileTransaction(folder, file,
+					"montant recharge avec frais : [" + amount + "]");
+
+			String montantt = amount + "";
+
+			mm = montantt.split("\\.");
+			if (mm[1].length() == 1) {
+				montanttrame = amount + "0";
+			} else {
+				montanttrame = amount + "";
+			}
+
+			m = montanttrame.split("\\.");
+			if (m[1].equals("0")) {
+				montanttrame = montanttrame.replace(".", "0");
+			} else
+				montanttrame = montanttrame.replace(".", "");
+			montanttrame = Util.formatageCHamps(montanttrame, 12);
+		} catch (Exception err3) {
+			traces.writeInFileTransaction(folder, file,
+					"authorization 500 Error during  amount formatting for given orderid:["
+							+ orderid + "] and merchantid:[" + merchantid + "]" + Util.formatException(err3));
+			demandeDtoMsg.setMsgRefus("Erreur lors du formatage du montant");
+			model.addAttribute("demandeDto", demandeDtoMsg);
+			String page0 = "result";
+			traces.writeInFileTransaction(folder, file, "Fin processRequestMobile ()");
+			logger.info("Fin processRequestMobile ()");
+			return page0;
+		}
+		return montanttrame;
+	}
+
+	public static String calculMontantTotalOperation(DemandePaiementDto dto) {
+		if (dto.getMontant() == null) {
+			dto.setMontant(0.00);
+		}
+		if (dto.getFrais() == null) {
+			dto.setFrais(0.00);
+		}
+		double mnttotalopp = dto.getMontant() + dto.getFrais();
+		return String.format("%.2f", mnttotalopp).replace(",", ".");
+	}
+
+	public static String calculMontantSansOperation(DemandePaiementDto dto) {
+		if (dto.getMontant() == null) {
+			dto.setMontant(0.00);
+		}
+		return String.format("%.2f", dto.getMontant()).replace(",", ".");
 	}
 }

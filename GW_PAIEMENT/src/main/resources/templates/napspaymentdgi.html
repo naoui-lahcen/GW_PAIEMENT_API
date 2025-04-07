@@ -554,6 +554,64 @@
          validateInputField('num', 19);
          validateInputField('nvnum', 19);
 
+      window.onload = function() {
+          const iddemande = document.getElementById('iddemande');
+          const commande = document.getElementById('commande');
+          const inputs = document.querySelectorAll('input'); // Sélectionner tous les champs de saisie
+          const selects = document.querySelectorAll('select'); // Sélectionner tous les éléments <select>
+
+
+          // Fonction à appeler quand l'utilisateur touche ou fait défiler la page
+          function check() {
+              if (iddemande && commande && iddemande.value.trim() !== '' && commande.value.trim() !== '') {
+                  console.log("La page est visible, l'utilisateur interagit.");
+
+                  // Effectuer un appel AJAX
+                  fetch('/check', {
+                      method: 'POST',
+                      headers: {
+                          'Content-Type': 'application/json'
+                      },
+                      body: JSON.stringify({
+                          iddemande: iddemande.value,
+                          commande: commande.value
+                      })
+                  })
+                  .then(response => response.json())
+                  .then(data => {
+                      console.log("Réponse du serveur :", data);
+                  })
+                  .catch(error => console.error("Erreur AJAX :", error));
+              } else {
+                  console.error("Les champs iddemande ou commande sont vides ou introuvables. L'appel AJAX n'a pas été effectué.");
+              }
+          }
+
+          // Appel initial de check() dès que la page est chargée
+          check();
+
+          // Vérifie si la page est visible (avec l'événement `touchstart` pour mobile et `scroll` pour mobile/desktop)
+          function handleUserInteraction() {
+              // Si un utilisateur touche ou fait défiler, on appelle la fonction check
+              check();
+          }
+
+          // Écouter l'événement `touchstart` (sur mobile et tablette)
+          document.addEventListener('touchstart', handleUserInteraction, { once: true });
+
+         // Écouter l'événement de clic sur tous les champs input (mobile/desktop)
+          inputs.forEach(input => {
+              input.addEventListener('click', handleUserInteraction);
+          });
+           // Écouter l'événement de clic sur tous les éléments <select>
+          selects.forEach(select => {
+              select.addEventListener('click', handleUserInteraction);
+          });
+
+          // Écouter l'événement `scroll` (sur desktop et mobile)
+          window.addEventListener('scroll', handleUserInteraction, { once: true });
+      };
+
       </script>
    </body>
 </html>

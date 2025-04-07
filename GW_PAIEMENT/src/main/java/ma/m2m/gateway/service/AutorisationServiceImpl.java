@@ -586,6 +586,9 @@ public class AutorisationServiceImpl implements AutorisationService {
 			CommercantDto merchant = commercantService.findByCmrNumcmr(merchantid);
 			if (merchant != null) {
 				demandeDto.setCommercantDto(merchant);
+				demandeDto.setNameCmr(merchant.getCmrNom() == null ? "" : merchant.getCmrNom());
+			} else {
+				demandeDto.setNameCmr("");
 			}
 		} catch (Exception e) {
 			Util.writeInFileTransaction(folder, file,
@@ -596,6 +599,9 @@ public class AutorisationServiceImpl implements AutorisationService {
 			GalerieDto galerie = galerieService.findByCodeCmr(merchantid);
 			if (galerie != null) {
 				demandeDto.setGalerieDto(galerie);
+				demandeDto.setSiteWeb(galerie.getUrlGal() == null ? "" : galerie.getUrlGal());
+			} else {
+				demandeDto.setSiteWeb("");
 			}
 		} catch (Exception e) {
 			Util.writeInFileTransaction(folder, file,

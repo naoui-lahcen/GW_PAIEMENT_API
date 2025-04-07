@@ -559,7 +559,7 @@ public class APIController {
 			return Util.getMsgError(folder, file, linkRequestDto, "The current transaction was not successful, your account will not be debited, please try again.", "96");
 		}
 
-		if (reponseMPI.equals("") || reponseMPI == null) {
+		if (reponseMPI == null || reponseMPI.equals("")) {
 			dmd.setDemCvv("");
 			dmd.setEtatDemande("MPI_KO");
 			demandePaiementService.save(dmd);
@@ -855,7 +855,6 @@ public class APIController {
 				autorisationService.logMessage(file, "formatting pan...");
 
 				pan_auto = Util.formatagePan(cardnumber);
-				autorisationService.logMessage(file, "formatting pan Ok pan_auto :[" + pan_auto + "]");
 
 				autorisationService.logMessage(file, "HistoAutoGate data filling start ...");
 
@@ -1505,13 +1504,20 @@ public class APIController {
 			if (check_dmd != null) {
 				// TODO: generer token
 				tokencommande = Util.genTokenCom(check_dmd.getCommande(), check_dmd.getComid());
-				// TODO: url = link_success + check_dmd.getTokencommande();
-				// TODO: statuscode = "00";
-				// TODO: status = "OK";
-				url = "";
-				statuscode = "17";
-				status = "PaiementRequest Already exist orderid:[" + linkRequestDto.getOrderid() + "]";
-				idDemande = String.valueOf(check_dmd.getIddemande());
+				String sucs = check_dmd.getSuccessURL() == null ? "" : check_dmd.getSuccessURL();
+				if(sucs.contains("epay.naps.ma") || sucs.contains("epayapi.naps.ma")
+						|| check_dmd.getComid().equals("2200121")) {
+					autorisationService.logMessage(file,"site epaylink continue");
+					url = linkSuccess + check_dmd.getTokencommande();
+					statuscode = "00";
+					status = "OK";
+					idDemande = String.valueOf(check_dmd.getIddemande());
+				} else {
+					url = "";
+					statuscode = "17";
+					status = "PaiementRequest Already exist orderid:[" + linkRequestDto.getOrderid() + "]";
+					idDemande = String.valueOf(check_dmd.getIddemande());
+				}
 			} else {
 				dmd = new DemandePaiementDto();
 
@@ -1569,6 +1575,14 @@ public class APIController {
 				// TODO: generer token
 				tokencommande = Util.genTokenCom(dmd.getCommande(), dmd.getComid());
 				dmd.setTokencommande(tokencommande);
+
+				if(linkRequestDto.getTransactiontype() == null) {
+					linkRequestDto.setTransactiontype("0");
+				}
+				if(linkRequestDto.getTransactiontype() != null && linkRequestDto.getTransactiontype().isEmpty()) {
+					linkRequestDto.setTransactiontype("0");
+				}
+				dmd.setTransactiontype(linkRequestDto.getTransactiontype());
 
 				dmdSaved = demandePaiementService.save(dmd);
 
@@ -3786,10 +3800,10 @@ public class APIController {
 			autorisationService.logMessage(file, "cardtokenDto expirydate input : " + expirydate);
 			String anne = String.valueOf(dateCalendar.get(Calendar.YEAR));
 			// TODO: get year from date
-			String xx = anne.substring(0, 2) + expirydate.substring(0, 2);
-			String MM = expirydate.substring(2, expirydate.length());
+			String year = anne.substring(0, 2) + expirydate.substring(0, 2);
+			String moi = expirydate.substring(2, expirydate.length());
 			// TODO: format date to FORMAT_DEFAUT
-			String expirydateFormated = xx + "-" + MM + "-" + "01";
+			String expirydateFormated = year + "-" + moi + "-" + "01";
 			logger.info("cardtokenDto expirydate : " + expirydateFormated);
 			autorisationService.logMessage(file, "cardtokenDto expirydate formated : " + expirydateFormated);
 			Date dateExp = dateFormatSimple.parse(expirydateFormated);
@@ -3875,7 +3889,7 @@ public class APIController {
 
 			DemandePaiementDto dmd = null;
 			DemandePaiementDto dmdSaved = null;
-			amount = "80";
+			amount = "10";
 			currency = "504";
 			try {
 
@@ -4017,7 +4031,7 @@ public class APIController {
 				return Util.getMsgError(folder, file, linkRequestDto, "AUTO INVALIDE DEMANDE NOT FOUND", "96");
 			}
 
-			if (reponseMPI.equals("") || reponseMPI == null) {
+			if (reponseMPI == null || reponseMPI.equals("")) {
 				dmd.setEtatDemande("MPI_KO");
 				dmd.setDemCvv("");
 				demandePaiementService.save(dmd);
@@ -4297,7 +4311,6 @@ public class APIController {
 					autorisationService.logMessage(file, "formatting pan...");
 
 					pan_auto = Util.formatagePan(cardnumber);
-					autorisationService.logMessage(file, "formatting pan Ok pan_auto :[" + pan_auto + "]");
 
 					autorisationService.logMessage(file, "HistoAutoGate data filling start ...");
 
@@ -5778,8 +5791,6 @@ public class APIController {
 								autorisationService.logMessage(file, "formatting pan...");
 
 								pan_auto = Util.formatagePan(cardnumber);
-								autorisationService.logMessage(file,
-										"formatting pan Ok pan_auto :[" + pan_auto + "]");
 
 								autorisationService.logMessage(file, "HistoAutoGate data filling start ...");
 

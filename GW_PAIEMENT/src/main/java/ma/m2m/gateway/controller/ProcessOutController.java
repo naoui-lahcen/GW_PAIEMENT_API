@@ -422,29 +422,23 @@ public class ProcessOutController {
 							autorisationService.logMessage(file,
 									"authorization 500 Error during  date formatting for given orderid:[" + orderid
 											+ "] and merchantid:[" + merchantid + "]" + Util.formatException(err2));
-							demandeDtoMsg.setMsgRefus(
-									"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
-							model.addAttribute("demandeDto", demandeDtoMsg);
-							page = "result";
 							autorisationService.logMessage(file, "Fin processoutRequest ()");
 							logger.info("Fin processoutRequest ()");
-							return page;
+							response.sendRedirect(failURL);
+							return null;
 						}
 
-						if (reponseMPI.equals("") || reponseMPI == null) {
+						if (reponseMPI == null || reponseMPI.equals("")) {
 							dmd.setDemCvv("");
 							dmd.setEtatDemande("MPI_KO");
 							demandePaiementService.save(dmd);
 							autorisationService.logMessage(file,
 									"demandePaiement after update MPI_KO reponseMPI null : " + dmd.toString());
 							autorisationService.logMessage(file, "Response 3DS is null");
-							demandeDtoMsg.setMsgRefus(
-									"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
-							model.addAttribute("demandeDto", demandeDtoMsg);
-							page = "result";
 							autorisationService.logMessage(file, "Fin processoutRequest ()");
 							logger.info("Fin processoutRequest ()");
-							return page;
+							response.sendRedirect(failURL);
+							return null;
 						}
 
 						if (reponseMPI.equals("Y")) {
@@ -462,7 +456,7 @@ public class ProcessOutController {
 							}
 
 							// TODO: 2024-03-05
-							montanttrame = formatMontantTrame(folder, file, amount, orderid, merchantid, page, model);
+							montanttrame = Util.formatMontantTrame(folder, file, amount, orderid, merchantid, dmd, model);
 
 							boolean cvv_present = checkCvvPresence(cvv);
 							boolean is_reccuring = isReccuringCheck(recurring);
@@ -503,13 +497,10 @@ public class ProcessOutController {
 								demandePaiementService.save(dmd);
 								autorisationService.logMessage(file,
 										"authorization 500 cvv not set , reccuring flag set to N, cvv must be present in normal transaction");
-								demandeDtoMsg.setMsgRefus(
-										"Le champ CVV est vide. Veuillez saisir le code de sécurité à trois chiffres situé au dos de votre carte pour continuer.");
-								model.addAttribute("demandeDto", demandeDtoMsg);
-								page = "result";
 								autorisationService.logMessage(file, "Fin processoutRequest ()");
 								logger.info("Fin processoutRequest ()");
-								return page;
+								response.sendRedirect(failURL);
+								return null;
 							}
 
 							// TODO: not reccuring , normal
@@ -538,13 +529,10 @@ public class ProcessOutController {
 									autorisationService.logMessage(file,
 											"authorization 500 Error during switch tlv buildup for given orderid:["
 													+ orderid + "] and merchantid:[" + merchantid + "]" + Util.formatException(err4));
-									demandeDtoMsg.setMsgRefus(
-											"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
-									model.addAttribute("demandeDto", demandeDtoMsg);
-									page = "result";
 									autorisationService.logMessage(file, "Fin processoutRequest ()");
 									logger.info("Fin processoutRequest ()");
-									return page;
+									response.sendRedirect(failURL);
+									return null;
 								}
 
 								autorisationService.logMessage(file, "Switch TLV Request :[" + tlv + "]");
@@ -584,13 +572,10 @@ public class ProcessOutController {
 											"authorization 500 Error Switch communication s_conn false switch ip:["
 													+ sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv
 													+ "]");
-									demandeDtoMsg.setMsgRefus(
-											"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
-									model.addAttribute("demandeDto", demandeDtoMsg);
-									page = "result";
 									autorisationService.logMessage(file, "Fin processoutRequest ()");
 									logger.info("Fin processoutRequest ()");
-									return page;
+									response.sendRedirect(failURL);
+									return null;
 								}
 
 								if (s_conn) {
@@ -604,7 +589,12 @@ public class ProcessOutController {
 
 							} catch (Exception e) {
 								switch_ko = 1;
-								return autorisationService.handleSwitchError(e, file, orderid, merchantid, resp_tlv, dmd, model, "result");
+								// return autorisationService.handleSwitchError(e, file, orderid, merchantid, resp_tlv, dmd, model, "result");
+								dmd.setDemCvv("");
+								dmd.setEtatDemande("SW_KO");
+								demandePaiementService.save(dmd);
+								response.sendRedirect(failURL);
+								return null;
 							}
 
 							String resp = resp_tlv;
@@ -622,13 +612,10 @@ public class ProcessOutController {
 								autorisationService.logMessage(file,
 										"authorization 500 Error Switch null response" + "switch ip:[" + sw_s
 												+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
-								demandeDtoMsg.setMsgRefus(
-										"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
-								model.addAttribute("demandeDto", demandeDtoMsg);
-								page = "result";
 								autorisationService.logMessage(file, "Fin processoutRequest ()");
 								logger.info("Fin processoutRequest ()");
-								return page;
+								response.sendRedirect(failURL);
+								return null;
 							}
 
 							if (switch_ko == 0 && resp.length() < 3) {
@@ -642,13 +629,10 @@ public class ProcessOutController {
 										"authorization 500 Error Switch short response length() < 3 " + "switch ip:["
 												+ sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv
 												+ "]");
-								demandeDtoMsg.setMsgRefus(
-										"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
-								model.addAttribute("demandeDto", demandeDtoMsg);
-								page = "result";
 								autorisationService.logMessage(file, "Fin processoutRequest ()");
 								logger.info("Fin processoutRequest ()");
-								return page;
+								response.sendRedirect(failURL);
+								return null;
 							}
 
 							autorisationService.logMessage(file, "Switch TLV Respnose :[" + resp + "]");
@@ -695,13 +679,10 @@ public class ProcessOutController {
 											"authorization 500 Error during tlv Switch response parse" + "switch ip:["
 													+ sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv
 													+ "]");
-									demandeDtoMsg.setMsgRefus(
-											"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
-									model.addAttribute("demandeDto", demandeDtoMsg);
-									page = "result";
 									autorisationService.logMessage(file, "Fin processoutRequest ()");
 									logger.info("Fin processoutRequest ()");
-									return page;
+									response.sendRedirect(failURL);
+									return null;
 								}
 
 								// TODO: controle switch
@@ -760,11 +741,6 @@ public class ProcessOutController {
 								int numTransaction = Util.generateNumTransaction(folder, file, curren_date_hist);
 
 								websiteid = dmd.getGalid();
-
-								// TODO: Ihist_id = hist.getMAX_ID("HISTOAUTO_GATE", "HAT_ID");
-								// TODO: Ihist_id = histoAutoGateService.getMAX_ID();
-								// TODO: long currentid = Ihist_id.longValue() + 1;
-								// TODO: hist.setId(currentid);
 
 								autorisationService.logMessage(file, "formatting pan...");
 
@@ -951,9 +927,12 @@ public class ProcessOutController {
 											page = "error";
 										}
 
+										response.sendRedirect(dmd.getFailURL());
+
 										autorisationService.logMessage(file, "Fin processoutRequest ()");
 										logger.info("Fin processoutRequest ()");
-										return page;
+										//return page;
+										return null;
 
 										// TODO: }
 									}
@@ -977,13 +956,10 @@ public class ProcessOutController {
 									autorisationService.logMessage(file,
 											"authorization 500 Error during  DemandePaiement update SW_REJET for given orderid:["
 													+ orderid + "]" + Util.formatException(e));
-									demandeDtoMsg.setMsgRefus(
-											"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
-									model.addAttribute("demandeDto", demandeDtoMsg);
-									page = "result";
 									autorisationService.logMessage(file, "Fin processoutRequest ()");
 									logger.info("Fin processoutRequest ()");
-									return page;
+									response.sendRedirect(failURL);
+									return null;
 								}
 								autorisationService.logMessage(file,
 										"update Demandepaiement status to SW_REJET OK.");
@@ -1152,9 +1128,19 @@ public class ProcessOutController {
 							autorisationService.logMessage(file, "****** Cas responseMPI equal E ******");
 							autorisationService.logMessage(file, "errmpi/idDemande : " + errmpi + "/" + idDemande);
 							page = autorisationService.handleMpiError(errmpi, file, idDemande, threeDSServerTransID, dmd, model, page);
+							response.sendRedirect(dmd.getFailURL());
+							return null;
 						} else {
 							page = autorisationService.handleMpiError(errmpi, file, idDemande, threeDSServerTransID, dmd, model, page);
+							response.sendRedirect(dmd.getFailURL());
+							page = "error";
 						}
+
+						if(page.equals("error")) {
+							response.sendRedirect(dmd.getFailURL());
+							return null;
+						}
+
 					} else {
 						idDemande = threeDsecureResponse.getIdDemande() == null ? "" : threeDsecureResponse.getIdDemande();
 						dmd = demandePaiementService.findByIdDemande(Integer.parseInt(idDemande));
@@ -1174,7 +1160,9 @@ public class ProcessOutController {
 						page = "result";
 						autorisationService.logMessage(file, "Fin processoutRequest ()");
 						logger.info("Fin processoutRequest ()");
-						return page;
+						//return page;
+						response.sendRedirect(dmd.getFailURL());
+						return null;
 					}
 				} else {
 					autorisationService.logMessage(file, "threeDsecureResponse null");
@@ -1211,13 +1199,11 @@ public class ProcessOutController {
 							"TransStatus != N && TransStatus != Y => Redirect to FailURL : " + demandeP.getFailURL());
 					logger.info(
 							"TransStatus != N && TransStatus != Y => Redirect to FailURL : " + demandeP.getFailURL());
-
-					response.sendRedirect(demandeP.getFailURL());
-
-					page = "result";
 					autorisationService.logMessage(file, "Fin processoutRequest ()");
 					logger.info("Fin processoutRequest ()");
-					return page;
+					//return page;
+					response.sendRedirect(demandeP.getFailURL());
+					return null;
 				} else {
 					msgRefus = "La transaction en cours n’a pas abouti (TransStatus = " + cleanCres.getTransStatus()
 							+ "), votre compte ne sera pas débité, merci de réessayer.";
@@ -1617,7 +1603,7 @@ public class ProcessOutController {
 			return Util.getMsgError(folder, file, linkRequestDto, "AUTO INVALIDE DEMANDE NOT FOUND", "96");
 		}
 
-		if (reponseMPI.equals("") || reponseMPI == null) {
+		if (reponseMPI == null || reponseMPI.equals("")) {
 			dmd.setDemCvv("");
 			dmd.setEtatDemande("MPI_KO");
 			demandePaiementService.save(dmd);
@@ -1638,7 +1624,7 @@ public class ProcessOutController {
 			}
 
 			// TODO: 2024-03-05
-			montanttrame = formatMontantTrame(folder, file, amount, linkRequestDto.getOrderid(), linkRequestDto.getMerchantid(), linkRequestDto);
+			montanttrame = Util.formatMontantTrame(folder, file, amount, linkRequestDto.getOrderid(), linkRequestDto.getMerchantid(), linkRequestDto);
 
 			merc_codeactivite = current_merchant.getCmrCodactivite();
 			acqcode = current_merchant.getCmrCodbqe();
@@ -2762,7 +2748,7 @@ public class ProcessOutController {
 		}
 
 		// TODO: 2024-03-05
-		montanttrame = formatMontantTrame(folder, file, amount, orderid, merchantid, page, model);
+		montanttrame = Util.formatMontantTrame(folder, file, amount, orderid, merchantid, current_dmd, model);
 
 		autorisationService.logMessage(file, "Switch processing start ...");
 
@@ -2986,94 +2972,6 @@ public class ProcessOutController {
 		}
 
 		return tag20_resp;
-	}
-
-	@SuppressWarnings("all")
-	private String formatMontantTrame(String folder, String file, String amount, String orderid, String merchantid,
-			String page, Model model) {
-		String montanttrame = "";
-		String[] mm;
-		String[] m;
-		DemandePaiementDto demandeDtoMsg = new DemandePaiementDto();
-		try {
-			if (amount.contains(",")) {
-				amount = amount.replace(",", ".");
-			}
-			if (!amount.contains(".") && !amount.contains(",")) {
-				amount = amount + "." + "00";
-			}
-			autorisationService.logMessage(file, "montant : [" + amount + "]");
-
-			String montantt = amount + "";
-
-			mm = montantt.split("\\.");
-			if (mm[1].length() == 1) {
-				montanttrame = amount + "0";
-			} else {
-				montanttrame = amount + "";
-			}
-
-			m = montanttrame.split("\\.");
-			if (m[1].equals("0")) {
-				montanttrame = montanttrame.replace(".", "0");
-			} else
-				montanttrame = montanttrame.replace(".", "");
-			montanttrame = Util.formatageCHamps(montanttrame, 12);
-		} catch (Exception err3) {
-			autorisationService.logMessage(file,
-					"authorization 500 Error during  amount formatting for given orderid:[" + orderid
-							+ "] and merchantid:[" + merchantid + "]" + Util.formatException(err3));
-			demandeDtoMsg.setMsgRefus("Erreur lors du formatage du montant");
-			model.addAttribute("demandeDto", demandeDtoMsg);
-			page = "result";
-			autorisationService.logMessage(file, "Fin processoutRequest ()");
-			logger.info("Fin processoutRequest ()");
-			return page;
-		}
-		return montanttrame;
-	}
-
-	@SuppressWarnings("all")
-	private String formatMontantTrame(String folder, String file, String amount, String orderid, String merchantid,
-									  LinkRequestDto linkRequestDto) {
-		String montanttrame;
-		String[] mm;
-		String[] m;
-		try {
-			montanttrame = "";
-			if (amount.contains(",")) {
-				amount = amount.replace(",", ".");
-			}
-			if (!amount.contains(".") && !amount.contains(",")) {
-				amount = amount + "." + "00";
-			}
-			logger.info("montant : [" + amount + "]");
-			autorisationService.logMessage(file, "montant : [" + amount + "]");
-
-			String montantt = amount + "";
-
-			mm = montantt.split("\\.");
-			if (mm[1].length() == 1) {
-				montanttrame = amount + "0";
-			} else {
-				montanttrame = amount + "";
-			}
-
-			m = montanttrame.split("\\.");
-			if (m[1].equals("0")) {
-				montanttrame = montanttrame.replace(".", "0");
-			} else
-				montanttrame = montanttrame.replace(".", "");
-			montanttrame = Util.formatageCHamps(montanttrame, 12);
-		} catch (Exception err3) {
-			autorisationService.logMessage(file,
-					"authorizeProcessOut 500 Error during  amount formatting for given orderid:[" + orderid
-							+ "] and merchantid:[" + merchantid + "]" + Util.formatException(err3));
-
-			return Util.getMsgError(folder, file, linkRequestDto, "authorizeProcessOut 500 Error during  amount formatting",
-					null);
-		}
-		return montanttrame;
 	}
 
 	private boolean isReccuringCheck(String recurring) {
