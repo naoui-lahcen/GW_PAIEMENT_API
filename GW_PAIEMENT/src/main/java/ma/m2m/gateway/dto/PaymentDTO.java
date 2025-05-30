@@ -8,6 +8,12 @@ import lombok.ToString;
 import java.io.Serializable;
 import java.util.List;
 
+/*
+ * @author  LAHCEN NAOUI
+ * @version 1.0
+ * @since   2025-03-28
+ */
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

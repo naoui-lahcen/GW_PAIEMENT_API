@@ -288,6 +288,7 @@ public class ACSController {
 				String callbackUrl = "";
 				String cardnumber = "";
 				String token = "";
+				String token_gen = "";
 				String expirydate = "";
 				String holdername = "";
 				String cvv = "";
@@ -345,7 +346,11 @@ public class ACSController {
 							page = "result";
 							autorisationService.logMessage(file, "Fin processRequest ()");
 							logger.info("Fin processRequest ()");
-							return page;
+							//return page;
+
+							failURL = autorisationService.getFailUrl(cleanCres.getThreeDSServerTransID());
+							response.sendRedirect(failURL);
+							return null;
 						}
 
 						dmd = demandePaiementService.findByIdDemande(Integer.parseInt(idDemande));
@@ -360,13 +365,10 @@ public class ACSController {
 							page = "result";
 							autorisationService.logMessage(file, "Fin processRequest ()");
 							logger.info("Fin processRequest ()");
-							return page;
-						}
-
-						page = autorisationService.handleSessionTimeout(session, file, timeout, dmd, demandeDtoMsg, model);
-
-						if ("timeout".equals(page)) {
-							return page;
+							//return page;
+							failURL = autorisationService.getFailUrl(cleanCres.getThreeDSServerTransID());
+							response.sendRedirect(failURL);
+							return null;
 						}
 
 						// TODO: Merchnat info
@@ -443,6 +445,7 @@ public class ACSController {
 						state = dmd.getState();
 						zipcode = dmd.getPostcode();
 						address = dmd.getAddress();
+						token_gen = dmd.getToken() == null ? "" : dmd.getToken();
 
 						try {
 							formatheure = new SimpleDateFormat("HHmmss");
@@ -587,6 +590,15 @@ public class ACSController {
 									response.sendRedirect(dmd.getFailURL());
 									return null; // TODO: Terminer le traitement ici après avoir envoyé la réponse
 								}
+							}
+
+							if (dmd.getEtatDemande().equals("SW_PAYE") || dmd.getEtatDemande().equals("PAYE")) {
+								dmd.setDemCvv("");
+								demandePaiementService.save(dmd);
+								autorisationService.logMessage(file, "Opération déjà effectuée, redirection vers failUrl");
+								autorisationService.logMessage(file, "Fin processRequest ()");
+								response.sendRedirect(dmd.getFailURL());
+								return null;
 							}
 							
 							// TODO: 2024-03-05
@@ -1200,7 +1212,7 @@ public class ACSController {
 									String clesigne = current_infoCommercant.getClePub();
 
 									String montanttrx = String.format("%.2f", dmd.getMontant()).replace(",", ".");
-									String token_gen = "";
+									token_gen = dmd.getToken() == null ? "" : dmd.getToken();
 
 									autorisationService.logMessage(file,
 											"sendPOST(" + callbackURL + "," + clesigne + "," + dmd.getCommande() + ","
@@ -1363,7 +1375,7 @@ public class ACSController {
 								String data_noncrypt = "id_commande=" + orderid + "&nomprenom=" + fname + "&email="
 										+ email + "&montant=" + amount + "&frais=" + "" + "&repauto=" + coderep
 										+ "&numAuto=" + authnumber + "&numCarte=" + Util.formatCard(cardnumber)
-										+ "&typecarte=" + dmd.getTypeCarte() + "&numTrans=" + transactionid;
+										+ "&typecarte=" + dmd.getTypeCarte() + "&numTrans=" + transactionid + "&token=" + token_gen;
 
 								autorisationService.logMessage(file, "data_noncrypt : " + data_noncrypt);
 								logger.info("data_noncrypt : " + data_noncrypt);
@@ -1378,7 +1390,7 @@ public class ACSController {
 									data_noncrypt = "id_commande=" + orderid + "&nomprenom=" + fname + "&email="
 											+ email + "&montant=" + amount + "&frais=" + "" + "&repauto=" + coderep
 											+ "&numAuto=" + authnumber + "&numCarte=" + Util.formatCard(cardnumber)
-											+ "&typecarte=" + dmd.getTypeCarte() + "&numTrans=" + transactionid;
+											+ "&typecarte=" + dmd.getTypeCarte() + "&numTrans=" + transactionid + "&token=" + token_gen;
 
 									autorisationService.logMessage(file, "data_noncrypt : " + data_noncrypt);
 									// TODO : If the length is still greater than 200, reduce the length of email
@@ -1390,7 +1402,7 @@ public class ACSController {
 									data_noncrypt = "id_commande=" + orderid + "&nomprenom=" + fname + "&email="
 											+ email + "&montant=" + amount + "&frais=" + "" + "&repauto=" + coderep
 											+ "&numAuto=" + authnumber + "&numCarte=" + Util.formatCard(cardnumber)
-											+ "&typecarte=" + dmd.getTypeCarte() + "&numTrans=" + transactionid;
+											+ "&typecarte=" + dmd.getTypeCarte() + "&numTrans=" + transactionid + "&token=" + token_gen;
 
 									autorisationService.logMessage(file, "data_noncrypt : " + data_noncrypt);
 								}
@@ -1523,20 +1535,27 @@ public class ACSController {
 							"La transaction en cours n’a pas abouti (Authentification failed), votre compte ne sera pas débité, merci de réessayer.");
 					model.addAttribute("demandeDto", demandeDtoMsg);
 					page = "result";
+					//return page;
+					autorisationService.logMessage(file,
+							"threeDsecureResponse null ACSController RETOUR ACS =====> findByDem_xid : " + cleanCres.getThreeDSServerTransID());
+					DemandePaiementDto demandeP = demandePaiementService.findByDem_xid(cleanCres.getThreeDSServerTransID());
+					String failToRedirect = "https://agent.naps.ma/RCB/FCB.html";
+					if (demandeP != null) {
+						if(demandeP.getFailURL() != null && !demandeP.getFailURL().isEmpty()) {
+							failToRedirect = demandeP.getFailURL();
+							autorisationService.logMessage(file,"demandeP existe failURL : " + failToRedirect);
+						}
+					}
 					autorisationService.logMessage(file, "Fin processRequest ()");
-					logger.info("Fin processRequest ()");
-					return page;
+					response.sendRedirect(failToRedirect);
+					return null;
 				}
 
 			} else {
 				autorisationService.logMessage(file,
 						"ACSController RETOUR ACS =====> cleanCres TransStatus = " + cleanCres.getTransStatus());
-				logger.info(
-						"ACSController RETOUR ACS =====> cleanCres TransStatus = " + cleanCres.getTransStatus());
 				DemandePaiementDto demandeP = new DemandePaiementDto();
 				autorisationService.logMessage(file,
-						"ACSController RETOUR ACS =====> findByDem_xid : " + cleanCres.getThreeDSServerTransID());
-				logger.info(
 						"ACSController RETOUR ACS =====> findByDem_xid : " + cleanCres.getThreeDSServerTransID());
 
 				demandeP = demandePaiementService.findByDem_xid(cleanCres.getThreeDSServerTransID());
@@ -1550,11 +1569,8 @@ public class ACSController {
 
 					autorisationService.logMessage(file,
 							"TransStatus != N && TransStatus != Y => Redirect to FailURL : " + demandeP.getFailURL());
-					logger.info(
-							"TransStatus != N && TransStatus != Y => Redirect to FailURL : " + demandeP.getFailURL());
 
 					autorisationService.logMessage(file, "Fin processRequest ()");
-					logger.info("Fin processRequest ()");
 					//return page;
 					response.sendRedirect(demandeP.getFailURL());
 					return null;
@@ -1565,24 +1581,20 @@ public class ACSController {
 					model.addAttribute("demandeDto", demandeDtoMsg);
 					page = "result";
 					autorisationService.logMessage(file, "Fin processRequest ()");
-					logger.info("Fin processRequest ()");
 					return page;
 				}
 			}
 		} catch (Exception ex) {
 			autorisationService.logMessage(file, "ACSController RETOUR ACS =====> Exception " + Util.formatException(ex));
-			logger.info("ACSController RETOUR ACS =====> Exception " + Util.formatException(ex));
 			msgRefus = "La transaction en cours n’a pas abouti (TransStatus = " + cleanCres.getTransStatus()
 					+ "), votre compte ne sera pas débité, merci de réessayer.";
 			demandeDtoMsg.setMsgRefus(msgRefus);
 			model.addAttribute("demandeDto", demandeDtoMsg);
 			page = "result";
 			autorisationService.logMessage(file, "Fin processRequest ()");
-			logger.info("Fin processRequest ()");
 			return page;
 		}
 		autorisationService.logMessage(file, "Fin processRequest ()");
-		logger.info("Fin processRequest ()");
 
 		return page;
 	}

@@ -33,4 +33,6 @@ public class Cartes implements Serializable{
 	
 	private String moisValue;
 
+	private boolean isExpired;
+
 }

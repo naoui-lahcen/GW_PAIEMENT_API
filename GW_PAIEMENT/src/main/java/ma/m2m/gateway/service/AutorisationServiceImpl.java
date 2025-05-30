@@ -235,9 +235,16 @@ public class AutorisationServiceImpl implements AutorisationService {
 		} else {
 			authInitRequest.setEmail(demandeDto.getEmail());
 		}
+		if(!Util.isValidEmail(demandeDto.getEmail())) {
+			authInitRequest.setEmail("test.ecom@naps.ma");
+		}
 		authInitRequest.setMcc(commercant.getCmrCodactivite());
 		authInitRequest.setMerchantCountryCode(infoCommercantDto.getCmrCurrency().trim());
-		authInitRequest.setNomCommercant(infoCommercantDto.getCmrNom());
+		String nomCmr = infoCommercantDto.getCmrNom() == null ? "" : infoCommercantDto.getCmrNom();
+		if(nomCmr.length() > 40) {
+			nomCmr = nomCmr.substring(0,40);
+		}
+		authInitRequest.setNomCommercant(nomCmr);
 		authInitRequest.setNotificationURL(notificationACS);
 
 		threeDSecureRequestor.threeDSecureRequest(authInitRequest);
@@ -296,9 +303,16 @@ public class AutorisationServiceImpl implements AutorisationService {
 		} else {
 			authInitRequest.setEmail(demandeDto.getEmail());
 		}
+		if(!Util.isValidEmail(demandeDto.getEmail())) {
+			authInitRequest.setEmail("test.ecom@naps.ma");
+		}
 		authInitRequest.setMcc(commercant.getCmrCodactivite());
 		authInitRequest.setMerchantCountryCode(infoCommercantDto.getCmrCurrency().trim());
-		authInitRequest.setNomCommercant(infoCommercantDto.getCmrNom());
+		String nomCmr = infoCommercantDto.getCmrNom() == null ? "" : infoCommercantDto.getCmrNom();
+		if(nomCmr.length() > 40) {
+			nomCmr = nomCmr.substring(0,40);
+		}
+		authInitRequest.setNomCommercant(nomCmr);
 		authInitRequest.setNotificationURL(notificationCCBACS);
 
 		threeDSecureRequestor.threeDSecureRequest(authInitRequest);
@@ -357,9 +371,16 @@ public class AutorisationServiceImpl implements AutorisationService {
 		} else {
 			authInitRequest.setEmail(demandeDto.getEmail());
 		}
+		if(!Util.isValidEmail(demandeDto.getEmail())) {
+			authInitRequest.setEmail("test.ecom@naps.ma");
+		}
 		authInitRequest.setMcc(commercant.getCmrCodactivite());
 		authInitRequest.setMerchantCountryCode(infoCommercantDto.getCmrCurrency().trim());
-		authInitRequest.setNomCommercant(infoCommercantDto.getCmrNom());
+		String nomCmr = infoCommercantDto.getCmrNom() == null ? "" : infoCommercantDto.getCmrNom();
+		if(nomCmr.length() > 40) {
+			nomCmr = nomCmr.substring(0,40);
+		}
+		authInitRequest.setNomCommercant(nomCmr);
 		authInitRequest.setNotificationURL(notificationProcessOutACS);
 
 		threeDSecureRequestor.threeDSecureRequest(authInitRequest);
@@ -541,14 +562,26 @@ public class AutorisationServiceImpl implements AutorisationService {
 
 		// Initialisation des variables
 		String idClient = demandeDto.getIdClient() != null ? demandeDto.getIdClient() : "";
+		String token = demandeDto.getToken() != null ? demandeDto.getToken() : "";
 		String merchantId = demandeDto.getComid();
 		List<Cartes> cartes = new ArrayList<>();
-
+		Util.writeInFileTransaction(folder, file, "merchantid/idClient/token : " + merchantId + "/" + idClient + "/" + token);
 		// Récupération des cartes associées au client
-		if (!idClient.isEmpty() && !"null".equals(idClient)) {
-			logger.info("idclient/merchantid : " + idClient + "/" + merchantId);
 			try {
-				List<CardtokenDto> cards = cardtokenService.findByIdMerchantAndIdMerchantClient(merchantId, idClient);
+				List<CardtokenDto> cards = null;
+				CardtokenDto cardDto = null;
+				if (!token.isEmpty() && !"null".equals(token)) {
+					cardDto = cardtokenService.findByIdMerchantAndToken(merchantId, token);
+					if(cardDto != null) {
+						System.out.println("token is present : " + cardDto.toString());
+						cards = new ArrayList<>();
+						cards.add(cardDto);
+						demandeDto.setIdClient(null);
+					}
+				} else if (!idClient.isEmpty() && !"null".equals(idClient)) {
+					cards = cardtokenService.findByIdMerchantAndIdMerchantClient(merchantId, idClient);
+					System.out.println(" idClient is present " + cards.toString());
+				}
 				if (cards != null && !cards.isEmpty()) {
 					for (CardtokenDto card : cards) {
 						if (card.getCardNumber() != null) {
@@ -560,22 +593,23 @@ public class AutorisationServiceImpl implements AutorisationService {
 							// Formatage de la date d'expiration
 							String dateExStr = dateFormatSimple.format(card.getExprDate());
 							Util.formatDateExp(dateExStr, carte, folder, file);
-
-							cartes.add(carte);
+							if(!carte.isExpired()) {
+								cartes.add(carte); // if card not expired
+							}
+							demandeDto.setIdClient(null);
 						}
 					}
-					logger.info("Cartes : " + cartes);
+					if(cartes.size() <= 0) {
+						cartes = null;
+					}
+					Util.writeInFileTransaction(folder, file,"Cartes : " + cartes);
 					demandeDto.setCartes(cartes);
 				} else {
 					demandeDto.setCartes(null);
 				}
 			} catch (Exception ex) {
 				Util.writeInFileTransaction(folder, file, "showPagePayment 500 idclient not found: " + Util.formatException(ex));
-				logger.error("Erreur lors de la récupération des cartes pour idClient : " + idClient, ex);
 			}
-		} else {
-			demandeDto.setCartes(null);
-		}
 	}
 
 	@Override
@@ -643,6 +677,9 @@ public class AutorisationServiceImpl implements AutorisationService {
 		// Mise à jour du message utilisateur
 		DemandePaiementDto demandeDtoMsg = new DemandePaiementDto();
 		demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
+		demandeDtoMsg.setIddemande(dmd.getIddemande());
+		demandeDtoMsg.setCommande(dmd.getCommande());
+		demandeDtoMsg.setComid(dmd.getComid());
 		model.addAttribute("demandeDto", demandeDtoMsg);
 		dmd.setMsgRefus(demandeDtoMsg.getMsgRefus() == null ? "" : demandeDtoMsg.getMsgRefus());
 		return page;
@@ -712,6 +749,9 @@ public class AutorisationServiceImpl implements AutorisationService {
 
 		// Enregistrer la demande et ajouter le message d'erreur au modèle
 		demandePaiementService.save(dmd);
+		demandeDtoMsg.setIddemande(dmd.getIddemande());
+		demandeDtoMsg.setCommande(dmd.getCommande());
+		demandeDtoMsg.setComid(dmd.getComid());
 		model.addAttribute("demandeDto", demandeDtoMsg);
 		dmd.setMsgRefus(demandeDtoMsg.getMsgRefus() == null ? "" : demandeDtoMsg.getMsgRefus());
 
@@ -724,13 +764,18 @@ public class AutorisationServiceImpl implements AutorisationService {
 	public String handleMerchantAndInfoCommercantError(String file, String orderid, String merchantid, String websiteid,
 														DemandePaiementDto demandeDtoMsg, Model model, String page, boolean isMerchantError) {
 		if (isMerchantError) {
-			logMessage(file, "recharger 500 Merchant misconfigured in DB or not existing orderid:[" + orderid
+			logMessage(file, "Merchant misconfigured in DB or not existing orderid:[" + orderid
 					+ "] and merchantid:[" + merchantid + "]");
 		} else {
-			logMessage(file, "recharger 500 InfoCommercantDto misconfigured in DB or not existing orderid:[" + orderid
+			logMessage(file, "InfoCommercantDto misconfigured in DB or not existing orderid:[" + orderid
 					+ "] and merchantid:[" + merchantid + "] and websiteid:[" + websiteid + "]");
 		}
-
+		DemandePaiementDto dmd = demandePaiementService.findByCommandeAndComid(orderid, merchantid);
+		if(dmd != null) {
+			demandeDtoMsg.setIddemande(dmd.getIddemande() == null ? 0 : dmd.getIddemande());
+			demandeDtoMsg.setCommande(dmd.getCommande() == null ? "" : dmd.getCommande());
+			demandeDtoMsg.setComid(dmd.getComid() == null ? "" : dmd.getComid());
+		}
 		demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité.");
 		model.addAttribute("demandeDto", demandeDtoMsg);
 		String pageR = "result";
@@ -739,7 +784,7 @@ public class AutorisationServiceImpl implements AutorisationService {
 	}
 
 	@Override
-	public String handleCardValidationError(int iCardValid, String cardNumber, String orderid, String merchantid,
+	public String handleCardValidationError(int iCardValid, String cardNumber, String orderid, String merchantid, DemandePaiementDto demandeDto,
 											String file, DemandePaiementDto demandeDtoMsg,
 											Model model, String page) {
 		switch (iCardValid) {
@@ -747,21 +792,49 @@ public class AutorisationServiceImpl implements AutorisationService {
 				logMessage(file, "Card number length is incorrect. Order ID:["
 						+ orderid + "] and Merchant ID:[" + merchantid + "]");
 				demandeDtoMsg.setMsgRefus("Le numéro de la carte est incomplet, merci de réessayer.");
+				demandeDto.setEtatDemande("CARTE ERRONEE");
 				break;
 
 			case 2:
 				logMessage(file, "Card number is not valid (Luhn check failed). Order ID:["
 						+ orderid + "] and Merchant ID:[" + merchantid + "]");
 				demandeDtoMsg.setMsgRefus("Le numéro de la carte est invalide, merci de réessayer.");
+				demandeDto.setEtatDemande("CARTE ERRONEE");
 				break;
+
+			case 3:
+				logMessage(file, "Carte de Paiement n’est pas supportée. Order ID:["
+						+ orderid + "] and Merchant ID:[" + merchantid + "]");
+				demandeDtoMsg.setMsgRefus("Carte de Paiement n’est pas supportée. Veuillez utiliser une carte Visa ou MasterCard.");
+				demandeDto.setEtatDemande("CARD_NOT_SUPPORTED");
+				break;
+
+			/*case 35:
+				logMessage(file, "Card JCB is not accepted. Order ID:["
+						+ orderid + "] and Merchant ID:[" + merchantid + "]");
+				demandeDtoMsg.setMsgRefus("Cartes JCB non acceptées. Veuillez utiliser une carte Visa ou MasterCard.");
+				demandeDto.setEtatDemande("CARD_JCB_N_ACCEPTED");
+				break;
+
+			case 34:
+			case 37:
+				logMessage(file, "Card AMEX is not accepted. Order ID:["
+						+ orderid + "] and Merchant ID:[" + merchantid + "]");
+				demandeDtoMsg.setMsgRefus("Cartes AMEX non acceptées. Veuillez utiliser une carte Visa ou MasterCard.");
+				demandeDto.setEtatDemande("CARD_AMEX_N_ACCEPTED");
+				break;*/
 
 			default:
 				logMessage(file, "Card validation passed for Order ID:["
 						+ orderid + "] and Merchant ID:[" + merchantid + "]");
 				return page; // Pas d'erreur détectée
 		}
-
+		demandeDto.setDemCvv("");
+		demandePaiementService.save(demandeDto);
 		// Ajouter le message au modèle et rediriger vers la page de résultat
+		demandeDtoMsg.setIddemande(demandeDto.getIddemande());
+		demandeDtoMsg.setCommande(demandeDto.getCommande());
+		demandeDtoMsg.setComid(demandeDto.getComid());
 		model.addAttribute("demandeDto", demandeDtoMsg);
 		return "result";
 	}
@@ -793,6 +866,9 @@ public class AutorisationServiceImpl implements AutorisationService {
 				logMessage(file, "Page expirée Time > " + timeout + "ms");
 				demandeDtoMsg.setMsgRefus("Votre session de paiement a expiré. Veuillez réessayer.");
 				session.setAttribute("idDemande", demandeDto.getIddemande());
+				demandeDtoMsg.setIddemande(demandeDto.getIddemande());
+				demandeDtoMsg.setCommande(demandeDto.getCommande());
+				demandeDtoMsg.setComid(demandeDto.getComid());
 				model.addAttribute("demandeDto", demandeDtoMsg);
 
 				// Mise à jour de l'état de la demande
@@ -814,5 +890,21 @@ public class AutorisationServiceImpl implements AutorisationService {
 		return null; // Pas d'expiration
 	}
 
+	@Override
+	public String getFailUrl(String xid) {
+		String failUrl = "";
+		try {
+			DemandePaiementDto check_dmd = demandePaiementService.findByDem_xid(xid);
+			if(check_dmd != null) {
+				if(check_dmd.getFailURL() != null) {
+					failUrl = check_dmd.getFailURL();
+				}
+			}
+		} catch (Exception e) {
+			failUrl = "";
+		}
+
+		return failUrl;
+	}
 
 }

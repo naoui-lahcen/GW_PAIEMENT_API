@@ -81,17 +81,22 @@
                <div class="card-body p-5">
                   <p class="alert alert-success text-center">Opération déjà effectuée, merci de réessayer avec une autre commande
 				  </p>
-				  <button type="submit" style="color: #FFF;background: #DF6537;
-                           border-radius: 10px;
-                           margin-left: auto;
-                           width: 160px;
-                           border-color: #DF6537;
-                           border-top-right-radius: 10px;
-                           border-bottom-right-radius: 10px;
-                           font-size: 15px;"
-                           class="subscribe btn btn-primary btn-block"
-                           onclick="window.history.back();"><i class="fa fa-step-backward"></i> Retour
-                  </button>
+                  <form role="form" method="POST" th:action="@{/retour}" th:object="${demandeDto}">
+                     <div class="form-group row">
+                        <div class="col-sm-12 float-right">
+                           <button type="submit" style="color: #FFF;background: #DF6537;
+							   border-radius: 10px;
+							   margin-left: auto;
+							   width: 160px;
+							   border-color: #DF6537;
+							   border-top-right-radius: 10px;
+							   border-bottom-right-radius: 10px;
+							   font-size: 15px;"
+                                   class="subscribe btn btn-primary btn-block">Quitter la page
+                           </button>
+                        </div>
+                     </div>
+                  </form>
                </div>
                <!-- card-body.// -->
             </article>

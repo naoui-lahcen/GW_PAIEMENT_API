@@ -2288,7 +2288,7 @@ public class APIController {
 			return Util.getMsgErrorV2(folder, file, null, "capture 500 malformed json expression", null);
 		}
 
-		String websiteid, cardnumber;
+		String websiteid, cardnumber = "";
 
 		JSONObject jso = new JSONObject();
 		// TODO: verification expiration token
@@ -2335,16 +2335,29 @@ public class APIController {
 
 		HistoAutoGateDto current_hist = null;
 
-		try {
-			// TODO: get histoauto check if exist
-			current_hist = histoAutoGateService.findByHatNumCommandeAndHatNautemtAndHatNumcmrAndHatCoderep(trsRequestDto.getOrderid(),
-					trsRequestDto.getAuthnumber(), trsRequestDto.getMerchantid(), "00");
+		if(trsRequestDto.getAuthnumber() == null || trsRequestDto.getAuthnumber().equals("")) {
+			cardnumber = current_dmd.getDemPan();
+			try {
+				// TODO: get histoauto check if exist
+				current_hist = histoAutoGateService.findByHatNumCommandeAndHatNumcmrAndHatPorteur(trsRequestDto.getOrderid(), trsRequestDto.getMerchantid(), cardnumber);
+			} catch (Exception err2) {
+				autorisationService.logMessage(file,
+						"capture 500 Error during HistoAutoGate findByHatNumCommandeAndHatNumcmrAndHatPorteur orderid:["
+								+ trsRequestDto.getOrderid() + "] and merchantid:[" + trsRequestDto.getMerchantid() + "]" + Util.formatException(err2));
+				return Util.getMsgErrorV2(folder, file, trsRequestDto, "capture 500 Error during HistoAutoGate", null);
+			}
+		} else {
+			try {
+				// TODO: get histoauto check if exist
+				current_hist = histoAutoGateService.findByHatNumCommandeAndHatNautemtAndHatNumcmrAndHatCoderep(trsRequestDto.getOrderid(),
+						trsRequestDto.getAuthnumber(), trsRequestDto.getMerchantid(), "00");
 
-		} catch (Exception err2) {
-			autorisationService.logMessage(file,
-					"capture 500 Error during HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmrAndHatCoderep orderid:["
-							+ trsRequestDto.getOrderid() + "] and merchantid:[" + trsRequestDto.getMerchantid() + "]" + Util.formatException(err2));
-			return Util.getMsgErrorV2(folder, file, trsRequestDto, "capture 500 Error during HistoAutoGate", null);
+			} catch (Exception err2) {
+				autorisationService.logMessage(file,
+						"capture 500 Error during HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmrAndHatCoderep orderid:["
+								+ trsRequestDto.getOrderid() + "] and merchantid:[" + trsRequestDto.getMerchantid() + "]" + Util.formatException(err2));
+				return Util.getMsgErrorV2(folder, file, trsRequestDto, "capture 500 Error during HistoAutoGate", null);
+			}
 		}
 
 		if (current_hist == null) {
@@ -2465,6 +2478,7 @@ public class APIController {
 		}
 
 		try {
+			trsRequestDto.setAuthnumber(current_hist.getHatNautemt());
 			cardnumber = current_dmd.getDemPan();
 			websiteid = trsRequestDto.getWebsiteid() == null ? "" : trsRequestDto.getWebsiteid();
 			if (websiteid.equals("") || websiteid == null) {
@@ -2733,7 +2747,7 @@ public class APIController {
 			return Util.getMsgErrorV2(folder, file, null, "refund 500 malformed json expression", null);
 		}
 
-		String websiteid, cardnumber;
+		String websiteid, cardnumber = "";
 
 		JSONObject jso = new JSONObject();
 		// TODO: verification expiration token
@@ -2770,17 +2784,29 @@ public class APIController {
 
 		HistoAutoGateDto current_hist = null;
 
-		try {
-			// TODO: get histoauto check if exist
-			current_hist = histoAutoGateService.findByHatNumCommandeAndHatNautemtAndHatNumcmrAndHatCoderep(trsRequestDto.getOrderid(),
-					trsRequestDto.getAuthnumber(), trsRequestDto.getMerchantid(), "00");
+		if(trsRequestDto.getAuthnumber() == null || trsRequestDto.getAuthnumber().equals("")) {
+			cardnumber = current_dmd.getDemPan();
+			try {
+				// TODO: get histoauto check if exist
+				current_hist = histoAutoGateService.findByHatNumCommandeAndHatNumcmrAndHatPorteur(trsRequestDto.getOrderid(), trsRequestDto.getMerchantid(), cardnumber);
+			} catch (Exception err2) {
+				autorisationService.logMessage(file,
+						"refund 500 Error during HistoAutoGate findByHatNumCommandeAndHatNumcmrAndHatPorteur orderid:["
+								+ trsRequestDto.getOrderid() + "] and merchantid:[" + trsRequestDto.getMerchantid() + "]" + Util.formatException(err2));
+				return Util.getMsgErrorV2(folder, file, trsRequestDto, "refund 500 Error during HistoAutoGate", null);
+			}
+		} else {
+			try {
+				// TODO: get histoauto check if exist
+				current_hist = histoAutoGateService.findByHatNumCommandeAndHatNautemtAndHatNumcmrAndHatCoderep(trsRequestDto.getOrderid(),
+						trsRequestDto.getAuthnumber(), trsRequestDto.getMerchantid(), "00");
 
-		} catch (Exception err2) {
-			autorisationService.logMessage(file,
-					"refund 500 Error during HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmrAndHatCoderep orderid:["
-							+ trsRequestDto.getOrderid() + "] and merchantid:[" + trsRequestDto.getMerchantid() + "]" + Util.formatException(err2));
-
-			return Util.getMsgErrorV2(folder, file, trsRequestDto, "refund 500 Transaction not found", null);
+			} catch (Exception err2) {
+				autorisationService.logMessage(file,
+						"refund 500 Error during HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmrAndHatCoderep orderid:["
+								+ trsRequestDto.getOrderid() + "] and merchantid:[" + trsRequestDto.getMerchantid() + "]" + Util.formatException(err2));
+				return Util.getMsgErrorV2(folder, file, trsRequestDto, "refund 500 Error during HistoAutoGate", null);
+			}
 		}
 
 		if (current_hist == null) {
@@ -2863,6 +2889,7 @@ public class APIController {
 			if (!websiteid.equals(current_dmd.getGalid())) {
 				websiteid = current_dmd.getGalid();
 			}
+			trsRequestDto.setAuthnumber(current_hist.getHatNautemt());
 			numcarteTrs = current_dmd.getDemPan();
 			numcarteTrs = numcarteTrs.replace("???", "");
 			cardnumber = trsRequestDto.getCardnumber() == null ? "" : trsRequestDto.getCardnumber();
@@ -3217,6 +3244,8 @@ public class APIController {
 			return Util.getMsgErrorV2(folder, file, null, "reversal 500 malformed json expression", null);
 		}
 
+		String cardnumber = "";
+
 		JSONObject jso = new JSONObject();
 		// TODO: verification expiration token
 		jso = verifieToken(trsRequestDto.getSecurtoken24(), file);
@@ -3253,17 +3282,29 @@ public class APIController {
 
 		HistoAutoGateDto current_hist = null;
 
-		try {
-			// TODO: get histoauto check if exist
-			current_hist = histoAutoGateService.findByHatNumCommandeAndHatNautemtAndHatNumcmrAndHatCoderep(trsRequestDto.getOrderid(),
-					trsRequestDto.getAuthnumber(), trsRequestDto.getMerchantid(), "00");
+		if(trsRequestDto.getAuthnumber() == null || trsRequestDto.getAuthnumber().equals("")) {
+			cardnumber = current_dmd.getDemPan();
+			try {
+				// TODO: get histoauto check if exist
+				current_hist = histoAutoGateService.findByHatNumCommandeAndHatNumcmrAndHatPorteur(trsRequestDto.getOrderid(), trsRequestDto.getMerchantid(), cardnumber);
+			} catch (Exception err2) {
+				autorisationService.logMessage(file,
+						"reversal 500 Error during HistoAutoGate findByHatNumCommandeAndHatNumcmrAndHatPorteur orderid:["
+								+ trsRequestDto.getOrderid() + "] and merchantid:[" + trsRequestDto.getMerchantid() + "]" + Util.formatException(err2));
+				return Util.getMsgErrorV2(folder, file, trsRequestDto, "reversal 500 Error during HistoAutoGate", null);
+			}
+		} else {
+			try {
+				// TODO: get histoauto check if exist
+				current_hist = histoAutoGateService.findByHatNumCommandeAndHatNautemtAndHatNumcmrAndHatCoderep(trsRequestDto.getOrderid(),
+						trsRequestDto.getAuthnumber(), trsRequestDto.getMerchantid(), "00");
 
-		} catch (Exception err2) {
-			autorisationService.logMessage(file,
-					"reversal 500 Error during HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmrAndHatCoderep orderid:["
-							+ trsRequestDto.getOrderid() + "] and merchantid:[" + trsRequestDto.getMerchantid() + "]" + Util.formatException(err2));
-
-			return Util.getMsgErrorV2(folder, file, trsRequestDto, "reversal 500 Error during HistoAutoGate", null);
+			} catch (Exception err2) {
+				autorisationService.logMessage(file,
+						"reversal 500 Error during HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmrAndHatCoderep orderid:["
+								+ trsRequestDto.getOrderid() + "] and merchantid:[" + trsRequestDto.getMerchantid() + "]" + Util.formatException(err2));
+				return Util.getMsgErrorV2(folder, file, trsRequestDto, "reversal 500 Error during HistoAutoGate", null);
+			}
 		}
 
 		if (current_hist == null) {
@@ -3297,7 +3338,6 @@ public class APIController {
 		Double totalMontantCapture = 0.00;
 		SimpleDateFormat formatheure, formatdate = null;
 		String date, heure, jul = "";
-		String cardnumber;
 
 		try {
 			formatheure = new SimpleDateFormat("HHmmss");
@@ -3305,6 +3345,7 @@ public class APIController {
 			date = formatdate.format(new Date());
 			heure = formatheure.format(new Date());
 			jul = Util.convertToJulian(new Date()) + "";
+			trsRequestDto.setAuthnumber(current_hist.getHatNautemt());
 			cardnumber = current_dmd.getDemPan();
 			montantAuto = current_hist.getHatMontant();
 			montantAnnul = Double.valueOf(trsRequestDto.getAmount());
@@ -4941,7 +4982,7 @@ public class APIController {
 			return Util.getMsgErrorV2(folder, file, null, "cpautorisation 500 malformed json expression", null);
 		}
 
-		String cvv, acqcode, acq_type, date, rrn, heure, authnumber, websiteid, cardnumber, currency, recurring,expirydate,
+		String cvv, acqcode, acq_type, date, rrn, heure, authnumber, websiteid, cardnumber = "", currency, recurring,expirydate,
 				transactiontype, promoCode, mesg_type, merc_codeactivite, merchant_city, processing_code, reason_code,merchant_name,
 				transaction_condition, transactiondate, transactiontime, montanttrame, num_trs = "", operation_id = "";
 
@@ -5012,19 +5053,29 @@ public class APIController {
 					"cpautorisation 500 PaiementRequest misconfigured in DB or not existing", "15");
 		}
 
-		try {
-			// TODO: get histoauto check if exist
-			current_hist = histoAutoGateService.findByHatNumCommandeAndHatNautemtAndHatNumcmrAndHatCoderep(trsRequestDto.getOrderid(),
-					trsRequestDto.getAuthnumber(), trsRequestDto.getMerchantid(), "00");
-		} catch (Exception err2) {
-			autorisationService.logMessage(file,
-					"Error during HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmrAndHatCoderep orderid:["
-							+ trsRequestDto.getOrderid() + "] + and authnumber:[" + trsRequestDto.getAuthnumber() + "]" + "and merchantid:[" + trsRequestDto.getMerchantid()
-							+ "]" + Util.formatException(err2));
-			return Util.getMsgErrorV2(folder, file, trsRequestDto,
-					"cpautorisation 500 Error during Transaction not found orderid:[" + trsRequestDto.getOrderid() + "] + and authnumber:["
-							+ trsRequestDto.getAuthnumber() + "]" + "and merchantid:[" + trsRequestDto.getMerchantid() + "]",
-					null);
+		if(trsRequestDto.getAuthnumber() == null || trsRequestDto.getAuthnumber().equals("")) {
+			cardnumber = check_dmd.getDemPan();
+			try {
+				// TODO: get histoauto check if exist
+				current_hist = histoAutoGateService.findByHatNumCommandeAndHatNumcmrAndHatPorteur(trsRequestDto.getOrderid(), trsRequestDto.getMerchantid(), cardnumber);
+			} catch (Exception err2) {
+				autorisationService.logMessage(file,
+						"cpautorisation 500 Error during HistoAutoGate findByHatNumCommandeAndHatNumcmrAndHatPorteur orderid:["
+								+ trsRequestDto.getOrderid() + "] and merchantid:[" + trsRequestDto.getMerchantid() + "]" + Util.formatException(err2));
+				return Util.getMsgErrorV2(folder, file, trsRequestDto, "cpautorisation 500 Error during HistoAutoGate", null);
+			}
+		} else {
+			try {
+				// TODO: get histoauto check if exist
+				current_hist = histoAutoGateService.findByHatNumCommandeAndHatNautemtAndHatNumcmrAndHatCoderep(trsRequestDto.getOrderid(),
+						trsRequestDto.getAuthnumber(), trsRequestDto.getMerchantid(), "00");
+
+			} catch (Exception err2) {
+				autorisationService.logMessage(file,
+						"cpautorisation 500 Error during HistoAutoGate findByHatNumCommandeAndHatNautemtAndHatNumcmrAndHatCoderep orderid:["
+								+ trsRequestDto.getOrderid() + "] and merchantid:[" + trsRequestDto.getMerchantid() + "]" + Util.formatException(err2));
+				return Util.getMsgErrorV2(folder, file, trsRequestDto, "cpautorisation 500 Error during HistoAutoGate", null);
+			}
 		}
 
 		if (current_hist == null) {
@@ -5075,6 +5126,7 @@ public class APIController {
 			autorisationService.logMessage(file, "totalMontantCapture : " + totalMontantCapture);
 			autorisationService.logMessage(file, "montantReste : " + montantReste);
 
+			trsRequestDto.setAuthnumber(current_hist.getHatNautemt());
 			cardnumber = check_dmd.getDemPan();
 			websiteid = trsRequestDto.getWebsiteid() == null ? "" : trsRequestDto.getWebsiteid();
 			if (websiteid.equals("") || websiteid == null) {
@@ -5155,7 +5207,7 @@ public class APIController {
 								idtelc = telecollecteService.getMAX_ID(trsRequestDto.getMerchantid());
 								autorisationService.logMessage(file, "getMAX_ID idtelc : " + idtelc);
 
-								if (idtelc != null || idtelc == 0) {
+								if (idtelc != null) {
 									lidtelc = idtelc.longValue() + 1;
 								} else {
 									lidtelc = 1;
@@ -5229,63 +5281,68 @@ public class APIController {
 							codrep = "96";
 							motif = "cpautorisation failed";
 						}
-						try {
-							// TODO: insert into transaction
-							TransactionDto trs = new TransactionDto();
-							trs.setTrsNumcmr(trsRequestDto.getMerchantid());
-							trs.setTrsNumtlcolcte(Double.valueOf(lidtelc));
+						if(!codrep.equals("96")) {
+							try {
+								// TODO: insert into transaction
+								TransactionDto trs = new TransactionDto();
+								trs.setTrsNumcmr(trsRequestDto.getMerchantid());
+								trs.setTrsNumtlcolcte(Double.valueOf(lidtelc));
 
-							String frmt_cardnumber = Util.formatagePan(cardnumber);
-							trs.setTrsCodporteur(frmt_cardnumber);
-							trs.setTrsMontant(montantPreAuto);
+								String frmt_cardnumber = Util.formatagePan(cardnumber);
+								trs.setTrsCodporteur(frmt_cardnumber);
+								trs.setTrsMontant(montantPreAuto);
 
-							current_date = new Date();
-							Date current_date_1 = getDateWithoutTime(current_date);
-							Date trs_date = dateFormatSimple.parse(check_dmd.getDemDateTime());
-							Date trs_date_1 = getDateWithoutTime(trs_date);
+								current_date = new Date();
+								Date current_date_1 = getDateWithoutTime(current_date);
+								Date trs_date = dateFormatSimple.parse(check_dmd.getDemDateTime());
+								Date trs_date_1 = getDateWithoutTime(trs_date);
 
-							trs.setTrsDattrans(current_date_1);
-							trs.setTrsNumaut(authnumber);
-							trs.setTrsEtat("N");
-							trs.setTrsDevise(current_hist.getHatDevise());
-							trs.setTrsCertif("N");
-							Integer idtrs = transactionService.getMAX_ID();
-							long lidtrs = idtrs.longValue() + 1;
-							trs.setTrsId(lidtrs);
-							trs.setTrsCommande(trsRequestDto.getOrderid());
-							trs.setTrsProcod("0");
-							trs.setTrsGroupe(websiteid);
-							trs.setTrsCodtpe(0.0);
-							trs.setTrsNumbloc(0.0);
-							trs.setTrsNumfact(0.0);
-							transactionService.save(trs);
+								trs.setTrsDattrans(current_date_1);
+								trs.setTrsNumaut(authnumber);
+								trs.setTrsEtat("N");
+								trs.setTrsDevise(current_hist.getHatDevise());
+								trs.setTrsCertif("N");
+								Integer idtrs = transactionService.getMAX_ID();
+								long lidtrs = idtrs.longValue() + 1;
+								trs.setTrsId(lidtrs);
+								trs.setTrsCommande(trsRequestDto.getOrderid());
+								trs.setTrsProcod("0");
+								trs.setTrsGroupe(websiteid);
+								trs.setTrsCodtpe(0.0);
+								trs.setTrsNumbloc(0.0);
+								trs.setTrsNumfact(0.0);
+								transactionService.save(trs);
 
-							// TODO: 2024-11-27 controle sur le montant à telecollecter
-							if (montantReste > 0.00) {
-								current_hist.setHatMontantCapture(totalMontantCapture);
-								// TODO: on garde etat = E initial
-								//current_hist.setHatEtat('T');
-								current_hist.setHatdatetlc(current_date);
-								current_hist.setOperateurtlc("mxplusapi");
-								current_hist = histoAutoGateService.save(current_hist);
-							} else if (montantReste == 0.00) {
-								current_hist.setHatMontantCapture(totalMontantCapture);
-								current_hist.setHatEtat('T');
-								current_hist.setHatdatetlc(current_date);
-								current_hist.setOperateurtlc("mxplusapi");
-								current_hist = histoAutoGateService.save(current_hist);
+								// TODO: 2024-11-27 controle sur le montant à telecollecter
+								if (montantReste > 0.00) {
+									current_hist.setHatMontantCapture(totalMontantCapture);
+									// TODO: on garde etat = E initial
+									//current_hist.setHatEtat('T');
+									current_hist.setHatdatetlc(current_date);
+									current_hist.setOperateurtlc("mxplusapi");
+									current_hist = histoAutoGateService.save(current_hist);
+								} else if (montantReste == 0.00) {
+									current_hist.setHatMontantCapture(totalMontantCapture);
+									current_hist.setHatEtat('T');
+									current_hist.setHatdatetlc(current_date);
+									current_hist.setOperateurtlc("mxplusapi");
+									current_hist = histoAutoGateService.save(current_hist);
+								}
+
+								motif = motif + " and captured";
+
+								autorisationService.logMessage(file, "inserting into Trs ok");
+								capture_status = "Y";
+							} catch (Exception e) {
+								autorisationService.logMessage(file,
+										"cpautorisation 500 Error during insert into transaction for given authnumber:[" + trsRequestDto.getAuthnumber()
+												+ "] and merchantid:[" + trsRequestDto.getMerchantid() + "]" + Util.formatException(e));
+
+								return Util.getMsgErrorV2(folder, file, trsRequestDto, "cpautorisation 500 , operation failed please try again", null);
 							}
-
-							motif = motif + " and captured";
-
-							autorisationService.logMessage(file, "inserting into Trs ok");
-							capture_status = "Y";
-						} catch (Exception e) {
-							autorisationService.logMessage(file,
-									"cpautorisation 500 Error during insert into transaction for given authnumber:[" + trsRequestDto.getAuthnumber()
-											+ "] and merchantid:[" + trsRequestDto.getMerchantid() + "]" + Util.formatException(e));
-
-							return Util.getMsgErrorV2(folder, file, trsRequestDto, "cpautorisation 500 , operation failed please try again", null);
+						} else {
+							codrep = "96";
+							motif = "cpautorisation failed";
 						}
 					}
 
@@ -5315,18 +5372,14 @@ public class APIController {
 						reason_code = "H";
 						transaction_condition = "6";
 						mesg_type = "0";
-						processing_code = "";
+						processing_code = "0";
 						String xid = "";
 						transactiontype = "0"; // TODO: 0 payment , P preauto
 						currency = "504";
 						cvv = check_dmd.getDemCvv() == null ? "" : check_dmd.getDemCvv();
 						recurring = "N";
-						if (transactiontype.equals("0")) {
-							processing_code = "0";
-						} else if (transactiontype.equals("P")) {
+						if (transactiontype.equals("P")) {
 							processing_code = "P";
-						} else {
-							processing_code = "0";
 						}
 						expirydate = check_dmd.getDateexpnaps();
 
@@ -5639,7 +5692,7 @@ public class APIController {
 									idtelc = telecollecteService.getMAX_ID(trsRequestDto.getMerchantid());
 									autorisationService.logMessage(file, "getMAX_ID idtelc : " + idtelc);
 
-									if (idtelc != null || idtelc == 0) {
+									if (idtelc != null) {
 										lidtelc = idtelc.longValue() + 1;
 									} else {
 										lidtelc = 1;
@@ -5716,56 +5769,63 @@ public class APIController {
 								codrep = "96";
 								motif = "cpautorisation failed";
 							}
-							try {
-								// TODO: insert into transaction
-								TransactionDto trs = new TransactionDto();
-								trs.setTrsNumcmr(trsRequestDto.getMerchantid());
-								trs.setTrsNumtlcolcte(Double.valueOf(lidtelc));
 
-								String frmt_cardnumber = Util.formatagePan(cardnumber);
-								trs.setTrsCodporteur(frmt_cardnumber);
-								trs.setTrsMontant(montantPreAuto);
+							if(!codrep.equals("96")) {
+								try {
+									// TODO: insert into transaction
+									TransactionDto trs = new TransactionDto();
+									trs.setTrsNumcmr(trsRequestDto.getMerchantid());
+									trs.setTrsNumtlcolcte(Double.valueOf(lidtelc));
 
-								current_date = new Date();
-								Date current_date_1 = getDateWithoutTime(current_date);
-								Date trs_date = dateFormatSimple.parse(check_dmd.getDemDateTime());
-								Date trs_date_1 = getDateWithoutTime(trs_date);
+									String frmt_cardnumber = Util.formatagePan(cardnumber);
+									trs.setTrsCodporteur(frmt_cardnumber);
+									trs.setTrsMontant(montantPreAuto);
 
-								trs.setTrsDattrans(current_date_1);
-								trs.setTrsNumaut(authnumber);
-								trs.setTrsEtat("N");
-								trs.setTrsDevise(current_hist.getHatDevise());
-								trs.setTrsCertif("N");
-								Integer idtrs = transactionService.getMAX_ID();
-								long lidtrs = idtrs.longValue() + 1;
-								trs.setTrsId(lidtrs);
-								trs.setTrsCommande(trsRequestDto.getOrderid());
-								trs.setTrsProcod("0");
-								trs.setTrsGroupe(websiteid);
-								trs.setTrsCodtpe(0.0);
-								trs.setTrsNumbloc(0.0);
-								trs.setTrsNumfact(0.0);
-								transactionService.save(trs);
+									current_date = new Date();
+									Date current_date_1 = getDateWithoutTime(current_date);
+									Date trs_date = dateFormatSimple.parse(check_dmd.getDemDateTime());
+									Date trs_date_1 = getDateWithoutTime(trs_date);
 
-								current_hist.setHatMontantCapture(montantPreAuto);
-								current_hist.setHatEtat('T');
-								current_hist.setHatdatetlc(current_date);
-								current_hist.setOperateurtlc("mxplusapi");
-								current_hist = histoAutoGateService.save(current_hist);
+									trs.setTrsDattrans(current_date_1);
+									trs.setTrsNumaut(authnumber);
+									trs.setTrsEtat("N");
+									trs.setTrsDevise(current_hist.getHatDevise());
+									trs.setTrsCertif("N");
+									Integer idtrs = transactionService.getMAX_ID();
+									long lidtrs = idtrs.longValue() + 1;
+									trs.setTrsId(lidtrs);
+									trs.setTrsCommande(trsRequestDto.getOrderid());
+									trs.setTrsProcod("0");
+									trs.setTrsGroupe(websiteid);
+									trs.setTrsCodtpe(0.0);
+									trs.setTrsNumbloc(0.0);
+									trs.setTrsNumfact(0.0);
+									transactionService.save(trs);
 
-								motif = motif + " and captured";
+									current_hist.setHatMontantCapture(montantPreAuto);
+									current_hist.setHatEtat('T');
+									current_hist.setHatdatetlc(current_date);
+									current_hist.setOperateurtlc("mxplusapi");
+									current_hist = histoAutoGateService.save(current_hist);
 
-								autorisationService.logMessage(file, "inserting into Trs ok");
-								capture_status = "Y";
-							} catch (Exception e) {
-								autorisationService.logMessage(file,
-										"cpautorisation 500 Error during insert into transaction for given authnumber:[" + trsRequestDto.getAuthnumber()
-												+ "] and merchantid:[" + trsRequestDto.getMerchantid() + "]" + Util.formatException(e));
+									motif = motif + " and captured";
 
-								return Util.getMsgErrorV2(folder, file, trsRequestDto, "cpautorisation 500 , operation failed please try again", null);
+									autorisationService.logMessage(file, "inserting into Trs ok");
+									capture_status = "Y";
+								} catch (Exception e) {
+									autorisationService.logMessage(file,
+											"cpautorisation 500 Error during insert into transaction for given authnumber:[" + trsRequestDto.getAuthnumber()
+													+ "] and merchantid:[" + trsRequestDto.getMerchantid() + "]" + Util.formatException(e));
+
+									return Util.getMsgErrorV2(folder, file, trsRequestDto, "cpautorisation 500 , operation failed please try again", null);
+								}
+
+								autorisationService.logMessage(file, "Insert into Histogate...");
+							} else {
+								autorisationService.logMessage(file, "cpautorisation pre-autorisation failed to insert into HistoautoGate");
+								codrep = "96";
+								motif = "cpautorisation failed";
 							}
-
-							autorisationService.logMessage(file, "Insert into Histogate...");
 
 							try {
 								histComlement = new HistoAutoGateDto();
@@ -5856,13 +5916,16 @@ public class APIController {
 								autorisationService.logMessage(file,
 										"hatNomdeandeur : " + histComlement.getHatNomdeandeur());
 
+								autorisationService.logMessage(file, "HistoAutoGate OK.");
+
 							} catch (Exception e) {
 								autorisationService.logMessage(file,
 										"cpautorisation 500 Error during  insert in histoautogate for given orderid:["
 												+ orderidToDebite + "]" + Util.formatException(e));
+								codrep = "96";
+								motif = "cpautorisation failed";
 							}
 
-							autorisationService.logMessage(file, "HistoAutoGate OK.");
 
 							current_date = new Date();
 							autorisationService.logMessage(file, "Automatic capture start...");
@@ -5879,136 +5942,152 @@ public class APIController {
 							lidtelc = 0;
 							idtelc = null;
 							tlc = null;
-							try {
-								TelecollecteDto n_tlc = telecollecteService.getMAXTLC_N(trsRequestDto.getMerchantid());
-								if (n_tlc == null) {
-									// TODO: insert into telec
-									idtelc = telecollecteService.getMAX_ID(trsRequestDto.getMerchantid());
-									autorisationService.logMessage(file, "getMAX_ID idtelc : " + idtelc);
 
-									if (idtelc != null) {
-										lidtelc = idtelc.longValue() + 1;
+							if(!codrep.equals("96")) {
+								try {
+									TelecollecteDto n_tlc = telecollecteService.getMAXTLC_N(trsRequestDto.getMerchantid());
+									if (n_tlc == null) {
+										// TODO: insert into telec
+										idtelc = telecollecteService.getMAX_ID(trsRequestDto.getMerchantid());
+										autorisationService.logMessage(file, "getMAX_ID idtelc : " + idtelc);
+
+										if (idtelc != null) {
+											lidtelc = idtelc.longValue() + 1;
+										} else {
+											lidtelc = 1;
+										}
+										tlc = new TelecollecteDto();
+										tlc.setTlcNumtlcolcte(lidtelc);
+
+										tlc.setTlcNumtpe(histComlement.getHatCodtpe());
+
+										tlc.setTlcDatcrtfich(current_date);
+										tlc.setTlcNbrtrans(new Double(1));
+										tlc.setTlcGest("N");
+
+										tlc.setTlcDatremise(current_date);
+										tlc.setTlcNumremise(new Double(lidtelc));
+										// TODO: tlc.setTlc_numfich(new Double(0));
+										String tmpattern = "HH:mm";
+										SimpleDateFormat sftm = new SimpleDateFormat(tmpattern);
+										String stm = sftm.format(current_date);
+										tlc.setTlcHeuremise(stm);
+
+										tlc.setTlcCodbq(acqcode);
+										tlc.setTlcNumcmr(trsRequestDto.getMerchantid());
+										tlc.setTlcNumtpe(websiteid);
+
+										autorisationService.logMessage(file, tlc.toString());
+
+										telecollecteService.save(tlc);
 									} else {
-										lidtelc = 1;
+										lidtelc = n_tlc.getTlcNumtlcolcte();
+										double nbr_trs = n_tlc.getTlcNbrtrans();
+										autorisationService.logMessage(file, "n_tlc !=null lidtelc/nbr_trs " + lidtelc + "/" + nbr_trs);
+										nbr_trs = nbr_trs + 1;
+										n_tlc.setTlcNbrtrans(nbr_trs);
+										autorisationService.logMessage(file, "increment lidtelc/nbr_trs " + lidtelc + "/" + nbr_trs);
+										telecollecteService.save(n_tlc);
 									}
-									tlc = new TelecollecteDto();
-									tlc.setTlcNumtlcolcte(lidtelc);
+								} catch (DataIntegrityViolationException ex) {
+									autorisationService.logMessage(file,"Conflit détecté lors de l'insertion de telecollecte, première tentative échouée." + Util.formatException(ex));
+									autorisationService.logMessage(file,"Pause de 2 secondes avant la deuxième tentative");
 
-									tlc.setTlcNumtpe(histComlement.getHatCodtpe());
+									try {
+										Thread.sleep(2000);
+									} catch (InterruptedException ie) {
+										Thread.currentThread().interrupt();
+										autorisationService.logMessage(file,"Thread interrompu pendant le délai d'attente" + ie);
+										autorisationService.logMessage(file,"Conflit persistant lors de la deuxième tentative d'insertion de telecollecte." + ie);
+										exp_flag = 1;
+										codrep = "96";
+										motif = "cpautorisation failed";
+									}
 
-									tlc.setTlcDatcrtfich(current_date);
-									tlc.setTlcNbrtrans(new Double(1));
-									tlc.setTlcGest("N");
+									try {
+										idtelc = telecollecteService.getMAX_ID(trsRequestDto.getMerchantid());
+										if (idtelc != null) {
+											lidtelc = idtelc + 1;
+										} else {
+											lidtelc = 1;
+										}
+										autorisationService.logMessage(file,"Deuxième tentative lidtelc : " + lidtelc);
+										tlc.setTlcNumtlcolcte(lidtelc);
 
-									tlc.setTlcDatremise(current_date);
-									tlc.setTlcNumremise(new Double(lidtelc));
-									// TODO: tlc.setTlc_numfich(new Double(0));
-									String tmpattern = "HH:mm";
-									SimpleDateFormat sftm = new SimpleDateFormat(tmpattern);
-									String stm = sftm.format(current_date);
-									tlc.setTlcHeuremise(stm);
+										autorisationService.logMessage(file, tlc.toString());
 
-									tlc.setTlcCodbq(acqcode);
-									tlc.setTlcNumcmr(trsRequestDto.getMerchantid());
-									tlc.setTlcNumtpe(websiteid);
+									} catch (DataIntegrityViolationException ex2) {
+										autorisationService.logMessage(file,"Conflit persistant lors de la deuxième tentative d'insertion de telecollecte." + Util.formatException(ex2));
+										exp_flag = 1;
+										autorisationService.logMessage(file, "inserting into telec ko..do nothing " + Util.formatException(ex2));
+										codrep = "96";
+										motif = "cpautorisation failed";							}
+								} catch (Exception e) {
+									exp_flag = 1;
+									autorisationService.logMessage(file, "inserting into telec ko..do nothing " + Util.formatException(e));
+									codrep = "96";
+									motif = "cpautorisation pre-autorisation failed";
+								}
+								if(!codrep.equals("96")) {
+									try {
+										// TODO: insert into transaction for complement (montantComplent)
+										TransactionDto trs = new TransactionDto();
+										trs.setTrsNumcmr(trsRequestDto.getMerchantid());
+										trs.setTrsNumtlcolcte(Double.valueOf(lidtelc));
 
-									autorisationService.logMessage(file, tlc.toString());
+										String frmt_cardnumber = Util.formatagePan(cardnumber);
+										trs.setTrsCodporteur(frmt_cardnumber);
+										trs.setTrsMontant(montantComplent);
 
-									telecollecteService.save(tlc);
+										current_date = new Date();
+										Date current_date_1 = getDateWithoutTime(current_date);
+										trs.setTrsDattrans(current_date_1);
+
+										trs.setTrsNumaut(authnumberComplent);
+										trs.setTrsEtat("N");
+										trs.setTrsDevise(histComlement.getHatDevise());
+										trs.setTrsCertif("N");
+										Integer idtrs = transactionService.getMAX_ID();
+										long lidtrs = idtrs.longValue() + 1;
+										trs.setTrsId(lidtrs);
+										trs.setTrsCommande(orderidToDebite);
+										trs.setTrsProcod("0");
+										trs.setTrsGroupe(websiteid);
+										trs.setTrsCodtpe(0.0);
+										trs.setTrsNumbloc(0.0);
+										trs.setTrsNumfact(0.0);
+										transactionService.save(trs);
+
+										histComlement.setHatMontantCapture(montantComplent);
+										histComlement.setHatEtat('T');
+										histComlement.setHatdatetlc(current_date);
+										histComlement.setOperateurtlc("mxplusapi");
+										histComlement = histoAutoGateService.save(histComlement);
+
+										motif = motif + " and captured";
+
+										autorisationService.logMessage(file, "inserting into telec ok");
+										capture_status = "Y";
+									} catch (Exception e) {
+										autorisationService.logMessage(file,
+												"cpautorisation 500 Error during insert into transaction for given authnumber:[" + trsRequestDto.getAuthnumber()
+														+ "] and merchantid:[" + trsRequestDto.getMerchantid() + "]" + Util.formatException(e));
+
+										return Util.getMsgErrorV2(folder, file, trsRequestDto, "cpautorisation 500 , operation failed please try again", null);
+									}
 								} else {
-									lidtelc = n_tlc.getTlcNumtlcolcte();
-									double nbr_trs = n_tlc.getTlcNbrtrans();
-									autorisationService.logMessage(file, "n_tlc !=null lidtelc/nbr_trs " + lidtelc + "/" + nbr_trs);
-									nbr_trs = nbr_trs + 1;
-									n_tlc.setTlcNbrtrans(nbr_trs);
-									autorisationService.logMessage(file, "increment lidtelc/nbr_trs " + lidtelc + "/" + nbr_trs);
-									telecollecteService.save(n_tlc);
-								}
-							} catch (DataIntegrityViolationException ex) {
-								autorisationService.logMessage(file,"Conflit détecté lors de l'insertion de telecollecte, première tentative échouée." + Util.formatException(ex));
-								autorisationService.logMessage(file,"Pause de 2 secondes avant la deuxième tentative");
-
-								try {
-									Thread.sleep(2000);
-								} catch (InterruptedException ie) {
-									Thread.currentThread().interrupt();
-									autorisationService.logMessage(file,"Thread interrompu pendant le délai d'attente" + ie);
-									autorisationService.logMessage(file,"Conflit persistant lors de la deuxième tentative d'insertion de telecollecte." + ie);
-									exp_flag = 1;
+									autorisationService.logMessage(file,
+											"cpautorisation pre-autorisation failed to insert into transaction");
 									codrep = "96";
-									motif = "cpautorisation failed";
+									motif = "cpautorisation pre-autorisation failed";
 								}
 
-								try {
-									idtelc = telecollecteService.getMAX_ID(trsRequestDto.getMerchantid());
-									if (idtelc != null) {
-										lidtelc = idtelc + 1;
-									} else {
-										lidtelc = 1;
-									}
-									autorisationService.logMessage(file,"Deuxième tentative lidtelc : " + lidtelc);
-									tlc.setTlcNumtlcolcte(lidtelc);
-
-									autorisationService.logMessage(file, tlc.toString());
-
-								} catch (DataIntegrityViolationException ex2) {
-									autorisationService.logMessage(file,"Conflit persistant lors de la deuxième tentative d'insertion de telecollecte." + Util.formatException(ex2));
-									exp_flag = 1;
-									autorisationService.logMessage(file, "inserting into telec ko..do nothing " + Util.formatException(ex2));
-									codrep = "96";
-									motif = "cpautorisation failed";							}
-							} catch (Exception e) {
-								exp_flag = 1;
-								autorisationService.logMessage(file, "inserting into telec ko..do nothing " + Util.formatException(e));
+							} else {
+								autorisationService.logMessage(file, "cpautorisation pre-autorisation failed to insert into histComlement ");
 								codrep = "96";
 								motif = "cpautorisation pre-autorisation failed";
 							}
-							try {
-								// TODO: insert into transaction for complement (montantComplent)
-								TransactionDto trs = new TransactionDto();
-								trs.setTrsNumcmr(trsRequestDto.getMerchantid());
-								trs.setTrsNumtlcolcte(Double.valueOf(lidtelc));
 
-								String frmt_cardnumber = Util.formatagePan(cardnumber);
-								trs.setTrsCodporteur(frmt_cardnumber);
-								trs.setTrsMontant(montantComplent);
-
-								current_date = new Date();
-								Date current_date_1 = getDateWithoutTime(current_date);
-								trs.setTrsDattrans(current_date_1);
-
-								trs.setTrsNumaut(authnumberComplent);
-								trs.setTrsEtat("N");
-								trs.setTrsDevise(histComlement.getHatDevise());
-								trs.setTrsCertif("N");
-								Integer idtrs = transactionService.getMAX_ID();
-								long lidtrs = idtrs.longValue() + 1;
-								trs.setTrsId(lidtrs);
-								trs.setTrsCommande(orderidToDebite);
-								trs.setTrsProcod("0");
-								trs.setTrsGroupe(websiteid);
-								trs.setTrsCodtpe(0.0);
-								trs.setTrsNumbloc(0.0);
-								trs.setTrsNumfact(0.0);
-								transactionService.save(trs);
-
-								histComlement.setHatMontantCapture(montantComplent);
-								histComlement.setHatEtat('T');
-								histComlement.setHatdatetlc(current_date);
-								histComlement.setOperateurtlc("mxplusapi");
-								histComlement = histoAutoGateService.save(histComlement);
-
-								motif = motif + " and captured";
-
-								autorisationService.logMessage(file, "inserting into telec ok");
-								capture_status = "Y";
-							} catch (Exception e) {
-								autorisationService.logMessage(file,
-										"cpautorisation 500 Error during insert into transaction for given authnumber:[" + trsRequestDto.getAuthnumber()
-												+ "] and merchantid:[" + trsRequestDto.getMerchantid() + "]" + Util.formatException(e));
-
-								return Util.getMsgErrorV2(folder, file, trsRequestDto, "cpautorisation 500 , operation failed please try again", null);
-							}
 						} else {
 							codrep = tag20_resp;
 							autorisationService.logMessage(file, "transaction declined !!! ");

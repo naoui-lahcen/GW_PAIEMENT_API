@@ -43,11 +43,12 @@ public interface AutorisationService {
 	String handleMerchantAndInfoCommercantError(String file, String orderid, String merchantid, String websiteid,
 												DemandePaiementDto demandeDtoMsg, Model model, String page, boolean isMerchantError);
 
-	String handleCardValidationError(int iCardValid, String cardNumber, String orderid, String merchantid,
+	String handleCardValidationError(int iCardValid, String cardNumber, String orderid, String merchantid, DemandePaiementDto demandeDto,
 									 String file, DemandePaiementDto demandeDtoMsg, Model model, String page);
 
 	String handleSessionTimeout(
 			HttpSession session, String file, int timeout, DemandePaiementDto demandeDto,
 			DemandePaiementDto demandeDtoMsg, Model model);
 
+	String getFailUrl(String xid);
 }

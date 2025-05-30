@@ -550,12 +550,14 @@
                     .then((response) => {
                        if (response.ok) {
                           if (window.history.length > 1) {
-                             window.history.back();
+                             // window.history.back();
+                             window.location.href = '/error';
                           } else {
                              window.location.href = '/error';
                           }
                        } else {
                           console.error('Failed to cancel payment.');
+                          window.location.href = '/error';
                        }
                     })
                     .catch((error) => console.error('Error:', error));

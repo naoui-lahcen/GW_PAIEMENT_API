@@ -79,13 +79,13 @@
         .left-panel {
             background: linear-gradient(181deg, #FF5E00 0.57%, rgba(255, 69, 0, 0.70) 98.77%, #570001 134.01%), #000;
             color: white;
-            width: 100%;
             padding: 50px;
             display: flex;
             flex-direction: column;
             align-items: flex-start;
             flex: 1;
-            width: 588px;
+            width: 100%;
+            /*width: 588px;*/
             /*height: 982px;*/
             height: 1020px;
             flex-shrink: 0;
@@ -137,15 +137,17 @@
             display: flex;
             align-items: center;
             margin-bottom: 124px;
+            margin-bottom: 100px;
         }
         .formm {
             width: 530px;
             margin-top: -35px;
+            margin-top: -110px;
         }
 
         .icon-container {
-            width: 48px;
-            height: 48px;
+            width: 50px;
+            height: 50px;
             border-radius: 15px;
             display: flex;
             align-items: center;
@@ -168,8 +170,8 @@
         }
 
         .text-container p {
-            font-size: 14px;
             line-height: 0.2;
+            line-height: 0.9;
             margin: 2px 0 0;
             font-size: 14px;
             color: #718096;
@@ -254,7 +256,7 @@
             margin-top: 15px;
         }
         .sec {
-            font-family: Inter;
+            font-family: sans-serif, Arial;
             font-weight: 400;
             line-height: 20px;
             color: #677489;
@@ -307,6 +309,7 @@
                     text-align: left;
                     width: inherit;
                     margin-top: 118px;
+                    margin-top: 85px;
                     margin-left: 10%;
                     margin-right: 10%;
                 }
@@ -352,12 +355,16 @@
                     color: #D92D20;
                     margin-top: -82px;
                     margin-bottom: 30px;
+                    font-size: 14px;
+                    font-style: normal;
+                    font-weight: 600;
+                    line-height: 20px;
                 }
                 .lock-label {
                     overflow: hidden;
                     text-overflow: ellipsis;
                     justify-content: center;
-                    font-family: Inter;
+                    font-family: sans-serif, Arial;
                     font-weight: 400;
                     line-height: 20px;
                     color: #677489;
@@ -375,7 +382,7 @@
                     display: flex;
                     justify-content: center;
                     align-items: center;
-                    font-family: Inter;
+                    font-family: sans-serif, Arial;
                     font-weight: 400;
                     line-height: 18px;
                     color: #677489;
@@ -393,7 +400,7 @@
                 .textFooter {
                     font-family: Arial, sans-serif;
                     color: #6C6C84;
-                    font-size: 13px;
+                    font-size: 12px;
                     font-style: normal;
                     font-weight: 400;
                 }
@@ -466,6 +473,10 @@
                     width: 30px;
                     height: auto;
                 }
+                .textFooter img {
+                    width: 45px;
+                    height: 18px;
+                }
                 .col-md-5 {
                     padding-right: 0;
                     padding-left: 0;
@@ -505,7 +516,7 @@
 
                 .details h2 {
                     margin-bottom: 30px;
-                    font-family: Inter;
+                    font-family: Arial, sans-serif;
                     font-weight: 600;
                     font-size: 18px;
                 }
@@ -523,7 +534,7 @@
                 }
 
                 .transaction-item label {
-                    font-family: Inter;
+                    font-family: Arial, sans-serif;
                     font-weight: 500;
                     font-size: 16px;
                     line-height: 24px;
@@ -535,7 +546,7 @@
                     margin: 0 30px;
                     border-radius: 5px;
                     color: #FFF;
-                    font-family: Inter;
+                    font-family: Arial, sans-serif;
                     font-size: 16px;
                     font-style: normal;
                     font-weight: 500;
@@ -579,6 +590,9 @@
                             font-weight: 600;
                             font-size: 16px;
                         }
+                        .toggle-btn:focus {
+                            outline: none;
+                        }
                        .logo {
                             display: none;
                        }
@@ -606,6 +620,10 @@
                     .payment-header {
                         display: block;
                         margin-bottom: 20px;
+                    }
+                    .icon-container {
+                        width: 48px;
+                        height: 48px;
                     }
                     .text-container {
                         margin-top: 10px;
@@ -651,7 +669,10 @@
                             background: var(--Error-25, #FFFBFA);
                             color: #D92D20;
                             margin-top: 0px;
-                            font-size: 15px;
+                            font-size: 14px;
+                            font-style: normal;
+                            font-weight: 600;
+                            line-height: 20px;
                         }
                        .payment-panel {
                          top: 49px;
@@ -671,9 +692,13 @@
                        }
                        .left-panel .details {
                             text-align: left;
-                            padding: 10px;
+                            /*padding: 10px;*/
                             display: none;
-                            margin-top: 0;
+                            /*margin-top: 0;*/
+                            margin-top: 20px;
+                         }
+                         .detsimg {
+                            display: none;
                          }
                          .left-panel .details p {
                             font-size: 14px;
@@ -689,7 +714,7 @@
                             margin-right: 30px;
                             white-space: nowrap;
                             color: #FFFFFF;
-                            font-family: Inter;
+                            font-family: Arial, sans-serif;
                         }
                         .transaction-item label {
                             font-size: 14px;
@@ -698,6 +723,8 @@
                             border-radius: 6px;
                             background: rgba(255, 255, 255, 0.04);
                             font-size: 14px;
+                            margin-right: auto;
+                            min-width: 171px;
                         }
                         .details h2 {
                             margin-bottom: 20px;
@@ -708,6 +735,7 @@
                         }
                         .total-box {
                             margin-left: 0;
+                            margin-top: -5px;
                         }
                         .total-box .label {
                             display: none;
@@ -876,6 +904,7 @@
 
                     <!-- Affichage du message d'erreur -->
                     <div th:if="${session.error}" id="error-message">
+                        <img alt="Image" id="alert-circle" th:src="@{/images/alert-circle.svg}">
                         <span th:text="${session.error}"></span>
                     </div>
 
@@ -914,7 +943,7 @@
                     </div>
                     <div class="form-group d-flex gap-2">
                         <div class="mr-2" style="width: 50%">
-                            <input id="dateExp" placeholder="MM / AA" th:field="*{expery}" type="text">
+                            <input id="dateExp" placeholder="MM/AA" th:field="*{expery}" type="text">
                         </div>
                         <div class="cvc" style="width: 50%">
                             <input id="cvv" placeholder="CVC" required="required" th:field="*{demCvv}" type="number">
@@ -1010,10 +1039,36 @@
 
         // Remplir automatiquement la date d'expiration
         if (year && month) {
-            document.getElementById("dateExp").value = month + " / " + year.toString().slice(-2);
+            document.getElementById("dateExp").value = month + "/" + year.toString().slice(-2);
         }
     }
 }
+
+document.addEventListener("DOMContentLoaded", function () {
+    const dateExp = document.getElementById("dateExp");
+
+    dateExp.addEventListener("input", function (e) {
+        let value = this.value.replace(/\D/g, ''); // Ne garder que les chiffres
+        if (value.length > 4) value = value.slice(0, 4); // max 4 chiffres
+
+        // Format MM / YY
+        if (value.length >= 2) {
+            this.value = value.slice(0, 2) + "/" + value.slice(2);
+        } else {
+            this.value = value;
+        }
+    });
+
+    // Permet de supprimer le "/"
+    dateExp.addEventListener("keydown", function (e) {
+        // Si on est juste après le slash et qu'on appuie sur Backspace
+        if (e.key === "Backspace" && this.selectionStart === 3 && this.value.charAt(2) === '/') {
+            this.value = this.value.slice(0, 2); // Supprime le slash
+            this.setSelectionRange(4, 4); // Replace le curseur
+            e.preventDefault();
+        }
+    });
+});
 
     let panelState = 0;
     // 0 = état initial, 1 = ouvert complètement
@@ -1134,11 +1189,14 @@ function checkCardType(idCarte, logo) {
         let cardNumber = value.replace(/\s/g, '');
 
         if (cardNumber.startsWith('4')) {
+            cardLogo.style.display = 'block';
             cardLogo.src = '/images/icon_visa.svg';
-        } else if (cardNumber.startsWith('5')) {
+        } else if (cardNumber.startsWith('5') || cardNumber.startsWith('2')) {
+            cardLogo.style.display = 'block';
             cardLogo.src = '/images/icon_mc.svg';
         } else {
-            cardLogo.src = '/images/visa_mc.svg';
+            //cardLogo.src = '/images/visa_mc.svg';
+            cardLogo.style.display = 'none';
         }
 
     });

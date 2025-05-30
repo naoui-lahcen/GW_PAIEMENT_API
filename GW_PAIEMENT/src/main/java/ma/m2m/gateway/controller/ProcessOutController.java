@@ -311,7 +311,10 @@ public class ProcessOutController {
 							page = "result";
 							autorisationService.logMessage(file, "Fin processoutRequest ()");
 							logger.info("Fin processoutRequest ()");
-							return page;
+							//return page;
+							failURL = autorisationService.getFailUrl(cleanCres.getThreeDSServerTransID());
+							response.sendRedirect(failURL);
+							return null;
 						}
 
 						dmd = demandePaiementService.findByIdDemande(Integer.parseInt(idDemande));
@@ -326,13 +329,10 @@ public class ProcessOutController {
 							page = "result";
 							autorisationService.logMessage(file, "Fin processoutRequest ()");
 							logger.info("Fin processoutRequest ()");
-							return page;
-						}
-
-						page = autorisationService.handleSessionTimeout(session, file, timeout, dmd, demandeDtoMsg, model);
-
-						if ("timeout".equals(page)) {
-							return page;
+							//return page;
+							failURL = autorisationService.getFailUrl(cleanCres.getThreeDSServerTransID());
+							response.sendRedirect(failURL);
+							return null;
 						}
 
 						// TODO: Merchnat info
@@ -453,6 +453,15 @@ public class ProcessOutController {
 								// TODO: stackage de cavv dans le chmp date_SendSWT vu que ce chmp nest pas utilisé
 								dmd.setDateSendSWT(cavv);
 								dmd = demandePaiementService.save(dmd);
+							}
+
+							if (dmd.getEtatDemande().equals("SW_PAYE") || dmd.getEtatDemande().equals("PAYE")) {
+								dmd.setDemCvv("");
+								demandePaiementService.save(dmd);
+								autorisationService.logMessage(file, "Opération déjà effectuée, redirection vers failUrl");
+								autorisationService.logMessage(file, "Fin processoutRequest ()");
+								response.sendRedirect(dmd.getFailURL());
+								return null;
 							}
 
 							// TODO: 2024-03-05

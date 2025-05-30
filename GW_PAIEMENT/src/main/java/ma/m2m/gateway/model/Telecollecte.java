@@ -6,10 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import java.io.Serializable;
 import java.util.Date;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /*
 * @author  LAHCEN NAOUI
@@ -30,13 +27,10 @@ public class Telecollecte implements Serializable {
 	 */
 	private static final long serialVersionUID = 248680037522737855L;
 
-	
-	@Id
-	@Column(name = "TLC_NUMTLCOLCTE")
-	private Long tlcNumtlcolcte;
 
-	@Column(name = "TLC_NUMCMR")
-	private String tlcNumcmr;
+	@EmbeddedId
+	private TelecollecteId id;
+
 	@Column(name = "TLC_NUMTPE")
 	private String tlcNumtpe;
 	

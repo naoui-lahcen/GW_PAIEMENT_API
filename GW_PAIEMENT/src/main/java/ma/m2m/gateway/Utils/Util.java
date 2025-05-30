@@ -22,6 +22,8 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.regex.Pattern;
+
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.ui.Model;
@@ -100,6 +102,34 @@ public class Util {
 
 	//public static final DateFormat dateFormatSimple = new SimpleDateFormat(FORMAT_DEFAUT);
 
+	// Liste des TLD autorisés (à personnaliser si nécessaire)
+	private static final String[] VALID_TLDS = {
+			"com", "fr", "it", "net", "org", "edu", "gov", "eu", "ma"
+	};
+
+	public static boolean isValidEmail(String email) {
+		if (email == null || email.isEmpty()) return false;
+
+		// Regex basique pour valider l’email
+		String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
+		if (!Pattern.matches(emailRegex, email)) {
+			return false;
+		}
+
+		// Extraire le TLD (après le dernier point)
+		String[] parts = email.split("\\.");
+		String tld = parts[parts.length - 1].toLowerCase();
+
+		// Vérifier si le TLD est dans la liste autorisée
+		for (String validTld : VALID_TLDS) {
+			if (tld.equals(validTld)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	public static void creatFileTransaction(String input) {
 
 		LocalDateTime date = LocalDateTime.now(ZoneId.systemDefault());
@@ -139,7 +169,47 @@ public class Util {
 			return 1;
 		if (!luhnCheck(cardnumber))
 			return 2;
+		/*if(cardnumber.startsWith("35"))
+			return 35;
+		if(cardnumber.startsWith("34"))
+			return 34;
+		if(cardnumber.startsWith("37"))
+			return 37;*/
+		if (!isVisaOrMastercard(cardnumber)) {
+			return 3;  // Visa ou Mastercard
+		}
 		return 0;
+	}
+
+	public static boolean isVisaOrMastercard(String numCarte) {
+		if (numCarte == null || numCarte.length() < 4) {
+			return false;
+		}
+
+		// Nettoyer la chaîne (enlever espaces, tirets éventuels)
+		String cleanNum = numCarte.replaceAll("\\s+", "").replaceAll("-", "");
+
+		// Extraire les préfixes
+		int prefix1 = Integer.parseInt(cleanNum.substring(0, 1));       // 1 chiffre
+		int prefix2 = Integer.parseInt(cleanNum.substring(0, 2));       // 2 chiffres
+		int prefix4 = Integer.parseInt(cleanNum.substring(0, 4));       // 4 chiffres
+
+		// Vérifier Visa
+		if(prefix1 == 4) {
+			return true;
+		}
+
+		// Vérifier Mastercard
+		else if((prefix2 >= 51 && prefix2 <= 55) || (prefix4 >= 2221 && prefix4 <= 2720)) {
+			return true;
+		}
+
+		// Vérifier Maestro
+		else if((prefix2 == 50) || (prefix2 >= 56 && prefix2 <= 59)) {
+			return true;
+		}
+
+		return false;
 	}
 
 	public static int getCardIss(final String cardnumber) {
@@ -513,7 +583,9 @@ public class Util {
 				carte.setMoisValue("xxxx");
 				carte.setMois("xxxx");
 				carte.setYear(1111);
+				carte.setExpired(true);
 			}
+			traces.writeInFileTransaction(folder, file,"isExpired : " + carte.isExpired());
 		} catch (Exception e) {
 			logger.error("" ,e);
 		}

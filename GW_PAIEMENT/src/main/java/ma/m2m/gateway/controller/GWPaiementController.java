@@ -216,6 +216,9 @@ public class GWPaiementController {
 
 		String msg = "Bienvenue dans la plateforme de paiement NAPS !!!";
 
+		System.out.println(Util.isValidEmail("francesca.dandrea@studenti.unicampania.it")); // true
+		System.out.println(Util.isValidEmail("francesca.dandrea@studenti.unicampania.i"));  // false
+
 		autorisationService.logMessage(filee, "*********** End home () ************** ");
 		logger.info("*********** End home () ************** ");
         
@@ -950,7 +953,7 @@ public class GWPaiementController {
 				fname, lname, email, country, phone, city, state, zipcode, address, mesg_type, merc_codeactivite,
 				acqcode, merchant_name, merchant_city, acq_type, processing_code, reason_code, transaction_condition,
 				transactiondate, transactiontime, date, rrn, heure, montanttrame, num_trs = "", successURL, failURL = "",
-				transactiontype, idclient;
+				transactiontype, idclient, token_gen = "";
 
 		DemandePaiementDto demandeDto = new DemandePaiementDto();
 		Objects.copyProperties(demandeDto, dto);
@@ -1083,18 +1086,23 @@ public class GWPaiementController {
 			return autorisationService.handleMerchantAndInfoCommercantError(file, orderid, merchantid, websiteid, demandeDtoMsg, model, page, false);
 		}
 
-		int i_card_valid = Util.isCardValid(cardnumber);
-
-		page = autorisationService.handleCardValidationError(i_card_valid, cardnumber, orderid, merchantid, file,
-				demandeDtoMsg, model, page);
-		if ("result".equals(page)) {
-			return page;
-		}
-
 		int i_card_type = Util.getCardIss(cardnumber);
 
 		try {
 			DemandePaiementDto dmdToEdit = demandePaiementService.findByIdDemande(demandeDto.getIddemande());
+
+			autorisationService.logMessage(file, "Etat demande : " + demandeDto.getEtatDemande());
+			if (dmdToEdit.getEtatDemande().equals("SW_PAYE") || dmdToEdit.getEtatDemande().equals("PAYE")) {
+				dmdToEdit.setDemCvv("");
+				demandePaiementService.save(dmdToEdit);
+				autorisationService.logMessage(file, "Opération déjà effectuée");
+				dmdToEdit.setMsgRefus(
+						"La transaction en cours est déjà effectuée, votre compte ne sera pas débité.");
+				session.setAttribute("idDemande", dmdToEdit.getIddemande());
+				model.addAttribute("demandeDto", dmdToEdit);
+				page = "operationEffectue";
+				return page;
+			}
 
 			dmdToEdit.setDemPan(cardnumber);
 			dmdToEdit.setDemCvv(cvv);
@@ -1115,10 +1123,8 @@ public class GWPaiementController {
 			demandeDto.setExpery(expirydate);
 			demandeDto.setFlagNvCarte(flagNvCarte);
 			demandeDto.setFlagSaveCarte(flagSaveCarte);
-			idclient = demandeDto.getIdClient();
-			if (idclient == null) {
-				idclient = "";
-			}
+			idclient = demandeDto.getIdClient() == null ? "" : demandeDto.getIdClient();
+			token = demandeDto.getToken() == null ? "" : demandeDto.getToken();
 
 		} catch (Exception err1) {
 			autorisationService.logMessage(file,
@@ -1131,18 +1137,27 @@ public class GWPaiementController {
 			return null;
 		}
 
+		int i_card_valid = Util.isCardValid(cardnumber);
+
+		page = autorisationService.handleCardValidationError(i_card_valid, cardnumber, orderid, merchantid,
+				demandeDto, file, demandeDtoMsg, model, page);
+		if ("result".equals(page)) {
+			return page;
+		}
+
 		page = autorisationService.handleSessionTimeout(session, file, timeout, demandeDto, demandeDtoMsg, model);
 
 		if ("timeout".equals(page)) {
 			return page;
 		}
-		
+		autorisationService.logMessage(file, "Etat demande : " + demandeDto.getEtatDemande());
 		if (demandeDto.getEtatDemande().equals("SW_PAYE") || demandeDto.getEtatDemande().equals("PAYE")) {
 			demandeDto.setDemCvv("");
 			demandePaiementService.save(demandeDto);
 			autorisationService.logMessage(file, "Opération déjà effectuée");
 			demandeDto.setMsgRefus(
 					"La transaction en cours est déjà effectuée, votre compte ne sera pas débité.");
+			session.setAttribute("idDemande", demandeDto.getIddemande());
 			model.addAttribute("demandeDto", demandeDto);
 			page = "operationEffectue";
 			return page;
@@ -1203,17 +1218,17 @@ public class GWPaiementController {
 						"cardtokenDto expirydate formated : " + expirydateFormated);
 				Date dateExp;
 				dateExp = dateFormatSimple.parse(expirydateFormated);
+				String tokencard = Util.generateCardToken(idclient);
+				boolean isSaved = false;
 
 				if (checkCardNumber.size() == 0) {
 					// TODO: insert new cardToken
-					String tokencard = Util.generateCardToken(idclient);
 
 					// TODO: test if token not exist in DB
 					CardtokenDto checkCardToken = cardtokenService.findByIdMerchantAndToken(idclient, tokencard);
 
 					while (checkCardToken != null) {
 						tokencard = Util.generateCardToken(idclient);
-						logger.info("checkCardToken exist => generate new tokencard : " + tokencard);
 						autorisationService.logMessage(file,
 								"checkCardToken exist => generate new tokencard : " + tokencard);
 						checkCardToken = cardtokenService.findByIdMerchantAndToken(merchantid, tokencard);
@@ -1238,6 +1253,7 @@ public class GWPaiementController {
 					CardtokenDto cardtokenSaved = cardtokenService.save(cardtokenDto);
 
 					autorisationService.logMessage(file, "Saving CARDTOKEN OK");
+					isSaved = true;
 				} else {
 					autorisationService.logMessage(file, "Carte deja enregistrée");
 					for(CardtokenDto crd : checkCardNumber) {
@@ -1256,12 +1272,17 @@ public class GWPaiementController {
 					}
 				}
 
+				if(isSaved) {
+					autorisationService.logMessage(file,"isSaved = " + isSaved + " => setToken = " + tokencard);
+					demandeDto.setToken(tokencard);
+					demandeDto = demandePaiementService.save(demandeDto);
+				}
 			} catch (ParseException e) {
 				logger.error("Exception : " , e);
 				autorisationService.logMessage(file, "savingcardtoken 500 Error during CARDTOKEN Saving " + Util.formatException(e));
 			}
 		}
-		
+
 		try {
 			formatheure = new SimpleDateFormat("HHmmss");
 			formatdate = new SimpleDateFormat("ddMMyy");
@@ -1318,6 +1339,8 @@ public class GWPaiementController {
 		errmpi = threeDsecureResponse.getErrmpi() == null ? "" : threeDsecureResponse.getErrmpi();
 
 		expiry = threeDsecureResponse.getExpiry() == null ? "" : threeDsecureResponse.getExpiry();
+
+		token_gen = demandeDto.getToken() == null ? "" : demandeDto.getToken();
 
 		if (idDemande == null || idDemande.equals("")) {
 			demandeDto.setDemCvv("");
@@ -1381,14 +1404,10 @@ public class GWPaiementController {
 			reason_code = "H";
 			transaction_condition = "6";
 			mesg_type = "0";
+			processing_code = "0";
 
-			processing_code = "";
-			if (transactiontype.equals("0")) {
-				processing_code = "0";
-			} else if (transactiontype.equals("P")) {
+			if (transactiontype.equals("P")) {
 				processing_code = "P";
-			} else {
-				processing_code = "0";
 			}
 
 			// TODO: ajout cavv (cavv+eci) xid dans la trame
@@ -1749,7 +1768,7 @@ public class GWPaiementController {
 					String clesigne = current_infoCommercant.getClePub();
 
 					String montanttrx = String.format("%.2f", dmd.getMontant()).replace(",", ".");
-					String token_gen = "";
+					token_gen = demandeDto.getToken() == null ? "" : demandeDto.getToken();
 
 					autorisationService.logMessage(file,
 							"sendPOST(" + callbackURL + "," + clesigne + "," + dmd.getCommande() + ","
@@ -1910,7 +1929,7 @@ public class GWPaiementController {
 				String data_noncrypt = "id_commande=" + orderid + "&nomprenom=" + fname + "&email=" + email
 						+ "&montant=" + amount + "&frais=" + "" + "&repauto=" + coderep + "&numAuto=" + authnumber
 						+ "&numCarte=" + Util.formatCard(cardnumber) + "&typecarte=" + dmd.getTypeCarte()
-						+ "&numTrans=" + transactionid;
+						+ "&numTrans=" + transactionid + "&token=" + token_gen;
 
 				autorisationService.logMessage(file, "data_noncrypt : " + data_noncrypt);
 				logger.info("data_noncrypt : " + data_noncrypt);
@@ -1925,7 +1944,7 @@ public class GWPaiementController {
 					data_noncrypt = "id_commande=" + orderid + "&nomprenom=" + fname + "&email="
 							+ email + "&montant=" + amount + "&frais=" + "" + "&repauto=" + coderep
 							+ "&numAuto=" + authnumber + "&numCarte=" + Util.formatCard(cardnumber)
-							+ "&typecarte=" + dmd.getTypeCarte() + "&numTrans=" + transactionid;
+							+ "&typecarte=" + dmd.getTypeCarte() + "&numTrans=" + transactionid + "&token=" + token_gen;
 
 					autorisationService.logMessage(file, "data_noncrypt : " + data_noncrypt);
 					// TODO : If the length is still greater than 200, reduce the length of email
@@ -1937,7 +1956,7 @@ public class GWPaiementController {
 					data_noncrypt = "id_commande=" + orderid + "&nomprenom=" + fname + "&email="
 							+ email + "&montant=" + amount + "&frais=" + "" + "&repauto=" + coderep
 							+ "&numAuto=" + authnumber + "&numCarte=" + Util.formatCard(cardnumber)
-							+ "&typecarte=" + dmd.getTypeCarte() + "&numTrans=" + transactionid;
+							+ "&typecarte=" + dmd.getTypeCarte() + "&numTrans=" + transactionid + "&token=" + token_gen;
 
 					autorisationService.logMessage(file, "data_noncrypt : " + data_noncrypt);
 				}
@@ -2116,7 +2135,7 @@ public class GWPaiementController {
 	@SuppressWarnings("all")
 	public ResponseEntity<Map<String, String>> checkChargementPage(@RequestBody Map<String, String> requestData) {
 		String file = "GW_Check_PAGE_" + randomWithSplittableRandom;
-		autorisationService.logMessage(file, "checkChargementPage : La page est visible, l'utilisateur interagit.");
+		//autorisationService.logMessage(file, "checkChargementPage : La page est visible, l'utilisateur interagit.");
 		String idDemandeStr = requestData.get("iddemande");
 		Integer idDemande = null;
 		if (idDemandeStr != null) {
@@ -2190,8 +2209,7 @@ public class GWPaiementController {
 	    String file = "GW_TIMEOUT_" + randomWithSplittableRandom;
 	    Util.creatFileTransaction(file);
 	    autorisationService.logMessage(file, "*********** Start retour () ************** ");
-	    logger.info("*********** Start retour () ************** ");
-	    
+
 	    String page = "timeout";
 	    String msg = "OK";
 	    Integer idDemande = null;
@@ -2203,7 +2221,6 @@ public class GWPaiementController {
 	        }
 	        idDemande = (Integer) session.getAttribute("idDemande");
 	        autorisationService.logMessage(file, "idDemande par session : " + idDemande);
-	        logger.info("idDemande par session : " + idDemande);            
 	    } catch (Exception e) {
 	        logger.info("Retour getIdDemande par session " + Util.formatException(e));
 	        autorisationService.logMessage(file, "retour getIdDemande par session " + Util.formatException(e));
@@ -2214,26 +2231,26 @@ public class GWPaiementController {
 	    if (idDemande == null) {
 	        try {
 	            idDemande = demandeDto.getIddemande();
-	            autorisationService.logMessage(file, "idDemandepar model demandeDto : " + idDemande);
-	            logger.info("idDemande par model demandeDto : " + idDemande);    
+	            autorisationService.logMessage(file, "idDemande par model demandeDto : " + idDemande);
 	        } catch (Exception ex) {
-	            logger.info("Retour getIdDemande par demandeDto " + Util.formatException(ex));
 	            autorisationService.logMessage(file, "retour getIdDemande par demandeDto " + Util.formatException(ex));
 	            msg = "KO";
 	        }
 	    }
-        logger.info("msg : " + msg);
         autorisationService.logMessage(file, "msg : " + msg);
 	    // TODO: Traitement de la demande si l'ID de la demande est disponible
 	    if (msg.equals("OK") && idDemande != null) {
 	        DemandePaiementDto demandePaiement = demandePaiementService.findByIdDemande(idDemande);
 
 	        if (demandePaiement != null) {
-	            logger.info("update Demandepaiement status to Timeout");
-	            autorisationService.logMessage(file, "update Demandepaiement status to Timeout");
-	            demandePaiement.setEtatDemande("TimeOut");
-	            demandePaiement.setDemCvv("");
-	            demandePaiement = demandePaiementService.save(demandePaiement);
+				if(!demandePaiement.getEtatDemande().equals("SW_PAYE")
+						&& !demandePaiement.getEtatDemande().equals("SW_REJET")) {
+					autorisationService.logMessage(file, "update Demandepaiement status to Timeout");
+					demandePaiement.setEtatDemande("TimeOut");
+					demandePaiement.setDemCvv("");
+					demandePaiement = demandePaiementService.save(demandePaiement);
+				}
+
 	            String failUrl = demandePaiement.getFailURL();
 	            String successUrl = demandePaiement.getSuccessURL();
 	            if (failUrl != null && !failUrl.equals("")) {
@@ -2242,21 +2259,72 @@ public class GWPaiementController {
 	                response.sendRedirect(successUrl);
 	            }
 	        } else {
-	            logger.info("DemandePaiement not found ");
 	            autorisationService.logMessage(file, "DemandePaiement not found ");
 	            response.sendRedirect(page);
 	        }
 	    } else {
 	        // TODO: Gérer le cas où idDemande est null après les tentatives
-	        logger.info("idDemande is null");
 	        autorisationService.logMessage(file, "idDemande is null");
 	        response.sendRedirect(page);
 	    }
 
 	    autorisationService.logMessage(file, "*********** End retour () ************** ");
-	    logger.info("*********** End retour () ************** ");
 
 	    return page;
+	}
+
+	@PostMapping("/quitter")
+	@SuppressWarnings("all")
+	public String quitter(Model model, @ModelAttribute("demandeDto") DemandePaiementDto demandeDto, HttpServletRequest request,
+						 HttpServletResponse response, HttpSession session) throws IOException {
+		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
+		String file = "GW_QUITTER_PAGE_" + randomWithSplittableRandom;
+		Util.creatFileTransaction(file);
+		autorisationService.logMessage(file, "*********** Start quitter () ************** ");
+
+		String page = "result";
+		String msg = "OK";
+		Integer idDemande = null;
+
+		try {
+			System.out.println("dem : " + demandeDto.toString());
+			idDemande = demandeDto.getIddemande();
+			autorisationService.logMessage(file, "idDemande par model demandeDto : " + idDemande);
+		} catch (Exception ex) {
+			autorisationService.logMessage(file, "retour getIdDemande par demandeDto " + Util.formatException(ex));
+			msg = "KO";
+		}
+
+		autorisationService.logMessage(file, "msg : " + msg);
+		// TODO: Traitement de la demande si l'ID de la demande est disponible
+		if (msg.equals("OK") && idDemande != null) {
+			DemandePaiementDto demandePaiement = demandePaiementService.findByIdDemande(idDemande);
+
+			if (demandePaiement != null) {
+				autorisationService.logMessage(file, "update Demandepaiement status to P_ABDNEE_CLC_ANNULER");
+				demandePaiement.setEtatDemande("P_ABDNEE_CLC_ANNULER");
+				demandePaiement.setDemCvv("");
+				demandePaiement = demandePaiementService.save(demandePaiement);
+				String failUrl = demandePaiement.getFailURL();
+				String successUrl = demandePaiement.getSuccessURL();
+				if (failUrl != null && !failUrl.equals("")) {
+					response.sendRedirect(failUrl);
+				} else {
+					response.sendRedirect(successUrl);
+				}
+			} else {
+				autorisationService.logMessage(file, "DemandePaiement not found ");
+				response.sendRedirect(page);
+			}
+		} else {
+			// TODO: Gérer le cas où idDemande est null après les tentatives
+			autorisationService.logMessage(file, "idDemande is null");
+			response.sendRedirect(page);
+		}
+
+		autorisationService.logMessage(file, "*********** End quitter () ************** ");
+
+		return page;
 	}
 	
 	@RequestMapping(value = "/chalenge", method = RequestMethod.GET)
@@ -2378,7 +2446,7 @@ public class GWPaiementController {
 				fname, lname, email, country, phone, city, state, zipcode, address, mesg_type, merc_codeactivite,
 				acqcode, merchant_name, merchant_city, acq_type, processing_code, reason_code, transaction_condition,
 				transactiondate, transactiontime, date, rrn, heure, montanttrame, montantRechgtrame, num_trs = "", successURL, failURL = "",
-				transactiontype,cartenaps, dateExnaps, idclient;
+				transactiontype,cartenaps, dateExnaps, idclient, token_gen = "";
 
 		DemandePaiementDto demandeDto = new DemandePaiementDto();
 		Objects.copyProperties(demandeDto, dto);
@@ -2431,7 +2499,7 @@ public class GWPaiementController {
 				if(demandeDto.getExpery() != null) {
 					String dateToformat = demandeDto.getExpery();
 					autorisationService.logMessage(file,"dateToformat " + dateToformat);
-					String expirydateFormated = dateToformat.substring(5,7).concat(dateToformat.substring(0,2));
+					String expirydateFormated = dateToformat.substring(3,5).concat(dateToformat.substring(0,2));
 					autorisationService.logMessage(file,"expirydateFormated " + expirydateFormated);
 					expirydate = expirydateFormated;
 				}
@@ -2474,19 +2542,35 @@ public class GWPaiementController {
 		try {
 			current_merchant = commercantService.findByCmrNumcmr(merchantid);
 		} catch (Exception e) {
-			return autorisationService.handleMerchantAndInfoCommercantError(file, orderid, merchantid, null, demandeDtoMsg, model, page, true);
+			//return autorisationService.handleMerchantAndInfoCommercantError(file, orderid, merchantid, null, demandeDtoMsg, model, page, true);
+			page = autorisationService.handleMerchantAndInfoCommercantError(file, orderid, merchantid, null, demandeDtoMsg, model, page, true);
+			response.sendRedirect(request.getContextPath() + "/napspayment/auth/token/"+demandeDto.getTokencommande());
+			session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+			return null;
 		}
 
 		if (current_merchant == null) {
-			return autorisationService.handleMerchantAndInfoCommercantError(file, orderid, merchantid, null, demandeDtoMsg, model, page, true);
+			//return autorisationService.handleMerchantAndInfoCommercantError(file, orderid, merchantid, null, demandeDtoMsg, model, page, true);
+			page = autorisationService.handleMerchantAndInfoCommercantError(file, orderid, merchantid, null, demandeDtoMsg, model, page, true);
+			response.sendRedirect(request.getContextPath() + "/napspayment/auth/token/"+demandeDto.getTokencommande());
+			session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+			return null;
 		}
 
 		if (current_merchant.getCmrCodactivite() == null) {
-			return autorisationService.handleMerchantAndInfoCommercantError(file, orderid, merchantid, null, demandeDtoMsg, model, page, true);
+			//return autorisationService.handleMerchantAndInfoCommercantError(file, orderid, merchantid, null, demandeDtoMsg, model, page, true);
+			page = autorisationService.handleMerchantAndInfoCommercantError(file, orderid, merchantid, null, demandeDtoMsg, model, page, true);
+			response.sendRedirect(request.getContextPath() + "/napspayment/auth/token/"+demandeDto.getTokencommande());
+			session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+			return null;
 		}
 
 		if (current_merchant.getCmrCodbqe() == null) {
-			return autorisationService.handleMerchantAndInfoCommercantError(file, orderid, merchantid, null, demandeDtoMsg, model, page, true);
+			//return autorisationService.handleMerchantAndInfoCommercantError(file, orderid, merchantid, null, demandeDtoMsg, model, page, true);
+			page = autorisationService.handleMerchantAndInfoCommercantError(file, orderid, merchantid, null, demandeDtoMsg, model, page, true);
+			response.sendRedirect(request.getContextPath() + "/napspayment/auth/token/"+demandeDto.getTokencommande());
+			session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+			return null;
 		}
 
 		InfoCommercantDto current_infoCommercant = null;
@@ -2494,19 +2578,16 @@ public class GWPaiementController {
 		try {
 			current_infoCommercant = infoCommercantService.findByCmrCode(merchantid);
 		} catch (Exception e) {
-			return autorisationService.handleMerchantAndInfoCommercantError(file, orderid, merchantid, websiteid, demandeDtoMsg, model, page, false);
+			//return autorisationService.handleMerchantAndInfoCommercantError(file, orderid, merchantid, websiteid, demandeDtoMsg, model, page, false);
+			page = autorisationService.handleMerchantAndInfoCommercantError(file, orderid, merchantid, null, demandeDtoMsg, model, page, false);
+			response.sendRedirect(request.getContextPath() + "/napspayment/auth/token/"+demandeDto.getTokencommande());
+			session.setAttribute("error", demandeDtoMsg.getMsgRefus());
+			return null;
 		}
 
 		if (current_infoCommercant == null) {
-			return autorisationService.handleMerchantAndInfoCommercantError(file, orderid, merchantid, websiteid, demandeDtoMsg, model, page, false);
-		}
-
-		int i_card_valid = Util.isCardValid(cardnumber);
-
-		page = autorisationService.handleCardValidationError(i_card_valid, cardnumber, orderid, merchantid, file,
-				demandeDtoMsg, model, page);
-		if ("result".equals(page)) {
-			// return page;
+			//return autorisationService.handleMerchantAndInfoCommercantError(file, orderid, merchantid, websiteid, demandeDtoMsg, model, page, false);
+			page = autorisationService.handleMerchantAndInfoCommercantError(file, orderid, merchantid, null, demandeDtoMsg, model, page, false);
 			response.sendRedirect(request.getContextPath() + "/napspayment/auth/token/"+demandeDto.getTokencommande());
 			session.setAttribute("error", demandeDtoMsg.getMsgRefus());
 			return null;
@@ -2516,6 +2597,19 @@ public class GWPaiementController {
 
 		try {
 			DemandePaiementDto dmdToEdit = demandePaiementService.findByIdDemande(demandeDto.getIddemande());
+
+			autorisationService.logMessage(file, "Etat demande : " + demandeDto.getEtatDemande());
+			if (dmdToEdit.getEtatDemande().equals("SW_PAYE") || dmdToEdit.getEtatDemande().equals("PAYE")) {
+				dmdToEdit.setDemCvv("");
+				demandePaiementService.save(dmdToEdit);
+				autorisationService.logMessage(file, "Opération déjà effectuée");
+				dmdToEdit.setMsgRefus(
+						"La transaction en cours est déjà effectuée, votre compte ne sera pas débité.");
+				session.setAttribute("idDemande", dmdToEdit.getIddemande());
+				model.addAttribute("demandeDto", dmdToEdit);
+				page = "operationEffectue";
+				return page;
+			}
 
 			dmdToEdit.setDemPan(cardnumber);
 			dmdToEdit.setDemCvv(cvv);
@@ -2536,10 +2630,8 @@ public class GWPaiementController {
 			demandeDto.setExpery(expirydate);
 			demandeDto.setFlagNvCarte(flagNvCarte);
 			demandeDto.setFlagSaveCarte(flagSaveCarte);
-			idclient = demandeDto.getIdClient();
-			if (idclient == null) {
-				idclient = "";
-			}
+			idclient = demandeDto.getIdClient() == null ? "" : demandeDto.getIdClient();
+			token = demandeDto.getToken() == null ? "" : demandeDto.getToken();
 			cartenaps = demandeDto.getCartenaps() == null ? "" : demandeDto.getCartenaps();
 			dateExnaps = demandeDto.getDateexpnaps() == null ? "" : demandeDto.getDateexpnaps();
 
@@ -2551,6 +2643,16 @@ public class GWPaiementController {
 			page = "result";
 			//return page;
 			response.sendRedirect(failURL);
+			return null;
+		}
+		int i_card_valid = Util.isCardValid(cardnumber);
+
+		page = autorisationService.handleCardValidationError(i_card_valid, cardnumber, orderid, merchantid,
+				demandeDto, file, demandeDtoMsg, model, page);
+		if ("result".equals(page)) {
+			// return page;
+			response.sendRedirect(request.getContextPath() + "/napspayment/auth/token/"+demandeDto.getTokencommande());
+			session.setAttribute("error", demandeDtoMsg.getMsgRefus());
 			return null;
 		}
 
@@ -2570,6 +2672,7 @@ public class GWPaiementController {
 			autorisationService.logMessage(file, "Opération déjà effectuée");
 			demandeDto.setMsgRefus(
 					"La transaction en cours est déjà effectuée, votre compte ne sera pas débité.");
+			session.setAttribute("idDemande", demandeDto.getIddemande());
 			model.addAttribute("demandeDto", demandeDto);
 			page = "operationEffectue";
 			//return page;
@@ -2635,10 +2738,11 @@ public class GWPaiementController {
 						"cardtokenDto expirydate formated : " + expirydateFormated);
 				Date dateExp;
 				dateExp = dateFormatSimple.parse(expirydateFormated);
+				String tokencard = Util.generateCardToken(idclient);
+				boolean isSaved = false;
 
 				if (checkCardNumber.size() == 0) {
 					// TODO: insert new cardToken
-					String tokencard = Util.generateCardToken(idclient);
 
 					// TODO: test if token not exist in DB
 					CardtokenDto checkCardToken = cardtokenService.findByIdMerchantAndToken(idclient, tokencard);
@@ -2670,6 +2774,7 @@ public class GWPaiementController {
 					CardtokenDto cardtokenSaved = cardtokenService.save(cardtokenDto);
 
 					autorisationService.logMessage(file, "Saving CARDTOKEN OK");
+					isSaved = true;
 				} else {
 					autorisationService.logMessage(file, "Carte deja enregistrée");
 					for(CardtokenDto crd : checkCardNumber) {
@@ -2688,6 +2793,11 @@ public class GWPaiementController {
 					}
 				}
 
+				if(isSaved) {
+					autorisationService.logMessage(file,"isSaved = " + isSaved + " => setToken = " + tokencard);
+					demandeDto.setToken(tokencard);
+					demandeDto = demandePaiementService.save(demandeDto);
+				}
 			} catch (ParseException e) {
 				logger.error("Exception : " , e);
 				autorisationService.logMessage(file, "savingcardtoken 500 Error during CARDTOKEN Saving " + Util.formatException(e));
@@ -2757,6 +2867,8 @@ public class GWPaiementController {
 
 		expiry = threeDsecureResponse.getExpiry() == null ? "" : threeDsecureResponse.getExpiry();
 
+		token_gen = demandeDto.getToken() == null ? "" : demandeDto.getToken();
+
 		if (idDemande == null || idDemande.equals("")) {
 			demandeDto.setDemCvv("");
 			demandeDto.setEtatDemande("MPI_KO");
@@ -2822,14 +2934,10 @@ public class GWPaiementController {
 			reason_code = "H";
 			transaction_condition = "6";
 			mesg_type = "0";
+			processing_code = "0";
 
-			processing_code = "";
-			if (transactiontype.equals("0")) {
-				processing_code = "0";
-			} else if (transactiontype.equals("P")) {
+			if (transactiontype.equals("P")) {
 				processing_code = "P";
-			} else {
-				processing_code = "0";
 			}
 
 			// TODO: ajout cavv (cavv+eci) xid dans la trame
@@ -3408,7 +3516,7 @@ public class GWPaiementController {
 					String clesigne = current_infoCommercant.getClePub();
 
 					String montanttrx = String.format("%.2f", dmd.getMontant()).replace(",", ".");
-					String token_gen = "";
+					token_gen = dmd.getToken() == null ? "" : dmd.getToken();
 
 					autorisationService.logMessage(file,
 							"sendPOST(" + callbackURL + "," + clesigne + "," + dmd.getCommande() + ","
@@ -3567,7 +3675,7 @@ public class GWPaiementController {
 				String data_noncrypt = "id_commande=" + orderid + "&nomprenom=" + fname + "&email=" + email
 						+ "&montant=" + montantSansFrais + "&frais=" + frais + "&repauto=" + coderep + "&numAuto=" + authnumber
 						+ "&numCarte=" + Util.formatCard(cardnumber) + "&typecarte=" + dmd.getTypeCarte()
-						+ "&numTrans=" + transactionid;
+						+ "&numTrans=" + transactionid + "&token=" + token_gen;
 
 				autorisationService.logMessage(file, "data_noncrypt : " + data_noncrypt);
 				logger.info("data_noncrypt : " + data_noncrypt);
@@ -3582,7 +3690,7 @@ public class GWPaiementController {
 					data_noncrypt = "id_commande=" + orderid + "&nomprenom=" + fname + "&email="
 							+ email + "&montant=" + amount + "&frais=" + "" + "&repauto=" + coderep
 							+ "&numAuto=" + authnumber + "&numCarte=" + Util.formatCard(cardnumber)
-							+ "&typecarte=" + dmd.getTypeCarte() + "&numTrans=" + transactionid;
+							+ "&typecarte=" + dmd.getTypeCarte() + "&numTrans=" + transactionid + "&token=" + token_gen;
 
 					autorisationService.logMessage(file, "data_noncrypt : " + data_noncrypt);
 					// TODO : If the length is still greater than 200, reduce the length of email
@@ -3594,7 +3702,7 @@ public class GWPaiementController {
 					data_noncrypt = "id_commande=" + orderid + "&nomprenom=" + fname + "&email="
 							+ email + "&montant=" + amount + "&frais=" + "" + "&repauto=" + coderep
 							+ "&numAuto=" + authnumber + "&numCarte=" + Util.formatCard(cardnumber)
-							+ "&typecarte=" + dmd.getTypeCarte() + "&numTrans=" + transactionid;
+							+ "&typecarte=" + dmd.getTypeCarte() + "&numTrans=" + transactionid + "&token=" + token_gen;
 
 					autorisationService.logMessage(file, "data_noncrypt : " + data_noncrypt);
 				}
