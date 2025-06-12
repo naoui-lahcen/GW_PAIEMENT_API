@@ -31,6 +31,7 @@ import javax.xml.namespace.QName;
 import com.google.gson.Gson;
 import ma.m2m.gateway.dto.*;
 import ma.m2m.gateway.lydec.*;
+import ma.m2m.gateway.model.ReccuringTransaction;
 import ma.m2m.gateway.service.*;
 import ma.m2m.gateway.threedsecure.RequestEnvoieEmail;
 import org.apache.http.HttpResponse;
@@ -170,6 +171,10 @@ public class GWPaiementController {
 	//@Autowired
 	private final CFDGIService cfdgiService;
 
+	private final ReccuringTransactionService recService;
+
+	private final EmetteurService emetteurService;
+
 	private LocalDateTime date;
 	private String folder;
 	private String file;
@@ -189,7 +194,8 @@ public class GWPaiementController {
 			InfoCommercantService infoCommercantService,
 			CardtokenService cardtokenService, CodeReponseService codeReponseService,
 			FactureLDService factureLDService, ArticleDGIService articleDGIService,
-								CFDGIService cfdgiService) {
+			CFDGIService cfdgiService,ReccuringTransactionService recService,
+			EmetteurService emetteurService) {
 		date = LocalDateTime.now(ZoneId.systemDefault());
 		folder = date.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
 		this.demandePaiementService = demandePaiementService;
@@ -202,6 +208,8 @@ public class GWPaiementController {
 		this.factureLDService = factureLDService;
 		this.articleDGIService = articleDGIService;
 		this.cfdgiService = cfdgiService;
+		this.recService = recService;
+		this.emetteurService = emetteurService;
 	}
 
 	//@RequestMapping(path = "/")
@@ -216,8 +224,12 @@ public class GWPaiementController {
 
 		String msg = "Bienvenue dans la plateforme de paiement NAPS !!!";
 
-		System.out.println(Util.isValidEmail("francesca.dandrea@studenti.unicampania.it")); // true
-		System.out.println(Util.isValidEmail("francesca.dandrea@studenti.unicampania.i"));  // false
+		EmetteurDto natIssuer = emetteurService.getNATIusser("4819221771373771");
+		if(natIssuer == null) {
+			System.out.println("natIssuer null => International");
+		} else {
+			System.out.println("natIssuer != null => National ");
+		}
 
 		autorisationService.logMessage(filee, "*********** End home () ************** ");
 		logger.info("*********** End home () ************** ");
@@ -1430,7 +1442,6 @@ public class GWPaiementController {
 			String first_auth = "";
 			long lrec_serie = 0;
 
-			// TODO: controls
 			autorisationService.logMessage(file, "Switch processing start ...");
 
 			String tlv = "";
@@ -2960,7 +2971,6 @@ public class GWPaiementController {
 			String first_auth = "";
 			long lrec_serie = 0;
 
-			// TODO: controls
 			autorisationService.logMessage(file, "Switch processing start ...");
 
 			String tlv = "";

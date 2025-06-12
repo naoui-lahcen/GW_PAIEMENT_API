@@ -35,21 +35,17 @@ public class TelecollecteServiceImpl implements TelecollecteService {
 	public TelecollecteDto save(TelecollecteDto tlcDto) {
 		Telecollecte tlc= telecollecteMapper.vo2Model(tlcDto);
 		
-		TelecollecteDto tlctoSave = telecollecteMapper.model2VO(telecollecteDao.save(tlc));
-		
-		return tlctoSave;
+		return telecollecteMapper.model2VO(telecollecteDao.save(tlc));
 	}
 
 	@Override
 	public Integer getMAX_ID() {
-		Integer idTlc = telecollecteDao.getMAX_ID();
-		return idTlc;
+		return telecollecteDao.getMAX_ID();
 	}
 	
 	@Override
 	public Integer getMAX_ID(String merchantid) {
-		Integer idTlc = telecollecteDao.getMAX_ID(merchantid);
-		return idTlc;
+		return telecollecteDao.getMAX_ID(merchantid);
 	}
 
 }

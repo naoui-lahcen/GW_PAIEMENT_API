@@ -40,10 +40,8 @@ public class DemandePaiementServiceImpl implements DemandePaiementService {
 	public DemandePaiementDto save(DemandePaiementDto demandePaiementDto) {
 		
 		DemandePaiement demandePaiement = demandePaiementMapper.vo2Model(demandePaiementDto);
-
-		DemandePaiementDto demandePaiementSaved = demandePaiementMapper.model2VO(demandePaiementDao.save(demandePaiement));
 		
-		return demandePaiementSaved;
+		return demandePaiementMapper.model2VO(demandePaiementDao.save(demandePaiement));
 	}
 
 	@Override

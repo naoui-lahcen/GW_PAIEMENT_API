@@ -495,7 +495,6 @@ public class ProcessOutController {
 								champ_cavv = null;
 							}
 
-							// TODO: controls
 							autorisationService.logMessage(file, "Switch processing start ...");
 
 							String tlv = "";
@@ -1669,7 +1668,7 @@ public class ProcessOutController {
 			}
 
 			boolean cvv_present = checkCvvPresence(cvv);
-			// TODO: controls
+
 			autorisationService.logMessage(file, "Switch processing start ...");
 
 			String tlv = "";
@@ -2764,7 +2763,6 @@ public class ProcessOutController {
 		String tlv = "";
 		autorisationService.logMessage(file, "Preparing Switch TLV Request start ...");
 
-		// TODO: controls
 		String merc_codeactivite = current_merchant.getCmrCodactivite();
 		String acqcode = current_merchant.getCmrCodbqe();
 

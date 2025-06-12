@@ -14,4 +14,5 @@ public interface EmetteurService {
 	
 	List<EmetteurDto> findByBindebut(String binDebut);
 
+	EmetteurDto getNATIusser(String binDebut);
 }

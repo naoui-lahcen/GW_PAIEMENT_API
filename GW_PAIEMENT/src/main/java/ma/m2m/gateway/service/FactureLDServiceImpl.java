@@ -36,9 +36,8 @@ public class FactureLDServiceImpl implements FactureLDService {
 	@Override
 	public FactureLDDto save(FactureLDDto factureLDDto) {
 		FactureLD factureLD = factureLDMapper.vo2Model(factureLDDto);
-		
-		FactureLDDto FactureLDSaved = factureLDMapper.model2VO(factureLDDao.save(factureLD));
-		return FactureLDSaved;
+
+		return factureLDMapper.model2VO(factureLDDao.save(factureLD));
 	}
 
 }

@@ -21,6 +21,8 @@ import javax.servlet.http.HttpServletResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ma.m2m.gateway.dto.*;
+import ma.m2m.gateway.model.Emetteur;
+import ma.m2m.gateway.service.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Controller;
@@ -38,15 +40,6 @@ import com.google.gson.GsonBuilder;
 
 import ma.m2m.gateway.config.JwtTokenUtil;
 import ma.m2m.gateway.reporting.GenerateExcel;
-import ma.m2m.gateway.service.AutorisationService;
-import ma.m2m.gateway.service.CardtokenService;
-import ma.m2m.gateway.service.CodeReponseService;
-import ma.m2m.gateway.service.CommercantService;
-import ma.m2m.gateway.service.DemandePaiementService;
-import ma.m2m.gateway.service.GalerieService;
-import ma.m2m.gateway.service.HistoAutoGateService;
-import ma.m2m.gateway.service.TelecollecteService;
-import ma.m2m.gateway.service.TransactionService;
 import ma.m2m.gateway.switching.SwitchTCPClient;
 import ma.m2m.gateway.switching.SwitchTCPClientV2;
 import ma.m2m.gateway.threedsecure.ThreeDSecureResponse;
@@ -143,6 +136,10 @@ public class APIController {
 
 	//@Autowired
 	private final GalerieService galerieService;
+
+	private final ReccuringTransactionService recService;
+
+	private final EmetteurService emetteurService;
 	
 	public static final String DF_YYYY_MM_DD_HH_MM_SS = "yyyy-MM-dd HH:mm:ss";
 	public static final String FORMAT_DEFAUT = "yyyy-MM-dd";
@@ -154,7 +151,8 @@ public class APIController {
 			HistoAutoGateService histoAutoGateService, CommercantService commercantService, 
 			GalerieService galerieService, TelecollecteService telecollecteService, 
 			TransactionService transactionService, CardtokenService cardtokenService, 
-			CodeReponseService codeReponseService) {
+			CodeReponseService codeReponseService, ReccuringTransactionService recService,
+						 EmetteurService emetteurService) {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		dateF = LocalDateTime.now(ZoneId.systemDefault());
 		folder = dateF.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
@@ -168,6 +166,8 @@ public class APIController {
 		this.transactionService = transactionService;
 		this.cardtokenService = cardtokenService;
 		this.codeReponseService = codeReponseService;
+		this.recService = recService;
+		this.emetteurService = emetteurService;
 	}
 
 	@PostMapping(value = "/napspayment/authorization", consumes = "application/json", produces = "application/json")
@@ -397,11 +397,13 @@ public class APIController {
 			transactiondate = formatter_1.format(trsdate);
 			transactiontime = formatter_2.format(trsdate);
 			dmd.setDemDateTime(dateFormat.format(new Date()));
-			if (linkRequestDto.getRecurring() != null && linkRequestDto.getRecurring().equalsIgnoreCase("Y"))
+			if (linkRequestDto.getRecurring() != null && linkRequestDto.getRecurring().equalsIgnoreCase("Y")) {
 				dmd.setIsCof("Y");
-			if (linkRequestDto.getRecurring() != null && linkRequestDto.getRecurring().equalsIgnoreCase("N"))
+			}
+			if (linkRequestDto.getRecurring() != null && linkRequestDto.getRecurring().equalsIgnoreCase("N")) {
 				dmd.setIsCof("N");
-
+			}
+			dmd.setIs3ds(auth3ds);
 			dmd.setIsAddcard("N");
 			dmd.setIsTokenized("N");
 			dmd.setIsWhitelist("N");
@@ -615,6 +617,28 @@ public class APIController {
 				champ_cavv = null;
 			}
 
+			EmetteurDto natIssuer = emetteurService.getNATIusser(cardnumber);
+
+			int card_destination = 1;
+
+			if (natIssuer == null) {
+				card_destination = Util.card_switch(folder, file, cardnumber, false, null);
+				autorisationService.logMessage(file, "natIssuer is null card_destination : " + card_destination);
+			} else {
+				String switch_server_code = natIssuer.getEmtCodeserv();
+				if (switch_server_code == null) {
+					switch_server_code = "EMPTY";
+				}
+				card_destination = Util.card_switch(folder, file, cardnumber, true, switch_server_code.trim());
+				autorisationService.logMessage(file, "natIssuer is not null card_destination/switch_server_code : "
+						+ card_destination + " / " + switch_server_code);
+			}
+
+			boolean reccurent_cvv_check_obligatory = false;
+			if (card_destination == 0 || card_destination == 1) {
+				reccurent_cvv_check_obligatory = true;
+			}
+
 			boolean cvv_present = checkCvvPresence(cvv);
 			boolean is_reccuring = isReccuringCheck(linkRequestDto.getRecurring());
 			boolean is_first_trs = true;
@@ -623,12 +647,15 @@ public class APIController {
 			}
 			String first_auth = "";
 			long lrec_serie = 0;
+			String rec_serie = "";
 
-			// TODO: controls
 			autorisationService.logMessage(file, "Switch processing start ...");
 
 			String tlv = "";
 			autorisationService.logMessage(file, "Preparing Switch TLV Request start ...");
+
+			autorisationService.logMessage(file, "cvv_present : " + cvv_present);
+			autorisationService.logMessage(file, "is_reccuring : " + is_reccuring);
 
 			if (!cvv_present && !is_reccuring) {
 				dmd.setDemCvv("");
@@ -645,7 +672,6 @@ public class APIController {
 			if (cvv_present && !is_reccuring) {
 				autorisationService.logMessage(file, "not reccuring , normal cvv_present && !is_reccuring");
 				try {
-
 					tlv = new TLVEncoder().withField(Tags.tag0, mesg_type).withField(Tags.tag1, cardnumber)
 							.withField(Tags.tag3, processing_code).withField(Tags.tag22, transaction_condition)
 							.withField(Tags.tag49, acq_type).withField(Tags.tag14, montanttrame)
@@ -657,7 +683,6 @@ public class APIController {
 							.withField(Tags.tag11, merchant_name).withField(Tags.tag12, merchant_city)
 							.withField(Tags.tag90, acqcode).withField(Tags.tag167, champ_cavv)
 							.withField(Tags.tag168, xid).encode();
-
 				} catch (Exception err4) {
 					dmd.setDemCvv("");
 					demandePaiementService.save(dmd);
@@ -668,14 +693,118 @@ public class APIController {
 					return Util.getMsgError(folder, file, linkRequestDto, "The current transaction was not successful, your account will not be debited, please try again.",
 							"96");
 				}
-
 				autorisationService.logMessage(file, "Switch TLV Request :[" + tlv + "]");
-
 			}
 
-			// TODO: reccuring
+			// TODO: 12-06-2025 implemente reccuring payment
 			if (is_reccuring) {
-				autorisationService.logMessage(file, "reccuring");
+				is_first_trs = isFirstTransaction(linkRequestDto.getMerchantid(), cardnumber);
+
+				// card uknown in system ==> first transaction
+				autorisationService.logMessage(file, "is_first_trs : " + is_first_trs);
+				autorisationService.logMessage(file, "reccurent_cvv_check_obligatory : " + reccurent_cvv_check_obligatory);
+
+				if (is_first_trs) {
+					if (!cvv_present) { // is the cvv present ?
+						if (reccurent_cvv_check_obligatory) { // is the cvv obligatory ? national switch yes
+							autorisationService.logMessage(file,"authorization 500 cvv not set , reccuring flag set to Y and first transaction is detected orderid:[" + linkRequestDto.getOrderid() + "] and merchantid:[" + linkRequestDto.getMerchantid() + "]");
+							return Util.getMsgError(folder, file, linkRequestDto, "The current transaction was not successful, cvv not set reccuring flag set to Y and first transaction is detected, please try again.",
+									"17");
+						} else {
+							// cvv not obligatory in first transaction, international
+							autorisationService.logMessage(file, "cvv not obligatory in first transaction, international");
+							try {
+								tlv = new TLVEncoder().withField(Tags.tag0, mesg_type).withField(Tags.tag1, cardnumber)
+										.withField(Tags.tag3, processing_code).withField(Tags.tag22, transaction_condition)
+										.withField(Tags.tag49, acq_type).withField(Tags.tag14, montanttrame)
+										.withField(Tags.tag15, currency).withField(Tags.tag23, reason_code)
+										.withField(Tags.tag18, "761454").withField(Tags.tag42, expirydate)
+										.withField(Tags.tag16, date).withField(Tags.tag17, heure)
+										.withField(Tags.tag10, merc_codeactivite).withField(Tags.tag8, "0" + linkRequestDto.getMerchantid())
+										.withField(Tags.tag9, linkRequestDto.getMerchantid()).withField(Tags.tag66, rrn)
+										.withField(Tags.tag11, merchant_name).withField(Tags.tag12, merchant_city)
+										.withField(Tags.tag90, acqcode).withField(Tags.tag167, champ_cavv)
+										.withField(Tags.tag168, xid).withField(Tags.tag601, "R111111111").encode();
+							} catch (Exception err4) {
+								dmd.setDemCvv("");
+								demandePaiementService.save(dmd);
+								autorisationService.logMessage(file,
+										"authorization 500 Error during switch tlv buildup for given orderid:[" + linkRequestDto.getOrderid()
+												+ "] and merchantid:[" + linkRequestDto.getMerchantid() + "]" + Util.formatException(err4));
+
+								return Util.getMsgError(folder, file, linkRequestDto, "The current transaction was not successful, your account will not be debited, please try again.",
+										"96");
+							}
+							autorisationService.logMessage(file, "Switch TLV Request :[" + tlv + "]");
+						}
+					} else { // first transaction with cvv present, a normal transaction
+						autorisationService.logMessage(file, "first transaction with cvv present, a normal transaction");
+						try {
+							tlv = new TLVEncoder().withField(Tags.tag0, mesg_type).withField(Tags.tag1, cardnumber)
+									.withField(Tags.tag3, processing_code).withField(Tags.tag22, transaction_condition)
+									.withField(Tags.tag49, acq_type).withField(Tags.tag14, montanttrame)
+									.withField(Tags.tag15, currency).withField(Tags.tag23, reason_code)
+									.withField(Tags.tag18, "761454").withField(Tags.tag42, expirydate)
+									.withField(Tags.tag16, date).withField(Tags.tag17, heure)
+									.withField(Tags.tag10, merc_codeactivite).withField(Tags.tag8, "0" + linkRequestDto.getMerchantid())
+									.withField(Tags.tag9, linkRequestDto.getMerchantid()).withField(Tags.tag66, rrn).withField(Tags.tag67, cvv)
+									.withField(Tags.tag11, merchant_name).withField(Tags.tag12, merchant_city)
+									.withField(Tags.tag90, acqcode).withField(Tags.tag167, champ_cavv)
+									.withField(Tags.tag168, xid)/*.withField(Tags.tag601, "R111111111")*/.encode();
+						} catch (Exception err4) {
+							dmd.setDemCvv("");
+							demandePaiementService.save(dmd);
+							autorisationService.logMessage(file,
+									"authorization 500 Error during switch tlv buildup for given orderid:[" + linkRequestDto.getOrderid()
+											+ "] and merchantid:[" + linkRequestDto.getMerchantid() + "]" + Util.formatException(err4));
+
+							return Util.getMsgError(folder, file, linkRequestDto, "The current transaction was not successful, your account will not be debited, please try again.",
+									"96");
+						}
+						autorisationService.logMessage(file, "Switch TLV Request :[" + tlv + "]");
+					}
+
+				} else { // reccuring
+					autorisationService.logMessage(file, "trs already existe");
+					try {
+						first_auth = getFirstTransactionAuth(linkRequestDto.getMerchantid(), cardnumber);
+						lrec_serie = getTransactionSerie(linkRequestDto.getMerchantid(), cardnumber);
+
+					} catch (Exception e) {
+						dmd.setDemCvv("");
+						demandePaiementService.save(dmd);
+						autorisationService.logMessage(file,"authorization 500 DB Error duing reccurent transations serie check orderid:[" + linkRequestDto.getOrderid() + "] and merchantid:[" + linkRequestDto.getMerchantid() + "]" + Util.formatException(e));
+						return Util.getMsgError(folder, file, linkRequestDto, "The current transaction was not successful, your account will not be debited, please try again.",
+								"96");
+					}
+
+					lrec_serie = lrec_serie + 1;
+					rec_serie = String.format("%03d", lrec_serie);
+					autorisationService.logMessage(file, "lrec_serie + 1 : " + lrec_serie);
+					autorisationService.logMessage(file, "rec_serie : " + rec_serie);
+
+					try {
+						tlv = new TLVEncoder().withField(Tags.tag0, mesg_type).withField(Tags.tag1, cardnumber)
+								.withField(Tags.tag3, processing_code).withField(Tags.tag22, transaction_condition)
+								.withField(Tags.tag49, acq_type).withField(Tags.tag14, montanttrame)
+								.withField(Tags.tag15, currency).withField(Tags.tag23, reason_code)
+								.withField(Tags.tag18, "761454").withField(Tags.tag42, expirydate)
+								.withField(Tags.tag16, date).withField(Tags.tag17, heure)
+								.withField(Tags.tag10, merc_codeactivite).withField(Tags.tag8, "0" + linkRequestDto.getMerchantid())
+								.withField(Tags.tag9, linkRequestDto.getMerchantid()).withField(Tags.tag66, rrn).withField(Tags.tag67, cvv)
+								.withField(Tags.tag11, merchant_name).withField(Tags.tag12, merchant_city)
+								.withField(Tags.tag90, acqcode).withField(Tags.tag167, champ_cavv)
+								.withField(Tags.tag168, xid).withField(Tags.tag601, "R" + rec_serie + first_auth)
+								.encode();
+					} catch (Exception err4) {
+						dmd.setDemCvv("");
+						demandePaiementService.save(dmd);
+						autorisationService.logMessage(file,"authorization 500 Error during switch tlv buildup for given orderid orderid:[" + linkRequestDto.getOrderid() + "] and merchantid:[" + linkRequestDto.getMerchantid() + "]" + Util.formatException(err4));
+						return Util.getMsgError(folder, file, linkRequestDto, "The current transaction was not successful, your account will not be debited, please try again.",
+								"96");
+					}
+					autorisationService.logMessage(file, "Switch TLV Request :[" + tlv + "]");
+				}
 			}
 
 			autorisationService.logMessage(file, "Preparing Switch TLV Request end.");
@@ -960,135 +1089,6 @@ public class APIController {
 									+ linkRequestDto.getOrderid() + "]" + Util.formatException(e));
 				}
 
-				String capture_status = "N";
-				int exp_flag = 0;
-				/*
-				 * lnaoui commented le 2024-05-17 Blocage Traitement EOD 17/05/2024 // TODO: URGENT if
-				 * (capture.equalsIgnoreCase("Y")) { // TODO: Si transactiontype = 0 (payement) on
-				 * fait la telecollecte automatic if (!transactiontype.equalsIgnoreCase("P")) {
-				 *
-				 * // TODO: 2024-05-16 HistoAutoGateDto histToCapture= null; try { if(hist.getId() ==
-				 * null) { // TODO: get histoauto check if exist histToCapture =
-				 * histoAutoGateService.findLastByHatNumCommandeAndHatNumcmr(linkRequestDto.getOrderid(),
-				 * linkRequestDto.getMerchantid()); if(histToCapture ==null) { histToCapture = hist; } } else {
-				 * histToCapture = hist; } } catch (Exception err2) {
-				 * autorisationService.logMessage(file,
-				 * "authorization 500 Error during HistoAutoGate findLastByHatNumCommandeAndHatNumcmr orderid:["
-				 * + linkRequestDto.getOrderid() + "] and merchantid:[" + linkRequestDto.getMerchantid() + "]" + Util.formatException(err2)); } // TODO: 2024-05-16
-				 *
-				 * Date current_date = null; current_date = new Date();
-				 * autorisationService.logMessage(file, "Automatic capture start...");
-				 *
-				 * autorisationService.logMessage(file, "Getting authnumber");
-				 *
-				 * String authnumber = histToCapture.getHatNautemt();
-				 * autorisationService.logMessage(file, "authnumber : [" + authnumber +
-				 * "]");
-				 *
-				 * autorisationService.logMessage(file, "Getting authnumber");
-				 * TransactionDto trs_check = null;
-				 *
-				 * try { trs_check = transactionService.findByTrsnumautAndTrsnumcmr(authnumber,
-				 * linkRequestDto.getMerchantid()); } catch (Exception ee) {
-				 *
-				 * autorisationService.logMessage(file,
-				 * "trs_check trs_check exception e : [" + ee.toString() + "]"); }
-				 *
-				 * if (trs_check != null) { // TODO: do nothing Util.writeInFileTransaction(folder,
-				 * file, "trs_check != null do nothing for now ..."); } else {
-				 *
-				 * autorisationService.logMessage(file, "inserting into telec start ...");
-				 * try {
-				 *
-				 * // TODO: insert into telec
-				 *
-				 * TelecollecteDto n_tlc = telecollecteService.getMAXTLC_N(linkRequestDto.getMerchantid());
-				 *
-				 * long lidtelc = 0;
-				 *
-				 * if (n_tlc == null) { autorisationService.logMessage(file,
-				 * "getMAXTLC_N n_tlc = null"); Integer idtelc = null;
-				 *
-				 * TelecollecteDto tlc = null;
-				 *
-				 * // TODO: insert into telec idtelc = telecollecteService.getMAX_ID(linkRequestDto.getMerchantid());
-				 * autorisationService.logMessage(file, "getMAX_ID idtelc : " + idtelc);
-				 *
-				 * if (idtelc != null) { lidtelc = idtelc.longValue() + 1; } else { lidtelc = 1;
-				 * } tlc = new TelecollecteDto(); tlc.setTlc_numtlcolcte(lidtelc);
-				 *
-				 * tlc.setTlcNumtpe(histToCapture.getHatCodtpe());
-				 *
-				 * tlc.setTlcDatcrtfich(current_date); tlc.setTlc_nbrtrans(new Double(1));
-				 * tlc.setTlcGest("N");
-				 *
-				 * tlc.setTlcDatremise(current_date); tlc.setTlcNumremise(new
-				 * Double(lidtelc)); // TODO: tlc.setTlc_numfich(new Double(0)); String tmpattern =
-				 * "HH:mm"; SimpleDateFormat sftm = new SimpleDateFormat(tmpattern); String stm
-				 * = sftm.format(current_date); tlc.setTlcHeuremise(stm);
-				 *
-				 * tlc.setTlcCodbq(acqcode); tlc.setTlcNumcmr(linkRequestDto.getMerchantid());
-				 * tlc.setTlcNumtpe(websiteid); telecollecteService.save(tlc);
-				 *
-				 * } else { autorisationService.logMessage(file, "n_tlc !=null ");
-				 *
-				 * lidtelc = n_tlc.getTlc_numtlcolcte(); double nbr_trs =
-				 * n_tlc.getTlc_nbrtrans();
-				 *
-				 * nbr_trs = nbr_trs + 1;
-				 *
-				 * n_tlc.setTlc_nbrtrans(nbr_trs);
-				 *
-				 * telecollecteService.save(n_tlc);
-				 *
-				 * }
-				 *
-				 * // TODO: insert into transaction TransactionDto trs = new TransactionDto();
-				 * trs.setTrsNumcmr(linkRequestDto.getMerchantid());
-				 * trs.setTrsNumtlcolcte(Double.valueOf(lidtelc));
-				 *
-				 * String frmt_cardnumber = Util.formatagePan(cardnumber);
-				 * trs.setTrsCodporteur(frmt_cardnumber);
-				 *
-				 * double dmnt = 0;
-				 *
-				 * dmnt = Double.parseDouble(amount);
-				 *
-				 * trs.setTrsMontant(dmnt); // TODO: trs.setTrsDattrans(new Date());
-				 *
-				 * current_date = new Date(); Date current_date_1 =
-				 * getDateWithoutTime(current_date); trs.setTrsDattrans(current_date_1);
-				 *
-				 * trs.setTrsnumaut(authnumber); trs.setTrsEtat("N");
-				 * trs.setTrsDevise(histToCapture.getHatDevise()); trs.setTrsCertif("N");
-				 * Integer idtrs = transactionService.getMAX_ID(); long lidtrs =
-				 * idtrs.longValue() + 1; trs.setTrs_id(lidtrs); trs.setTrsCommande(linkRequestDto.getOrderid());
-				 * trs.setTrsProcod("0"); trs.setTrsGroupe(websiteid); trs.setTrsCodtpe(0.0);
-				 * trs.setTrsNumbloc(0.0); trs.setTrsNumfact(0.0);
-				 * transactionService.save(trs);
-				 *
-				 * histToCapture.setHatEtat('T'); histToCapture.setHatdatetlc(current_date);
-				 * histToCapture.setOperateurtlc("mxplusapi");
-				 * histoAutoGateService.save(histToCapture);
-				 *
-				 * capture_id = String.format("%040d", new
-				 * BigInteger(UUID.randomUUID().toString().replace("-", ""), 36)); Date dt = new
-				 * Date(); String dtpattern = FORMAT_DEFAUT; SimpleDateFormat sfdt = new
-				 * SimpleDateFormat(dtpattern); String sdt = sfdt.format(dt); String tmpattern =
-				 * "HH:mm:ss"; SimpleDateFormat sftm = new SimpleDateFormat(tmpattern); String
-				 * stm = sftm.format(dt); autorisationService.logMessage(file,
-				 * "inserting into telec ok"); capture_status = "Y";
-				 *
-				 * } catch (Exception e) { exp_flag = 1; Util.writeInFileTransaction(folder,
-				 * file, "inserting into telec ko..do nothing" + Util.formatException(e)); } } if
-				 * (capture_status.equalsIgnoreCase("Y") && exp_flag == 1)
-				 * capture_status.equalsIgnoreCase("N");
-				 *
-				 * autorisationService.logMessage(file, "Automatic capture end."); } // TODO: Si
-				 * transactiontype = P (pre-auto) on fait pas la telecollecte automatic, // TODO: on
-				 * le fait dans la confirmation de la pre-auto }
-				 */
-
 			} else {
 
 				autorisationService.logMessage(file, "transaction declined !!! ");
@@ -1166,8 +1166,61 @@ public class APIController {
 			}
 
 			// TODO: reccurent transaction processing
+			// first time transaction insert into rec
+			if (is_first_trs && is_reccuring && coderep.equalsIgnoreCase("00")) {
+
+				ReccuringTransactionDto rec_1 = new ReccuringTransactionDto();
+				try {
+					rec_1.setAmount(amount);
+					rec_1.setAuthorizationNumber(authnumber);
+					rec_1.setCardnumber(cardnumber);
+					rec_1.setCountry(linkRequestDto.getCountry());
+					rec_1.setCurrency(currency);
+					rec_1.setFirstTransaction("Y");
+					rec_1.setFirstTransactionNumber(authnumber);
+					rec_1.setMerchantid(linkRequestDto.getMerchantid());
+					rec_1.setOrderid(linkRequestDto.getOrderid());
+					rec_1.setPaymentid(paymentid);
+					rec_1.setReccuringNumber(0);
+					rec_1.setToken(linkRequestDto.getToken());
+					rec_1.setTransactionid(linkRequestDto.getTransactionid());
+					rec_1.setWebsiteid(websiteid.length() > 3 ? websiteid.substring(0,3) : websiteid);
+
+					recService.save(rec_1);
+					autorisationService.logMessage(file, "rec_1 " + rec_1.toString());
+				} catch (Exception e) {
+					autorisationService.logMessage(file,
+							"authorization 500 Error during save in api_reccuring orderid:[" + linkRequestDto.getOrderid() + "]" + Util.formatException(e));
+				}
+			}
 
 			// TODO: reccurent insert and update
+			if (!is_first_trs && is_reccuring && coderep.equalsIgnoreCase("00")) {
+
+				ReccuringTransactionDto rec_1 = new ReccuringTransactionDto();
+				try {
+					rec_1.setAmount(amount);
+					rec_1.setAuthorizationNumber(authnumber);
+					rec_1.setCardnumber(cardnumber);
+					rec_1.setCountry(linkRequestDto.getCountry());
+					rec_1.setCurrency(currency);
+					rec_1.setFirstTransaction("N");
+					rec_1.setFirstTransactionNumber(authnumber);
+					rec_1.setMerchantid(linkRequestDto.getMerchantid());
+					rec_1.setOrderid(linkRequestDto.getOrderid());
+					rec_1.setPaymentid(paymentid);
+					rec_1.setReccuringNumber(lrec_serie);
+					rec_1.setToken(linkRequestDto.getToken());
+					rec_1.setTransactionid(linkRequestDto.getTransactionid());
+					rec_1.setWebsiteid(websiteid.length() > 3 ? websiteid.substring(0,3) : websiteid);
+
+					recService.save(rec_1);
+					autorisationService.logMessage(file, "rec_1 " + rec_1.toString());
+				} catch (Exception e) {
+				autorisationService.logMessage(file,
+						"authorization 500 Error during save in api_reccuring orderid:[" + linkRequestDto.getOrderid() + "]" + Util.formatException(e));
+				}
+			}
 
 			try {
 
@@ -6225,6 +6278,21 @@ public class APIController {
 
 	private boolean checkCvvPresence(String cvv) {
 		return cvv != null && cvv.length() == 3;
+	}
+
+	private long getTransactionSerie(String merchantID, String cardNumber) {
+		ReccuringTransactionDto recTrs = recService.findLastRecByCardNumberAndMerchantID(cardNumber, merchantID);
+		return recTrs == null ? 0 : recTrs.getReccuringNumber();
+	}
+
+	private String getFirstTransactionAuth(String merchantID, String cardNumber) {
+		ReccuringTransactionDto recTrs = recService.findFirstByCardNumberAndMerchantID(cardNumber, merchantID);
+		return recTrs == null ? "" : recTrs.getFirstTransactionNumber();
+	}
+
+	private boolean isFirstTransaction(String merchantID, String cardNumber) {
+		ReccuringTransactionDto recTrs = recService.findFirstByCardNumberAndMerchantID(cardNumber, merchantID);
+		return recTrs == null;
 	}
 
 	@SuppressWarnings("deprecation")

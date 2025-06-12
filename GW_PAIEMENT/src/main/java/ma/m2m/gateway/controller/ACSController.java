@@ -28,6 +28,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.xml.namespace.QName;
 
+import ma.m2m.gateway.dto.*;
+import ma.m2m.gateway.service.*;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.StatusLine;
@@ -54,16 +56,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import ma.m2m.gateway.dto.ArticleDGIDto;
-import ma.m2m.gateway.dto.CFDGIDto;
-import ma.m2m.gateway.dto.CardtokenDto;
-import ma.m2m.gateway.dto.CodeReponseDto;
-import ma.m2m.gateway.dto.CommercantDto;
-import ma.m2m.gateway.dto.DemandePaiementDto;
-import ma.m2m.gateway.dto.FactureLDDto;
-import ma.m2m.gateway.dto.HistoAutoGateDto;
-import ma.m2m.gateway.dto.InfoCommercantDto;
-import ma.m2m.gateway.dto.ResponseDto;
 import ma.m2m.gateway.encryption.RSACrypto;
 import ma.m2m.gateway.lydec.DemandesReglements;
 import ma.m2m.gateway.lydec.GererEncaissement;
@@ -73,16 +65,6 @@ import ma.m2m.gateway.lydec.MoyenPayement;
 import ma.m2m.gateway.lydec.Portefeuille;
 import ma.m2m.gateway.lydec.ReponseReglements;
 import ma.m2m.gateway.lydec.Transaction;
-import ma.m2m.gateway.service.ArticleDGIService;
-import ma.m2m.gateway.service.AutorisationService;
-import ma.m2m.gateway.service.CFDGIService;
-import ma.m2m.gateway.service.CardtokenService;
-import ma.m2m.gateway.service.CodeReponseService;
-import ma.m2m.gateway.service.CommercantService;
-import ma.m2m.gateway.service.DemandePaiementService;
-import ma.m2m.gateway.service.FactureLDService;
-import ma.m2m.gateway.service.HistoAutoGateService;
-import ma.m2m.gateway.service.InfoCommercantService;
 import ma.m2m.gateway.switching.SwitchTCPClient;
 import ma.m2m.gateway.switching.SwitchTCPClientV2;
 import ma.m2m.gateway.threedsecure.CRes;
@@ -172,6 +154,10 @@ public class ACSController {
 
 	//@Autowired
 	private final CFDGIService cfdgiService;
+
+	private final ReccuringTransactionService recService;
+
+	private final EmetteurService emetteurService;
 	
 	public static final String DF_YYYY_MM_DD_HH_MM_SS = "yyyy-MM-dd HH:mm:ss";
 	public static final String FORMAT_DEFAUT = "yyyy-MM-dd";
@@ -186,7 +172,8 @@ public class ACSController {
 			InfoCommercantService infoCommercantService,
 			CardtokenService cardtokenService, CodeReponseService codeReponseService,
 			FactureLDService factureLDService, ArticleDGIService articleDGIService,
-			CFDGIService cfdgiService) {
+			CFDGIService cfdgiService, ReccuringTransactionService recService,
+	        EmetteurService emetteurService) {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		file = "R_ACS_" + randomWithSplittableRandom;
 		date = LocalDateTime.now(ZoneId.systemDefault());
@@ -202,6 +189,8 @@ public class ACSController {
 		this.factureLDService = factureLDService;
 		this.articleDGIService = articleDGIService;
 		this.cfdgiService = cfdgiService;
+		this.recService = recService;
+		this.emetteurService = emetteurService;
 	}
 
 	@PostMapping("/napspayment/acs")
@@ -414,7 +403,7 @@ public class ACSController {
 						acqcode = current_merchant.getCmrCodbqe();
 
 						orderid = dmd.getCommande();
-						recurring = "";
+						recurring = dmd.getIs3ds() == null ? "N" : dmd.getIs3ds();
 						amount = String.valueOf(dmd.getMontant());
 						promoCode = "";
 						transactionid = "";
@@ -604,12 +593,6 @@ public class ACSController {
 							// TODO: 2024-03-05
 							montanttrame = Util.formatMontantTrame(folder, file, amount, orderid, merchantid, dmd, model);
 
-							boolean cvv_present = checkCvvPresence(cvv);
-							boolean is_reccuring = isReccuringCheck(recurring);
-							boolean is_first_trs = true;
-
-							String first_auth = "";
-
 							merchant_city = "MOROCCO        ";
 
 							acq_type = "0000";
@@ -631,7 +614,35 @@ public class ACSController {
 								champ_cavv = null;
 							}
 
-							// TODO: controls
+							EmetteurDto natIssuer = emetteurService.getNATIusser(cardnumber);
+
+							int card_destination = 1;
+
+							if (natIssuer == null) {
+								card_destination = Util.card_switch(folder, file, cardnumber, false, null);
+								autorisationService.logMessage(file, "natIssuer is null card_destination : " + card_destination);
+							} else {
+								String switch_server_code = natIssuer.getEmtCodeserv();
+								if (switch_server_code == null) {
+									switch_server_code = "EMPTY";
+								}
+								card_destination = Util.card_switch(folder, file, cardnumber, true, switch_server_code.trim());
+								autorisationService.logMessage(file, "natIssuer is not null card_destination/switch_server_code : "
+										+ card_destination + " / " + switch_server_code);
+							}
+							boolean reccurent_cvv_check_obligatory = false;
+							if (card_destination == 0 || card_destination == 1) {
+								reccurent_cvv_check_obligatory = true;
+							}
+
+							boolean cvv_present = checkCvvPresence(cvv);
+							boolean is_reccuring = isReccuringCheck(recurring);
+							boolean is_first_trs = true;
+
+							String first_auth = "";
+							long lrec_serie = 0;
+							String rec_serie = "";
+
 							autorisationService.logMessage(file, "Switch processing start ...");
 
 							String tlv = "";
@@ -667,7 +678,6 @@ public class ACSController {
 											.withField(Tags.tag11, merchant_name).withField(Tags.tag12, merchant_city)
 											.withField(Tags.tag90, acqcode).withField(Tags.tag167, champ_cavv)
 											.withField(Tags.tag168, xid).encode();
-
 								} catch (Exception err4) {
 									dmd.setDemCvv("");
 									demandePaiementService.save(dmd);
@@ -684,9 +694,132 @@ public class ACSController {
 
 							}
 
-							// TODO: reccuring
+							// TODO: 12-06-2025 implemente reccuring payment
 							if (is_reccuring) {
-								autorisationService.logMessage(file, "reccuring");
+								{
+									is_first_trs = isFirstTransaction(merchantid, cardnumber);
+
+									// card uknown in system ==> first transaction
+									autorisationService.logMessage(file, "is_first_trs : " + is_first_trs);
+									autorisationService.logMessage(file, "reccurent_cvv_check_obligatory : " + reccurent_cvv_check_obligatory);
+
+									if (is_first_trs) {
+										if (!cvv_present) { // is the cvv present ?
+											if (reccurent_cvv_check_obligatory) { // is the cvv obligatory ? national switch yes
+												dmd.setDemCvv("");
+												demandePaiementService.save(dmd);
+												autorisationService.logMessage(file,
+														"authorization 500 cvv not set , reccuring flag set to Y and first transaction is detected orderid:[" + orderid + "] and merchantid:[" + merchantid + "]");
+												autorisationService.logMessage(file, "Fin processRequest ()");
+												logger.info("Fin processRequest ()");
+												response.sendRedirect(failURL);
+												return null;
+											} else {
+												// cvv not obligatory in first transaction, international
+												autorisationService.logMessage(file, "cvv not obligatory in first transaction, international");
+												try {
+													tlv = new TLVEncoder().withField(Tags.tag0, mesg_type).withField(Tags.tag1, cardnumber)
+															.withField(Tags.tag3, processing_code).withField(Tags.tag22, transaction_condition)
+															.withField(Tags.tag49, acq_type).withField(Tags.tag14, montanttrame)
+															.withField(Tags.tag15, currency).withField(Tags.tag23, reason_code)
+															.withField(Tags.tag18, "761454").withField(Tags.tag42, expirydate)
+															.withField(Tags.tag16, date).withField(Tags.tag17, heure)
+															.withField(Tags.tag10, merc_codeactivite).withField(Tags.tag8, "0" + merchantid)
+															.withField(Tags.tag9, merchantid).withField(Tags.tag66, rrn)
+															.withField(Tags.tag11, merchant_name).withField(Tags.tag12, merchant_city)
+															.withField(Tags.tag90, acqcode).withField(Tags.tag167, champ_cavv)
+															.withField(Tags.tag168, xid).withField(Tags.tag601, "R111111111").encode();
+												} catch (Exception err4) {
+													dmd.setDemCvv("");
+													demandePaiementService.save(dmd);
+													autorisationService.logMessage(file,
+															"authorization 500 Error during switch tlv buildup for given orderid:["
+																	+ orderid + "] and merchantid:[" + merchantid + "]" + Util.formatException(err4));
+													autorisationService.logMessage(file, "Fin processRequest ()");
+													logger.info("Fin processRequest ()");
+													response.sendRedirect(failURL);
+													return null;
+												}
+												autorisationService.logMessage(file, "Switch TLV Request :[" + tlv + "]");
+											}
+										} else { // first transaction with cvv present, a normal transaction
+											autorisationService.logMessage(file, "first transaction with cvv present, a normal transaction");
+											try {
+												tlv = new TLVEncoder().withField(Tags.tag0, mesg_type).withField(Tags.tag1, cardnumber)
+														.withField(Tags.tag3, processing_code).withField(Tags.tag22, transaction_condition)
+														.withField(Tags.tag49, acq_type).withField(Tags.tag14, montanttrame)
+														.withField(Tags.tag15, currency).withField(Tags.tag23, reason_code)
+														.withField(Tags.tag18, "761454").withField(Tags.tag42, expirydate)
+														.withField(Tags.tag16, date).withField(Tags.tag17, heure)
+														.withField(Tags.tag10, merc_codeactivite).withField(Tags.tag8, "0" + merchantid)
+														.withField(Tags.tag9, merchantid).withField(Tags.tag66, rrn).withField(Tags.tag67, cvv)
+														.withField(Tags.tag11, merchant_name).withField(Tags.tag12, merchant_city)
+														.withField(Tags.tag90, acqcode).withField(Tags.tag167, champ_cavv)
+														.withField(Tags.tag168, xid)/*.withField(Tags.tag601, "R111111111")*/.encode();
+											} catch (Exception err4) {
+												dmd.setDemCvv("");
+												demandePaiementService.save(dmd);
+												autorisationService.logMessage(file,
+														"authorization 500 Error during switch tlv buildup for given orderid:["
+																+ orderid + "] and merchantid:[" + merchantid + "]" + Util.formatException(err4));
+												autorisationService.logMessage(file, "Fin processRequest ()");
+												logger.info("Fin processRequest ()");
+												response.sendRedirect(failURL);
+												return null;
+											}
+											autorisationService.logMessage(file, "Switch TLV Request :[" + tlv + "]");
+										}
+
+									} else { // reccuring
+										autorisationService.logMessage(file, "trs already existe");
+										try {
+											first_auth = getFirstTransactionAuth(merchantid, cardnumber);
+											lrec_serie = getTransactionSerie(merchantid, cardnumber);
+
+										} catch (Exception e) {
+											dmd.setDemCvv("");
+											demandePaiementService.save(dmd);
+											autorisationService.logMessage(file,
+													"authorization 500 Error during switch tlv buildup for given orderid:["
+															+ orderid + "] and merchantid:[" + merchantid + "]" + Util.formatException(e));
+											autorisationService.logMessage(file, "Fin processRequest ()");
+											logger.info("Fin processRequest ()");
+											response.sendRedirect(failURL);
+											return null;
+										}
+
+										lrec_serie = lrec_serie + 1;
+										rec_serie = String.format("%03d", lrec_serie);
+										autorisationService.logMessage(file, "lrec_serie + 1 : " + lrec_serie);
+										autorisationService.logMessage(file, "rec_serie : " + rec_serie);
+
+										try {
+											tlv = new TLVEncoder().withField(Tags.tag0, mesg_type).withField(Tags.tag1, cardnumber)
+													.withField(Tags.tag3, processing_code).withField(Tags.tag22, transaction_condition)
+													.withField(Tags.tag49, acq_type).withField(Tags.tag14, montanttrame)
+													.withField(Tags.tag15, currency).withField(Tags.tag23, reason_code)
+													.withField(Tags.tag18, "761454").withField(Tags.tag42, expirydate)
+													.withField(Tags.tag16, date).withField(Tags.tag17, heure)
+													.withField(Tags.tag10, merc_codeactivite).withField(Tags.tag8, "0" + merchantid)
+													.withField(Tags.tag9, merchantid).withField(Tags.tag66, rrn).withField(Tags.tag67, cvv)
+													.withField(Tags.tag11, merchant_name).withField(Tags.tag12, merchant_city)
+													.withField(Tags.tag90, acqcode).withField(Tags.tag167, champ_cavv)
+													.withField(Tags.tag168, xid).withField(Tags.tag601, "R" + rec_serie + first_auth)
+													.encode();
+										} catch (Exception err4) {
+											dmd.setDemCvv("");
+											demandePaiementService.save(dmd);
+											autorisationService.logMessage(file,
+													"authorization 500 Error during switch tlv buildup for given orderid:["
+															+ orderid + "] and merchantid:[" + merchantid + "]" + Util.formatException(err4));
+											autorisationService.logMessage(file, "Fin processRequest ()");
+											logger.info("Fin processRequest ()");
+											response.sendRedirect(failURL);
+											return null;
+										}
+										autorisationService.logMessage(file, "Switch TLV Request :[" + tlv + "]");
+									}
+								}
 							}
 
 							autorisationService.logMessage(file, "Preparing Switch TLV Request end.");
@@ -1344,7 +1477,19 @@ public class ACSController {
 								// TODO: 2024-02-27
 							}
 
-							// TODO: JSONObject jso = new JSONObject();
+							autorisationService.logMessage(file, "Generating paymentid...");
+
+							String uuid_paymentid, paymentid = "";
+							try {
+								uuid_paymentid = String.format("%040d",	new BigInteger(UUID.randomUUID().toString().replace("-", ""), 36));
+								paymentid = uuid_paymentid.substring(uuid_paymentid.length() - 22);
+							} catch (Exception e) {
+								autorisationService.logMessage(file,
+										"authorization 500 Error during  paymentid generation for given orderid:[" + orderid + "]" + Util.formatException(e));
+							}
+
+							autorisationService.logMessage(file, "Generating paymentid OK");
+							autorisationService.logMessage(file, "paymentid :[" + paymentid + "]");
 
 							autorisationService.logMessage(file, "Preparing autorization api response");
 
@@ -1368,8 +1513,60 @@ public class ACSController {
 							}
 
 							// TODO: reccurent transaction processing
+							// first time transaction insert into rec
+							if (is_first_trs && is_reccuring && coderep.equalsIgnoreCase("00")) {
 
+								ReccuringTransactionDto rec_1 = new ReccuringTransactionDto();
+								try {
+									rec_1.setAmount(amount);
+									rec_1.setAuthorizationNumber(authnumber);
+									rec_1.setCardnumber(cardnumber);
+									rec_1.setCountry(country);
+									rec_1.setCurrency(currency);
+									rec_1.setFirstTransaction("Y");
+									rec_1.setFirstTransactionNumber(authnumber);
+									rec_1.setMerchantid(merchantid);
+									rec_1.setOrderid(orderid);
+									rec_1.setPaymentid(transactionid);
+									rec_1.setReccuringNumber(0);
+									rec_1.setToken(token);
+									rec_1.setTransactionid(transactionid);
+									rec_1.setWebsiteid(websiteid.length() > 3 ? websiteid.substring(0,3) : websiteid);
+
+									recService.save(rec_1);
+									autorisationService.logMessage(file, "rec_1 " + rec_1.toString());
+								} catch (Exception e) {
+									autorisationService.logMessage(file,
+											"authorization 500 Error during save in api_reccuring orderid:[" + orderid + "]" + Util.formatException(e));
+								}
+							}
 							// TODO: reccurent insert and update
+							if (!is_first_trs && is_reccuring && coderep.equalsIgnoreCase("00")) {
+
+								ReccuringTransactionDto rec_1 = new ReccuringTransactionDto();
+								try {
+									rec_1.setAmount(amount);
+									rec_1.setAuthorizationNumber(authnumber);
+									rec_1.setCardnumber(cardnumber);
+									rec_1.setCountry(country);
+									rec_1.setCurrency(currency);
+									rec_1.setFirstTransaction("N");
+									rec_1.setFirstTransactionNumber(authnumber);
+									rec_1.setMerchantid(merchantid);
+									rec_1.setOrderid(orderid);
+									rec_1.setPaymentid(paymentid);
+									rec_1.setReccuringNumber(lrec_serie);
+									rec_1.setToken(token);
+									rec_1.setTransactionid(transactionid);
+									rec_1.setWebsiteid(websiteid.length() > 3 ? websiteid.substring(0,3) : websiteid);
+
+									recService.save(rec_1);
+									autorisationService.logMessage(file, "rec_1 " + rec_1.toString());
+								} catch (Exception e) {
+									autorisationService.logMessage(file,
+											"authorization 500 Error during save in api_reccuring orderid:[" + orderid + "]" + Util.formatException(e));
+								}
+							}
 
 							try {
 								String data_noncrypt = "id_commande=" + orderid + "&nomprenom=" + fname + "&email="
@@ -1877,6 +2074,21 @@ public class ACSController {
 
 	private boolean checkCvvPresence(String cvv) {
 		return cvv != null && cvv.length() == 3;
+	}
+
+	private long getTransactionSerie(String merchantID, String cardNumber) {
+		ReccuringTransactionDto recTrs = recService.findLastRecByCardNumberAndMerchantID(cardNumber, merchantID);
+		return recTrs == null ? 0 : recTrs.getReccuringNumber();
+	}
+
+	private String getFirstTransactionAuth(String merchantID, String cardNumber) {
+		ReccuringTransactionDto recTrs = recService.findFirstByCardNumberAndMerchantID(cardNumber, merchantID);
+		return recTrs == null ? "" : recTrs.getFirstTransactionNumber();
+	}
+
+	private boolean isFirstTransaction(String merchantID, String cardNumber) {
+		ReccuringTransactionDto recTrs = recService.findFirstByCardNumberAndMerchantID(cardNumber, merchantID);
+		return recTrs == null;
 	}
 
 	@SuppressWarnings("deprecation")

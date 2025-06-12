@@ -34,9 +34,7 @@ public class CardtokenServiceImpl implements CardtokenService {
 		
 		Cardtoken cardtoken = cardtokenMapper.vo2Model(cardtokenDto);
 		
-		CardtokenDto cardtokenSaved = cardtokenMapper.model2VO(cardtokenDao.save(cardtoken));
-		
-		return cardtokenSaved;
+		return cardtokenMapper.model2VO(cardtokenDao.save(cardtoken));
 	}
 
 	@Override
@@ -61,8 +59,7 @@ public class CardtokenServiceImpl implements CardtokenService {
 
 	@Override
 	public Integer getMAX_ID() {
-		Integer idCardToken = cardtokenDao.getMAX_ID();
-		return idCardToken;
+		return cardtokenDao.getMAX_ID();
 	}
 
 	@Override

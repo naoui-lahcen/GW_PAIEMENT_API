@@ -37,9 +37,7 @@ public class HistoAutoGateServiceImpl implements HistoAutoGateService {
 	public HistoAutoGateDto save(HistoAutoGateDto histoAutoGateDto) {
 		HistoAutoGate histoAutoGate = histoAutoGateMapper.vo2Model(histoAutoGateDto);
 		
-		HistoAutoGateDto histoAutoGateSaved = histoAutoGateMapper.model2VO(histoAutoGateDao.save(histoAutoGate));
-		
-		return histoAutoGateSaved;
+		return histoAutoGateMapper.model2VO(histoAutoGateDao.save(histoAutoGate));
 	}
 
 	@Override
@@ -71,8 +69,7 @@ public class HistoAutoGateServiceImpl implements HistoAutoGateService {
 
 	@Override
 	public Integer getMAX_ID() {
-		Integer idHisG = histoAutoGateDao.getMAX_ID();
-		return idHisG;
+		return histoAutoGateDao.getMAX_ID();
 	}
 
 	@Override
@@ -101,8 +98,7 @@ public class HistoAutoGateServiceImpl implements HistoAutoGateService {
 		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 		String dateSysStr = dateFormat.format(new Date());
 		dateSysStr = dateSysStr.concat("%");
-		Double montant = histoAutoGateDao.getCommercantGlobalFlowPerDay(numCmr,dateSysStr);
-		return montant;
+		return histoAutoGateDao.getCommercantGlobalFlowPerDay(numCmr,dateSysStr);
 	}
 
 	@Override

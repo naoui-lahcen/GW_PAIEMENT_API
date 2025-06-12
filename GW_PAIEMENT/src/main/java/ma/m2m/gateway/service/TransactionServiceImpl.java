@@ -57,14 +57,12 @@ public class TransactionServiceImpl implements TransactionService {
 	@Override
 	public TransactionDto save(TransactionDto trs) {
 		Transaction tr = transactionMapper.vo2Model(trs);
-		
-		TransactionDto trstoSave = transactionMapper.model2VO(transactionDao.save(tr));
-		return trstoSave;
+
+		return transactionMapper.model2VO(transactionDao.save(tr));
 	}
 	
 	@Override
 	public Integer getMAX_ID() {
-		Integer idTrs = transactionDao.getMAX_ID();
-		return idTrs;
+		return transactionDao.getMAX_ID();
 	}
 }

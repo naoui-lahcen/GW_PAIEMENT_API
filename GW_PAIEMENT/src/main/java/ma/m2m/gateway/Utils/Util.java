@@ -236,6 +236,121 @@ public class Util {
 
 	}
 
+	public static int card_switch(String folder, String file, String cardnumber, boolean isNat, String server) {
+
+		Traces traces = new Traces();
+		// 0 TO NAPS AUTO 20
+		// 1 TO CMI
+		// 2 TO VISA or MASTERCARD NATIONAL IUSSER
+		// 5 TO VISA or MASTERCARD INTERNATIONAL, uknown
+
+		traces.writeInFileTransaction(folder, file, "card_switch start ...");
+
+		if (!isNat) {
+			traces.writeInFileTransaction(folder, file, "is_nat == false checking international orgin");
+			int iss_origin = Util.getCardIss(cardnumber);
+			// iss_origin
+			// 0 unkown
+			// VISA 1
+			// MASTERCARD 2
+			// AMEX
+			// Diners
+			// DISCOVER
+			// JCB
+
+			// if(iss_origin==3 || iss_origin==4 || iss_origin==6) return 5;
+
+			// to improve
+
+			if (iss_origin == 1) {
+				traces.writeInFileTransaction(folder, file, "card_switch END");
+				return 11;
+			}
+			if (iss_origin == 2) {
+				traces.writeInFileTransaction(folder, file, "card_switch END");
+				return 12;
+			}
+			if (iss_origin == 3) {
+				traces.writeInFileTransaction(folder, file, "card_switch END");
+				return 13;
+			}
+			if (iss_origin == 4) {
+				traces.writeInFileTransaction(folder, file, "card_switch END");
+				return 14;
+			}
+			if (iss_origin == 5) {
+				traces.writeInFileTransaction(folder, file, "card_switch END");
+				return 15;
+			}
+			if (iss_origin == 0) {
+				traces.writeInFileTransaction(folder, file, "card_switch END");
+				return 16;
+			}
+
+			{
+				traces.writeInFileTransaction(folder, file, "card_switch END");
+				return 16;
+			} // uknown international
+
+		} else {
+
+			if (server.equalsIgnoreCase("20")) {
+				traces.writeInFileTransaction(folder, file, "card_switch END");
+				return 0;
+			}
+			if (server.equalsIgnoreCase("21")) {
+				traces.writeInFileTransaction(folder, file, "card_switch END");
+				return 1;
+			}
+			if (server.equalsIgnoreCase("55")) {
+				traces.writeInFileTransaction(folder, file, "card_switch END");
+				return 2;
+			}
+
+			if (server.equalsIgnoreCase("61")) {
+				traces.writeInFileTransaction(folder, file, "card_switch END");
+				return 3;
+			}
+			if (server.equalsIgnoreCase("62")) {
+				traces.writeInFileTransaction(folder, file, "card_switch END");
+				return 4;
+			}
+
+			if (server.equalsIgnoreCase("71")) {
+				traces.writeInFileTransaction(folder, file, "card_switch END");
+				return 5;
+			}
+			if (server.equalsIgnoreCase("72")) {
+				traces.writeInFileTransaction(folder, file, "card_switch END");
+				return 6;
+			}
+			if (server.equalsIgnoreCase("73")) {
+				traces.writeInFileTransaction(folder, file, "card_switch END");
+				return 7;
+			}
+
+			if (server.equalsIgnoreCase("06")) {
+				traces.writeInFileTransaction(folder, file, "card_switch END");
+				return 8;
+			}
+			if (server.equalsIgnoreCase("08")) {
+				traces.writeInFileTransaction(folder, file, "card_switch END");
+				return 9;
+			}
+
+			if (server.equalsIgnoreCase("EMPTY")) {
+				traces.writeInFileTransaction(folder, file, "card_switch END");
+				return 10;
+			}
+			{
+				traces.writeInFileTransaction(folder, file, "card_switch END");
+				return 10;
+			}
+
+		}
+
+	}
+
 	public static boolean luhnCheck(String cardNumber) {
 		int sum = 0;
 		boolean bFlag = false;

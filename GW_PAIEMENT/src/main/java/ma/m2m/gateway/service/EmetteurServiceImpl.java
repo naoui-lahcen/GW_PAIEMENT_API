@@ -32,4 +32,9 @@ public class EmetteurServiceImpl implements EmetteurService {
 		return emetteurMapper.modelList2VOList(emetteurDao.findByEmtbindebut(binDebut));
 	}
 
+	@Override
+	public EmetteurDto getNATIusser(String binDebut) {
+		return emetteurMapper.model2VO(emetteurDao.getNATIusser(binDebut));
+	}
+
 }

@@ -33,8 +33,7 @@ public class CFDGIServiceImpl implements CFDGIService {
 	@Override
 	public CFDGIDto save(CFDGIDto cFDGIDto) {
 		CFDGI cFDGI = cfdgiMapper.vo2Model(cFDGIDto);
-		CFDGIDto cFDGIDtoSaved = cfdgiMapper.model2VO(cfdgiDao.save(cFDGI));
-		return cFDGIDtoSaved;
+		return cfdgiMapper.model2VO(cfdgiDao.save(cFDGI));
 	}
 
 }

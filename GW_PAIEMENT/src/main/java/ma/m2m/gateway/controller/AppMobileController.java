@@ -486,7 +486,6 @@ public class AppMobileController {
                                 champ_cavv = null;
                             }
 
-                            // TODO: controls
                             autorisationService.logMessage(file, "Switch processing start ...");
 
                             String tlv = "";
@@ -2147,7 +2146,6 @@ public class AppMobileController {
             String first_auth = "";
             long lrec_serie = 0;
 
-            // TODO: controls
             autorisationService.logMessage(file, "Switch processing start ...");
 
             String tlv = "";
