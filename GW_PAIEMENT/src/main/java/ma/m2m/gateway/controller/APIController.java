@@ -639,6 +639,14 @@ public class APIController {
 			}
 			if (!is_ok.equalsIgnoreCase("Y")) {
 				return Util.getMsgError(folder, file, linkRequestDto, "authorization 500, This api call is disabled for the moment api_param", "96");
+			}
+			String is_recurring = api_param.getReccuring();
+
+			if (is_recurring == null) {
+				return Util.getMsgError(folder, file, linkRequestDto, "authorization 500, error api params not connfigured in DB api_param", "96");
+			}
+			if (!is_recurring.equalsIgnoreCase("Y")) {
+				return Util.getMsgError(folder, file, linkRequestDto, "authorization 500, This api call is disabled for the moment api_param", "96");
 			}*/
 			if (linkRequestDto.getRecurring() != null) {
 				if(!linkRequestDto.getRecurring().equals("Y") || !linkRequestDto.getRecurring().equals("N")) {
