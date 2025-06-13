@@ -649,7 +649,7 @@ public class APIController {
 				return Util.getMsgError(folder, file, linkRequestDto, "authorization 500, This api call is disabled for the moment api_param", "96");
 			}*/
 			if (linkRequestDto.getRecurring() != null) {
-				if(!linkRequestDto.getRecurring().equals("Y") || !linkRequestDto.getRecurring().equals("N")) {
+				if(!linkRequestDto.getRecurring().equals("Y") && !linkRequestDto.getRecurring().equals("N")) {
 					return Util.getMsgError(folder, file, linkRequestDto, "authorization 500, reccuring flag must be present and should be Y or N", "96");
 				}
 			}
