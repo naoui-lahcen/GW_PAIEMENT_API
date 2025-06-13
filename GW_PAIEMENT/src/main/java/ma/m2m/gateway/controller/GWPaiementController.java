@@ -173,7 +173,7 @@ public class GWPaiementController {
 
 	private final ReccuringTransactionService recService;
 
-	private final EmetteurService emetteurService;
+	private final APIParamsService apiParamsService;
 
 	private LocalDateTime date;
 	private String folder;
@@ -195,7 +195,7 @@ public class GWPaiementController {
 			CardtokenService cardtokenService, CodeReponseService codeReponseService,
 			FactureLDService factureLDService, ArticleDGIService articleDGIService,
 			CFDGIService cfdgiService,ReccuringTransactionService recService,
-			EmetteurService emetteurService) {
+			APIParamsService apiParamsService) {
 		date = LocalDateTime.now(ZoneId.systemDefault());
 		folder = date.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
 		this.demandePaiementService = demandePaiementService;
@@ -209,7 +209,7 @@ public class GWPaiementController {
 		this.articleDGIService = articleDGIService;
 		this.cfdgiService = cfdgiService;
 		this.recService = recService;
-		this.emetteurService = emetteurService;
+		this.apiParamsService = apiParamsService;
 	}
 
 	//@RequestMapping(path = "/")
@@ -223,13 +223,6 @@ public class GWPaiementController {
 		logger.info("*********** Start home() ************** ");
 
 		String msg = "Bienvenue dans la plateforme de paiement NAPS !!!";
-
-		EmetteurDto natIssuer = emetteurService.getNATIusser("4819221771373771");
-		if(natIssuer == null) {
-			System.out.println("natIssuer null => International");
-		} else {
-			System.out.println("natIssuer != null => National ");
-		}
 
 		autorisationService.logMessage(filee, "*********** End home () ************** ");
 		logger.info("*********** End home () ************** ");

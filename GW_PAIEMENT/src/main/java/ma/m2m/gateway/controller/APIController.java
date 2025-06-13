@@ -140,6 +140,8 @@ public class APIController {
 	private final ReccuringTransactionService recService;
 
 	private final EmetteurService emetteurService;
+
+	private final APIParamsService apiParamsService;
 	
 	public static final String DF_YYYY_MM_DD_HH_MM_SS = "yyyy-MM-dd HH:mm:ss";
 	public static final String FORMAT_DEFAUT = "yyyy-MM-dd";
@@ -152,7 +154,7 @@ public class APIController {
 			GalerieService galerieService, TelecollecteService telecollecteService, 
 			TransactionService transactionService, CardtokenService cardtokenService, 
 			CodeReponseService codeReponseService, ReccuringTransactionService recService,
-						 EmetteurService emetteurService) {
+						 EmetteurService emetteurService, APIParamsService apiParamsService) {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		dateF = LocalDateTime.now(ZoneId.systemDefault());
 		folder = dateF.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
@@ -168,6 +170,7 @@ public class APIController {
 		this.codeReponseService = codeReponseService;
 		this.recService = recService;
 		this.emetteurService = emetteurService;
+		this.apiParamsService = apiParamsService;
 	}
 
 	@PostMapping(value = "/napspayment/authorization", consumes = "application/json", produces = "application/json")
@@ -615,6 +618,32 @@ public class APIController {
 			} else {
 				autorisationService.logMessage(file, "champ_cavv = null");
 				champ_cavv = null;
+			}
+
+			APIParamsDto api_param = null;
+
+			try {
+				api_param = apiParamsService.findByMerchantIDAndProductAndVersion(linkRequestDto.getMerchantid(), "MXPLUS", "1.0");
+			} catch (Exception e) {
+				autorisationService.logMessage(file, "error during api params retrevial");
+			}
+
+			/** ce controle n'est pas obligatoire afin de ne pas impacter les cmr deja en prod
+			if (api_param == null) {
+				return Util.getMsgError(folder, file, linkRequestDto, "authorization 500, error api params not connfigured in DB api_param", "96");
+			}
+			String is_ok = api_param.getAuthorization();
+
+			if (is_ok == null) {
+				return Util.getMsgError(folder, file, linkRequestDto, "authorization 500, error api params not connfigured in DB api_param", "96");
+			}
+			if (!is_ok.equalsIgnoreCase("Y")) {
+				return Util.getMsgError(folder, file, linkRequestDto, "authorization 500, This api call is disabled for the moment api_param", "96");
+			}*/
+			if (linkRequestDto.getRecurring() != null) {
+				if(!linkRequestDto.getRecurring().equals("Y") || !linkRequestDto.getRecurring().equals("N")) {
+					return Util.getMsgError(folder, file, linkRequestDto, "authorization 500, reccuring flag must be present and should be Y or N", "96");
+				}
 			}
 
 			EmetteurDto natIssuer = emetteurService.getNATIusser(cardnumber);
