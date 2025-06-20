@@ -472,6 +472,9 @@ public class AppMobileController {
                             reason_code = "H";
                             transaction_condition = "6";
                             mesg_type = "0";
+                            Date curren_date = new Date();
+                            int numTransaction = Util.generateNumTransaction(folder, file, curren_date);
+                            String numTrsStr = Util.formatNumTrans(String.valueOf(numTransaction));
 
                             // TODO: ajout cavv (cavv+eci) xid dans la trame
                             String champ_cavv = "";
@@ -517,7 +520,7 @@ public class AppMobileController {
                                             .withField(Tags.tag22, transaction_condition)
                                             .withField(Tags.tag49, acq_type).withField(Tags.tag14, montanttrame)
                                             .withField(Tags.tag15, currency).withField(Tags.tag23, reason_code)
-                                            .withField(Tags.tag18, "761454").withField(Tags.tag42, expirydate)
+                                            .withField(Tags.tag18, numTrsStr).withField(Tags.tag42, expirydate)
                                             .withField(Tags.tag16, date).withField(Tags.tag17, heure)
                                             .withField(Tags.tag10, merc_codeactivite)
                                             .withField(Tags.tag8, "0" + merchantid).withField(Tags.tag9, merchantid)
@@ -746,7 +749,6 @@ public class AppMobileController {
 
                                 hist = new HistoAutoGateDto();
                                 Date curren_date_hist = new Date();
-                                int numTransaction = Util.generateNumTransaction(folder, file, curren_date_hist);
 
                                 websiteid = dmd.getGalid();
 
@@ -2125,6 +2127,9 @@ public class AppMobileController {
             if (transactiontype.equals("P")) {
                 processing_code = "P";
             }
+            Date curren_date = new Date();
+            int numTransaction = Util.generateNumTransaction(folder, file, curren_date);
+            String numTrsStr = Util.formatNumTrans(String.valueOf(numTransaction));
 
             // TODO: ajout cavv (cavv+eci) xid dans la trame
             String champ_cavv = "";
@@ -2172,7 +2177,7 @@ public class AppMobileController {
                             .withField(Tags.tag3, processing_code).withField(Tags.tag22, transaction_condition)
                             .withField(Tags.tag49, acq_type).withField(Tags.tag14, montanttrame)
                             .withField(Tags.tag15, currency).withField(Tags.tag23, reason_code)
-                            .withField(Tags.tag18, "761454").withField(Tags.tag42, expirydate)
+                            .withField(Tags.tag18, numTrsStr).withField(Tags.tag42, expirydate)
                             .withField(Tags.tag16, date).withField(Tags.tag17, heure)
                             .withField(Tags.tag10, merc_codeactivite).withField(Tags.tag8, "0" + merchantid)
                             .withField(Tags.tag9, merchantid).withField(Tags.tag66, rrn).withField(Tags.tag67, cvv)
@@ -2368,7 +2373,6 @@ public class AppMobileController {
 
                 hist = new HistoAutoGateDto();
                 Date curren_date_hist = new Date();
-                int numTransaction = Util.generateNumTransaction(folder, file, curren_date_hist);
 
                 websiteid = dmd.getGalid();
 

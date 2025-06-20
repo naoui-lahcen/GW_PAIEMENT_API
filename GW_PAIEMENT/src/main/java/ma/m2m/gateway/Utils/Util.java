@@ -522,6 +522,14 @@ public class Util {
 
 	}
 
+	public static String formatNumTrans(String numTrans) {
+		if (numTrans == null) {
+			return "000000";
+		}
+		// Complète à gauche avec des zéros pour obtenir une longueur de 6
+		return String.format("%6s", numTrans).replace(' ', '0');
+	}
+
 	public static String displayCard(String numCarte) {
 
 		if (numCarte == null || numCarte.isEmpty()) {

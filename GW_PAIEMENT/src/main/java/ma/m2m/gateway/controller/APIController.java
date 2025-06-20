@@ -110,6 +110,9 @@ public class APIController {
 	@Value("${key.ENVIRONEMENT}")
 	private String environement;
 
+	@Value("${key.ECI}")
+	private String eciParam;
+
 	//@Autowired
 	private final DemandePaiementService demandePaiementService;
 
@@ -598,6 +601,9 @@ public class APIController {
 			transaction_condition = "6";
 			mesg_type = "0";
 			processing_code = "";
+			Date curren_date = new Date();
+			int numTransaction = Util.generateNumTransaction(folder, file, curren_date);
+			String numTrsStr = Util.formatNumTrans(String.valueOf(numTransaction));
 
 			if (linkRequestDto.getTransactiontype().equals("0")) {
 				processing_code = "0";
@@ -618,6 +624,11 @@ public class APIController {
 			} else {
 				autorisationService.logMessage(file, "champ_cavv = null");
 				champ_cavv = null;
+			}
+			if(champ_cavv == null || auth3ds.equals("N")) {
+				autorisationService.logMessage(file, "auth3ds egal N => envoie cavv avec 28 chr(espace) et eci avec " + eciParam);
+				champ_cavv = "                            "+eciParam;
+				autorisationService.logMessage(file, "champ_cavv [" + champ_cavv +"]");
 			}
 
 			APIParamsDto api_param = null;
@@ -713,7 +724,7 @@ public class APIController {
 							.withField(Tags.tag3, processing_code).withField(Tags.tag22, transaction_condition)
 							.withField(Tags.tag49, acq_type).withField(Tags.tag14, montanttrame)
 							.withField(Tags.tag15, currency).withField(Tags.tag23, reason_code)
-							.withField(Tags.tag18, "761454").withField(Tags.tag42, expirydate)
+							.withField(Tags.tag18, numTrsStr).withField(Tags.tag42, expirydate)
 							.withField(Tags.tag16, date).withField(Tags.tag17, heure)
 							.withField(Tags.tag10, merc_codeactivite).withField(Tags.tag8, "0" + linkRequestDto.getMerchantid())
 							.withField(Tags.tag9, linkRequestDto.getMerchantid()).withField(Tags.tag66, rrn).withField(Tags.tag67, cvv)
@@ -755,7 +766,7 @@ public class APIController {
 										.withField(Tags.tag3, processing_code).withField(Tags.tag22, transaction_condition)
 										.withField(Tags.tag49, acq_type).withField(Tags.tag14, montanttrame)
 										.withField(Tags.tag15, currency).withField(Tags.tag23, reason_code)
-										.withField(Tags.tag18, "761454").withField(Tags.tag42, expirydate)
+										.withField(Tags.tag18, numTrsStr).withField(Tags.tag42, expirydate)
 										.withField(Tags.tag16, date).withField(Tags.tag17, heure)
 										.withField(Tags.tag10, merc_codeactivite).withField(Tags.tag8, "0" + linkRequestDto.getMerchantid())
 										.withField(Tags.tag9, linkRequestDto.getMerchantid()).withField(Tags.tag66, rrn)
@@ -781,7 +792,7 @@ public class APIController {
 									.withField(Tags.tag3, processing_code).withField(Tags.tag22, transaction_condition)
 									.withField(Tags.tag49, acq_type).withField(Tags.tag14, montanttrame)
 									.withField(Tags.tag15, currency).withField(Tags.tag23, reason_code)
-									.withField(Tags.tag18, "761454").withField(Tags.tag42, expirydate)
+									.withField(Tags.tag18, numTrsStr).withField(Tags.tag42, expirydate)
 									.withField(Tags.tag16, date).withField(Tags.tag17, heure)
 									.withField(Tags.tag10, merc_codeactivite).withField(Tags.tag8, "0" + linkRequestDto.getMerchantid())
 									.withField(Tags.tag9, linkRequestDto.getMerchantid()).withField(Tags.tag66, rrn).withField(Tags.tag67, cvv)
@@ -825,7 +836,7 @@ public class APIController {
 								.withField(Tags.tag3, processing_code).withField(Tags.tag22, transaction_condition)
 								.withField(Tags.tag49, acq_type).withField(Tags.tag14, montanttrame)
 								.withField(Tags.tag15, currency).withField(Tags.tag23, reason_code)
-								.withField(Tags.tag18, "761454").withField(Tags.tag42, expirydate)
+								.withField(Tags.tag18, numTrsStr).withField(Tags.tag42, expirydate)
 								.withField(Tags.tag16, date).withField(Tags.tag17, heure)
 								.withField(Tags.tag10, merc_codeactivite).withField(Tags.tag8, "0" + linkRequestDto.getMerchantid())
 								.withField(Tags.tag9, linkRequestDto.getMerchantid()).withField(Tags.tag66, rrn).withField(Tags.tag67, cvv)
@@ -1000,7 +1011,6 @@ public class APIController {
 
 				hist = new HistoAutoGateDto();
 				Date curren_date_hist = new Date();
-				int numTransaction = Util.generateNumTransaction(folder, file, curren_date_hist);
 
 				s_status = "";
 				try {
@@ -3539,6 +3549,9 @@ public class APIController {
 		String transactionnumber = trsRequestDto.getAuthnumber();
 		merchant_name = Util.pad_merchant(trsRequestDto.getMerchantname(), 19, ' ');
 		String merchant_city = "MOROCCO        ";
+		Date curren_date = new Date();
+		int numTransaction = Util.generateNumTransaction(folder, file, curren_date);
+		String numTrsStr = Util.formatNumTrans(String.valueOf(numTransaction));
 
 		try {
 
@@ -3549,7 +3562,7 @@ public class APIController {
 			tlv = new TLVEncoder().withField(Tags.tag0, mesg_type).withField(Tags.tag1, cardnumber)
 					.withField(Tags.tag3, processing_code).withField(Tags.tag22, transaction_condition)
 					.withField(Tags.tag49, acq_type).withField(Tags.tag14, montanttrame).withField(Tags.tag15, currency)
-					.withField(Tags.tag18, "761454").withField(Tags.tag42, expirydate).withField(Tags.tag16, date)
+					.withField(Tags.tag18, numTrsStr).withField(Tags.tag42, expirydate).withField(Tags.tag16, date)
 					.withField(Tags.tag17, heure).withField(Tags.tag10, merc_codeactivite)
 					.withField(Tags.tag8, "0" + trsRequestDto.getMerchantid()).withField(Tags.tag9, trsRequestDto.getMerchantid())
 					.withField(Tags.tag66, transactionnumber).withField(Tags.tag11, merchant_name)
@@ -4198,6 +4211,9 @@ public class APIController {
 				mesg_type = "0";
 				processing_code = "0";
 				transactiontype = "0";
+				Date curren_date = new Date();
+				int numTransaction = Util.generateNumTransaction(folder, file, curren_date);
+				String numTrsStr = Util.formatNumTrans(String.valueOf(numTransaction));
 
 				try {
 					formatheure = new SimpleDateFormat("HHmmss");
@@ -4249,7 +4265,7 @@ public class APIController {
 								.withField(Tags.tag3, processing_code).withField(Tags.tag22, transaction_condition)
 								.withField(Tags.tag49, acq_type).withField(Tags.tag14, montanttrame)
 								.withField(Tags.tag15, currency).withField(Tags.tag23, reason_code)
-								.withField(Tags.tag18, "761454").withField(Tags.tag42, expirydate)
+								.withField(Tags.tag18, numTrsStr).withField(Tags.tag42, expirydate)
 								.withField(Tags.tag16, date).withField(Tags.tag17, heure)
 								.withField(Tags.tag10, merc_codeactivite).withField(Tags.tag8, "0" + linkRequestDto.getMerchantid())
 								.withField(Tags.tag9, linkRequestDto.getMerchantid()).withField(Tags.tag66, rrn).withField(Tags.tag67, cvv)
@@ -4437,7 +4453,6 @@ public class APIController {
 
 					hist = new HistoAutoGateDto();
 					Date curren_date_hist = new Date();
-					int numTransaction = Util.generateNumTransaction(folder, file, curren_date_hist);
 
 					autorisationService.logMessage(file, "formatting pan...");
 
@@ -5550,6 +5565,9 @@ public class APIController {
 						merchant_name = Util.pad_merchant(trsRequestDto.getMerchantname(), 19, ' ');
 
 						merchant_city = "MOROCCO        ";
+						Date curren_date = new Date();
+						int numTransaction = Util.generateNumTransaction(folder, file, curren_date);
+						String numTrsStr = Util.formatNumTrans(String.valueOf(numTransaction));
 
 						// TODO: ajout cavv (cavv+eci) xid dans la trame
 						String champ_cavv = "";
@@ -5593,7 +5611,7 @@ public class APIController {
 										.withField(Tags.tag3, processing_code)
 										.withField(Tags.tag22, transaction_condition).withField(Tags.tag49, acq_type)
 										.withField(Tags.tag14, montanttrame).withField(Tags.tag15, currency)
-										.withField(Tags.tag23, reason_code).withField(Tags.tag18, "761454")
+										.withField(Tags.tag23, reason_code).withField(Tags.tag18, numTrsStr)
 										.withField(Tags.tag42, expirydate).withField(Tags.tag16, date)
 										.withField(Tags.tag17, heure).withField(Tags.tag10, merc_codeactivite)
 										.withField(Tags.tag8, "0" + trsRequestDto.getMerchantid()).withField(Tags.tag9, trsRequestDto.getMerchantid())
@@ -5920,7 +5938,6 @@ public class APIController {
 							try {
 								histComlement = new HistoAutoGateDto();
 								Date curren_date_hist = new Date();
-								int numTransaction = Util.generateNumTransaction(folder, file, curren_date_hist);
 
 								s_status = "";
 								try {
