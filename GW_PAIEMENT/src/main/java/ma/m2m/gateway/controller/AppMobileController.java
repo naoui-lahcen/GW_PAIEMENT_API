@@ -219,11 +219,11 @@ public class AppMobileController {
                 String idDemande = "";
                 String expiry = ""; // TODO: YYMM
                 String processing_code = "";
-                String acq_type = "";
-                String merchant_city = "";
-                String reason_code = "";
-                String transaction_condition = "";
-                String mesg_type = "";
+                String acq_type = "0000";
+                String merchant_city = "MOROCCO        ";
+                String reason_code = "H";
+                String transaction_condition = "6";
+                String mesg_type = "0";
                 String currency = "504";
 
                 String capture = "";
@@ -464,14 +464,8 @@ public class AppMobileController {
                             String first_auth = "";
                             long lrec_serie = 0;
 
-                            merchant_city = "MOROCCO        ";
-                            autorisationService.logMessage(file, "merchant_city : [" + merchant_city + "]");
-
-                            acq_type = "0000";
                             processing_code = dmd.getTransactiontype();
-                            reason_code = "H";
-                            transaction_condition = "6";
-                            mesg_type = "0";
+
                             Date curren_date = new Date();
                             int numTransaction = Util.generateNumTransaction(folder, file, curren_date);
                             String numTrsStr = Util.formatNumTrans(String.valueOf(numTransaction));
@@ -2041,7 +2035,7 @@ public class AppMobileController {
         String xid = "";
         String errmpi = "";
         String idDemande = String.valueOf(demandeDto.getIddemande() == null ? "" : demandeDto.getIddemande());
-        String expiry = ""; // TODO: YYMM
+        String expiry = expirydate; // TODO: YYMM
 
         reponseMPI = threeDsecureResponse.getReponseMPI();
 
@@ -2053,7 +2047,7 @@ public class AppMobileController {
 
         errmpi = threeDsecureResponse.getErrmpi() == null ? "" : threeDsecureResponse.getErrmpi();
 
-        expiry = threeDsecureResponse.getExpiry() == null ? "" : threeDsecureResponse.getExpiry();
+        //expiry = threeDsecureResponse.getExpiry() == null ? "" : threeDsecureResponse.getExpiry();
 
         if (idDemande == null || idDemande.equals("")) {
             autorisationService.logMessage(file, "received idDemande from MPI is Null or Empty");

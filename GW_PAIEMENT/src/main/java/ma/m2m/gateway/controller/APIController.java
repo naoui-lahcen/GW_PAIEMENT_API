@@ -531,7 +531,7 @@ public class APIController {
 		String xid = "";
 		String errmpi = "";
 		String idDemande = String.valueOf(dmdSaved.getIddemande() == null ? "" : dmdSaved.getIddemande());
-		String expiry = ""; // TODO: YYMM
+		String expiry = expirydate; // TODO: YYMM
 
 		reponseMPI = threeDsecureResponse.getReponseMPI();
 
@@ -543,7 +543,7 @@ public class APIController {
 
 		errmpi = threeDsecureResponse.getErrmpi() == null ? "" : threeDsecureResponse.getErrmpi();
 
-		expiry = threeDsecureResponse.getExpiry() == null ? "" : threeDsecureResponse.getExpiry();
+		//expiry = threeDsecureResponse.getExpiry() == null ? "" : threeDsecureResponse.getExpiry();
 
 		if (idDemande == null || idDemande.equals("")) {
 			dmdSaved.setDemCvv("");
@@ -4140,7 +4140,7 @@ public class APIController {
 			String errmpi = "";
 			// TODO: String idDemande = "";
 			String idDemande = String.valueOf(dmdSaved.getIddemande() == null ? "" : dmdSaved.getIddemande());
-			String expiry = ""; // TODO: YYMM
+			String expiry = expirydate; // TODO: YYMM
 
 			reponseMPI = threeDsecureResponse.getReponseMPI();
 
@@ -4152,7 +4152,7 @@ public class APIController {
 
 			errmpi = threeDsecureResponse.getErrmpi() == null ? "" : threeDsecureResponse.getErrmpi();
 
-			expiry = threeDsecureResponse.getExpiry() == null ? "" : threeDsecureResponse.getExpiry();
+			//expiry = threeDsecureResponse.getExpiry() == null ? "" : threeDsecureResponse.getExpiry();
 
 			if (idDemande == null || idDemande.equals("")) {
 				autorisationService.logMessage(file, "received idDemande from MPI is Null or Empty");

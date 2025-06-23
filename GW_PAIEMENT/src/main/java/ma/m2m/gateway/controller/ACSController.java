@@ -256,11 +256,11 @@ public class ACSController {
 				String idDemande = "";
 				String expiry = ""; // TODO: YYMM
 				String processing_code = "";
-				String acq_type = "";
-				String merchant_city = "";
-				String reason_code = "";
-				String transaction_condition = "";
-				String mesg_type = "";
+				String acq_type = "0000";
+				String merchant_city = "MOROCCO        ";
+				String reason_code = "H";
+				String transaction_condition = "6";
+				String mesg_type = "0";
 				String currency = "504";
 
 				String capture = "";
@@ -593,13 +593,8 @@ public class ACSController {
 							// TODO: 2024-03-05
 							montanttrame = Util.formatMontantTrame(folder, file, amount, orderid, merchantid, dmd, model);
 
-							merchant_city = "MOROCCO        ";
-
-							acq_type = "0000";
 							processing_code = dmd.getTransactiontype();
-							reason_code = "H";
-							transaction_condition = "6";
-							mesg_type = "0";
+
 							Date curren_date = new Date();
 							int numTransaction = Util.generateNumTransaction(folder, file, curren_date);
 							String numTrsStr = Util.formatNumTrans(String.valueOf(numTransaction));

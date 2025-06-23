@@ -1331,7 +1331,7 @@ public class GWPaiementController {
 		String xid = "";
 		String errmpi = "";
 		String idDemande = String.valueOf(demandeDto.getIddemande() == null ? "" : demandeDto.getIddemande());
-		String expiry = ""; // TODO: YYMM
+		String expiry = expirydate; // TODO: YYMM
 
 		reponseMPI = threeDsecureResponse.getReponseMPI();
 
@@ -1343,7 +1343,7 @@ public class GWPaiementController {
 
 		errmpi = threeDsecureResponse.getErrmpi() == null ? "" : threeDsecureResponse.getErrmpi();
 
-		expiry = threeDsecureResponse.getExpiry() == null ? "" : threeDsecureResponse.getExpiry();
+		//expiry = threeDsecureResponse.getExpiry() == null ? "" : threeDsecureResponse.getExpiry();
 
 		token_gen = demandeDto.getToken() == null ? "" : demandeDto.getToken();
 
@@ -2858,7 +2858,7 @@ public class GWPaiementController {
 		String xid = "";
 		String errmpi = "";
 		String idDemande = String.valueOf(demandeDto.getIddemande() == null ? "" : demandeDto.getIddemande());
-		String expiry = ""; // TODO: YYMM
+		String expiry = expirydate; // TODO: YYMM
 
 		reponseMPI = threeDsecureResponse.getReponseMPI();
 
@@ -2870,7 +2870,7 @@ public class GWPaiementController {
 
 		errmpi = threeDsecureResponse.getErrmpi() == null ? "" : threeDsecureResponse.getErrmpi();
 
-		expiry = threeDsecureResponse.getExpiry() == null ? "" : threeDsecureResponse.getExpiry();
+		//expiry = threeDsecureResponse.getExpiry() == null ? "" : threeDsecureResponse.getExpiry();
 
 		token_gen = demandeDto.getToken() == null ? "" : demandeDto.getToken();
 

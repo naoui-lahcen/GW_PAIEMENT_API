@@ -54,5 +54,14 @@ public class AuthInitRequest {
 	private String messageCategory = "01";
 	
 	private String urlThreeDSS;
+
+	// synchronisation du gw avec mpi
+	private String acquirerMerchantID;
+	private String acctNumber;
+	private Double purchaseAmount;
+	private String cardExpiryDate;
+	private String purchaseCurrency;
+	private String merchantName;
+	private String purchaseDate;
 	
 }

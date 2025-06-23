@@ -110,6 +110,14 @@ public class ThreeDSecureRequestor {
 			authInitReqPCIDSS.setThreeDSRequestorAuthenticationInd(authInitRequest.getThreeDSRequestorAuthenticationInd());
 			authInitReqPCIDSS.setMessageCategory(authInitRequest.getMessageCategory());
 			authInitReqPCIDSS.setUrlThreeDSS(authInitRequest.getUrlThreeDSS());
+			// synchronisation du gw avec mpi
+			authInitReqPCIDSS.setMerchantName(authInitRequest.getMerchantName());
+			authInitReqPCIDSS.setPurchaseAmount(authInitRequest.getPurchaseAmount());
+			authInitReqPCIDSS.setAcctNumber(Util.displayCard(authInitRequest.getAcctNumber()));
+			authInitReqPCIDSS.setPurchaseCurrency(authInitRequest.getPurchaseCurrency().trim());
+			authInitReqPCIDSS.setAcquirerMerchantID(authInitRequest.getAcquirerMerchantID());
+			authInitReqPCIDSS.setCardExpiryDate(authInitRequest.getCardExpiryDate());
+			authInitReqPCIDSS.setPurchaseDate(authInitRequest.getPurchaseDate());
 			
 			final String jsonBodyPCIDSS = gson.toJson(authInitReqPCIDSS);
 			Util.writeInFileTransaction(logFolder, logFile, "*********** jsonBodyPCIDSS ***********" + jsonBodyPCIDSS.toString());

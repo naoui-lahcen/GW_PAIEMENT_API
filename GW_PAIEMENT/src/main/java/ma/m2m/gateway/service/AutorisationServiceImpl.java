@@ -204,6 +204,8 @@ public class AutorisationServiceImpl implements AutorisationService {
 		ThreeDSecureRequestor threeDSecureRequestor = new ThreeDSecureRequestor(folder, file);
 		AuthInitRequest authInitRequest = new AuthInitRequest();
 		ThreeDSecureResponse threeDsecureResponse = new ThreeDSecureResponse();
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+		LocalDateTime now = LocalDateTime.now();
 
 		infoCommercantDto = infoCommercantService.findByCmrCode(demandeDto.getComid());
 
@@ -246,6 +248,14 @@ public class AutorisationServiceImpl implements AutorisationService {
 		}
 		authInitRequest.setNomCommercant(nomCmr);
 		authInitRequest.setNotificationURL(notificationACS);
+		// synchronisation du gw avec mpi
+		authInitRequest.setMerchantName(nomCmr);
+		authInitRequest.setPurchaseAmount(demandeDto.getMontant());
+		authInitRequest.setAcctNumber(demandeDto.getDemPan());
+		authInitRequest.setPurchaseCurrency(infoCommercantDto.getCmrCurrency().trim());
+		authInitRequest.setAcquirerMerchantID(demandeDto.getComid());
+		authInitRequest.setCardExpiryDate(demandeDto.getExpery());
+		authInitRequest.setPurchaseDate(dtf.format(now));
 
 		threeDSecureRequestor.threeDSecureRequest(authInitRequest);
 
@@ -271,6 +281,8 @@ public class AutorisationServiceImpl implements AutorisationService {
 		ThreeDSecureRequestor threeDSecureRequestor = new ThreeDSecureRequestor(folder, file);
 		AuthInitRequest authInitRequest = new AuthInitRequest();
 		ThreeDSecureResponse threeDsecureResponse = new ThreeDSecureResponse();
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+		LocalDateTime now = LocalDateTime.now();
 
 		infoCommercantDto = infoCommercantService.findByCmrCode(demandeDto.getComid());
 
@@ -314,6 +326,14 @@ public class AutorisationServiceImpl implements AutorisationService {
 		}
 		authInitRequest.setNomCommercant(nomCmr);
 		authInitRequest.setNotificationURL(notificationCCBACS);
+		// synchronisation du gw avec mpi
+		authInitRequest.setMerchantName(nomCmr);
+		authInitRequest.setPurchaseAmount(demandeDto.getMontant());
+		authInitRequest.setAcctNumber(demandeDto.getDemPan());
+		authInitRequest.setPurchaseCurrency(infoCommercantDto.getCmrCurrency().trim());
+		authInitRequest.setAcquirerMerchantID(demandeDto.getComid());
+		authInitRequest.setCardExpiryDate(demandeDto.getExpery());
+		authInitRequest.setPurchaseDate(dtf.format(now));
 
 		threeDSecureRequestor.threeDSecureRequest(authInitRequest);
 
@@ -340,6 +360,8 @@ public class AutorisationServiceImpl implements AutorisationService {
 		ThreeDSecureRequestor threeDSecureRequestor = new ThreeDSecureRequestor(folder, file);
 		AuthInitRequest authInitRequest = new AuthInitRequest();
 		ThreeDSecureResponse threeDsecureResponse = new ThreeDSecureResponse();
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+		LocalDateTime now = LocalDateTime.now();
 
 		infoCommercantDto = infoCommercantService.findByCmrCode(demandeDto.getComid());
 
@@ -382,6 +404,14 @@ public class AutorisationServiceImpl implements AutorisationService {
 		}
 		authInitRequest.setNomCommercant(nomCmr);
 		authInitRequest.setNotificationURL(notificationProcessOutACS);
+		// synchronisation du gw avec mpi
+		authInitRequest.setMerchantName(nomCmr);
+		authInitRequest.setPurchaseAmount(demandeDto.getMontant());
+		authInitRequest.setAcctNumber(demandeDto.getDemPan());
+		authInitRequest.setPurchaseCurrency(infoCommercantDto.getCmrCurrency().trim());
+		authInitRequest.setAcquirerMerchantID(demandeDto.getComid());
+		authInitRequest.setCardExpiryDate(demandeDto.getExpery());
+		authInitRequest.setPurchaseDate(dtf.format(now));
 
 		threeDSecureRequestor.threeDSecureRequest(authInitRequest);
 
