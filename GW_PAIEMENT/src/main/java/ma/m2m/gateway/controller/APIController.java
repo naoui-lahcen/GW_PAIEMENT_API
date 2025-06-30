@@ -533,15 +533,21 @@ public class APIController {
 		String idDemande = String.valueOf(dmdSaved.getIddemande() == null ? "" : dmdSaved.getIddemande());
 		String expiry = expirydate; // TODO: YYMM
 
-		reponseMPI = threeDsecureResponse.getReponseMPI();
+		reponseMPI = threeDsecureResponse.getTransStatus() == null ? threeDsecureResponse.getReponseMPI() : threeDsecureResponse.getTransStatus();
+		if(threeDsecureResponse != null && threeDsecureResponse.getMessageType() != null) {
+			if(threeDsecureResponse.getMessageType().equals("Erro")) {
+				reponseMPI = "E";
+				errmpi = threeDsecureResponse.getErrorDetail();
+			}
+		} else {
+			errmpi = threeDsecureResponse.getErrmpi() == null ? "" : threeDsecureResponse.getErrmpi();
+		}
 
 		threeDSServerTransID = threeDsecureResponse.getThreeDSServerTransID();
 
 		eci = threeDsecureResponse.getEci() == null ? "" : threeDsecureResponse.getEci();
 
-		cavv = threeDsecureResponse.getCavv() == null ? "" : threeDsecureResponse.getCavv();
-
-		errmpi = threeDsecureResponse.getErrmpi() == null ? "" : threeDsecureResponse.getErrmpi();
+		cavv = threeDsecureResponse.getAuthenticationValue() == null ? threeDsecureResponse.getCavv() : threeDsecureResponse.getAuthenticationValue();
 
 		//expiry = threeDsecureResponse.getExpiry() == null ? "" : threeDsecureResponse.getExpiry();
 
@@ -1230,7 +1236,7 @@ public class APIController {
 					rec_1.setPaymentid(paymentid);
 					rec_1.setReccuringNumber(0);
 					rec_1.setToken(linkRequestDto.getToken());
-					rec_1.setTransactionid(linkRequestDto.getTransactionid());
+					rec_1.setTransactionid(String.valueOf(hist.getHatNumdem()));
 					rec_1.setWebsiteid(websiteid.length() > 3 ? websiteid.substring(0,3) : websiteid);
 
 					recService.save(rec_1);
@@ -1258,7 +1264,7 @@ public class APIController {
 					rec_1.setPaymentid(paymentid);
 					rec_1.setReccuringNumber(lrec_serie);
 					rec_1.setToken(linkRequestDto.getToken());
-					rec_1.setTransactionid(linkRequestDto.getTransactionid());
+					rec_1.setTransactionid(String.valueOf(hist.getHatNumdem()));
 					rec_1.setWebsiteid(websiteid.length() > 3 ? websiteid.substring(0,3) : websiteid);
 
 					recService.save(rec_1);
@@ -1346,7 +1352,14 @@ public class APIController {
 				jso.put("linkacs", linkChalenge + dmd.getTokencommande());
 
 				// TODO: insertion htmlCreq dans la demandePaiement
-				dmd.setCreq(threeDsecureResponse.getHtmlCreq());
+				// 2025-06-25 synchnisation avec new version mpi certie
+				String htmlCreq = threeDsecureResponse.getHtmlCreq();
+				if(htmlCreq == null || htmlCreq.equals("")) {
+					autorisationService.logMessage(file, "getHtmlCreqFrompArs ");
+					htmlCreq = Util.getHtmlCreqFrompArs(threeDsecureResponse, folder, file);
+					autorisationService.logMessage(file, "HtmlCreqFrompArs : " + htmlCreq);
+				}
+				dmd.setCreq(htmlCreq);
 				if (threeDSServerTransID.equals("") || threeDSServerTransID == null) {
 					threeDSServerTransID = threeDsecureResponse.getThreeDSServerTransID();
 				}
@@ -1949,7 +1962,6 @@ public class APIController {
 						String creq = "";
 						String acsUrl = "";
 						String response3DS = current_dem.getCreq();
-						//Pattern pattern = Pattern.compile("action='(.*?)'.*value='(.*?)'");
 						Pattern pattern = Pattern.compile("action='([^']*)'.*?value='([^']*)'");
 						Matcher matcher = pattern.matcher(response3DS);
 
@@ -4142,15 +4154,21 @@ public class APIController {
 			String idDemande = String.valueOf(dmdSaved.getIddemande() == null ? "" : dmdSaved.getIddemande());
 			String expiry = expirydate; // TODO: YYMM
 
-			reponseMPI = threeDsecureResponse.getReponseMPI();
+			reponseMPI = threeDsecureResponse.getTransStatus() == null ? threeDsecureResponse.getReponseMPI() : threeDsecureResponse.getTransStatus();
+			if(threeDsecureResponse != null && threeDsecureResponse.getMessageType() != null) {
+				if(threeDsecureResponse.getMessageType().equals("Erro")) {
+					reponseMPI = "E";
+					errmpi = threeDsecureResponse.getErrorDetail();
+				}
+			} else {
+				errmpi = threeDsecureResponse.getErrmpi() == null ? "" : threeDsecureResponse.getErrmpi();
+			}
 
 			threeDSServerTransID = threeDsecureResponse.getThreeDSServerTransID();
 
 			eci = threeDsecureResponse.getEci() == null ? "" : threeDsecureResponse.getEci();
 
-			cavv = threeDsecureResponse.getCavv() == null ? "" : threeDsecureResponse.getCavv();
-
-			errmpi = threeDsecureResponse.getErrmpi() == null ? "" : threeDsecureResponse.getErrmpi();
+			cavv = threeDsecureResponse.getAuthenticationValue() == null ? threeDsecureResponse.getCavv() : threeDsecureResponse.getAuthenticationValue();
 
 			//expiry = threeDsecureResponse.getExpiry() == null ? "" : threeDsecureResponse.getExpiry();
 
@@ -4777,7 +4795,14 @@ public class APIController {
 					jso.put("linkacs", linkChalenge + dmd.getTokencommande());
 
 					// TODO: insertion htmlCreq dans la demandePaiement
-					dmd.setCreq(threeDsecureResponse.getHtmlCreq());
+					// 2025-06-25 synchnisation avec new version mpi certie
+					String htmlCreq = threeDsecureResponse.getHtmlCreq();
+					if(htmlCreq == null || htmlCreq.equals("")) {
+						autorisationService.logMessage(file, "getHtmlCreqFrompArs ");
+						htmlCreq = Util.getHtmlCreqFrompArs(threeDsecureResponse, folder, file);
+						autorisationService.logMessage(file, "HtmlCreqFrompArs : " + htmlCreq);
+					}
+					dmd.setCreq(htmlCreq);
 					dmd.setDemxid(threeDSServerTransID);
 					dmd.setEtatDemande("SND_TO_ACS");
 					dmd.setIs3ds("Y");

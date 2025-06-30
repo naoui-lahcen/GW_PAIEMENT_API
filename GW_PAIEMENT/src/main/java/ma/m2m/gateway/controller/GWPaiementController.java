@@ -230,6 +230,58 @@ public class GWPaiementController {
 		return msg;
 	}
 
+	@GetMapping("/getHtmlCreq")
+	@ResponseBody
+	public String getHtmlCreq(HttpServletResponse response) {
+		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
+		String filee = "GW_" + randomWithSplittableRandom;
+		Util.creatFileTransaction(filee);
+
+		String msg = "Bienvenue dans la plateforme de paiement NAPS !!!";
+		ThreeDSecureResponse res = new ThreeDSecureResponse();
+		res.setThreeDSServerTransID("f87d255c-c559-47ac-bda5-7f7ff792f9eb");
+		res.setMessageType("pGcq");
+		res.setMessageVersion("2.2.0");
+		res.setAcsTransID("9b2a2a44-b01f-4e9f-90ec-77ab6b0e971b");
+		res.setAcsURL("https://xml-ds.3dstest.com/simulator/simulation/acs/challenge");
+
+		String htmlCreq = Util.getHtmlCreqFrompArs(res, folder, filee);
+		System.out.println("htmlCreq : " + htmlCreq);
+
+		String creq = "";
+		String acsUrl = "";
+		Pattern pattern = Pattern.compile("action='([^']*)'.*?value='([^']*)'");
+		Matcher matcher = pattern.matcher(htmlCreq);
+		try {
+			if (matcher.find()) {
+				acsUrl = matcher.group(1);
+				creq = matcher.group(2);
+				logger.info("L'URL ACS est : " + res.getAcsURL());
+				logger.info("La valeur de creq est : " + creq);
+
+				String decodedCreq = new String(Base64.decodeBase64(creq.getBytes()));
+				logger.info("La valeur de decodedCreq est : " + decodedCreq);
+
+				response.setContentType("text/html");
+				response.setCharacterEncoding("UTF-8");
+				response.getWriter().println("<html><body>");
+				response.getWriter().println("<form id=\"acsForm\" action=\"" + acsUrl + "\" method=\"post\">");
+				response.getWriter().println("<input type=\"hidden\" name=\"creq\" value=\"" + creq + "\">");
+				response.getWriter().println("</form>");
+				response.getWriter().println("<script>document.getElementById('acsForm').submit();</script>");
+				response.getWriter().println("</body></html>");
+
+				logger.info("Le Creq a été envoyé à l'ACS par soumission automatique du formulaire.");
+
+				return null;  // TODO: Terminer le traitement ici après avoir envoyé le formulaire
+			}
+		} catch (Exception e) {
+			logger.info(e);
+		}
+
+		return msg;
+	}
+
 	@SuppressWarnings("all")
 	public JSONObject verifieToken(String securtoken24) {
 		// TODO: Traces traces = new Traces();
@@ -1333,15 +1385,21 @@ public class GWPaiementController {
 		String idDemande = String.valueOf(demandeDto.getIddemande() == null ? "" : demandeDto.getIddemande());
 		String expiry = expirydate; // TODO: YYMM
 
-		reponseMPI = threeDsecureResponse.getReponseMPI();
+		reponseMPI = threeDsecureResponse.getTransStatus() == null ? threeDsecureResponse.getReponseMPI() : threeDsecureResponse.getTransStatus();
+		if(threeDsecureResponse != null && threeDsecureResponse.getMessageType() != null) {
+			if(threeDsecureResponse.getMessageType().equals("Erro")) {
+				reponseMPI = "E";
+				errmpi = threeDsecureResponse.getErrorDetail();
+			}
+		} else {
+			errmpi = threeDsecureResponse.getErrmpi() == null ? "" : threeDsecureResponse.getErrmpi();
+		}
 
 		threeDSServerTransID = threeDsecureResponse.getThreeDSServerTransID();
 
 		eci = threeDsecureResponse.getEci() == null ? "" : threeDsecureResponse.getEci();
 
-		cavv = threeDsecureResponse.getCavv() == null ? "" : threeDsecureResponse.getCavv();
-
-		errmpi = threeDsecureResponse.getErrmpi() == null ? "" : threeDsecureResponse.getErrmpi();
+		cavv = threeDsecureResponse.getAuthenticationValue() == null ? threeDsecureResponse.getCavv() : threeDsecureResponse.getAuthenticationValue();
 
 		//expiry = threeDsecureResponse.getExpiry() == null ? "" : threeDsecureResponse.getExpiry();
 
@@ -2031,7 +2089,15 @@ public class GWPaiementController {
 			// TODO: *********************
 			autorisationService.logMessage(file, "****** Cas chalenge responseMPI equal C ou D ******");
 			try {
-				dmd.setCreq(threeDsecureResponse.getHtmlCreq());
+				// 2025-06-25 synchnisation avec new version mpi certie
+				String htmlCreq = "";
+				if(threeDsecureResponse.getHtmlCreq() == null || threeDsecureResponse.getHtmlCreq().equals("")) {
+					autorisationService.logMessage(file, "getHtmlCreqFrompArs ");
+					htmlCreq = Util.getHtmlCreqFrompArs(threeDsecureResponse, folder, file);
+					threeDsecureResponse.setHtmlCreq(htmlCreq);
+					autorisationService.logMessage(file, "HtmlCreqFrompArs : " + htmlCreq);
+				}
+				dmd.setCreq(htmlCreq);
 				if(threeDSServerTransID.equals("") || threeDSServerTransID == null) {
 					threeDSServerTransID = threeDsecureResponse.getThreeDSServerTransID();
 				}
@@ -2053,7 +2119,6 @@ public class GWPaiementController {
 		        String creq = "";
 		        String acsUrl = "";
 		        String response3DS = threeDsecureResponse.getHtmlCreq();
-		        //Pattern pattern = Pattern.compile("action='(.*?)'.*value='(.*?)'");
 		        Pattern pattern = Pattern.compile("action='([^']*)'.*?value='([^']*)'");
 		        Matcher matcher = pattern.matcher(response3DS);
 
@@ -2860,15 +2925,21 @@ public class GWPaiementController {
 		String idDemande = String.valueOf(demandeDto.getIddemande() == null ? "" : demandeDto.getIddemande());
 		String expiry = expirydate; // TODO: YYMM
 
-		reponseMPI = threeDsecureResponse.getReponseMPI();
+		reponseMPI = threeDsecureResponse.getTransStatus() == null ? threeDsecureResponse.getReponseMPI() : threeDsecureResponse.getTransStatus();
+		if(threeDsecureResponse != null && threeDsecureResponse.getMessageType() != null) {
+			if(threeDsecureResponse.getMessageType().equals("Erro")) {
+				reponseMPI = "E";
+				errmpi = threeDsecureResponse.getErrorDetail();
+			}
+		} else {
+			errmpi = threeDsecureResponse.getErrmpi() == null ? "" : threeDsecureResponse.getErrmpi();
+		}
 
 		threeDSServerTransID = threeDsecureResponse.getThreeDSServerTransID();
 
 		eci = threeDsecureResponse.getEci() == null ? "" : threeDsecureResponse.getEci();
 
-		cavv = threeDsecureResponse.getCavv() == null ? "" : threeDsecureResponse.getCavv();
-
-		errmpi = threeDsecureResponse.getErrmpi() == null ? "" : threeDsecureResponse.getErrmpi();
+		cavv = threeDsecureResponse.getAuthenticationValue() == null ? threeDsecureResponse.getCavv() : threeDsecureResponse.getAuthenticationValue();
 
 		//expiry = threeDsecureResponse.getExpiry() == null ? "" : threeDsecureResponse.getExpiry();
 
@@ -3775,7 +3846,15 @@ public class GWPaiementController {
 			// TODO: *********************
 			autorisationService.logMessage(file, "****** Cas chalenge responseMPI equal C ou D ******");
 			try {
-				dmd.setCreq(threeDsecureResponse.getHtmlCreq());
+				// 2025-06-25 synchnisation avec new version mpi certie
+				String htmlCreq = "";
+				if(threeDsecureResponse.getHtmlCreq() == null || threeDsecureResponse.getHtmlCreq().equals("")) {
+					autorisationService.logMessage(file, "getHtmlCreqFrompArs ");
+					htmlCreq = Util.getHtmlCreqFrompArs(threeDsecureResponse, folder, file);
+					threeDsecureResponse.setHtmlCreq(htmlCreq);
+					autorisationService.logMessage(file, "HtmlCreqFrompArs : " + htmlCreq);
+				}
+				dmd.setCreq(htmlCreq);
 				if(threeDSServerTransID.equals("") || threeDSServerTransID == null) {
 					threeDSServerTransID = threeDsecureResponse.getThreeDSServerTransID();
 				}
@@ -3797,7 +3876,6 @@ public class GWPaiementController {
 				String creq = "";
 				String acsUrl = "";
 				String response3DS = threeDsecureResponse.getHtmlCreq();
-				//Pattern pattern = Pattern.compile("action='(.*?)'.*value='(.*?)'");
 				Pattern pattern = Pattern.compile("action='([^']*)'.*?value='([^']*)'");
 				Matcher matcher = pattern.matcher(response3DS);
 

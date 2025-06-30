@@ -294,37 +294,32 @@ public class ProcessOutController {
 						autorisationService.logMessage(file,
 								"if(eci=05) || eci=02 || eci=06 || eci=01) : continue le processus");
 
-						idDemande = threeDsecureResponse.getIdDemande();
-
-						reponseMPI = threeDsecureResponse.getReponseMPI();
+						reponseMPI = threeDsecureResponse.getTransStatus() == null ? threeDsecureResponse.getReponseMPI() : threeDsecureResponse.getTransStatus();
+						if(threeDsecureResponse != null && threeDsecureResponse.getMessageType() != null) {
+							if(threeDsecureResponse.getMessageType().equals("Erro")) {
+								reponseMPI = "E";
+								errmpi = threeDsecureResponse.getErrorDetail();
+							}
+						} else {
+							errmpi = threeDsecureResponse.getErrmpi() == null ? "" : threeDsecureResponse.getErrmpi();
+						}
 
 						threeDSServerTransID = threeDsecureResponse.getThreeDSServerTransID();
 
 						eci = threeDsecureResponse.getEci() == null ? "" : threeDsecureResponse.getEci();
 
-						cavv = threeDsecureResponse.getCavv() == null ? "" : threeDsecureResponse.getCavv();
-
-						errmpi = threeDsecureResponse.getErrmpi() == null ? "" : threeDsecureResponse.getErrmpi();
+						cavv = threeDsecureResponse.getAuthenticationValue() == null ? threeDsecureResponse.getCavv() : threeDsecureResponse.getAuthenticationValue();
 
 						expiry = threeDsecureResponse.getExpiry() == null ? "" : threeDsecureResponse.getExpiry();
 
-						if (idDemande == null || idDemande.equals("")) {
-							autorisationService.logMessage(file, "received idDemande from MPI is Null or Empty");
-							autorisationService.logMessage(file,
-									"demandePaiement after update MPI_KO idDemande null");
-							demandeDtoMsg.setMsgRefus(
-									"La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
-							model.addAttribute("demandeDto", demandeDtoMsg);
-							page = "result";
-							autorisationService.logMessage(file, "Fin processoutRequest ()");
-							logger.info("Fin processoutRequest ()");
-							//return page;
-							failURL = autorisationService.getFailUrl(cleanCres.getThreeDSServerTransID());
-							response.sendRedirect(failURL);
-							return null;
-						}
+						idDemande = threeDsecureResponse.getIdDemande();
 
-						dmd = demandePaiementService.findByIdDemande(Integer.parseInt(idDemande));
+						if(idDemande == null) {
+							autorisationService.logMessage(file,"idDemande null => return idDemande by findByDem_xid " + cleanCres.getThreeDSServerTransID());
+							dmd = demandePaiementService.findByDem_xid(cleanCres.getThreeDSServerTransID());
+						} else {
+							dmd = demandePaiementService.findByIdDemande(Integer.parseInt(idDemande));
+						}
 
 						if (dmd == null) {
 							autorisationService.logMessage(file,
@@ -1367,7 +1362,12 @@ public class ProcessOutController {
 
 					} else {
 						idDemande = threeDsecureResponse.getIdDemande() == null ? "" : threeDsecureResponse.getIdDemande();
-						dmd = demandePaiementService.findByIdDemande(Integer.parseInt(idDemande));
+						if(idDemande == null || idDemande.equals("")) {
+							dmd = demandePaiementService.findByDem_xid(cleanCres.getThreeDSServerTransID());
+						} else {
+							dmd = demandePaiementService.findByIdDemande(Integer.parseInt(idDemande));
+						}
+
 						dmd.setEtatDemande("AUTH_ACS_FAILED");
 						dmd.setDemxid(threeDSServerTransID);
 						// TODO: stackage de eci dans le chmp date_sendMPI vu que ce chmp nest pas utilisé
@@ -1794,15 +1794,21 @@ public class ProcessOutController {
 		String idDemande = String.valueOf(dmdSaved.getIddemande() == null ? "" : dmdSaved.getIddemande());
 		String expiry = expirydate; // TODO: YYMM
 
-		reponseMPI = threeDsecureResponse.getReponseMPI();
+		reponseMPI = threeDsecureResponse.getTransStatus() == null ? threeDsecureResponse.getReponseMPI() : threeDsecureResponse.getTransStatus();
+		if(threeDsecureResponse != null && threeDsecureResponse.getMessageType() != null) {
+			if(threeDsecureResponse.getMessageType().equals("Erro")) {
+				reponseMPI = "E";
+				errmpi = threeDsecureResponse.getErrorDetail();
+			}
+		} else {
+			errmpi = threeDsecureResponse.getErrmpi() == null ? "" : threeDsecureResponse.getErrmpi();
+		}
 
 		threeDSServerTransID = threeDsecureResponse.getThreeDSServerTransID();
 
 		eci = threeDsecureResponse.getEci() == null ? "" : threeDsecureResponse.getEci();
 
-		cavv = threeDsecureResponse.getCavv() == null ? "" : threeDsecureResponse.getCavv();
-
-		errmpi = threeDsecureResponse.getErrmpi() == null ? "" : threeDsecureResponse.getErrmpi();
+		cavv = threeDsecureResponse.getAuthenticationValue() == null ? threeDsecureResponse.getCavv() : threeDsecureResponse.getAuthenticationValue();
 
 		//expiry = threeDsecureResponse.getExpiry() == null ? "" : threeDsecureResponse.getExpiry();
 
@@ -2518,7 +2524,7 @@ public class ProcessOutController {
 					rec_1.setPaymentid(paymentid);
 					rec_1.setReccuringNumber(0);
 					rec_1.setToken(linkRequestDto.getToken());
-					rec_1.setTransactionid(linkRequestDto.getTransactionid());
+					rec_1.setTransactionid(String.valueOf(hist.getHatNumdem()));
 					rec_1.setWebsiteid(websiteid.length() > 3 ? websiteid.substring(0,3) : websiteid);
 
 					recService.save(rec_1);
@@ -2546,7 +2552,7 @@ public class ProcessOutController {
 					rec_1.setPaymentid(paymentid);
 					rec_1.setReccuringNumber(lrec_serie);
 					rec_1.setToken(linkRequestDto.getToken());
-					rec_1.setTransactionid(linkRequestDto.getTransactionid());
+					rec_1.setTransactionid(String.valueOf(hist.getHatNumdem()));
 					rec_1.setWebsiteid(websiteid.length() > 3 ? websiteid.substring(0,3) : websiteid);
 
 					recService.save(rec_1);
@@ -2637,7 +2643,14 @@ public class ProcessOutController {
 				jso.put("linkacs", linkChalenge + dmd.getTokencommande());
 
 				// TODO: insertion htmlCreq dans la demandePaiement
-				dmd.setCreq(threeDsecureResponse.getHtmlCreq());
+				// 2025-06-25 synchnisation avec new version mpi certie
+				String htmlCreq = threeDsecureResponse.getHtmlCreq();
+				if(htmlCreq == null || htmlCreq.equals("")) {
+					autorisationService.logMessage(file, "getHtmlCreqFrompArs ");
+					htmlCreq = Util.getHtmlCreqFrompArs(threeDsecureResponse, folder, file);
+					autorisationService.logMessage(file, "HtmlCreqFrompArs : " + htmlCreq);
+				}
+				dmd.setCreq(htmlCreq);
 				if (threeDSServerTransID.equals("") || threeDSServerTransID == null) {
 					threeDSServerTransID = threeDsecureResponse.getThreeDSServerTransID();
 				}

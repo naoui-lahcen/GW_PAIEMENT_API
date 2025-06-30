@@ -17,7 +17,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 import ma.m2m.gateway.dto.*;
+import ma.m2m.gateway.threedsecure.ThreeDSecureResponse;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -25,6 +29,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Pattern;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tomcat.util.codec.binary.Base64;
 import org.json.JSONObject;
 import org.springframework.ui.Model;
 
@@ -985,5 +990,56 @@ public class Util {
 			dto.setMontant(0.00);
 		}
 		return String.format("%.2f", dto.getMontant()).replace(",", ".");
+	}
+
+	public static String getHtmlCreqFrompArs(ThreeDSecureResponse threeDSecureResponse, String folder, String file) {
+		Traces traces = new Traces();
+		JsonObject pGcqOb = new JsonObject();
+		Gson gson = new GsonBuilder().setPrettyPrinting().create();
+		String threeDSSessionData = "";
+		boolean threeDSSDb=false;
+		String acsURL = "";
+		String htmlCreq = "";
+		try {
+			pGcqOb.remove("messageType");
+			pGcqOb.addProperty("messageType", "CReq");
+			pGcqOb.addProperty("messageVersion", threeDSecureResponse.getMessageVersion());
+			pGcqOb.addProperty("threeDSServerTransID", threeDSecureResponse.getThreeDSServerTransID());
+			pGcqOb.addProperty("acsTransID", threeDSecureResponse.getAcsTransID());
+			pGcqOb.addProperty("challengeWindowSize", "05");
+			String creqJson = gson.toJson(pGcqOb);
+			if(pGcqOb.has("threeDSSessionData")){
+				threeDSSessionData= pGcqOb.get("threeDSSessionData").getAsString();
+				threeDSSDb = true;
+
+			}
+			//String creqJson = pGcqJS;
+			byte[] encodedCreq = Base64.encodeBase64(creqJson.getBytes());
+			String encodedCreq64Str = new String(encodedCreq);
+			traces.writeInFileTransaction(folder, file, "encodedCreq64Str: " + encodedCreq64Str);
+			System.out.println(encodedCreq64Str);
+
+			byte[] encodedCreqbase64URL = Base64.encodeBase64URLSafe(creqJson.getBytes("UTF-8"));
+			String encodedCreq64URLStr = new String(encodedCreqbase64URL, "UTF-8");
+			traces.writeInFileTransaction(folder, file, "encodedCreq64URLStr: " + encodedCreq64URLStr);
+			System.out.println(encodedCreq64URLStr);
+			acsURL = threeDSecureResponse.getAcsURL();
+
+			// commenter pour les tests recertification 2.2.0
+			//htmlCreq = "<form  action=\'" + acsURL + "\' method=\'post\' enctype=\'application/x-www-form-urlencoded\'><input type=\'hidden\' name=\'creq\' value=\'" + new String(encodedCreq) + "\' />";
+
+			htmlCreq = "<form  action=\'" + acsURL + "\' method=\'post\' enctype=\'application/x-www-form-urlencoded\'><input type=\'hidden\' name=\'creq\' value=\'" + encodedCreq64URLStr + "\' />";
+
+			if(threeDSSDb){
+				htmlCreq += "<input type=\'hidden\' name=\'threeDSSessionData\' value=\'b\'"+ threeDSSessionData +"\'\' />";
+			}
+			htmlCreq+="</form>";
+
+		} catch(Exception ex) {
+			traces.writeInFileTransaction(folder, file, "Exception: " + formatException(ex));
+		}
+
+
+		return htmlCreq;
 	}
 }

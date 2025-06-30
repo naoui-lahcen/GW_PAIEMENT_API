@@ -772,7 +772,10 @@ public class AutorisationServiceImpl implements AutorisationService {
 				demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 				break;
 			default:
-				logMessage(file, "Erreur MPI inconnue : " + errmpi + " pour idDemande : " + idDemande);
+				logMessage(file, "Erreur MPI : " + errmpi + " pour idDemande : " + idDemande);
+				dmd.setEtatDemande("MPI_ERR_3DSS");
+				dmd.setDemCvv("");
+				dmd.setDemxid(threeDSServerTransID);
 				demandeDtoMsg.setMsgRefus("La transaction en cours n’a pas abouti, votre compte ne sera pas débité, merci de réessayer.");
 				break;
 		}
