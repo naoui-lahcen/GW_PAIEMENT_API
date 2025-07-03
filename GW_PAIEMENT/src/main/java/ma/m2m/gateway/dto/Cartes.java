@@ -35,4 +35,6 @@ public class Cartes implements Serializable{
 
 	private boolean isExpired;
 
+	private String scheme;
+
 }

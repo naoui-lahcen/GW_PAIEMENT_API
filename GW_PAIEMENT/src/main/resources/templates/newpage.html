@@ -21,6 +21,43 @@
             crossorigin="anonymous" defer></script>
     <style>
 
+        div:where(.swal2-container) button:where(.swal2-styled):where(.swal2-cancel) {
+            border-radius: 8px !important;
+            background-color: #ffffff !important;
+            box-shadow: var(--swal2-cancel-button-box-shadow);
+            color: #000000 !important;
+            border: 1px solid #D5D7DA !important;
+        }
+
+        div:where(.swal2-container) h2:where(.swal2-title) {
+                    font-size: 1.2em !important;
+                }
+
+        .custom-dropdown {
+            position: relative;
+            user-select: none;
+            font-family: Arial, sans-serif;
+        }
+
+        .selected-card {
+            height:38px;
+            border: 1px solid #ccc;
+            padding: 8px 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: white;
+            border-radius: 5px !important;
+        }
+
+        .dropdown-list .dropdown-item:hover {
+            background-color: #f0f0f0;
+
+        }
+
+
+
         * {
             margin: 0;
             padding: 0;
@@ -339,8 +376,13 @@
                     display: none;
                 }
                 .labInput {
+                    font-family: Inter, sans-serif;
+                    font-weight: 500;
+                    font-size: 14px;
+                    line-height: 20px;
+                    letter-spacing: 0%;
                     color: #344054;
-                    font-family: sans-serif, Arial;
+
                 }
                 #error-message {
                     font-family: sans-serif, Arial;
@@ -462,6 +504,14 @@
                     height: auto;
                     display: block;
                 }
+
+                #card-logo2 {
+                    position: absolute;
+                    right: 10px;
+                    width: auto;
+                    height: auto;
+                    display: block;
+                }
                 .cvc {
                     position: relative;
                     display: flex;
@@ -497,7 +547,7 @@
                         font-size: 32px;
                         font-size: 40px;
                         font-weight: bold;
-                        font-family: system-ui;
+                        font-family: Inter,sans-serif;
                     }
 
                     .total-box .currency {
@@ -842,6 +892,31 @@
                   }
                 }
 
+                .expired-card {
+                  color: red;
+                }
+
+                .card-number {
+                    font-family: Font family/font-family-body;
+                    font-weight: 500;
+                    font-size: Font size/text-md;
+                    line-height: Line height/text-md;
+                    letter-spacing: 0%;
+                }
+
+                input:focus,
+                input.form-control:focus {
+                    border-color: #FDA29B !important;
+                    box-shadow: none;
+                    outline: none !important;
+                }
+
+                #selectedText{
+                    font-weight: 478;
+                    font-size: 24;
+                }
+
+
     </style>
 </head>
 <body>
@@ -937,24 +1012,143 @@
 
                     <div class="form-group">
                         <label class="labInput">Nom sur la carte</label>
-                        <input placeholder="Entrez le nom du porteur de la carte" required="required" type="text">
+                        <input class="form-control" placeholder="Entrez le nom du porteur de la carte" required="required" type="text">
                     </div>
-                    <label class="labInput">Informations de votre carte</label>
 
                     <!-- Affichage de la liste déroulante si des cartes existent -->
-                    <div id="cardSelectDiv" th:if="${demandeDto.cartes != null and #lists.size(demandeDto.cartes) > 0}" class="form-group">
-                        <select id="selectCard" th:field="*{demPan}" onchange="updateCardDetails()" class="form-control">
-                            <option value="">Sélectionnez une carte</option>
-                            <option th:each="carte : ${demandeDto.cartes}"
-                                    th:value="${carte.carte}"
-                                    th:data-year="${carte.year}"
-                                    th:data-month="${carte.moisValue}">
-                                    <span th:text="${carte.pcidsscarte}"></span>
-                                    <!--<span th:text="${carte.moisValue + '/' + #strings.substring(carte.year, 2, 4)}"></span>-->
-                            </option>
-                            <option value="newCard">Utiliser une nouvelle carte</option>
-                        </select>
+                    <!--                    <div id="cardSelectDiv" th:if="${demandeDto.cartes != null and #lists.size(demandeDto.cartes) > 0}" class="form-group">-->
+                    <!--							<label class="labInput">Informations de votre carte</label>-->
+
+                    <!--                        <select id="selectCard" th:field="*{demPan}" onchange="updateCardDetails()" class="form-control">-->
+                    <!--                            <option value="">Sélectionnez une carte</option>-->
+                    <!--                            <option th:each="carte : ${demandeDto.cartes}"-->
+                    <!--                                    th:value="${carte.carte}"-->
+                    <!--                                    th:data-year="${carte.year}"-->
+                    <!--                                    th:data-month="${carte.moisValue}">-->
+                    <!--                                    <span th:text="${carte.pcidsscarte}"></span>-->
+                    <!--                                    <span th:text="${carte.moisValue + '/' + #strings.substring(carte.year, 2, 4)}"></span>-->
+                    <!--                            </option>-->
+                    <!--                            <option value="newCard">Utiliser une nouvelle carte</option>-->
+                    <!--                        </select>-->
+                    <!--                    </div>-->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    <label class="labInput">Informations de votre carte</label>
+                    <div id="cardSelectDiv" th:if="${demandeDto.cartes != null and #lists.size(demandeDto.cartes) > 0}" class="form-group custom-dropdown">
+                        <!-- Selected card display -->
+                        <div id="selectedCard" class="selected-card" onclick="toggleDropdown()">
+                            <span id="selectedText">Sélectionnez une carte</span>
+                            <img alt="Image" id="card-logo2" th:src="@{/images/visa_mc.svg}">
+                            <span style="float:right;">&#9662;</span> <!-- down arrow -->
+                        </div>
+
+                        <!-- Dropdown list -->
+                        <div id="dropdownList" class="dropdown-list" style="display:none; max-height:300px; overflow-y:auto; border:1px solid #ccc; background:#fff; position:absolute; width:100%; z-index:1000;">
+                            <div class="dropdown-item" data-value="" data-brand="" onclick="toggleDropdown()">
+			            <span style="
+						height: 36;
+						border-radius: radius-sm;
+						padding-top: spacing-md;
+						padding-right: 10px;
+						padding-bottom: spacing-md;
+						padding-left: 0px;">
+						Vos cartes enregistrées
+					</span>
+                            </div>
+
+                            <div th:each="carte : ${demandeDto.cartes}"
+                                 class="dropdown-item"
+                                 th:data-value="${carte.pcidsscarte}"
+                                 th:data-brand="${carte.scheme}"
+                                 th:data-year="${carte.year}"
+                                 th:data-month="${carte.moisValue}"
+                                 onclick="selectCard(this)"
+                                 style="cursor:pointer; display: flex; align-items: center; padding:8px 10px;"
+                                 th:classappend="${#dates.createNow().getYear() > carte.year || (#dates.createNow().getYear() == carte.year && #dates.createNow().getMonthValue() > carte.moisValue) ? 'expired-card' : ''}">
+
+                                <!-- Card brand icon -->
+                                <img th:src="@{/images/} + ${carte.scheme} + '.svg'"
+                                     alt="card logo"
+                                     style="width: 24px; height: auto; margin-right: 10px;" />
+
+                                <!-- Card number -->
+                                <span class="card-number"
+                                      style=" font-size: 1.1rem; font-family: 'Courier New', monospace;">
+					        <span th:text="${#strings.substring(carte.pcidsscarte, 0, 4) + ' '
+					                      + #strings.substring(carte.pcidsscarte, 4, 6) + '** **** '
+					                      + #strings.substring(carte.pcidsscarte, carte.pcidsscarte.length() - 4)}"></span>
+					    </span>
+
+                                <!-- Expiration -->
+                                <span style="margin-left: 10px; color: #667085; font-size: 0.95rem;"
+                                      th:text="${carte.moisValue + '/' + #strings.substring(carte.year, 2,4)}">
+					    </span>
+
+                                <!-- Trash icon aligned to right -->
+                                <img src="/images/trashIcon.svg" alt="Supprimer"
+                                     onclick="event.stopPropagation(); removeCard(this)"
+                                     style="margin-left: auto; margin-right: 10px; width: 24px; height: 24px; cursor: pointer;" />
+                            </div>
+
+
+                            <div class="dropdown-item" data-value="" data-brand="" onclick="selectCard(this)" style="cursor:pointer; padding:8px 10px;">
+                                <img src="/images/nvcarte.svg" alt="New Card" style="						font-family: Font family/font-family-body;
+						font-weight: 600;
+						font-size: Font size/text-sm;
+						line-height: Line height/text-sm;
+						letter-spacing: 0%;
+">
+                                Utiliser une nouvelle carte
+                            </div>
+                        </div>
                     </div>
+                    <input type="hidden" th:field="*{demPan}" id="hiddenInput" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
                     <!-- Input caché si des cartes existent -->
                     <div th:if="${demandeDto.cartes == null or #lists.size(demandeDto.cartes) == 0}" class="form-group numcarte">
@@ -963,17 +1157,17 @@
                         <img alt="Image" id="card-logo" th:src="@{/images/visa_mc.svg}">
                     </div>
                     <!-- Input caché si des cartes existent -->
-                    <div id="newCardDiv" class="form-group numcarte1" style="display: none !important;">
-                        <input id="nvnum" oninput="checkCardType('nvnum', 'card-logo1')" placeholder="1234 1234 1234 1234"
+                    <div id="newCardDiv" class="form-group numcarte1 " style="display: none !important;">
+                        <input class="form-control" id="nvnum" oninput="checkCardType('nvnum', 'card-logo1')" placeholder="1234 1234 1234 1234"
                                th:field="*{demPan}" type="text">
                         <img alt="Image" id="card-logo1" th:src="@{/images/visa_mc.svg}">
                     </div>
                     <div class="form-group d-flex gap-2">
                         <div class="mr-2" style="width: 50%">
-                            <input id="dateExp" placeholder="MM/AA" th:field="*{expery}" type="text">
+                            <input class="form-control" id="dateExp" placeholder="MM/AA" th:field="*{expery}" type="text">
                         </div>
                         <div class="cvc" style="width: 50%">
-                            <input id="cvv" placeholder="CVC" required="required" th:field="*{demCvv}" type="number">
+                            <input class="form-control" id="cvv" placeholder="CVC" required="required" th:field="*{demCvv}" type="number">
                             <img alt="Image" id="cvc-logo" th:src="@{/images/cvc.svg}">
                         </div>
                     </div>
@@ -1038,7 +1232,85 @@
 
     </div>
 </div>
+
+
+<div id="confirmDeleteModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background-color: rgba(0,0,0,.6); z-index: 9999; justify-content: center; align-items: center;">
+
+    <div style="background: white; border-radius: 12px; padding: 24px; width: 400px; text-align: center; position: relative;">
+        <button onclick="closeModal()" style="color : #A4A7AE;position: absolute; top: 10px; right: 10px; border: none; background: none; font-size: 18px;">X</button>
+
+        <div style="font-size: 44px; color: #fd7e14;">
+            <img alt="Image" class="powered" th:src="@{/images/removeCard.svg}">
+        </div>
+        <h3 style="margin-top: 16px;font-size: 1.3rem;">Supprimer cette carte bancaire?</h3>
+        <p style="font-size: .8rem; color : #535862;">Êtes-vous sûr(e) de vouloir supprimer cette carte ?</p>
+
+        <div style="margin-top: 24px; display: flex; justify-content: space-around;">
+            <button onclick="closeModal()" style="padding: 8px 16px; border: 1px solid #ccc; background: white; border-radius: 6px;">Annuler</button>
+            <button onclick="confirmDeleteCard()" style="Font family/font-family-body;padding: 8px 16px; background: #D92D20; color: white; border: none; border-radius: 6px;">Supprimer</button>
+        </div>
+    </div>
+</div>
 <script>
+
+
+    function toggleDropdown() {
+        const dropdown = document.getElementById('dropdownList');
+        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function selectCard(element) {
+        const value = element.getAttribute('data-value');
+        const brand = element.getAttribute('data-brand');
+        const year = element.getAttribute('data-year');
+        const month = element.getAttribute('data-month');
+        var cardSelectDiv = document.getElementById("cardSelectDiv");
+        var dropdownList = document.getElementById("dropdownList");
+        var selectedCard = document.getElementById("selectedCard");
+        var newCardDiv = document.getElementById("newCardDiv");
+        var dateExp = document.getElementById("dateExp");
+        var cvv = document.getElementById("cvv");
+        const text = element.innerText.trim();
+
+        // Update selected display
+        const selectedText = document.getElementById('selectedText');
+        const selectedCardIcon = document.getElementById('card-logo2');
+        selectedText.textContent = value;
+        console.log(brand);
+        if (brand) {
+            selectedCardIcon.src= '/images/'+brand+'.svg';
+        } else {
+            cardSelectDiv.style.display = 'none';
+            /*toggleDropdown();
+            selectedCard.style.display = 'none';
+            dropdownList.style.display = 'none';*/
+            newCardDiv.style.display = 'block';
+            dateExp.value = '';
+            cvv.value = '';
+        }
+
+        // Remplir automatiquement la date d'expiration
+        if (year && month) {
+            document.getElementById("dateExp").value = month + "/" + year.toString().slice(-2);
+        }
+
+        // Update hidden input (form value)
+        document.getElementById('hiddenInput').value = value;
+
+        // Close dropdown
+        toggleDropdown();
+    }
+
+    // Close dropdown if clicked outside
+    document.addEventListener('click', function(event) {
+        const container = document.getElementById('cardSelectDiv');
+        if (!container.contains(event.target)) {
+            document.getElementById('dropdownList').style.display = 'none';
+        }
+    });
+
+
     function updateCardDetails() {
     var select = document.getElementById("selectCard");
     var selectedOption = select.options[select.selectedIndex];
@@ -1291,6 +1563,53 @@ function checkCardType(idCarte, logo) {
           window.addEventListener('scroll', handleUserInteraction, { once: true });
       };
 
+
+      let cardToDelete = null;
+
+      function removeCard(icon) {
+        cardToDelete = icon.closest('.dropdown-item'); // store the card div
+        document.getElementById('confirmDeleteModal').style.display = 'flex'; // show modal
+      }
+
+      function closeModal() {
+        document.getElementById('confirmDeleteModal').style.display = 'none';
+        cardToDelete = null;
+      }
+
+      function confirmDeleteCard() {
+        if (cardToDelete) {
+          cardToDelete.remove();
+          // You can call an AJAX request to delete it on the server too.
+        }
+        closeModal();
+      };
+
+
+
+
+      /*function removeCard(icon) {
+        const card = icon.closest('.dropdown-item');
+
+        Swal.fire({
+          title: 'Supprimer cette carte bancaire?',
+          text: "Êtes-vous sûr(e) de vouloir supprimer cette carte ?",
+          icon: 'warning',
+          width: 400,
+          height: 230,
+          top: 299,
+          left: 556,
+          showCancelButton: true,
+          confirmButtonText: 'Supprimer',
+          cancelButtonText: 'Annuler',
+          confirmButtonColor: '#dc3545',
+        }).then((result) => {
+          if (result.isConfirmed) {
+            card.remove(); // Or call API to delete
+          }
+        });
+      }*/
+
 </script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 </html>

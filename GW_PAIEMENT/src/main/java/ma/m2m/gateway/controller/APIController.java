@@ -627,6 +627,7 @@ public class APIController {
 				autorisationService.logMessage(file, "cavv == null || eci == null");
 			} else if (cavv != null && eci != null) {
 				champ_cavv = cavv + eci;
+				autorisationService.logMessage(file, "champ_cavv [" + champ_cavv +"]");
 			} else {
 				autorisationService.logMessage(file, "champ_cavv = null");
 				champ_cavv = null;
@@ -3565,8 +3566,32 @@ public class APIController {
 		int numTransaction = Util.generateNumTransaction(folder, file, curren_date);
 		String numTrsStr = Util.formatNumTrans(String.valueOf(numTransaction));
 
-		try {
+		String champ_cavv = "";
+		String eci = "";
+		String cavv = "";
+		String xid = "";
+		xid = current_dmd.getDemxid() == null ? "" : current_dmd.getDemxid();
+		// TODO: Le cavv deja stocké dans le champ date_SendSWT
+		cavv =  current_dmd.getDateSendSWT() == null ? "                            " : current_dmd.getDateSendSWT();
+		// TODO: Le eci deja stocké dans le champ date_sendMPI
+		eci = current_dmd.getDateSendMPI() == null ? "07" : current_dmd.getDateSendMPI();
 
+		if (cavv == null || eci == null) {
+			champ_cavv = null;
+			autorisationService.logMessage(file, "cavv == null || eci == null");
+		} else if (cavv != null && eci != null) {
+			champ_cavv = cavv + eci;
+			autorisationService.logMessage(file, "champ_cavv [" + champ_cavv +"]");
+		} else {
+			autorisationService.logMessage(file, "champ_cavv = null");
+			champ_cavv = null;
+		}
+		if(champ_cavv == null) {
+			autorisationService.logMessage(file, "envoie cavv avec 28 chr(espace) et eci avec " + eciParam);
+			champ_cavv = "                            07";
+			autorisationService.logMessage(file, "champ_cavv [" + champ_cavv +"]");
+		}
+		try {
 			String currency = current_hist.getHatDevise();
 			String expirydate = current_hist.getHatExpdate();
 			String rrn = current_hist.getHatRrn();
@@ -3580,7 +3605,7 @@ public class APIController {
 					.withField(Tags.tag66, transactionnumber).withField(Tags.tag11, merchant_name)
 					.withField(Tags.tag12, merchant_city).withField(Tags.tag13, "MAR")
 					.withField(Tags.tag23, reason_code).withField(Tags.tag90, acqcode).withField(Tags.tag19, trsRequestDto.getAuthnumber())
-					.encode();
+					.withField(Tags.tag167, champ_cavv).withField(Tags.tag168, xid).encode();
 
 		} catch (Exception err4) {
 			autorisationService.logMessage(file, "reversal 500 Error during switch tlv buildu for given orderid:["
