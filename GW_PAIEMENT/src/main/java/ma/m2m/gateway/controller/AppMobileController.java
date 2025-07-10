@@ -530,7 +530,7 @@ public class AppMobileController {
                                     return null;
                                 }
 
-                                autorisationService.logMessage(file, "Switch TLV Request :[" + tlv + "]");
+                                autorisationService.logMessage(file, "Switch TLV Request :[" + Util.getTLVPCIDSS(tlv, folder, file) + "]");
 
                             }
 
@@ -630,7 +630,7 @@ public class AppMobileController {
                                 return null;
                             }
 
-                            autorisationService.logMessage(file, "Switch TLV Respnose :[" + resp + "]");
+                            autorisationService.logMessage(file, "Switch TLV Respnose :[" + Util.getTLVPCIDSS(resp_tlv, folder, file) + "]");
 
                             TLVParser tlvp = null;
 
@@ -2195,7 +2195,7 @@ public class AppMobileController {
                     return null;
                 }
 
-                autorisationService.logMessage(file, "Switch TLV Request :[" + tlv + "]");
+                autorisationService.logMessage(file, "Switch TLV Request :[" + Util.getTLVPCIDSS(tlv, folder, file) + "]");
 
             }
 
@@ -2280,7 +2280,7 @@ public class AppMobileController {
                 return null;
             }
 
-            autorisationService.logMessage(file, "Switch TLV Respnose :[" + resp + "]");
+            autorisationService.logMessage(file, "Switch TLV Respnose :[" + Util.getTLVPCIDSS(resp_tlv, folder, file) + "]");
 
             TLVParser tlvp = null;
 

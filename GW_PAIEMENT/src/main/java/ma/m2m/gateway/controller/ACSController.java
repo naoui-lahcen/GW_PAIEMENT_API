@@ -682,7 +682,7 @@ public class ACSController {
 									return null;
 								}
 
-								autorisationService.logMessage(file, "Switch TLV Request :[" + tlv + "]");
+								autorisationService.logMessage(file, "Switch TLV Request :[" + Util.getTLVPCIDSS(tlv, folder, file) + "]");
 
 							}
 
@@ -732,7 +732,7 @@ public class ACSController {
 													response.sendRedirect(failURL);
 													return null;
 												}
-												autorisationService.logMessage(file, "Switch TLV Request :[" + tlv + "]");
+												autorisationService.logMessage(file, "Switch TLV Request :[" + Util.getTLVPCIDSS(tlv, folder, file) + "]");
 											}
 										} else { // first transaction with cvv present, a normal transaction
 											autorisationService.logMessage(file, "first transaction with cvv present, a normal transaction");
@@ -759,7 +759,7 @@ public class ACSController {
 												response.sendRedirect(failURL);
 												return null;
 											}
-											autorisationService.logMessage(file, "Switch TLV Request :[" + tlv + "]");
+											autorisationService.logMessage(file, "Switch TLV Request :[" + Util.getTLVPCIDSS(tlv, folder, file) + "]");
 										}
 
 									} else { // reccuring
@@ -809,7 +809,7 @@ public class ACSController {
 											response.sendRedirect(failURL);
 											return null;
 										}
-										autorisationService.logMessage(file, "Switch TLV Request :[" + tlv + "]");
+										autorisationService.logMessage(file, "Switch TLV Request :[" + Util.getTLVPCIDSS(tlv, folder, file) + "]");
 									}
 								}
 							}
@@ -905,7 +905,7 @@ public class ACSController {
 								return null;
 							}
 
-							autorisationService.logMessage(file, "Switch TLV Respnose :[" + resp + "]");
+							autorisationService.logMessage(file, "Switch TLV Respnose :[" + Util.getTLVPCIDSS(resp_tlv, folder, file) + "]");
 
 							TLVParser tlvp = null;
 
@@ -1875,7 +1875,7 @@ public class ACSController {
 			return "96";
 		}
 
-		autorisationService.logMessage(file, "Switch TLV Request :[" + tlv + "]");
+		autorisationService.logMessage(file, "Switch TLV Request :[" + Util.getTLVPCIDSS(tlv, folder, file) + "]");
 
 		autorisationService.logMessage(file, "Preparing Switch TLV Request end.");
 
@@ -1928,7 +1928,7 @@ public class ACSController {
 			return "96";
 		}
 
-		autorisationService.logMessage(file, "Switch TLV Respnose :[" + resp + "]");
+		autorisationService.logMessage(file, "Switch TLV Respnose :[" + Util.getTLVPCIDSS(resp_tlv, folder, file) + "]");
 
 		// TODO: resp debug =
 		// TODO: "000001300101652345658188287990030010008008011800920090071180092014012000000051557015003504016006200721017006152650066012120114619926018006143901019006797535023001H020002000210026108000621072009800299";

@@ -412,6 +412,38 @@ public class Util {
 		}
 
 	}
+
+	public static String getTLVPCIDSS(String tlv, String folder, String file) {
+		String TLVPCIDSS = "";
+		try {
+			if (tlv == null || tlv.length() < 29) {
+				throw new IllegalArgumentException("Chaîne trop courte pour contenir une carte");
+			}
+			String prefix = tlv.substring(0, 13);
+			String cardField;
+			String suffix;
+			boolean hasQuestionMarks = tlv.length() >= 32 && tlv.substring(29, 32).equals("???");
+
+			if (hasQuestionMarks) {
+				// Carte + ??? → positions 13 à 32
+				cardField = tlv.substring(13, 29); // 16 chiffres
+				suffix = tlv.substring(32);        // après les ???
+			} else {
+				// Carte normale → positions 13 à 29
+				cardField = tlv.substring(13, 29); // 16 chiffres
+				suffix = tlv.substring(29);        // reste
+			}
+
+			String maskedCard = cardField.substring(0, 6) + "******" + cardField.substring(12);
+			TLVPCIDSS = prefix + maskedCard + (hasQuestionMarks ? "???" : "") + suffix;
+
+		} catch (Exception e) {
+			Util.writeInFileTransaction(folder, file, "[GW-EXCEPTION] getTLVPCIDSS " + formatException(e));
+		}
+
+		return TLVPCIDSS;
+	}
+
 	public static String formatageCHamps(String chmp, int nbr) {
 		String champs = "";
 

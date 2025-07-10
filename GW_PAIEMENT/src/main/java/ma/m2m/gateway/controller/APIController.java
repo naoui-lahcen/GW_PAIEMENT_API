@@ -192,14 +192,21 @@ public class APIController {
 
 		autorisationService.logMessage(file, "authorization api call start ...");
 
-		autorisationService.logMessage(file, "authorization : [" + auths + "]");
+		JSONObject json = new JSONObject(auths);
+		if (json.has("cardnumber")) {
+			String cardnumber = json.getString("cardnumber");
+			String maskedCard = Util.formatCard(cardnumber);
+			json.put("cardnumber", maskedCard);
+		}
+
+		autorisationService.logMessage(file, "authorization : [" + json.toString() + "]");
 
 		LinkRequestDto linkRequestDto;
 
 		try {
 			linkRequestDto = new ObjectMapper().readValue(auths, LinkRequestDto.class);
 		} catch (JsonProcessingException e) {
-			autorisationService.logMessage(file, "authorization 500 malformed json expression " + auths + Util.formatException(e));
+			autorisationService.logMessage(file, "authorization 500 malformed json expression " + Util.formatException(e));
 			return Util.getMsgError(folder, file, null, "authorization 500 malformed json expression", null);
 		}
 
@@ -748,7 +755,7 @@ public class APIController {
 					return Util.getMsgError(folder, file, linkRequestDto, "The current transaction was not successful, your account will not be debited, please try again.",
 							"96");
 				}
-				autorisationService.logMessage(file, "Switch TLV Request :[" + tlv + "]");
+				autorisationService.logMessage(file, "Switch TLV Request :[" + Util.getTLVPCIDSS(tlv, folder, file) + "]");
 			}
 
 			// TODO: 12-06-2025 implemente reccuring payment
@@ -790,7 +797,7 @@ public class APIController {
 								return Util.getMsgError(folder, file, linkRequestDto, "The current transaction was not successful, your account will not be debited, please try again.",
 										"96");
 							}
-							autorisationService.logMessage(file, "Switch TLV Request :[" + tlv + "]");
+							autorisationService.logMessage(file, "Switch TLV Request :[" + Util.getTLVPCIDSS(tlv, folder, file) + "]");
 						}
 					} else { // first transaction with cvv present, a normal transaction
 						autorisationService.logMessage(file, "first transaction with cvv present, a normal transaction");
@@ -816,7 +823,7 @@ public class APIController {
 							return Util.getMsgError(folder, file, linkRequestDto, "The current transaction was not successful, your account will not be debited, please try again.",
 									"96");
 						}
-						autorisationService.logMessage(file, "Switch TLV Request :[" + tlv + "]");
+						autorisationService.logMessage(file, "Switch TLV Request :[" + Util.getTLVPCIDSS(tlv, folder, file) + "]");
 					}
 
 				} else { // reccuring
@@ -858,7 +865,7 @@ public class APIController {
 						return Util.getMsgError(folder, file, linkRequestDto, "The current transaction was not successful, your account will not be debited, please try again.",
 								"96");
 					}
-					autorisationService.logMessage(file, "Switch TLV Request :[" + tlv + "]");
+					autorisationService.logMessage(file, "Switch TLV Request :[" + Util.getTLVPCIDSS(tlv, folder, file) + "]");
 				}
 			}
 
@@ -942,7 +949,7 @@ public class APIController {
 						+ "switch ip:[" + sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
 			}
 
-			autorisationService.logMessage(file, "Switch TLV Respnose :[" + resp + "]");
+			autorisationService.logMessage(file, "Switch TLV Respnose :[" + Util.getTLVPCIDSS(resp_tlv, folder, file) + "]");
 
 			TLVParser tlvp = null;
 
@@ -3431,17 +3438,23 @@ public class APIController {
 
 		if (current_hist.getHatEtat().equals('T') || current_hist.getHatEtat() == 'T') {
 			autorisationService.logMessage(file,
-					"You can't make the cancel because this transaction is already captured");
+					"You can't make the cancel because it is already captured");
 
 			return Util.getMsgErrorV2(folder, file, trsRequestDto,
-					"You can't make the cancel because this transaction is already captured", null);
+					"You can't make the cancel because it is already captured", null);
 		}
 		
 		if (current_hist.getHatEtat().equals('A') || current_hist.getHatEtat() == 'A') {
 			autorisationService.logMessage(file,
-					"You can't make the cancel because this transaction is already cancelled");
+					"You can't make the cancel because it is already cancelled");
 			return Util.getMsgErrorV2(folder, file, null,
-					"You can't make the cancel because this transaction is already cancelled", null);
+					"You can't make the cancel because it is already cancelled", null);
+		}
+		if (!current_hist.getHatCoderep().equals("00")) {
+			autorisationService.logMessage(file,
+					"You can't make the cancel because it is not approved");
+			return Util.getMsgErrorV2(folder, file, null,
+					"You can't make the cancel because it is not approved", null);
 		}
 
 		Double montantAuto = 0.00;
@@ -3614,7 +3627,7 @@ public class APIController {
 			return Util.getMsgErrorV2(folder, file, trsRequestDto, "reversal failed, the Switch is down.", "96");
 		}
 
-		autorisationService.logMessage(file, "Switch TLV Request :[" + tlv + "]");
+		autorisationService.logMessage(file, "Switch TLV Request :[" + Util.getTLVPCIDSS(tlv, folder, file) + "]");
 
 		autorisationService.logMessage(file, "Preparing Switch TLV Request end.");
 
@@ -3674,7 +3687,7 @@ public class APIController {
 			return Util.getMsgErrorV2(folder, file, trsRequestDto, "reversal failed, the Switch is down.", "96");
 		}
 
-		autorisationService.logMessage(file, "Switch TLV Respnose :[" + resp + "]");
+		autorisationService.logMessage(file, "Switch TLV Respnose :[" + Util.getTLVPCIDSS(resp_tlv, folder, file) + "]");
 
 		// TODO: resp debug =
 		// TODO: "000001300101652345658188287990030010008008011800920090071180092014012000000051557015003504016006200721017006152650066012120114619926018006143901019006797535023001H020002000210026108000621072009800299";
@@ -4326,7 +4339,7 @@ public class APIController {
 								"96");
 					}
 
-					autorisationService.logMessage(file, "Switch TLV Request :[" + tlv + "]");
+					autorisationService.logMessage(file, "Switch TLV Request :[" + Util.getTLVPCIDSS(tlv, folder, file) + "]");
 
 				}
 
@@ -4405,7 +4418,7 @@ public class APIController {
 									+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
 				}
 
-				autorisationService.logMessage(file, "Switch TLV Respnose :[" + resp + "]");
+				autorisationService.logMessage(file, "Switch TLV Respnose :[" + Util.getTLVPCIDSS(resp_tlv, folder, file) + "]");
 
 				TLVParser tlvp = null;
 
@@ -5678,7 +5691,7 @@ public class APIController {
 								return Util.getMsgErrorV2(folder, file, trsRequestDto,
 										"cpautorisation failed, the Switch is down.", "96");
 							}
-							autorisationService.logMessage(file, "Switch TLV Request :[" + tlv + "]");
+							autorisationService.logMessage(file, "Switch TLV Request :[" + Util.getTLVPCIDSS(tlv, folder, file) + "]");
 						}
 
 						autorisationService.logMessage(file, "Preparing Switch TLV Request end.");
@@ -5749,7 +5762,7 @@ public class APIController {
 											+ sw_s + "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
 						}
 
-						autorisationService.logMessage(file, "Switch TLV Respnose :[" + resp + "]");
+						autorisationService.logMessage(file, "Switch TLV Respnose :[" + Util.getTLVPCIDSS(resp_tlv, folder, file) + "]");
 
 						TLVParser tlvp = null;
 

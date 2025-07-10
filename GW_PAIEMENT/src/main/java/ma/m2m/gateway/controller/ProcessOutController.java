@@ -564,7 +564,7 @@ public class ProcessOutController {
 									return null;
 								}
 
-								autorisationService.logMessage(file, "Switch TLV Request :[" + tlv + "]");
+								autorisationService.logMessage(file, "Switch TLV Request :[" + Util.getTLVPCIDSS(tlv, folder, file) + "]");
 
 							}
 
@@ -614,7 +614,7 @@ public class ProcessOutController {
 													response.sendRedirect(failURL);
 													return null;
 												}
-												autorisationService.logMessage(file, "Switch TLV Request :[" + tlv + "]");
+												autorisationService.logMessage(file, "Switch TLV Request :[" + Util.getTLVPCIDSS(tlv, folder, file) + "]");
 											}
 										} else { // first transaction with cvv present, a normal transaction
 											autorisationService.logMessage(file, "first transaction with cvv present, a normal transaction");
@@ -641,7 +641,7 @@ public class ProcessOutController {
 												response.sendRedirect(failURL);
 												return null;
 											}
-											autorisationService.logMessage(file, "Switch TLV Request :[" + tlv + "]");
+											autorisationService.logMessage(file, "Switch TLV Request :[" + Util.getTLVPCIDSS(tlv, folder, file) + "]");
 										}
 
 									} else { // reccuring
@@ -691,7 +691,7 @@ public class ProcessOutController {
 											response.sendRedirect(failURL);
 											return null;
 										}
-										autorisationService.logMessage(file, "Switch TLV Request :[" + tlv + "]");
+										autorisationService.logMessage(file, "Switch TLV Request :[" + Util.getTLVPCIDSS(tlv, folder, file) + "]");
 									}
 								}
 							}
@@ -787,7 +787,7 @@ public class ProcessOutController {
 								return null;
 							}
 
-							autorisationService.logMessage(file, "Switch TLV Respnose :[" + resp + "]");
+							autorisationService.logMessage(file, "Switch TLV Respnose :[" + Util.getTLVPCIDSS(resp_tlv, folder, file) + "]");
 
 							TLVParser tlvp = null;
 
@@ -896,8 +896,6 @@ public class ProcessOutController {
 								autorisationService.logMessage(file, "formatting pan...");
 
 								pan_auto = Util.formatagePan(cardnumber);
-								autorisationService.logMessage(file,
-										"formatting pan Ok pan_auto :[" + pan_auto + "]");
 
 								autorisationService.logMessage(file, "HistoAutoGate data filling start ...");
 
@@ -1473,14 +1471,21 @@ public class ProcessOutController {
 
 		autorisationService.logMessage(file, "authorizeProcessOut api call start ...");
 
-		autorisationService.logMessage(file, "authorizeProcessOut : [" + auths + "]");
+		JSONObject json = new JSONObject(auths);
+		if (json.has("cardnumber")) {
+			String cardnumber = json.getString("cardnumber");
+			String maskedCard = Util.formatCard(cardnumber);
+			json.put("cardnumber", maskedCard);
+		}
+
+		autorisationService.logMessage(file, "authorizeProcessOut : [" + json.toString() + "]");
 
 		LinkRequestDto linkRequestDto;
 
 		try {
 			linkRequestDto = new ObjectMapper().readValue(auths, LinkRequestDto.class);
 		} catch (JsonProcessingException e) {
-			autorisationService.logMessage(file, "authorizeProcessOut 500 malformed json expression " + auths + Util.formatException(e));
+			autorisationService.logMessage(file, "authorizeProcessOut 500 malformed json expression " + Util.formatException(e));
 			return Util.getMsgError(folder, file, null, "authorizeProcessOut 500 malformed json expression", null);
 		}
 
@@ -2008,7 +2013,7 @@ public class ProcessOutController {
 					return Util.getMsgError(folder, file, linkRequestDto, "The current transaction was not successful, your account will not be debited, please try again.",
 							"96");
 				}
-				autorisationService.logMessage(file, "Switch TLV Request :[" + tlv + "]");
+				autorisationService.logMessage(file, "Switch TLV Request :[" + Util.getTLVPCIDSS(tlv, folder, file) + "]");
 			}
 
 			// TODO: 12-06-2025 implemente reccuring payment
@@ -2050,7 +2055,7 @@ public class ProcessOutController {
 								return Util.getMsgError(folder, file, linkRequestDto, "The current transaction was not successful, your account will not be debited, please try again.",
 										"96");
 							}
-							autorisationService.logMessage(file, "Switch TLV Request :[" + tlv + "]");
+							autorisationService.logMessage(file, "Switch TLV Request :[" + Util.getTLVPCIDSS(tlv, folder, file) + "]");
 						}
 					} else { // first transaction with cvv present, a normal transaction
 						autorisationService.logMessage(file, "first transaction with cvv present, a normal transaction");
@@ -2076,7 +2081,7 @@ public class ProcessOutController {
 							return Util.getMsgError(folder, file, linkRequestDto, "The current transaction was not successful, your account will not be debited, please try again.",
 									"96");
 						}
-						autorisationService.logMessage(file, "Switch TLV Request :[" + tlv + "]");
+						autorisationService.logMessage(file, "Switch TLV Request :[" + Util.getTLVPCIDSS(tlv, folder, file) + "]");
 					}
 
 				} else { // reccuring
@@ -2118,7 +2123,7 @@ public class ProcessOutController {
 						return Util.getMsgError(folder, file, linkRequestDto, "The current transaction was not successful, your account will not be debited, please try again.",
 								"96");
 					}
-					autorisationService.logMessage(file, "Switch TLV Request :[" + tlv + "]");
+					autorisationService.logMessage(file, "Switch TLV Request :[" + Util.getTLVPCIDSS(tlv, folder, file) + "]");
 				}
 			}
 
@@ -2230,7 +2235,7 @@ public class ProcessOutController {
 								+ "] and switch port:[" + port + "] resp_tlv : [" + resp_tlv + "]");
 			}
 
-			autorisationService.logMessage(file, "Switch TLV Respnose :[" + resp + "]");
+			autorisationService.logMessage(file, "Switch TLV Respnose :[" + Util.getTLVPCIDSS(resp_tlv, folder, file) + "]");
 
 			TLVParser tlvp = null;
 
@@ -2325,7 +2330,6 @@ public class ProcessOutController {
 				autorisationService.logMessage(file, "formatting pan...");
 
 				pan_auto = Util.formatagePan(cardnumber);
-				autorisationService.logMessage(file, "formatting pan Ok pan_auto :[" + pan_auto + "]");
 
 				autorisationService.logMessage(file, "HistoAutoGate data filling start ...");
 
@@ -3273,7 +3277,7 @@ public class ProcessOutController {
 			return "96";
 		}
 
-		autorisationService.logMessage(file, "Switch TLV Request :[" + tlv + "]");
+		autorisationService.logMessage(file, "Switch TLV Request :[" + Util.getTLVPCIDSS(tlv, folder, file) + "]");
 
 		autorisationService.logMessage(file, "Preparing Switch TLV Request end.");
 
@@ -3326,7 +3330,7 @@ public class ProcessOutController {
 			return "96";
 		}
 
-		autorisationService.logMessage(file, "Switch TLV Respnose :[" + resp + "]");
+		autorisationService.logMessage(file, "Switch TLV Respnose :[" + Util.getTLVPCIDSS(resp_tlv, folder, file) + "]");
 
 		// TODO: resp debug =
 		// TODO: "000001300101652345658188287990030010008008011800920090071180092014012000000051557015003504016006200721017006152650066012120114619926018006143901019006797535023001H020002000210026108000621072009800299";

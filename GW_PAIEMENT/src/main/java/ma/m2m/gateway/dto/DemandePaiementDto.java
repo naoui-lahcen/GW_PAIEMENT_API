@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import ma.m2m.gateway.utils.Util;
 
 /*
 * @author  LAHCEN NAOUI
@@ -16,7 +17,7 @@ import lombok.ToString;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString
+//@ToString
 public class DemandePaiementDto implements Serializable {
 
 	/**
@@ -106,4 +107,88 @@ public class DemandePaiementDto implements Serializable {
 	private boolean flagNvCarte;
 	private boolean flagSaveCarte;
 
+	@Override
+	public String toString() {
+		return "DemandePaiementDto{" +
+				"iddemande=" + iddemande +
+				", nom='" + nom + '\'' +
+				", prenom='" + prenom + '\'' +
+				", commande='" + commande + '\'' +
+				", email='" + email + '\'' +
+				", montant=" + montant +
+				", montantStr='" + montantStr + '\'' +
+				", langue='" + langue + '\'' +
+				", successURL='" + successURL + '\'' +
+				", failURL='" + failURL + '\'' +
+				", timeoutURL='" + timeoutURL + '\'' +
+				", tel='" + tel + '\'' +
+				", address='" + address + '\'' +
+				", city='" + city + '\'' +
+				", state='" + state + '\'' +
+				", country='" + country + '\'' +
+				", postcode='" + postcode + '\'' +
+				", comid='" + comid + '\'' +
+				", galid='" + galid + '\'' +
+				", etatDemande='" + etatDemande + '\'' +
+				", demCvv='" + demCvv + '\'' +
+				", demxid='" + demxid + '\'' +
+				", demPan='" + Util.formatCard(demPan) + '\'' +
+				", refdemande='" + refdemande + '\'' +
+				", frais=" + frais +
+				", demDateTime='" + demDateTime + '\'' +
+				", cartenaps='" + cartenaps + '\'' +
+				", dateexpnaps='" + dateexpnaps + '\'' +
+				", typeCarte='" + typeCarte + '\'' +
+				", callbackURL='" + callbackURL + '\'' +
+				", estimation='" + estimation + '\'' +
+				", recallRep='" + recallRep + '\'' +
+				", typeAnnulation='" + typeAnnulation + '\'' +
+				", etatAhargement='" + etatAhargement + '\'' +
+				", etatTimeout='" + etatTimeout + '\'' +
+				", idClient='" + idClient + '\'' +
+				", token='" + token + '\'' +
+				", isCof='" + isCof + '\'' +
+				", isTokenized='" + isTokenized + '\'' +
+				", isCvvVerified='" + isCvvVerified + '\'' +
+				", isWhitelist='" + isWhitelist + '\'' +
+				", is3ds='" + is3ds + '\'' +
+				", isNational='" + isNational + '\'' +
+				", isAddcard='" + isAddcard + '\'' +
+				", isWithsave='" + isWithsave + '\'' +
+				", isBpay='" + isBpay + '\'' +
+				", isBpaytoken='" + isBpaytoken + '\'' +
+				", isBpaysave='" + isBpaysave + '\'' +
+				", dateSendMPI='" + dateSendMPI + '\'' +
+				", dateSendSWT='" + dateSendSWT + '\'' +
+				", dateRetourSWT='" + dateRetourSWT + '\'' +
+				", dateSendSWTAN='" + dateSendSWTAN + '\'' +
+				", dateRetourSWTAN='" + dateRetourSWTAN + '\'' +
+				", dateSendRecall='" + dateSendRecall + '\'' +
+				", dateRetourRecall='" + dateRetourRecall + '\'' +
+				", nbreTenta=" + nbreTenta +
+				", tokencommande='" + tokencommande + '\'' +
+				", etatAnnulation=" + etatAnnulation +
+				", expery='" + expery + '\'' +
+				", annee='" + annee + '\'' +
+				", mois='" + mois + '\'' +
+				", commercantDto=" + commercantDto +
+				", galerieDto=" + galerieDto +
+				", msgRefus='" + msgRefus + '\'' +
+				", transactiontype='" + transactiontype + '\'' +
+				", condition=" + condition +
+				", nameCmr='" + nameCmr + '\'' +
+				", siteWeb='" + siteWeb + '\'' +
+				", formattedDate='" + formattedDate + '\'' +
+				", creq='" + creq + '\'' +
+				", years=" + years +
+				", months=" + months +
+				", cartes=" + cartes +
+				", carte=" + carte +
+				", infoCarte='" + infoCarte + '\'' +
+				", factures=" + factures +
+				", articles=" + articles +
+				", flagNvCarte=" + flagNvCarte +
+				", flagSaveCarte=" + flagSaveCarte +
+				'}';
+	}
 }
