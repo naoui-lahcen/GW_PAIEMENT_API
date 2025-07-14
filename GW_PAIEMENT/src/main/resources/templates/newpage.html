@@ -21,6 +21,177 @@
             crossorigin="anonymous" defer></script>
     <style>
 
+        .dropdown-item.selected {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+        }
+
+        .dropdown-item .checkmark {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            background-image: url('/images/check-orange.svg');
+            background-size: contain;
+            background-repeat: no-repeat;
+            visibility: hidden;
+        }
+
+        .dropdown-item.selected .checkmark {
+            visibility: visible;
+        }
+
+
+        .custom-checkbox-wrapper input[type="checkbox"] {
+                display: none;
+            }
+
+            /* Flex layout */
+            .custom-checkbox-wrapper {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            /* Custom square box */
+            .custom-checkbox-style {
+                width: 20px;
+                height: 20px;
+                border: 2px solid #ccc;
+                border-radius: 6px;
+                background-color: #fff;
+                display: inline-block;
+                position: relative;
+                transition: all 0.2s ease;
+            }
+
+            /* Checkmark */
+            .custom-checkbox-style::after {
+                content: "";
+                position: absolute;
+                display: none;
+                left: 5px;
+                top: 1px;
+                width: 6px;
+                height: 12px;
+                border: solid #fd7e14;
+                border-width: 0 2px 2px 0;
+                transform: rotate(45deg);
+            }
+
+            /* Checked state styles */
+            .custom-checkbox-wrapper input[type="checkbox"]:checked + label .custom-checkbox-style {
+                background-color: #fff5f0;
+                border-color: #fd7e14;
+            }
+
+            .custom-checkbox-wrapper input[type="checkbox"]:checked + label .custom-checkbox-style::after {
+                display: block;
+            }
+
+            /* Label text styling */
+            .custom-checkbox-label-text {
+                font-size: 14px;
+            }
+
+            .custom-checkbox-container {
+                   display: flex;
+                   align-items: center;
+               }
+
+               .custom-checkbox-container input[type="checkbox"] {
+                   display: none;
+               }
+
+               .custom-checkbox {
+                   width: 20px;
+                   height: 20px;
+                   border: 2px solid #ccc;
+                   border-radius: 6px;
+                   background-color: #fff;
+                   display: inline-block;
+                   position: relative;
+                   margin-right: 10px;
+                   cursor: pointer;
+               }
+
+               .custom-checkbox::after {
+                   content: "";
+                   position: absolute;
+                   display: none;
+                   left: 5px;
+                   top: 1px;
+                   width: 6px;
+                   height: 12px;
+                   border: solid #fd7e14;
+                   border-width: 0 2px 2px 0;
+                   transform: rotate(45deg);
+               }
+
+               input[type="checkbox"]:checked + label .custom-checkbox {
+                   border-color: #fd7e14;
+                   background-color: #fff5f0;
+               }
+
+               input[type="checkbox"]:checked + label .custom-checkbox::after {
+                   display: block;
+               }
+
+               .custom-checkbox-label {
+                   display: flex;
+                   align-items: center;
+                   cursor: pointer;
+               }
+
+               .custom-checkbox-label .terms-link {
+                   text-decoration: underline;
+                   cursor: pointer;
+                   margin-left: 5px;
+               }
+
+               /* ✅ MODAL STYLE */
+               .modal-overlay {
+                   display: none;
+                   position: fixed;
+                   top: 0; left: 0;
+                   width: 100%; height: 100%;
+                   background-color: rgba(0, 0, 0, 0.5);
+                   z-index: 9999;
+                   overflow: hidden;
+               }
+
+               .modal-content {
+                   background-color: white;
+                   width: 90%;
+                   max-width: 650px;
+                   max-height: 90vh; /* restrict height */
+                   margin: 5vh auto;
+                   padding: 25px;
+                   border-radius: 10px;
+                   position: relative;
+                   overflow-y: auto; /* allow scroll if content exceeds */
+                   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+               }
+
+               .modal-content::-webkit-scrollbar {
+                   width: 8px;
+               }
+               .modal-content::-webkit-scrollbar-thumb {
+                   background-color: #ccc;
+                   border-radius: 4px;
+               }
+
+
+               .modal-content h3 {
+                   color: #fd7e14;
+                   margin-bottom: 15px;
+               }
+
+               .modal-close {
+                   position: absolute;
+                   top: 10px; right: 15px;
+                   font-size: 20px;
+                   cursor: pointer;
+               }
         div:where(.swal2-container) button:where(.swal2-styled):where(.swal2-cancel) {
             border-radius: 8px !important;
             background-color: #ffffff !important;
@@ -39,17 +210,20 @@
             font-family: Arial, sans-serif;
         }
 
-        .selected-card {
-            height:38px;
-            border: 1px solid #ccc;
-            padding: 8px 12px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background-color: white;
-            border-radius: 5px !important;
-        }
+
+         .selected-card {
+           height:38px;
+       border: 1px solid #ccc;
+       padding: 8px 12px;
+       cursor: pointer;
+       display: flex;
+       align-items: center;
+       justify-content: space-between;
+       background-color: white;
+       border-radius: 5px !important;
+
+    }
+
 
         .dropdown-list .dropdown-item:hover {
             background-color: #f0f0f0;
@@ -507,7 +681,7 @@
 
                 #card-logo2 {
                     position: absolute;
-                    right: 10px;
+                    right: 40px;
                     width: auto;
                     height: auto;
                     display: block;
@@ -870,6 +1044,16 @@
                         .row.h-100 {
                             height: auto !important;
                         }
+                         .custom-checkbox-label {
+                             font-size: 13px;
+                        }
+
+                       .custom-checkbox-label .terms-link {
+                           margin-left: 3px;
+                       }
+                        .custom-checkbox {
+                           margin-right: 5px;
+                        }
 
                       }
 
@@ -916,6 +1100,39 @@
                     font-size: 24;
                 }
 
+                .swal-toast {
+                  display: flex !important;
+                  align-items: center;
+                  gap: 12px;
+                  font-size: 1rem;
+                  border-radius: 12px;
+                  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+                  white-space: nowrap;
+                  max-width: none;
+                  overflow: hidden;        /* hides any extra content that overflows */
+                  max-width: 100%;         /* ensures it doesn't exceed parent container */
+                  width: fit-content;      /* just fits the content without stretching */
+                  box-sizing: border-box;
+                }
+
+                .swal-toast-center .swal2-image {
+                  margin: 0 !important;
+                }
+
+                body.swal2-toast-shown .swal2-container {
+                    width: 415px !important;
+                }
+
+                .rotate-180 {
+                  transform: rotate(-180deg);
+                  transition: transform 0.3s ease;
+                }
+
+                .rotate-0 {
+                  transform: rotate(0deg);
+                  transition: transform 0.3s ease;
+                }
+
 
     </style>
 </head>
@@ -936,7 +1153,7 @@
                             <div class="label">Total</div>
                             <div>
                                 <span class="amount" th:text="${demandeDto.montantStr}"></span>
-                                <span class="dhs">Dhs</span>
+                                <span class="dhs">DH</span>
                             </div>
                         </div>
                         <p class="details-message"><img alt="Image" class="affich_dets" th:src="@{/images/affich_dets.svg}"></p>
@@ -1012,7 +1229,7 @@
 
                     <div class="form-group">
                         <label class="labInput">Nom sur la carte</label>
-                        <input class="form-control" placeholder="Entrez le nom du porteur de la carte" required="required" type="text">
+                        <input class="form-control" id="nomSurCarte" placeholder="Entrez le nom du porteur de la carte" required="required" type="text">
                     </div>
 
                     <!-- Affichage de la liste déroulante si des cartes existent -->
@@ -1051,33 +1268,36 @@
                         <!-- Selected card display -->
                         <div id="selectedCard" class="selected-card" onclick="toggleDropdown()">
                             <span id="selectedText">Sélectionnez une carte</span>
-                            <img alt="Image" id="card-logo2" th:src="@{/images/visa_mc.svg}">
-                            <span style="float:right;">&#9662;</span> <!-- down arrow -->
+                            <img  id="card-logo2" >
+                            <img alt="Image" id="selectCardArrow" th:src="@{/images/arrow.svg}" class="rotate-180">
                         </div>
 
                         <!-- Dropdown list -->
+                        <!-- Dropdown list -->
                         <div id="dropdownList" class="dropdown-list" style="display:none; max-height:300px; overflow-y:auto; border:1px solid #ccc; background:#fff; position:absolute; width:100%; z-index:1000;">
-                            <div class="dropdown-item" data-value="" data-brand="" onclick="toggleDropdown()">
-			            <span style="
-						height: 36;
-						border-radius: radius-sm;
-						padding-top: spacing-md;
-						padding-right: 10px;
-						padding-bottom: spacing-md;
-						padding-left: 0px;">
-						Vos cartes enregistrées
-					</span>
+                            <div class="dropdown-item" data-value="" data-brand="" onclick="selectCardDefault(this)">
+	                   <span style="
+	                               height: 36;
+	                               border-radius: radius-sm;
+	                               padding-top: spacing-md;
+	                               padding-right: 10px;
+	                               padding-bottom: spacing-md;
+	                               padding-left: 0px;">
+	                               Vos cartes enregistrées
+	                       </span>
                             </div>
 
                             <div th:each="carte : ${demandeDto.cartes}"
                                  class="dropdown-item"
-                                 th:data-value="${carte.pcidsscarte}"
+                                 th:data-value="${carte.carte}"
                                  th:data-brand="${carte.scheme}"
                                  th:data-year="${carte.year}"
                                  th:data-month="${carte.moisValue}"
                                  onclick="selectCard(this)"
-                                 style="cursor:pointer; display: flex; align-items: center; padding:8px 10px;"
-                                 th:classappend="${#dates.createNow().getYear() > carte.year || (#dates.createNow().getYear() == carte.year && #dates.createNow().getMonthValue() > carte.moisValue) ? 'expired-card' : ''}">
+                                 style="cursor:pointer; display: flex; align-items: center; padding:8px 10px; position:relative;">
+
+                                <!-- ✅ Checkmark container -->
+                                <span class="checkmark" style="margin-right: 8px; width: 16px;"></span>
 
                                 <!-- Card brand icon -->
                                 <img th:src="@{/images/} + ${carte.scheme} + '.svg'"
@@ -1085,35 +1305,34 @@
                                      style="width: 24px; height: auto; margin-right: 10px;" />
 
                                 <!-- Card number -->
-                                <span class="card-number"
-                                      style=" font-size: 1.1rem; font-family: 'Courier New', monospace;">
-					        <span th:text="${#strings.substring(carte.pcidsscarte, 0, 4) + ' '
-					                      + #strings.substring(carte.pcidsscarte, 4, 6) + '** **** '
-					                      + #strings.substring(carte.pcidsscarte, carte.pcidsscarte.length() - 4)}"></span>
-					    </span>
+                                <span class="card-number" style="font-size: 1.1rem; font-family: 'Courier New', monospace;">
+				        <span th:text="${#strings.substring(carte.pcidsscarte, 0, 4) + ' '
+				                      + #strings.substring(carte.pcidsscarte, 4, 6) + '** **** '
+				                      + #strings.substring(carte.pcidsscarte, carte.pcidsscarte.length() - 4)}"></span>
+				    </span>
 
                                 <!-- Expiration -->
                                 <span style="margin-left: 10px; color: #667085; font-size: 0.95rem;"
                                       th:text="${carte.moisValue + '/' + #strings.substring(carte.year, 2,4)}">
-					    </span>
+				    </span>
 
-                                <!-- Trash icon aligned to right -->
+                                <!-- Trash icon -->
                                 <img src="/images/trashIcon.svg" alt="Supprimer"
                                      onclick="event.stopPropagation(); removeCard(this)"
                                      style="margin-left: auto; margin-right: 10px; width: 24px; height: 24px; cursor: pointer;" />
                             </div>
 
-
                             <div class="dropdown-item" data-value="" data-brand="" onclick="selectCard(this)" style="cursor:pointer; padding:8px 10px;">
-                                <img src="/images/nvcarte.svg" alt="New Card" style="						font-family: Font family/font-family-body;
-						font-weight: 600;
-						font-size: Font size/text-sm;
-						line-height: Line height/text-sm;
-						letter-spacing: 0%;
-">
+                                <img src="/images/nvcarte.svg" alt="New Card" style="                                               font-family: Font family/font-family-body;
+				                                               font-weight: 600;
+				                                               font-size: Font size/text-sm;
+				                                               line-height: Line height/text-sm;
+				                                               letter-spacing: 0%;
+				">
                                 Utiliser une nouvelle carte
                             </div>
                         </div>
+
                     </div>
                     <input type="hidden" th:field="*{demPan}" id="hiddenInput" />
 
@@ -1171,14 +1390,41 @@
                             <img alt="Image" id="cvc-logo" th:src="@{/images/cvc.svg}">
                         </div>
                     </div>
-                    <div class="form-group d-flex align-items-center">
-                        <input class="mr-2" id="terms" required="required" type="checkbox">
-                        <label class="mb-0 labInput" for="terms">J'ai lu et j'accepte les conditions d'utilisation.</label>
+                    <div class="custom-checkbox-container">
+                        <input type="checkbox" id="terms" required />
+                        <label class="custom-checkbox-label" for="terms">
+                            <span class="custom-checkbox"></span>
+                            J'ai lu et j'accepte les
+                            <span class="terms-link" onclick="openModal()">conditions générales </span>
+                            <span class="terms-link" onclick="openModal()">d'utilisation.</span>
+                        </label>
                     </div>
+
+                    <div class="modal-overlay" id="termsModal">
+                        <div class="modal-content">
+                            <span class="modal-close" onclick="closeModal()">&times;</span>
+                            <h3>Conditions générales d'utilisation</h3>
+                            <p>
+                                Conformément à la loi 09-08 sur la protection des personnes physiques à l'égard du traitement des données à caractère personnel, il est porté à votre connaissance qu'en utilisant le service de paiement en ligne pour payer un service ou un produit commercialisé par un site marchand affilié à NAPS :
+                            </p>
+                            <ul>
+                                <li>Les destinataires des données concernant un payeur telles que le nom et prénom, courriel, adresse et numéro de téléphone, à l'exception des données bancaires confidentielles, et qui sont soit transmises par le site Marchand à NAPS ou saisies par le payeur sur l'écran de paiement mis à sa disposition par NAPS pour le compte de l'e-commerçant et sous son ordre, pourront être utilisées par les collaborateurs de NAPS responsables du traitement, dont la finalité est le suivi de l'opération de paiement initiée par le payeur sur le site Marchand.</li>
+                                <li>Les destinataires des données bancaires qui sont saisies par le payeur sur l'écran de paiement mis à sa disposition par NAPS pour le compte de l'e-commerçant et sous son ordre, pourront être utilisées par les systèmes d'information et monétiques de NAPS, ainsi que le système monétique de la banque marocaine ou internationale émettrice de la carte bancaire utilisée lors du paiement en ligne. Toutes ces entités sont responsables, chacune suivant ses attributions, du traitement dont la finalité est le traitement de l'opération de paiement initiée par le payeur sur le site marchand.</li>
+                                <li>Les données recueillies par NAPS ne peuvent être utilisées à des fins de prospection par ce dernier et sont la propriété de l'e-commerçant qui a délégué la gestion du paiement de son site marchand à NAPS.</li>
+                                <li>Vous disposez d'un droit d'accès en consultation à vos données personnelles traitées par NAPS et qui figurent dans votre reçu de paiement, à l'exception des données bancaires, en contactant NAPS par courrier à l'adresse suivante : NAPS - 16, rue Ibn Khalikane, Palmiers, Casablanca.</li>
+                                <li>Vous pouvez aussi accéder à ces données depuis le reçu de paiement ou de transaction mis à votre disposition par courriel et en ligne par NAPS ou l'e-commerçant.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+
                     <!-- Sauvegarder la carte -->
-                    <div class="form-group d-flex align-items-center" th:if="${demandeDto.idClient != null}">
-                        <input class="mr-2" id="svCarte" th:field="*{flagSaveCarte}" type="checkbox">
-                        <label class="mb-0 labInput" for="svCarte">Enregistrer cette carte pour mes prochains paiements</label>
+                    <div class="form-group custom-checkbox-wrapper" th:if="${demandeDto.idClient != null}">
+                        <input type="checkbox" id="svCarte" th:field="*{flagSaveCarte}" />
+                        <label for="svCarte" class="d-flex align-items-center" style="cursor:pointer;">
+                            <span class="custom-checkbox-style"></span>
+                            <span class="custom-checkbox-label-text ml-2">Enregistrer cette carte pour mes prochains paiements</span>
+                        </label>
                     </div>
                     <input type="hidden" th:field="*{commande}" class="form-control">
                     <input type="hidden" th:field="*{comid}" class="form-control">
@@ -1193,7 +1439,7 @@
                             <img alt="flch" class="flch" th:src="@{/images/flechpayer.svg}">
                             <span class="payer">Payer</span>
                             <span class= "montant" th:text="${demandeDto.montantStr}"></span>
-                            <span class="curr">Dhs</span>
+                            <span class="curr">DH</span>
                         </button>
                     </div>
                     <div class="form-group d-flex align-items-center lock-label">
@@ -1207,23 +1453,26 @@
                 <div class="footer-content">
                     <div class="d-none d-md-inline">
                             <span class="textFooter">Powered by
-                                <img alt="Image" class="powered" th:src="@{/images/powered_naps.svg}">
+                                <a href="https://www.naps.ma" target="_blank">
+                                    <img alt="NAPS" class="powered" th:src="@{/images/powered_naps.svg}">
+                                </a>
+                                <!--<img alt="Image" class="powered" th:src="@{/images/powered_naps.svg}">-->
                             </span>
-                        <span class="separator">|</span>
-                        <span class="textFooter">Politique de confidentialité</span>
-                        <span class="separator"><i class="fas fa-circle" style="font-size: xx-small;"></i></span>
-                        <span class="textFooter">Conditions générales</span>
+                        <!--                        <span class="separator">|</span>-->
+                        <!--                        <span class="textFooter">Politique de confidentialité</span>-->
+                        <!--                        <span class="separator"><i class="fas fa-circle" style="font-size: xx-small;"></i></span>-->
+                        <!--                        <span class="textFooter">Conditions générales</span>-->
                     </div>
                     <div class="d-inline d-md-none text-center">
                             <span class="textFooter">Powered by
                                 <img alt="Image" class="powered" th:src="@{/images/powered_naps.svg}">
                             </span><br>
-                        <div class="policy-links">
-                            <span class="textFooter">Politique de confidentialité</span>
-                            <span class="separator"><i class="fas fa-circle"
-                                                       style="font-size: xx-small;"></i></span>
-                            <span class="textFooter">Conditions générales</span>
-                        </div>
+                        <!--                        <div class="policy-links">-->
+                        <!--                            <span class="textFooter">Politique de confidentialité</span>-->
+                        <!--                            <span class="separator"><i class="fas fa-circle"-->
+                        <!--                                                       style="font-size: xx-small;"></i></span>-->
+                        <!--                            <span class="textFooter">Conditions générales</span>-->
+                        <!--                        </div>-->
                     </div>
                 </div>
             </div>
@@ -1252,12 +1501,25 @@
         </div>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
 
 
     function toggleDropdown() {
         const dropdown = document.getElementById('dropdownList');
-        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        const arrow = document.getElementById("selectCardArrow");
+
+          if (dropdown.style.display === "none" || dropdown.style.display === "") {
+            dropdown.style.display = "block";
+            arrow.classList.remove("rotate-180");
+            arrow.classList.add("rotate-0");
+          } else {
+            dropdown.style.display = "none";
+            arrow.classList.remove("rotate-0");
+            arrow.classList.add("rotate-180");
+          }
     }
 
     function selectCard(element) {
@@ -1281,6 +1543,7 @@
         if (brand) {
             selectedCardIcon.src= '/images/'+brand+'.svg';
         } else {
+            selectedCardIcon.src= 'none';
             cardSelectDiv.style.display = 'none';
             /*toggleDropdown();
             selectedCard.style.display = 'none';
@@ -1292,11 +1555,21 @@
 
         // Remplir automatiquement la date d'expiration
         if (year && month) {
-            document.getElementById("dateExp").value = month + "/" + year.toString().slice(-2);
+            document.getElementById("dateExp").value = month + " / " + year.toString().slice(-2);
         }
 
         // Update hidden input (form value)
         document.getElementById('hiddenInput').value = value;
+
+        const items = document.querySelectorAll('.dropdown-item');
+        items.forEach(item => item.classList.remove('selected'));
+
+        // Add to current one
+        element.classList.add('selected');
+
+        // Optionally set selected values in hidden fields or do other logic
+        const selectedCardNumber = element.dataset.value;
+        console.log("Selected card:", selectedCardNumber);
 
         // Close dropdown
         toggleDropdown();
@@ -1305,11 +1578,36 @@
     // Close dropdown if clicked outside
     document.addEventListener('click', function(event) {
         const container = document.getElementById('cardSelectDiv');
-        if (!container.contains(event.target)) {
+        if (container && !container.contains(event.target)) {
             document.getElementById('dropdownList').style.display = 'none';
         }
     });
 
+    function selectCardDefault(element) {
+        const value = element.getAttribute('data-value');
+        const brand = element.getAttribute('data-brand');
+        const year = element.getAttribute('data-year');
+        const month = element.getAttribute('data-month');
+        var cardSelectDiv = document.getElementById("cardSelectDiv");
+        var dropdownList = document.getElementById("dropdownList");
+        var selectedCard = document.getElementById("selectedCard");
+        selectedCard.style.display === "block"
+        dropdownList.style.display === "none"
+        var newCardDiv = document.getElementById("newCardDiv");
+        var dateExp = document.getElementById("dateExp");
+        var cvv = document.getElementById("cvv");
+        const text = element.innerText.trim();
+
+        // Update selected display
+        const selectedText = document.getElementById('selectedText');
+        const selectedCardIcon = document.getElementById('card-logo2');
+        selectedText.textContent = "Sélectionnez une carte";
+        selectedCardIcon.src= '';
+        selectedCardIcon.alt= '';
+        dateExp.value = '';
+        cvv.value = '';
+        toggleDropdown();
+    }
 
     function updateCardDetails() {
     var select = document.getElementById("selectCard");
@@ -1338,21 +1636,21 @@
 
         // Remplir automatiquement la date d'expiration
         if (year && month) {
-            document.getElementById("dateExp").value = month + "/" + year.toString().slice(-2);
+            document.getElementById("dateExp").value = month + " / " + year.toString().slice(-2);
         }
     }
 }
 
 document.addEventListener("DOMContentLoaded", function () {
     const dateExp = document.getElementById("dateExp");
-
+    console.log("1418");
     dateExp.addEventListener("input", function (e) {
         let value = this.value.replace(/\D/g, ''); // Ne garder que les chiffres
         if (value.length > 4) value = value.slice(0, 4); // max 4 chiffres
 
         // Format MM / YY
         if (value.length >= 2) {
-            this.value = value.slice(0, 2) + "/" + value.slice(2);
+            this.value = value.slice(0, 2) + " / " + value.slice(2);
         } else {
             this.value = value;
         }
@@ -1360,8 +1658,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Permet de supprimer le "/"
     dateExp.addEventListener("keydown", function (e) {
+        console.log("1435");
         // Si on est juste après le slash et qu'on appuie sur Backspace
-        if (e.key === "Backspace" && this.selectionStart === 3 && this.value.charAt(2) === '/') {
+        if (e.key === "Backspace" && this.selectionStart === 6 && this.value.charAt(3) === '/') {
+            console.log("backspace");
             this.value = this.value.slice(0, 2); // Supprime le slash
             this.setSelectionRange(4, 4); // Replace le curseur
             e.preventDefault();
@@ -1412,10 +1712,11 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
 document.getElementById("dateExp").addEventListener("input", function (e) {
+    console.log("1488");
     // Supprime tous les caractères non numériques
     let value = e.target.value.replace(/\D/g, "");
-
-    // Limite à 4 chiffres max (MMYY)
+    console.log("value = "+value);
+     // Limite à 4 chiffres max (MMYY)
     if (value.length > 4) {
         value = value.substring(0, 4);
     }
@@ -1457,6 +1758,7 @@ document.getElementById("dateExp").addEventListener("input", function (e) {
      validateInputField('cvv', 3);
      validateInputField('num', 19);
      validateInputField('nvnum', 19);
+     validateInputField('nomSurCarte', 40);
 
      // Limit input field length and allow only numeric values
      function validateInputField(elementId, maxLength) {
@@ -1580,7 +1882,25 @@ function checkCardType(idCarte, logo) {
         if (cardToDelete) {
           cardToDelete.remove();
           // You can call an AJAX request to delete it on the server too.
+
+        // Show success popup
+           Swal.fire({
+            imageUrl: '/images/success.svg', // 🔁 your icon path here
+             imageWidth: 60,
+             imageHeight: 60,
+             title: 'Carte supprimée avec succès',
+             showConfirmButton: false,
+             timer: 1000,
+             toast: true,
+             position: 'top',
+             customClass: {
+               popup: 'swal-toast'
+             }
+           });
         }
+
+
+
         closeModal();
       };
 
@@ -1608,7 +1928,23 @@ function checkCardType(idCarte, logo) {
           }
         });
       }*/
+      function openModal() {
+              document.getElementById("termsModal").style.display = "block";
+          }
 
+          function closeModal() {
+              document.getElementById("termsModal").style.display = "none";
+          }
+
+          // Optional: Close on ESC
+          window.addEventListener("keydown", function (e) {
+              if (e.key === "Escape") closeModal();
+          });
+
+          // Optional: Close on outside click
+          document.getElementById("termsModal").addEventListener("click", function (e) {
+              if (e.target === this) closeModal();
+          });
 </script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>

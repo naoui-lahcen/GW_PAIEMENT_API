@@ -608,9 +608,12 @@ public class AutorisationServiceImpl implements AutorisationService {
 						cards.add(cardDto);
 						demandeDto.setIdClient(null);
 					}
-				} else if (!idClient.isEmpty() && !"null".equals(idClient)) {
-					cards = cardtokenService.findByIdMerchantAndIdMerchantClient(merchantId, idClient);
-					System.out.println(" idClient is present " + cards.toString());
+				}
+				if (cards == null) {
+					if (!idClient.isEmpty() && !"null".equals(idClient)) {
+						cards = cardtokenService.findByIdMerchantAndIdMerchantClient(merchantId, idClient);
+						System.out.println(" idClient is present " + cards.toString());
+					}
 				}
 				if (cards != null && !cards.isEmpty()) {
 					for (CardtokenDto card : cards) {
@@ -620,12 +623,23 @@ public class AutorisationServiceImpl implements AutorisationService {
 							carte.setCarte(cardNumber);
 							carte.setPcidsscarte(Util.formatCard(cardNumber));
 
+							// Detect card scheme based on BIN/IIN prefix
+							if (cardNumber.startsWith("4")) {
+								carte.setScheme("V"); // Visa
+							} else if (cardNumber.startsWith("5")) {
+								carte.setScheme("M"); // MasterCard
+							} else {
+								carte.setScheme("U"); // Unknown or other (e.g., UnionPay, AMEX, etc.)
+							}
+
 							// Formatage de la date d'expiration
 							String dateExStr = dateFormatSimple.format(card.getExprDate());
 							Util.formatDateExp(dateExStr, carte, folder, file);
+
 							if(!carte.isExpired()) {
-								cartes.add(carte); // if card not expired
+								cartes.add(carte); // Add if card not expired
 							}
+
 							demandeDto.setIdClient(null);
 						}
 					}
