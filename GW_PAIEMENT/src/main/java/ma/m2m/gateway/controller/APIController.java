@@ -1,7 +1,9 @@
 package ma.m2m.gateway.controller;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.net.UnknownHostException;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -4652,21 +4654,26 @@ public class APIController {
 
 					autorisationService.logMessage(file, "update etat demande : SW_PAYE OK");
 					// TODO: insert new cardToken
-					CardtokenDto cardtokenDto = new CardtokenDto();
-					String tokencard = Util.generateCardToken(linkRequestDto.getMerchantid());
 
 					// TODO: test if token not exist in DB
 					// TODO: CardtokenDto checkCardToken =
 					// TODO: cardtokenService.findByIdMerchantAndTokenAndExprDate(linkRequestDto.getMerchantid(), tokencard,
 					// TODO: dateExp);
-					CardtokenDto checkCardToken = cardtokenService.findByIdMerchantAndToken(linkRequestDto.getMerchantid(), tokencard);
-
-					while (checkCardToken != null) {
+					CardtokenDto cardtokenDto = new CardtokenDto();
+					String tokencard = null;
+					CardtokenDto checkCardToken = null;
+					final int maxAttempts = 10;
+					autorisationService.logMessage(file, "maxAttempts : " + maxAttempts);
+					for (int attempt = 0; attempt < maxAttempts; attempt++) {
 						tokencard = Util.generateCardToken(linkRequestDto.getMerchantid());
+						checkCardToken = cardtokenService.findByIdMerchantAndToken(linkRequestDto.getMerchantid(), tokencard);
+
+						if (checkCardToken == null) {
+							break; // Token unique trouvé
+						}
 						logger.info("checkCardToken exist => generate new tokencard : " + tokencard);
 						autorisationService.logMessage(file,
 								"checkCardToken exist => generate new tokencard : " + tokencard);
-						checkCardToken = cardtokenService.findByIdMerchantAndToken(linkRequestDto.getMerchantid(), tokencard);
 					}
 					autorisationService.logMessage(file, "tokencard : " + tokencard);
 
@@ -5521,12 +5528,19 @@ public class APIController {
 					if (montantCfr > montantPreAuto) {
 
 						autorisationService.logMessage(file, "if(montantCfr > montantPreAuto)");
-
 						montantComplent = montantCfr - montantPreAuto;
-						montantComplentStr = String.valueOf(montantComplent);
-						Date trsdate = null;
 						autorisationService.logMessage(file,
 								"montantComplent => (montantCfr - montantPreAuto) : " + montantComplent);
+						// 2025-07-24 correction over capture Glovo
+						BigDecimal montantComplentBg = new BigDecimal(montantComplent).setScale(2, RoundingMode.HALF_UP);
+						autorisationService.logMessage(file,"montantComplentBg : " + montantComplentBg);
+						montantComplentStr = montantComplentBg.toPlainString();
+						autorisationService.logMessage(file,"montantComplentStr : " + montantComplentStr);
+						// old
+						//montantComplentStr = String.valueOf(montantComplent);
+
+						Date trsdate = null;
+
 
 						String orderidToDebite = Util.genCommande(trsRequestDto.getMerchantid());
 						autorisationService.logMessage(file,

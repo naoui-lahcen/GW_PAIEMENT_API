@@ -1925,19 +1925,23 @@ public class AppMobileController {
                 autorisationService.logMessage(file, "cardtokenDto expirydate formated : " + expirydateFormated);
                 Date dateExp;
                 dateExp = dateFormatSimple.parse(expirydateFormated);
-                String tokencard = Util.generateCardToken(idclient);
+                String tokencard = null;
+                CardtokenDto checkCardToken = null;
                 boolean isSaved = false;
                 if (checkCardNumber.size() == 0) {
-                    // TODO: insert new cardToken
-
                     // TODO: test if token not exist in DB
-                    CardtokenDto checkCardToken = cardtokenService.findByIdMerchantAndToken(idclient, tokencard);
-
-                    while (checkCardToken != null) {
+                    final int maxAttempts = 10;
+                    autorisationService.logMessage(file, "maxAttempts : " + maxAttempts);
+                    for (int attempt = 0; attempt < maxAttempts; attempt++) {
                         tokencard = Util.generateCardToken(idclient);
+                        checkCardToken = cardtokenService.findByIdMerchantAndToken(idclient, tokencard);
+
+                        if (checkCardToken == null) {
+                            break; // Token unique trouvé
+                        }
+                        logger.info("checkCardToken exist => generate new tokencard : " + tokencard);
                         autorisationService.logMessage(file,
                                 "checkCardToken exist => generate new tokencard : " + tokencard);
-                        checkCardToken = cardtokenService.findByIdMerchantAndToken(merchantid, tokencard);
                     }
                     autorisationService.logMessage(file, "tokencard : " + tokencard);
 

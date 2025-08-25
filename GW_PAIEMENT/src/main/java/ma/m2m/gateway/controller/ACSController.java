@@ -478,32 +478,28 @@ public class ACSController {
 							if (dmd.getIsAddcard().equals("Y") && dmd.getIsTokenized().equals("Y")
 									&& dmd.getIsWithsave().equals("Y") && dmd.getIsCof().equals("Y")) {
 								boolean flag = false;
-								String tokencard = "";
 								String data_noncrypt_token = "";
 								String data_token = "";
 								CardtokenDto cardtokenDto = new CardtokenDto();
-								
 								String plainTxtSignature = orderid + current_infoCommercant.getClePub();
-
 								autorisationService.logMessage(file, "plainTxtSignature : " + plainTxtSignature);
 								logger.info("plainTxtSignature : " + plainTxtSignature);
+								String tokencard = null;
+								CardtokenDto checkCardToken = null;
+								final int maxAttempts = 10;
+								autorisationService.logMessage(file, "maxAttempts : " + maxAttempts);
 								try {
-									// TODO: insert new cardToken
-									tokencard = Util.generateCardToken(merchantid);
 									// TODO: test if token not exist in DB
-									CardtokenDto checkCardToken = cardtokenService
-											.findByIdMerchantAndToken(merchantid, tokencard);
-
-									while (checkCardToken != null) {
+									for (int attempt = 0; attempt < maxAttempts; attempt++) {
 										tokencard = Util.generateCardToken(merchantid);
-										System.out
-												.println("checkCardToken exist => generate new tokencard : "
-														+ tokencard);
+										checkCardToken = cardtokenService.findByIdMerchantAndToken(merchantid, tokencard);
+
+										if (checkCardToken == null) {
+											break; // Token unique trouvé
+										}
+										logger.info("checkCardToken exist => generate new tokencard : " + tokencard);
 										autorisationService.logMessage(file,
-												"checkCardToken exist => generate new tokencard : "
-														+ tokencard);
-										checkCardToken = cardtokenService
-												.findByIdMerchantAndToken(merchantid, tokencard);
+												"checkCardToken exist => generate new tokencard : " + tokencard);
 									}
 									autorisationService.logMessage(file, "tokencard : " + tokencard);
 

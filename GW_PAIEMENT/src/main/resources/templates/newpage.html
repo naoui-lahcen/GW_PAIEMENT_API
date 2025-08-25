@@ -1098,6 +1098,14 @@
                 #selectedText{
                     font-weight: 478;
                     font-size: 24;
+                    width: 478px;
+                    height: 24px;
+                    gap: 8px;
+                    font-family: Inter;
+                    font-weight: 400;
+                    font-size: 16px;
+                    line-height: 24px;
+                    color: #101828;
                 }
 
                 .swal-toast {
@@ -1222,14 +1230,18 @@
                 <form method="post" th:action="@{/processpayment}" th:object="${demandeDto}">
 
                     <!-- Affichage du message d'erreur -->
-                    <div th:if="${session.error}" id="error-message">
+                    <div th:if="${error}" id="error-message">
                         <img alt="Image" id="alert-circle" th:src="@{/images/alert-circle.svg}">
-                        <span th:text="${session.error}"></span>
+                        <span th:text="${error}"></span>
                     </div>
 
                     <div class="form-group">
                         <label class="labInput">Nom sur la carte</label>
-                        <input class="form-control" id="nomSurCarte" placeholder="Entrez le nom du porteur de la carte" required="required" type="text">
+                        <input class="form-control"
+                               placeholder="Entrez le nom du porteur de la carte"
+                               required="required"
+                               type="text"
+                               maxlength="40">
                     </div>
 
                     <!-- Affichage de la liste déroulante si des cartes existent -->
@@ -1282,7 +1294,12 @@
 	                               padding-top: spacing-md;
 	                               padding-right: 10px;
 	                               padding-bottom: spacing-md;
-	                               padding-left: 0px;">
+	                               padding-left: 0px;
+                                   font-family: font-family-body;
+                                   color: #414651;
+                                   font-size: large;
+                                   font-size: large;
+                                   font-weight: 600;">
 	                               Vos cartes enregistrées
 	                       </span>
                             </div>
@@ -1322,13 +1339,8 @@
                                      style="margin-left: auto; margin-right: 10px; width: 24px; height: 24px; cursor: pointer;" />
                             </div>
 
-                            <div class="dropdown-item" data-value="" data-brand="" onclick="selectCard(this)" style="cursor:pointer; padding:8px 10px;">
-                                <img src="/images/nvcarte.svg" alt="New Card" style="                                               font-family: Font family/font-family-body;
-				                                               font-weight: 600;
-				                                               font-size: Font size/text-sm;
-				                                               line-height: Line height/text-sm;
-				                                               letter-spacing: 0%;
-				">
+                            <div class="dropdown-item" data-value="" data-brand="" data-new="true" onclick="selectCard(this)" style="cursor:pointer; padding:8px 10px;font-weight: 600; color: #414651; font-size: large; font-family: font-family-body;">
+                                <img src="/images/nvcarte.svg" alt="New Card" style="width: 24px; height: auto; margin-right: 10px;" />
                                 Utiliser une nouvelle carte
                             </div>
                         </div>
@@ -1383,7 +1395,7 @@
                     </div>
                     <div class="form-group d-flex gap-2">
                         <div class="mr-2" style="width: 50%">
-                            <input class="form-control" id="dateExp" placeholder="MM/AA" th:field="*{expery}" type="text">
+                            <input class="form-control" id="dateExp" placeholder="MM / AA" th:field="*{expery}" type="text">
                         </div>
                         <div class="cvc" style="width: 50%">
                             <input class="form-control" id="cvv" placeholder="CVC" required="required" th:field="*{demCvv}" type="number">
@@ -1419,7 +1431,9 @@
 
 
                     <!-- Sauvegarder la carte -->
-                    <div class="form-group custom-checkbox-wrapper" th:if="${demandeDto.idClient != null}">
+                    <div id="saveCardDiv"
+                         class="form-group custom-checkbox-wrapper"
+                         th:attr="style=${demandeDto.idClient != null} ? 'display:none;' : 'display:none;'">
                         <input type="checkbox" id="svCarte" th:field="*{flagSaveCarte}" />
                         <label for="svCarte" class="d-flex align-items-center" style="cursor:pointer;">
                             <span class="custom-checkbox-style"></span>
@@ -1534,6 +1548,9 @@
         var dateExp = document.getElementById("dateExp");
         var cvv = document.getElementById("cvv");
         const text = element.innerText.trim();
+        var nvnum = document.getElementById("nvnum");
+        const saveCardDiv = document.getElementById('saveCardDiv');
+        const isNewCard = element.getAttribute('data-new') === 'true';
 
         // Update selected display
         const selectedText = document.getElementById('selectedText');
@@ -1569,7 +1586,25 @@
 
         // Optionally set selected values in hidden fields or do other logic
         const selectedCardNumber = element.dataset.value;
-        console.log("Selected card:", selectedCardNumber);
+        if (isNewCard) {
+            saveCardDiv.style.display = 'block';
+            cardSelectDiv.style.display = 'block';
+            selectedText.textContent = "Sélectionnez une carte";
+            selectedCardIcon.src= '';
+            selectedCardIcon.alt= '';
+        } else {
+          saveCardDiv.style.display = 'none';
+        }
+        if (selectedCardNumber != null && selectedCardNumber != "") {
+            console.log('entrer');
+            saveCardDiv.style.display = 'none';
+            nvnum.value='';
+            cvv.value = '';
+        } else {
+             console.log('entrer else');
+             dateExp.value = '';
+             nvnum.value='';
+        }
 
         // Close dropdown
         toggleDropdown();

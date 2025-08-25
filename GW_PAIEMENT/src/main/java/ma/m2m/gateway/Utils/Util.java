@@ -635,7 +635,7 @@ public class Util {
         return (generatedString1 + generatedString2 + merchantId).toUpperCase();
 	}
 
-    public static String generateCardToken(String merchantId) {
+    public static String generateCardToken(String idClient) {
 
     	  DateFormat dateFormat = new SimpleDateFormat("yyddMMHHmmss");
     	

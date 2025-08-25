@@ -17,6 +17,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -433,10 +434,6 @@ public class AutorisationServiceImpl implements AutorisationService {
 
 		Util.writeInFileTransaction(folder, file, "*********** DEBUT getRreqFromThree3DSSAfterACS ***********");
 
-		// soit visa soit mastercard il a aucun impact apres auth
-		Util.writeInFileTransaction(folder, file, "UrlThreeDSS : " + urlThreeDssM);
-
-		logger.info("UrlThreeDSS : " + urlThreeDssM);
 		HttpClient httpClient = HttpClientBuilder.create().build();
 		try {
 			httpClient = getAllSSLClient();
@@ -444,7 +441,12 @@ public class AutorisationServiceImpl implements AutorisationService {
 			Util.writeInFileTransaction(folder, file, "[GW-EXCEPTION-KeyManagementException] " + e1);
 		}
 
-		HttpPost httpPost = new HttpPost(urlThreeDssM);
+		// Choix aléatoire soit visa soit mastercard il a aucun impact apres auth
+		String selectedUrl = ThreadLocalRandom.current().nextBoolean() ? urlThreeDssM : urlThreeDssV;
+		Util.writeInFileTransaction(folder, file, "UrlThreeDSS : " + selectedUrl);
+		logger.info("UrlThreeDSS : " + selectedUrl);
+
+		HttpPost httpPost = new HttpPost(selectedUrl);
 
 		final StringEntity entity = new StringEntity(decodedCres, StandardCharsets.UTF_8);
 
@@ -852,7 +854,8 @@ public class AutorisationServiceImpl implements AutorisationService {
 			case 3:
 				logMessage(file, "Carte de Paiement n’est pas supportée. Order ID:["
 						+ orderid + "] and Merchant ID:[" + merchantid + "]");
-				demandeDtoMsg.setMsgRefus("Carte de Paiement n’est pas supportée. Veuillez utiliser une carte Visa ou MasterCard.");
+				//demandeDtoMsg.setMsgRefus("Carte de Paiement n’est pas supportée. Veuillez utiliser une carte Visa ou MasterCard.");
+				demandeDtoMsg.setMsgRefus("Ce type de carte n’est pas supporté. Veuillez utiliser une carte…. ");
 				demandeDto.setEtatDemande("CARD_NOT_SUPPORTED");
 				break;
 
