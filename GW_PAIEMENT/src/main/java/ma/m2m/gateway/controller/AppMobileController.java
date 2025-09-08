@@ -993,8 +993,14 @@ public class AppMobileController {
                                         "coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
                                 autorisationService.logMessage(file,"?data=" + data + "==&codecmr=" + merchantid);
                                 if (dmd.getSuccessURL() != null) {
-                                    response.sendRedirect(
-                                            dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" + merchantid);
+                                    if(dmd.getSuccessURL().contains("?")) {
+                                        response.sendRedirect(
+                                                dmd.getSuccessURL() + "&data=" + data + "==&codecmr=" + merchantid);
+                                    } else {
+                                        response.sendRedirect(
+                                                dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" + merchantid);
+                                    }
+
                                     autorisationService.logMessage(file, "Fin processRequestMobile ()");
                                     return null;
                                 } else {
@@ -1800,7 +1806,7 @@ public class AppMobileController {
         try {
             DemandePaiementDto dmdToEdit = demandePaiementService.findByIdDemande(demandeDto.getIddemande());
 
-            autorisationService.logMessage(file, "Etat demande : " + demandeDto.getEtatDemande());
+            autorisationService.logMessage(file, "Etat demande : " + dmdToEdit.getEtatDemande());
             if (dmdToEdit.getEtatDemande().equals("SW_PAYE") || dmdToEdit.getEtatDemande().equals("PAYE")) {
                 dmdToEdit.setDemCvv("");
                 demandePaiementService.save(dmdToEdit);
@@ -1906,6 +1912,7 @@ public class AppMobileController {
         autorisationService.logMessage(file, "Fin controlleRisk");
 
         // TODO: saving card if flagSaveCarte true
+        autorisationService.logMessage(file, "isFlagSaveCarte : " + demandeDto.isFlagSaveCarte());
         if (demandeDto.isFlagSaveCarte()) {
             try {
                 List<CardtokenDto> checkCardNumber = cardtokenService.findByIdMerchantClientAndCardNumber(idclient,
@@ -2618,7 +2625,11 @@ public class AppMobileController {
                         "coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
                 autorisationService.logMessage(file,"?data=" + data + "==&codecmr=" + merchantid);
                 if (dmd.getSuccessURL() != null) {
-                    response.sendRedirect(dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" + merchantid);
+                    if(dmd.getSuccessURL().contains("?")) {
+                        response.sendRedirect(dmd.getSuccessURL() + "&data=" + data + "==&codecmr=" + merchantid);
+                    } else {
+                        response.sendRedirect(dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" + merchantid);
+                    }
                     autorisationService.logMessage(file, "Fin recharger ()");
                     return  null;
                 } else {

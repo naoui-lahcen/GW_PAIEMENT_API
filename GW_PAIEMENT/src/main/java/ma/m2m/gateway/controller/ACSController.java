@@ -30,6 +30,8 @@ import javax.xml.namespace.QName;
 
 import ma.m2m.gateway.dto.*;
 import ma.m2m.gateway.service.*;
+
+import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.StatusLine;
@@ -1615,10 +1617,14 @@ public class ACSController {
 									// TODO: envoie de la reponse normal
 									autorisationService.logMessage(file,
 											"coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
-									autorisationService.logMessage(file,"?data=" + data + "==&codecmr=" + merchantid);
+									if(dmd.getSuccessURL().contains("?")) {
+										response.sendRedirect(dmd.getSuccessURL() + "&data=" + data + "==&codecmr=" + merchantid);
+									} else {
+										autorisationService.logMessage(file,"?data=" + data + "==&codecmr=" + merchantid);
+										response.sendRedirect(
+												dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" + merchantid);
+									}
 
-									response.sendRedirect(
-											dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" + merchantid);
 									autorisationService.logMessage(file, "Fin processRequest ()");
 									return  null;
 								} else {
@@ -2111,9 +2117,27 @@ public class ACSController {
 	public static String sendPOST(String urlcalback, String clepub, String idcommande, String repauto, String montant,
 			String numAuto, Long numTrans, String token_gen, String pan_trame, String typecarte, String folder,
 			String file) throws IOException {
-
+		
+		URL urlObj = new URL(urlcalback);
+		String userInfo = urlObj.getUserInfo(); // extract user:pass
+		Util.writeInFileTransaction(folder, file,"urlObj.getProtocol() : " + urlObj.getProtocol());
+		Util.writeInFileTransaction(folder, file,"urlObj.getHost() : " + urlObj.getHost());
+		Util.writeInFileTransaction(folder, file,"urlObj.getPath() : " + urlObj.getPath());
+		Util.writeInFileTransaction(folder, file,"urlObj.getPort() : " + urlObj.getPort());
+		HttpPost post;
+		if(urlObj.getPort()!=-1){
+			post = new HttpPost(urlObj.getProtocol() + "://" + urlObj.getHost()+":" +urlObj.getPort() + urlObj.getPath());
+		}else {
+			
+			post = new HttpPost(urlObj.getProtocol() + "://" + urlObj.getHost() + urlObj.getPath());
+		}
+		if (userInfo != null) {
+		    byte[] encodedAuth = java.util.Base64.getEncoder().encode(userInfo.getBytes(StandardCharsets.ISO_8859_1));
+		    String authHeader = "Basic " + new String(encodedAuth);
+		    post.setHeader(HttpHeaders.AUTHORIZATION, authHeader);
+		}
 		String result = "";
-		HttpPost post = new HttpPost(urlcalback);
+		//HttpPost post = new HttpPost(urlcalback);
 
 		String reqenvoi = idcommande + repauto + clepub + montant;
 		String signature = Util.hachInMD5(reqenvoi);

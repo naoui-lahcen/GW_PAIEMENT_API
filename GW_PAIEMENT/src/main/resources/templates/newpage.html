@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>GATEWAY NAPS</title>
-
+	<link href='https://fonts.googleapis.com/css?family=DM Sans' rel='stylesheet'>
     <!-- CSS -->
     <link crossorigin="anonymous"
           href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
@@ -28,8 +28,6 @@
 
         .dropdown-item .checkmark {
             display: inline-block;
-            width: 16px;
-            height: 16px;
             background-image: url('/images/check-orange.svg');
             background-size: contain;
             background-repeat: no-repeat;
@@ -38,7 +36,14 @@
 
         .dropdown-item.selected .checkmark {
             visibility: visible;
+			padding:8px 10px;
+			width: 16px;
+			height: 16px;
         }
+		
+		.dropdown-item.selected  {
+				padding:8px 10px;
+		       }
 
 
         .custom-checkbox-wrapper input[type="checkbox"] {
@@ -75,7 +80,9 @@
                 height: 12px;
                 border: solid #fd7e14;
                 border-width: 0 2px 2px 0;
-                transform: rotate(45deg);
+                transform: rotate(45deg); 
+				margin-right: 8px; 
+				width: 16px;
             }
 
             /* Checked state styles */
@@ -105,7 +112,7 @@
                .custom-checkbox {
                    width: 20px;
                    height: 20px;
-                   border: 2px solid #ccc;
+                   border: 2px solid #D0D5DD;
                    border-radius: 6px;
                    background-color: #fff;
                    display: inline-block;
@@ -140,6 +147,7 @@
                    display: flex;
                    align-items: center;
                    cursor: pointer;
+				   margin-bottom: 36px;
                }
 
                .custom-checkbox-label .terms-link {
@@ -149,7 +157,7 @@
                }
 
                /* ✅ MODAL STYLE */
-               .modal-overlay {
+              .modal-overlay {
                    display: none;
                    position: fixed;
                    top: 0; left: 0;
@@ -161,30 +169,74 @@
 
                .modal-content {
                    background-color: white;
-                   width: 90%;
-                   max-width: 650px;
-                   max-height: 90vh; /* restrict height */
+                   width: 577px;
+                   height: 766px; /* restrict height */
                    margin: 5vh auto;
-                   padding: 25px;
-                   border-radius: 10px;
+                   padding: 24px;
+                   border-radius: 16px;
                    position: relative;
-                   overflow-y: auto; /* allow scroll if content exceeds */
-                   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
                }
-
-               .modal-content::-webkit-scrollbar {
-                   width: 8px;
+			   
+			   .sub-modal-content {
+				overflow-y: auto;
+				font-family: Inter,sans-serif;
+				color:#535862;
+				font-weight: 400;
+				font-size: 14px;
+				gap: 2px;
+	
+				}
+               .sub-modal-content::-webkit-scrollbar {
+                   width: 6px;
+				   height: 443px;
                }
-               .modal-content::-webkit-scrollbar-thumb {
-                   background-color: #ccc;
-                   border-radius: 4px;
+               .sub-modal-content::-webkit-scrollbar-thumb {
+                   background-color: #D9D9D9;
+                   border-radius: 30px;
                }
-
 
                .modal-content h3 {
-                   color: #fd7e14;
+					font-family: Roboto,sans-serif;	
+					font-weight: 600;
+					font-style: Medium;
+					font-size: 24px;
+					line-height: 32px;
+                   color: #FF5F00;
                    margin-bottom: 15px;
                }
+			   
+			   .modle-text-content{
+				width: 513px;
+				height: 654px;
+				line-height: 20px;
+			   }
+			   
+			   @media (max-width: 768px) {
+				
+				.sub-modal-content {
+							overflow-y: auto;
+							overflow-x: hidden;
+
+							}
+							
+							
+				.modal-content {
+			                   width: 324px;
+			                   height: 592px; /* restrict height */
+			                   padding: 16px;
+			                   border-radius: 16px;
+				               }
+			   .modal-content h3 {
+			   					font-size: 20px;
+			   					line-height: 100%;
+			                  }
+							  
+				.modle-text-content{
+				  				width: 274px;
+				  				height: 494px;
+				  			   }
+		
+			   }
 
                .modal-close {
                    position: absolute;
@@ -199,29 +251,23 @@
             color: #000000 !important;
             border: 1px solid #D5D7DA !important;
         }
-
-        div:where(.swal2-container) h2:where(.swal2-title) {
-                    font-size: 1.2em !important;
-                }
-
         .custom-dropdown {
             position: relative;
+			margin-bottom: 0px;
             user-select: none;
-            font-family: Arial, sans-serif;
+            font-family: Inter, sans-serif;
         }
 
 
          .selected-card {
-           height:38px;
-       border: 1px solid #ccc;
-       padding: 8px 12px;
-       cursor: pointer;
-       display: flex;
-       align-items: center;
-       justify-content: space-between;
-       background-color: white;
-       border-radius: 5px !important;
-
+           height:48px;
+	       border: 1px solid #ccc;
+	       padding: 8px 12px;
+	       cursor: pointer;
+	       display: flex;
+	       align-items: center;
+	       justify-content: space-between;
+	       background-color: white;
     }
 
 
@@ -236,7 +282,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: Arial, sans-serif;
+            font-family: Inter, sans-serif;
         }
 
         body {
@@ -273,7 +319,7 @@
         }
 
        .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 16px;
        }
        .form-group label {
            display: block;
@@ -636,7 +682,7 @@
                 .text-infos .frame {
                     border-radius: 10px;
                     padding: 5px;
-                    border-style: solid;.text-content
+                    border-style: solid;
                     background-color: #FFFFFF;
                     border: 1px solid #EAECF0;
                     width: 48px;
@@ -716,14 +762,14 @@
                         font-size: 14px;
                         opacity: 0.8;
                     }
-
-                    .total-box .amount {
-                        font-size: 32px;
-                        font-size: 40px;
-                        font-weight: bold;
-                        font-family: Inter,sans-serif;
-                    }
-
+					.amount {
+	                        font-size: 40px;
+							line-height: 50px;
+							letter-spacing: 0%;
+	                        font-weight: 700;
+	                        font-family: 'DM Sans',sans-serif;
+							letter-spacing: -0.48px;
+	                    }
                     .total-box .currency {
                         font-size: 14px;
                         font-size: 20px;
@@ -792,13 +838,14 @@
                        box-shadow: 0px 1px 2px 0px rgba(16, 24, 40, 0.05);
                    }
                    .montant {
-                        font-family: sans-serif, Arial;
+					
+                        font-family: sans-serif, Inter;
                         font-weight: 700;
                         font-size: 18px;
                         line-height: 28px;
                    }
                    .curr {
-                        font-family: sans-serif, Arial;
+                        font-family: sans-serif, Inter;
                         font-weight: 700;
                         font-size: 18px;
                         line-height: 28px;
@@ -810,10 +857,15 @@
                             flex-direction: column;
                        }
                        .subscribe-btn {
+							opacity: 50%;
                             width: 95%;
                             font-weight: 600;
                             font-size: 16px;
                         }
+						
+						.subscribe-btn:hover{
+							opacity: 100%;
+						}
                         .toggle-btn:focus {
                             outline: none;
                         }
@@ -958,6 +1010,7 @@
                         .dhs {
                             font-style: normal;
                             line-height: 24px;
+							vertical-align: middle;
                         }
                         .total-box {
                             margin-left: 0;
@@ -966,19 +1019,20 @@
                         .total-box .label {
                             display: none;
                         }
-                        .total-box .amount {
-                            font-size: 16px;
-                            font-size: 20px;
-                            font-weight: bold;
-                        }
+						.amount {
+		                        font-size: 20px;
+								line-height: 46.8px;
+		                        font-weight: 700;
+								font-family: 'DM Sans',sans-serif;
+								letter-spacing: -0.48px;
+		                    }
                         .montant {
                             font-style: normal;
                             line-height: 24px;
+							font-weight: 600;
+							font-size: 16px;
                         }
-                        .montant {
-                            font-weight: 600;
-                            font-size: 16px;
-                       }
+                        
                        .curr {
                             font-weight: 600;
                             font-size: 16px;
@@ -1094,7 +1148,10 @@
                     box-shadow: none;
                     outline: none !important;
                 }
-
+				
+				.form-control{
+					height: 48px;
+				}
                 #selectedText{
                     font-weight: 478;
                     font-size: 24;
@@ -1107,26 +1164,32 @@
                     line-height: 24px;
                     color: #101828;
                 }
+				
 
                 .swal-toast {
                   display: flex !important;
+				  font-family: Inter, sans-serif;
+				  font-weight: 600;
+				  line-height: 20px;	
+				  letter-spacing: 0%;
                   align-items: center;
                   gap: 12px;
-                  font-size: 1rem;
+                  font-size: 14px;
                   border-radius: 12px;
                   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
                   white-space: nowrap;
                   max-width: none;
                   overflow: hidden;        /* hides any extra content that overflows */
                   max-width: 100%;         /* ensures it doesn't exceed parent container */
-                  width: fit-content;      /* just fits the content without stretching */
+                  width: unset;      /* just fits the content without stretching */
                   box-sizing: border-box;
                 }
-
-                .swal-toast-center .swal2-image {
-                  margin: 0 !important;
-                }
-
+				div:where(.swal2-container) img:where(.swal2-image){
+					margin: 0em !important;
+				}
+				div:where(.swal2-container) h2:where(.swal2-title) {
+				    font-size: 14px !important;
+				}
                 body.swal2-toast-shown .swal2-container {
                     width: 415px !important;
                 }
@@ -1140,8 +1203,107 @@
                   transform: rotate(0deg);
                   transition: transform 0.3s ease;
                 }
+				
+				.swal-close-btn-right {
+				  position: absolute !important;
+				  right: 8px !important;
+				  left: auto !important;
+				  top: 50% !important;
+				  transform: translateY(-50%) !important;
+				  color: #A4A7AE;
+				  font-size: 16px;
+				}
 
+				.dropdown-item {
+				    padding: .25rem .5rem !important;
+				}
+				
+				.delete-popup {
+				  background: white; 
+				  border-radius: 12px; 
+				  padding: 16px; 
+				  width: 90%;            /* responsive width */
+				  max-width: 400px;
+				  min-width: 324px;
+				  max-height: 298px;
+				  min-height: 230px;      /* desktop max */
+				  height: auto;          /* let content define height */
+				  position: relative;
+				  box-sizing: border-box;
+				}
 
+				.close-btn {
+				  color: #A4A7AE;
+				  position: absolute;
+				  top: 10px;
+				  right: 10px;
+				  border: none;
+				  background: none;
+				  font-size: 18px;
+				  cursor: pointer;
+				}
+
+				.btn-cancel,
+				.btn-delete {
+				  font-family: Inter, sans-serif;
+				  height: 44px !important;   /* force the height */
+				  max-height: 44px;          /* ensures it won't shrink */
+				  line-height: 44px;         /* centers text vertically */
+				  flex: 1;                /* flexible size */
+				  font-weight: 600;
+				  border-radius: 8px;
+				  min-width: 120px;       /* prevents shrinking too much */
+				}
+
+				/* Cancel button */
+				.btn-cancel {
+				  border: 1px solid #ccc;
+				  background: white;
+				  color: #414651;
+				}
+
+				/* Delete button */
+				.btn-delete {
+				  background: #D92D20;
+				  color: white;
+				  border: none;
+				}
+
+				.popup-actions {
+				  margin-top: 24px;
+				  display: flex;          /* use flexbox */
+				  gap: 12px;
+				  align-items: center;          /* space between buttons */
+				  justify-content: center;
+				  flex-wrap: wrap;        /* wrap on small screens */
+				}
+
+				/* 📱 Mobile optimization */
+				@media (max-width: 480px) {
+				  .btn-cancel,
+				  .btn-delete {
+				    width: 292px;          /* full width buttons */
+					height: 44px;
+					flex: 1;                /* flexible size */
+					font-weight: 600;
+				  }
+				  .popup-actions {
+				    flex-direction: column;
+					padding-top: 2px;
+				  }
+				  
+				  .delete-popup {
+		          /* responsive width */
+					max-width:324px;
+				}
+				
+				@media (max-width : 358){
+					.generalConditionLabel{
+						display: block;
+						margin-top: 5px;
+					}
+				}
+						
     </style>
 </head>
 <body>
@@ -1237,7 +1399,7 @@
 
                     <div class="form-group">
                         <label class="labInput">Nom sur la carte</label>
-                        <input class="form-control"
+                        <input class="form-control" style="border-radius: 8px 8px 8px 8px;"
                                placeholder="Entrez le nom du porteur de la carte"
                                required="required"
                                type="text"
@@ -1275,11 +1437,11 @@
 
 
 
-                    <label class="labInput">Informations de votre carte</label>
-                    <div id="cardSelectDiv" th:if="${demandeDto.cartes != null and #lists.size(demandeDto.cartes) > 0}" class="form-group custom-dropdown">
+                    <label style="color: #344054;font-size: 14px; font-weight: 500; line-height: 24px; font-family: Inter,sans-serif;" class="labInput">Informations de votre carte</label>
+                    <div id="cardSelectDiv" th:if="${demandeDto.cartes != null and #lists.size(demandeDto.cartes) > 0}" style="margin-bottom: 0px;" class="form-group custom-dropdown">
                         <!-- Selected card display -->
-                        <div id="selectedCard" class="selected-card" onclick="toggleDropdown()">
-                            <span id="selectedText">Sélectionnez une carte</span>
+                        <div  id="selectedCard" class="selected-card" onclick="toggleDropdown()" style="border-radius: 8px 8px 0px 0px;">
+                            <span style="color: #101828;font-size: 16px; font-weight: 400; line-height: 24px; font-family: Inter,sans-serif;" id="selectedText">Sélectionnez une carte</span>
                             <img  id="card-logo2" >
                             <img alt="Image" id="selectCardArrow" th:src="@{/images/arrow.svg}" class="rotate-180">
                         </div>
@@ -1291,14 +1453,14 @@
 	                   <span style="
 	                               height: 36;
 	                               border-radius: radius-sm;
-	                               padding-top: spacing-md;
+	                               padding-top: 8px;
 	                               padding-right: 10px;
-	                               padding-bottom: spacing-md;
+	                               padding-bottom: 8px;
 	                               padding-left: 0px;
-                                   font-family: font-family-body;
+                                   font-family: Inter, sans-serif;
                                    color: #414651;
-                                   font-size: large;
-                                   font-size: large;
+                                   font-size: 14px;
+								   line-height: 20px;
                                    font-weight: 600;">
 	                               Vos cartes enregistrées
 	                       </span>
@@ -1311,13 +1473,12 @@
                                  th:data-year="${carte.year}"
                                  th:data-month="${carte.moisValue}"
                                  onclick="selectCard(this)"
-                                 style="cursor:pointer; display: flex; align-items: center; padding:8px 10px; position:relative;">
+                                 style="cursor:pointer; display: flex; align-items: center; position:relative;">
 
-                                <!-- ✅ Checkmark container -->
-                                <span class="checkmark" style="margin-right: 8px; width: 16px;"></span>
-
+								 <!-- ✅ Checkmark container -->
+								<span class="checkmark"></span>
                                 <!-- Card brand icon -->
-                                <img th:src="@{/images/} + ${carte.scheme} + '.svg'"
+                                <img th:src="@{/images/{filename}(filename=${carte.scheme + '.svg'})}"
                                      alt="card logo"
                                      style="width: 24px; height: auto; margin-right: 10px;" />
 
@@ -1339,7 +1500,7 @@
                                      style="margin-left: auto; margin-right: 10px; width: 24px; height: 24px; cursor: pointer;" />
                             </div>
 
-                            <div class="dropdown-item" data-value="" data-brand="" data-new="true" onclick="selectCard(this)" style="cursor:pointer; padding:8px 10px;font-weight: 600; color: #414651; font-size: large; font-family: font-family-body;">
+                            <div class="dropdown-item" data-value="" data-brand="" data-new="true" onclick="selectCard(this)" style="cursor:pointer; padding:8px 10px;font-weight: 600; color: #414651; font-size: 14px; font-family: Inter, sans-serif; line-height: 20px; letter-spacing: 0%;">
                                 <img src="/images/nvcarte.svg" alt="New Card" style="width: 24px; height: auto; margin-right: 10px;" />
                                 Utiliser une nouvelle carte
                             </div>
@@ -1388,45 +1549,72 @@
                         <img alt="Image" id="card-logo" th:src="@{/images/visa_mc.svg}">
                     </div>
                     <!-- Input caché si des cartes existent -->
-                    <div id="newCardDiv" class="form-group numcarte1 " style="display: none !important;">
-                        <input class="form-control" id="nvnum" oninput="checkCardType('nvnum', 'card-logo1')" placeholder="1234 1234 1234 1234"
-                               th:field="*{demPan}" type="text">
+                    <div id="newCardDiv" class="form-group numcarte1 " style="display: none !important; margin-bottom: 0px;" >
+                        <input  class="form-control" id="nvnum" oninput="checkCardType('nvnum', 'card-logo1')" placeholder="1234 1234 1234 1234"
+                               th:field="*{demPan}" type="text" style="border-radius: 8px 8px 0px 0px;">
                         <img alt="Image" id="card-logo1" th:src="@{/images/visa_mc.svg}">
                     </div>
                     <div class="form-group d-flex gap-2">
-                        <div class="mr-2" style="width: 50%">
-                            <input class="form-control" id="dateExp" placeholder="MM / AA" th:field="*{expery}" type="text">
+                        <div  style="width: 100%">
+                            <input class="form-control" style="border-radius: 0px 0px 0px 8px; margin-right: 0; border-top: 0px;border-right: 0px;" id="dateExp" placeholder="MM / AA" th:field="*{expery}" type="text">
                         </div>
-                        <div class="cvc" style="width: 50%">
-                            <input class="form-control" id="cvv" placeholder="CVC" required="required" th:field="*{demCvv}" type="number">
+                        <div class="cvc" style="width: 100%">
+                            <input class="form-control" style="border-radius: 0 0 8px 0;border-top: 0px;" id="cvv" placeholder="CVC" required="required" th:field="*{demCvv}" type="number">
                             <img alt="Image" id="cvc-logo" th:src="@{/images/cvc.svg}">
                         </div>
                     </div>
                     <div class="custom-checkbox-container">
-                        <input type="checkbox" id="terms" required />
-                        <label class="custom-checkbox-label" for="terms">
-                            <span class="custom-checkbox"></span>
-                            J'ai lu et j'accepte les
-                            <span class="terms-link" onclick="openModal()">conditions générales </span>
-                            <span class="terms-link" onclick="openModal()">d'utilisation.</span>
-                        </label>
+						<input type="checkbox" id="terms" required />
+						<label class="custom-checkbox-label" for="terms">
+						    <span class="custom-checkbox"></span>
+						    <div class="generalConditionLabel">
+						        J'ai lu et j'accepte les
+						        <a style="color: #344054;" href="javascript:void(0)" 
+						           class="terms-link"
+						           onclick="event.preventDefault(); openModal();">
+						            conditions d'utilisation.
+						        </a>
+						    </div>
+						</label>
+
                     </div>
 
                     <div class="modal-overlay" id="termsModal">
-                        <div class="modal-content">
-                            <span class="modal-close" onclick="closeModal()">&times;</span>
-                            <h3>Conditions générales d'utilisation</h3>
-                            <p>
-                                Conformément à la loi 09-08 sur la protection des personnes physiques à l'égard du traitement des données à caractère personnel, il est porté à votre connaissance qu'en utilisant le service de paiement en ligne pour payer un service ou un produit commercialisé par un site marchand affilié à NAPS :
-                            </p>
-                            <ul>
-                                <li>Les destinataires des données concernant un payeur telles que le nom et prénom, courriel, adresse et numéro de téléphone, à l'exception des données bancaires confidentielles, et qui sont soit transmises par le site Marchand à NAPS ou saisies par le payeur sur l'écran de paiement mis à sa disposition par NAPS pour le compte de l'e-commerçant et sous son ordre, pourront être utilisées par les collaborateurs de NAPS responsables du traitement, dont la finalité est le suivi de l'opération de paiement initiée par le payeur sur le site Marchand.</li>
-                                <li>Les destinataires des données bancaires qui sont saisies par le payeur sur l'écran de paiement mis à sa disposition par NAPS pour le compte de l'e-commerçant et sous son ordre, pourront être utilisées par les systèmes d'information et monétiques de NAPS, ainsi que le système monétique de la banque marocaine ou internationale émettrice de la carte bancaire utilisée lors du paiement en ligne. Toutes ces entités sont responsables, chacune suivant ses attributions, du traitement dont la finalité est le traitement de l'opération de paiement initiée par le payeur sur le site marchand.</li>
-                                <li>Les données recueillies par NAPS ne peuvent être utilisées à des fins de prospection par ce dernier et sont la propriété de l'e-commerçant qui a délégué la gestion du paiement de son site marchand à NAPS.</li>
-                                <li>Vous disposez d'un droit d'accès en consultation à vos données personnelles traitées par NAPS et qui figurent dans votre reçu de paiement, à l'exception des données bancaires, en contactant NAPS par courrier à l'adresse suivante : NAPS - 16, rue Ibn Khalikane, Palmiers, Casablanca.</li>
-                                <li>Vous pouvez aussi accéder à ces données depuis le reçu de paiement ou de transaction mis à votre disposition par courriel et en ligne par NAPS ou l'e-commerçant.</li>
-                            </ul>
-                        </div>
+						
+							
+							<div class="modal-content">
+		                        <h3 >Conditions générales d'utilisation</h3>
+								<button onclick="closeModal()" class="close-btn"><img alt="Image" class="powered" th:src="@{/images/close.svg}"></button>
+								<div class="sub-modal-content">
+									<div class="modle-text-content">
+										<p>
+			                                Conformément à la loi 09-08 sur la protection des personnes physiques à l'égard du traitement des données à caractère personnel, il est porté à votre connaissance qu'en utilisant le service de paiement en ligne pour payer un service ou un produit commercialisé par un site marchand affilié à NAPS :
+			                            </p>
+										<ul style=" padding-left: 20px; margin: 0;">
+										   <li style="margin-bottom: 10px;">
+										     Les destinataires des données concernant un payeur telles que le nom et prénom, courriel, adresse et numéro de téléphone, à l'exception des données bancaires confidentielles, et qui sont soit transmises par le site Marchand à NAPS ou saisies par le payeur sur l'écran de paiement mis à sa disposition par NAPS pour le compte de l'e-commerçant et sous son ordre, pourront être utilisées par les collaborateurs de NAPS responsables du traitement, dont la finalité est le suivi de l'opération de paiement initiée par le payeur sur le site Marchand.
+										   </li>
+										   <li style="margin-bottom: 10px;">
+										     Les destinataires des données bancaires qui sont saisies par le payeur sur l'écran de paiement mis à sa disposition par NAPS pour le compte de l'e-commerçant et sous son ordre, pourront être utilisées par les systèmes d'information et monétiques de NAPS, ainsi que le système monétique de la banque marocaine ou internationale émettrice de la carte bancaire utilisée lors du paiement en ligne. Toutes ces entités sont responsables, chacune suivant ses attributions, du traitement dont la finalité est le traitement de l'opération de paiement initiée par le payeur sur le site marchand.
+										   </li>
+										   <li style="margin-bottom: 10px;">
+										     Les données recueillies par NAPS ne peuvent être utilisées à des fins de prospection par ce dernier et sont la propriété de l'e-commerçant qui a délégué la gestion du paiement de son site marchand à NAPS.
+										   </li>
+										   <li style="margin-bottom: 10px;">
+										     Vous disposez d'un droit d'accès en consultation à vos données personnelles traitées par NAPS et qui figurent dans votre reçu de paiement, à l'exception des données bancaires, en contactant NAPS par courrier à l'adresse suivante : NAPS - 16, rue Ibn Khalikane, Palmiers, Casablanca.
+										   </li>
+										   <li>
+										     Vous pouvez aussi accéder à ces données depuis le reçu de paiement ou de transaction mis à votre disposition par courriel et en ligne par NAPS ou l'e-commerçant.
+										   </li>
+										 </ul>		
+									</div>
+									
+								</div>
+	                           
+	                        </div> 
+							
+						
+                        
                     </div>
 
 
@@ -1500,18 +1688,18 @@
 <div id="confirmDeleteModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
     background-color: rgba(0,0,0,.6); z-index: 9999; justify-content: center; align-items: center;">
 
-    <div style="background: white; border-radius: 12px; padding: 24px; width: 400px; text-align: center; position: relative;">
-        <button onclick="closeModal()" style="color : #A4A7AE;position: absolute; top: 10px; right: 10px; border: none; background: none; font-size: 18px;">X</button>
+    <div class="delete-popup" >
+        <button onclick="closeModalDeleteCard()" class="close-btn"><img alt="Image" class="powered" th:src="@{/images/close.svg}"></button>
 
-        <div style="font-size: 44px; color: #fd7e14;">
+        <div style="color: #fd7e14;">
             <img alt="Image" class="powered" th:src="@{/images/removeCard.svg}">
         </div>
-        <h3 style="margin-top: 16px;font-size: 1.3rem;">Supprimer cette carte bancaire?</h3>
-        <p style="font-size: .8rem; color : #535862;">Êtes-vous sûr(e) de vouloir supprimer cette carte ?</p>
+        <h3 style="font-family: Inter,sans-serif;font-weight: 600;margin-top: 20px;font-size: 16px;">Supprimer cette carte bancaire?</h3>
+        <p style="font-size: 14px; color : #535862;">Êtes-vous sûr(e) de vouloir supprimer cette carte ?</p>
 
-        <div style="margin-top: 24px; display: flex; justify-content: space-around;">
-            <button onclick="closeModal()" style="padding: 8px 16px; border: 1px solid #ccc; background: white; border-radius: 6px;">Annuler</button>
-            <button onclick="confirmDeleteCard()" style="Font family/font-family-body;padding: 8px 16px; background: #D92D20; color: white; border: none; border-radius: 6px;">Supprimer</button>
+        <div class="popup-actions" >
+            <button onclick="closeModalDeleteCard()" class="btn-cancel" >Annuler</button>
+            <button onclick="confirmDeleteCard()" class="btn-delete" >Supprimer</button>
         </div>
     </div>
 </div>
@@ -1535,7 +1723,6 @@
             arrow.classList.add("rotate-180");
           }
     }
-
     function selectCard(element) {
         const value = element.getAttribute('data-value');
         const brand = element.getAttribute('data-brand');
@@ -1555,16 +1742,19 @@
         // Update selected display
         const selectedText = document.getElementById('selectedText');
         const selectedCardIcon = document.getElementById('card-logo2');
-        selectedText.textContent = value;
+		let cardNumber = value;
+		let maskedCard = cardNumber.replace(/^(\d{6})\d+(?=\d{4})/, "$1**** ****");
+		maskedCard = maskedCard.replace(/(.{4})(?=.)/g, "$1 ").trim();
+		selectedText.textContent = maskedCard;
         console.log(brand);
         if (brand) {
             selectedCardIcon.src= '/images/'+brand+'.svg';
         } else {
             selectedCardIcon.src= 'none';
             cardSelectDiv.style.display = 'none';
-            /*toggleDropdown();
+            toggleDropdown();
             selectedCard.style.display = 'none';
-            dropdownList.style.display = 'none';*/
+            dropdownList.style.display = 'none';
             newCardDiv.style.display = 'block';
             dateExp.value = '';
             cvv.value = '';
@@ -1581,7 +1771,7 @@
         const items = document.querySelectorAll('.dropdown-item');
         items.forEach(item => item.classList.remove('selected'));
 
-        // Add to current one
+        // Add to current oneswal-toast
         element.classList.add('selected');
 
         // Optionally set selected values in hidden fields or do other logic
@@ -1908,7 +2098,7 @@ function checkCardType(idCarte, logo) {
         document.getElementById('confirmDeleteModal').style.display = 'flex'; // show modal
       }
 
-      function closeModal() {
+      function closeModalDeleteCard() {
         document.getElementById('confirmDeleteModal').style.display = 'none';
         cardToDelete = null;
       }
@@ -1921,22 +2111,25 @@ function checkCardType(idCarte, logo) {
         // Show success popup
            Swal.fire({
             imageUrl: '/images/success.svg', // 🔁 your icon path here
-             imageWidth: 60,
-             imageHeight: 60,
+             imageWidth: 35,
+             imageHeight: 35,
              title: 'Carte supprimée avec succès',
              showConfirmButton: false,
-             timer: 1000,
+             timer: 5000,
              toast: true,
              position: 'top',
+			 showCloseButton: true,
+			 closeButtonHtml: '<img src="/images/close.svg" style="width:35px;height:35px;">', // custom icon
              customClass: {
-               popup: 'swal-toast'
+               popup: 'swal-toast',
+			   closeButton: 'swal-close-btn-right'
              }
            });
         }
 
 
 
-        closeModal();
+        closeModalDeleteCard();
       };
 
 

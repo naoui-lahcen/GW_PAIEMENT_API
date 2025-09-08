@@ -9,7 +9,9 @@ package ma.m2m.gateway.controller;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.SocketTimeoutException;
+import java.net.URL;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -35,6 +37,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ma.m2m.gateway.dto.*;
 import ma.m2m.gateway.service.*;
+
+import org.apache.http.HttpHeaders;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -3122,8 +3126,26 @@ public class ProcessOutController {
 			String numAuto, Long numTrans, String token_gen, String pan_trame, String typecarte, String folder,
 			String file) throws IOException {
 
+		URL urlObj = new URL(urlcalback);
+		String userInfo = urlObj.getUserInfo(); // extract user:pass
+		Util.writeInFileTransaction(folder, file,"urlObj.getProtocol() : " + urlObj.getProtocol());
+		Util.writeInFileTransaction(folder, file,"urlObj.getHost() : " + urlObj.getHost());
+		Util.writeInFileTransaction(folder, file,"urlObj.getPath() : " + urlObj.getPath());
+		Util.writeInFileTransaction(folder, file,"urlObj.getPort() : " + urlObj.getPort());
+		HttpPost post;
+		if(urlObj.getPort()!=-1){
+			post = new HttpPost(urlObj.getProtocol() + "://" + urlObj.getHost()+":" +urlObj.getPort() + urlObj.getPath());
+		}else {
+			
+			post = new HttpPost(urlObj.getProtocol() + "://" + urlObj.getHost() + urlObj.getPath());
+		}
+		if (userInfo != null) {
+		    byte[] encodedAuth = java.util.Base64.getEncoder().encode(userInfo.getBytes(StandardCharsets.ISO_8859_1));
+		    String authHeader = "Basic " + new String(encodedAuth);
+		    post.setHeader(HttpHeaders.AUTHORIZATION, authHeader);
+		}
 		String result = "";
-		HttpPost post = new HttpPost(urlcalback);
+		//HttpPost post = new HttpPost(urlcalback);
 
 		String reqenvoi = idcommande + repauto + clepub + montant;
 		String signature = Util.hachInMD5(reqenvoi);

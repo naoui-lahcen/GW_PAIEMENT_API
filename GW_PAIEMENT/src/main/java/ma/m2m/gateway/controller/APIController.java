@@ -243,7 +243,7 @@ public class APIController {
 		}
 
 		// TODO: get cardnumber by token
-		if (!linkRequestDto.getToken().equals("") && linkRequestDto.getToken() != null && !linkRequestDto.getToken().equals("null")) {
+		if ( linkRequestDto.getToken() != null && !linkRequestDto.getToken().equals("") && !linkRequestDto.getToken().equals("null")) {
 			try {
 				CardtokenDto card = cardtokenService.findByIdMerchantAndToken(linkRequestDto.getMerchantid(), linkRequestDto.getToken());
 				if (card != null) {
@@ -886,7 +886,7 @@ public class APIController {
 				port = Integer.parseInt(s_port);
 
 				autorisationService.logMessage(file, "Switch TCP client V2 Connecting ...");
-
+				autorisationService.logMessage(file, "IP/PORT = ".concat(s_port).concat(" / ").concat(sw_s));
 				SwitchTCPClientV2 switchTCPClient = new SwitchTCPClientV2(sw_s, port);
 
 				boolean s_conn = switchTCPClient.isConnected();
@@ -5647,7 +5647,10 @@ public class APIController {
 						String numTrsStr = Util.formatNumTrans(String.valueOf(numTransaction));
 
 						// TODO: ajout cavv (cavv+eci) xid dans la trame
-						String champ_cavv = "";
+						autorisationService.logMessage(file, "envoie cavv avec 28 chr(espace) et eci avec " + eciParam);
+						String champ_cavv ="                            ".concat(eciParam);
+						autorisationService.logMessage(file, "champ_cavv [" + champ_cavv +"]");
+
 						/*
 						 * xid = threeDSServerTransID; if (cavv == null || eci == null) { champ_cavv =
 						 * null; autorisationService.logMessage(file,
@@ -5658,7 +5661,6 @@ public class APIController {
 						 * autorisationService.logMessage(file, "champ_cavv = null"); champ_cavv =
 						 * null; }
 						 */
-
 						boolean cvv_present = checkCvvPresence(cvv);
 						cvv_present = true; // TODO: a revoir
 						String first_auth = "";

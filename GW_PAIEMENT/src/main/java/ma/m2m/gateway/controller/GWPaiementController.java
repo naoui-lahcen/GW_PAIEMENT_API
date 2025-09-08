@@ -34,6 +34,8 @@ import ma.m2m.gateway.lydec.*;
 import ma.m2m.gateway.model.ReccuringTransaction;
 import ma.m2m.gateway.service.*;
 import ma.m2m.gateway.threedsecure.RequestEnvoieEmail;
+
+import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.StatusLine;
@@ -1153,7 +1155,7 @@ public class GWPaiementController {
 		try {
 			DemandePaiementDto dmdToEdit = demandePaiementService.findByIdDemande(demandeDto.getIddemande());
 
-			autorisationService.logMessage(file, "Etat demande : " + demandeDto.getEtatDemande());
+			autorisationService.logMessage(file, "Etat demande : " + dmdToEdit.getEtatDemande());
 			if (dmdToEdit.getEtatDemande().equals("SW_PAYE") || dmdToEdit.getEtatDemande().equals("PAYE")) {
 				dmdToEdit.setDemCvv("");
 				demandePaiementService.save(dmdToEdit);
@@ -1259,6 +1261,7 @@ public class GWPaiementController {
 		autorisationService.logMessage(file, "Fin controlleRisk");
 		
 		// TODO: saving card if flagSaveCarte true
+		autorisationService.logMessage(file, "isFlagSaveCarte : " + demandeDto.isFlagSaveCarte());
 		if (demandeDto.isFlagSaveCarte()) {
 			try {
 				List<CardtokenDto> checkCardNumber = cardtokenService.findByIdMerchantClientAndCardNumber(idclient,
@@ -2054,7 +2057,11 @@ public class GWPaiementController {
 						"coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
 				autorisationService.logMessage(file,"?data=" + data + "==&codecmr=" + merchantid);
 				if (dmd.getSuccessURL() != null) {
-					response.sendRedirect(dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" + merchantid);
+					if(dmd.getSuccessURL().contains("?")) {
+						response.sendRedirect(dmd.getSuccessURL() + "&data=" + data + "==&codecmr=" + merchantid);
+					} else {
+						response.sendRedirect(dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" + merchantid);
+					}
 					autorisationService.logMessage(file, "Fin payer ()");
 					return  null;
 				} else {
@@ -2675,7 +2682,7 @@ public class GWPaiementController {
 		try {
 			DemandePaiementDto dmdToEdit = demandePaiementService.findByIdDemande(demandeDto.getIddemande());
 
-			autorisationService.logMessage(file, "Etat demande : " + demandeDto.getEtatDemande());
+			autorisationService.logMessage(file, "Etat demande : " + dmdToEdit.getEtatDemande());
 			if (dmdToEdit.getEtatDemande().equals("SW_PAYE") || dmdToEdit.getEtatDemande().equals("PAYE")) {
 				dmdToEdit.setDemCvv("");
 				demandePaiementService.save(dmdToEdit);
@@ -2795,6 +2802,7 @@ public class GWPaiementController {
 		autorisationService.logMessage(file, "Fin controlleRisk");
 
 		// TODO: saving card if flagSaveCarte true
+		autorisationService.logMessage(file, "isFlagSaveCarte : " + demandeDto.isFlagSaveCarte());
 		if (demandeDto.isFlagSaveCarte()) {
 			try {
 				List<CardtokenDto> checkCardNumber = cardtokenService.findByIdMerchantClientAndCardNumber(idclient,
@@ -3816,7 +3824,11 @@ public class GWPaiementController {
 						"coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
 				autorisationService.logMessage(file,"?data=" + data + "==&codecmr=" + merchantid);
 				if (dmd.getSuccessURL() != null) {
-					response.sendRedirect(dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" + merchantid);
+					if(dmd.getSuccessURL().contains("?")) {
+						response.sendRedirect(dmd.getSuccessURL() + "&data=" + data + "==&codecmr=" + merchantid);
+					} else {
+						response.sendRedirect(dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" + merchantid);
+					}
 					autorisationService.logMessage(file, "Fin processpayment ()");
 					return  null;
 				} else {
@@ -4403,10 +4415,33 @@ public class GWPaiementController {
 	public static String sendPOST(String urlcalback, String clepub, String idcommande, String repauto, String montant,
 			String numAuto, Long numTrans, String token_gen, String pan_trame, String typecarte, String folder,
 			String file) throws IOException {
+		
+		
+		URL urlObj = new URL(urlcalback);
+		String userInfo = urlObj.getUserInfo(); // extract user:pass
+		Util.writeInFileTransaction(folder, file,"urlObj.getProtocol() : " + urlObj.getProtocol());
+		Util.writeInFileTransaction(folder, file,"urlObj.getHost() : " + urlObj.getHost());
+		Util.writeInFileTransaction(folder, file,"urlObj.getPath() : " + urlObj.getPath());
+		Util.writeInFileTransaction(folder, file,"urlObj.getPort() : " + urlObj.getPort());
+		HttpPost post;
+		if(urlObj.getPort()!=-1){
+			post = new HttpPost(urlObj.getProtocol() + "://" + urlObj.getHost()+":" +urlObj.getPort() + urlObj.getPath());
+		}else {
+			
+			post = new HttpPost(urlObj.getProtocol() + "://" + urlObj.getHost() + urlObj.getPath());
+		}
+		if (userInfo != null) {
+			Util.writeInFileTransaction(folder, file,"userInfo for basic auth : " + userInfo);
+		    byte[] encodedAuth = java.util.Base64.getEncoder().encode(userInfo.getBytes(StandardCharsets.ISO_8859_1));
+		    String authHeader = "Basic " + new String(encodedAuth);
+		    post.setHeader(HttpHeaders.AUTHORIZATION, authHeader);
+		}
 
+		// use the "clean" URL without credentials
+
+		
 		String result = "";
-		HttpPost post = new HttpPost(urlcalback);
-
+		//HttpPost post = new HttpPost(urlcalback);
 		String reqenvoi = idcommande + repauto + clepub + montant;
 		String signature = Util.hachInMD5(reqenvoi);
 		Util.writeInFileTransaction(folder, file,"Signature : " + signature);

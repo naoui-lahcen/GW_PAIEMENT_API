@@ -585,10 +585,12 @@ public class AutorisationServiceImpl implements AutorisationService {
 		}
 
 		// Validation et nettoyage des tokens et ID client
-		if (demandeDto.getToken() != null && (demandeDto.getToken().equals("") || demandeDto.getToken().equals(" "))) {
+		if (demandeDto.getToken() != null && (demandeDto.getToken().isEmpty() || demandeDto.getToken().equals(" "))) {
+			Util.writeInFileTransaction(folder, file, "demandeDto.getToken() != null");
 			demandeDto.setToken(null);
 		}
-		if (demandeDto.getIdClient() != null && (demandeDto.getIdClient().equals("") || demandeDto.getIdClient().equals(" "))) {
+		if (demandeDto.getIdClient() != null && (demandeDto.getIdClient().isEmpty() || demandeDto.getIdClient().equals(" "))) {
+			Util.writeInFileTransaction(folder, file, "demandeDto.getIdClient() != null");
 			demandeDto.setIdClient(null);
 		}
 
@@ -641,11 +643,11 @@ public class AutorisationServiceImpl implements AutorisationService {
 							if(!carte.isExpired()) {
 								cartes.add(carte); // Add if card not expired
 							}
-
-							demandeDto.setIdClient(null);
+							//01/09/2025 fixe RDS : impossibilité de mémoriser une autre carte pour le CCB
+							//demandeDto.setIdClient(null);
 						}
 					}
-					if(cartes.size() <= 0) {
+					if(cartes.isEmpty()) {
 						cartes = null;
 					}
 					Util.writeInFileTransaction(folder, file,"Cartes : " + cartes);
