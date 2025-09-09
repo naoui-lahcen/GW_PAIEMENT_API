@@ -149,6 +149,8 @@ public class ProcessOutController {
 	private final EmetteurService emetteurService;
 
 	private final APIParamsService apiParamsService;
+
+	private final ConfigUrlCmrService configUrlCmrService;
 	
 	public static final String DF_YYYY_MM_DD_HH_MM_SS = "yyyy-MM-dd HH:mm:ss";
 	public static final String FORMAT_DEFAUT = "yyyy-MM-dd";
@@ -160,7 +162,8 @@ public class ProcessOutController {
 			HistoAutoGateService histoAutoGateService, CommercantService commercantService, 
 			InfoCommercantService infoCommercantService, GalerieService galerieService,
 			CodeReponseService codeReponseService, ReccuringTransactionService recService,
-			EmetteurService emetteurService, APIParamsService apiParamsService) {
+			EmetteurService emetteurService, APIParamsService apiParamsService,
+								ConfigUrlCmrService configUrlCmrService) {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		dateF = LocalDateTime.now(ZoneId.systemDefault());
 		folder = dateF.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
@@ -175,6 +178,7 @@ public class ProcessOutController {
 		this.recService = recService;
 		this.emetteurService = emetteurService;
 		this.apiParamsService = apiParamsService;
+		this.configUrlCmrService = configUrlCmrService;
 	}
 	
 	@PostMapping("/napspayment/processout/acs")
@@ -1167,6 +1171,7 @@ public class ProcessOutController {
 							String merchnatidauth = "";
 							String dtdem = "";
 							String data = "";
+							boolean modeUrl = false;
 
 							try {
 								authnumber = hist.getHatNautemt();
@@ -1278,8 +1283,22 @@ public class ProcessOutController {
 								autorisationService.logMessage(file, "plainTxtSignature : " + plainTxtSignature);
 								logger.info("plainTxtSignature : " + plainTxtSignature);
 
+								ConfigUrlCmrDto configUrlCmrDto = null;
+								try {
+									configUrlCmrDto	= configUrlCmrService.findByCmrCode(merchantid);
+								} catch (Exception e) {
+									autorisationService.logMessage(file, "configUrlCmrService findByCmrCode Exception " + Util.formatException(e));
+								}
+
+								if(configUrlCmrDto != null) {
+									autorisationService.logMessage(file, "modeUrl : " + true);
+									modeUrl = true;
+								} else {
+									autorisationService.logMessage(file, "modeUrl : " + false);
+									modeUrl = false;
+								}
 								data = RSACrypto.encryptByPublicKeyWithMD5Sign(data_noncrypt,
-										current_infoCommercant.getClePub(), plainTxtSignature, folder, file);
+										current_infoCommercant.getClePub(), plainTxtSignature, folder, file, modeUrl);
 
 								autorisationService.logMessage(file, "data encrypt : " + data);
 								logger.info("data encrypt : " + data);
@@ -1295,9 +1314,13 @@ public class ProcessOutController {
 							if (coderep.equals("00")) {
 								if (dmd.getSuccessURL() != null) {
 									// TODO: envoie de la reponse normal
+									String suffix = "==&codecmr=" + merchantid;
+									if(modeUrl) {
+										suffix = RSACrypto.encodeRFC3986(suffix);
+									}
 									autorisationService.logMessage(file,
 											"coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
-									autorisationService.logMessage(file,"?data=" + data + "==&codecmr=" + merchantid);
+									autorisationService.logMessage(file,"?data=" + data + suffix);
 
 									response.sendRedirect(dmd.getSuccessURL());
 									autorisationService.logMessage(file, "Fin processoutRequest ()");

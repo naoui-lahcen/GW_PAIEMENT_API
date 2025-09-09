@@ -22,6 +22,7 @@ import javax.servlet.http.HttpSession;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ma.m2m.gateway.dto.*;
+import ma.m2m.gateway.service.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.tomcat.util.codec.binary.Base64;
@@ -43,14 +44,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import ma.m2m.gateway.encryption.RSACrypto;
-import ma.m2m.gateway.service.AutorisationService;
-import ma.m2m.gateway.service.CardtokenService;
-import ma.m2m.gateway.service.CodeReponseService;
-import ma.m2m.gateway.service.CommercantService;
-import ma.m2m.gateway.service.DemandePaiementService;
-import ma.m2m.gateway.service.GalerieService;
-import ma.m2m.gateway.service.HistoAutoGateService;
-import ma.m2m.gateway.service.InfoCommercantService;
 import ma.m2m.gateway.switching.SwitchTCPClientV2;
 import ma.m2m.gateway.threedsecure.CRes;
 import ma.m2m.gateway.threedsecure.ThreeDSecureResponse;
@@ -133,6 +126,8 @@ public class AppMobileController {
     //@Autowired
     private final CodeReponseService codeReponseService;
 
+    private final ConfigUrlCmrService configUrlCmrService;
+
     public static final String DF_YYYY_MM_DD_HH_MM_SS = "yyyy-MM-dd HH:mm:ss";
     public static final String FORMAT_DEFAUT = "yyyy-MM-dd";
 
@@ -142,7 +137,8 @@ public class AppMobileController {
     public AppMobileController(DemandePaiementService demandePaiementService, AutorisationService autorisationService,
                                HistoAutoGateService histoAutoGateService, CommercantService commercantService,
                                InfoCommercantService infoCommercantService, GalerieService galerieService,
-                               CardtokenService cardtokenService, CodeReponseService codeReponseService) {
+                               CardtokenService cardtokenService, CodeReponseService codeReponseService,
+                               ConfigUrlCmrService configUrlCmrService) {
         randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
         dateF = LocalDateTime.now(ZoneId.systemDefault());
         folder = dateF.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
@@ -155,6 +151,7 @@ public class AppMobileController {
         this.galerieService = galerieService;
         this.cardtokenService = cardtokenService;
         this.codeReponseService = codeReponseService;
+        this.configUrlCmrService = configUrlCmrService;
     }
 
     @PostMapping("/napspayment/ccb/acs")
@@ -915,6 +912,7 @@ public class AppMobileController {
                             String frais = "";
                             String montantSansFrais = "";
                             String data = "";
+                            boolean modeUrl = false;
                             try {
                                 authnumber = hist.getHatNautemt();
                                 coderep = hist.getHatCoderep();
@@ -975,8 +973,22 @@ public class AppMobileController {
                                 autorisationService.logMessage(file, "plainTxtSignature : " + plainTxtSignature);
                                 logger.info("plainTxtSignature : " + plainTxtSignature);
 
+                                ConfigUrlCmrDto configUrlCmrDto = null;
+                                try {
+                                    configUrlCmrDto	= configUrlCmrService.findByCmrCode(merchantid);
+                                } catch (Exception e) {
+                                    autorisationService.logMessage(file, "configUrlCmrService findByCmrCode Exception " + Util.formatException(e));
+                                }
+
+                                if(configUrlCmrDto != null) {
+                                    autorisationService.logMessage(file, "modeUrl : " + true);
+                                    modeUrl = true;
+                                } else {
+                                    autorisationService.logMessage(file, "modeUrl : " + false);
+                                    modeUrl = false;
+                                }
                                 data = RSACrypto.encryptByPublicKeyWithMD5Sign(data_noncrypt,
-                                        current_infoCommercant.getClePub(), plainTxtSignature, folder, file);
+                                        current_infoCommercant.getClePub(), plainTxtSignature, folder, file, modeUrl);
 
                                 autorisationService.logMessage(file, "data encrypt : " + data);
                                 logger.info("data encrypt : " + data);
@@ -989,16 +1001,20 @@ public class AppMobileController {
                                         "Erreur lors du traitement de sortie, transaction abouti redirection to SuccessUrl");
                             }
                             if (coderep.equals("00")) {
-                                autorisationService.logMessage(file,
-                                        "coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
-                                autorisationService.logMessage(file,"?data=" + data + "==&codecmr=" + merchantid);
                                 if (dmd.getSuccessURL() != null) {
+                                    String suffix = "==&codecmr=" + merchantid;
+                                    if(modeUrl) {
+                                        suffix = RSACrypto.encodeRFC3986(suffix);
+                                    }
+                                    autorisationService.logMessage(file,
+                                            "coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
+                                    autorisationService.logMessage(file,"?data=" + data + suffix);
                                     if(dmd.getSuccessURL().contains("?")) {
                                         response.sendRedirect(
-                                                dmd.getSuccessURL() + "&data=" + data + "==&codecmr=" + merchantid);
+                                                dmd.getSuccessURL() + "&data=" + data + suffix);
                                     } else {
                                         response.sendRedirect(
-                                                dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" + merchantid);
+                                                dmd.getSuccessURL() + "?data=" + data + suffix);
                                     }
 
                                     autorisationService.logMessage(file, "Fin processRequestMobile ()");
@@ -2548,6 +2564,7 @@ public class AppMobileController {
             autorisationService.logMessage(file, "Preparing autorization api response");
 
             String authnumber = "", coderep = "", motif, merchnatidauth, dtdem = "", frais = "", montantSansFrais = "", data = "";
+            boolean modeUrl = false;
 
             try {
                 authnumber = hist.getHatNautemt();
@@ -2607,8 +2624,22 @@ public class AppMobileController {
 
                 autorisationService.logMessage(file, "plainTxtSignature : " + plainTxtSignature);
 
+                ConfigUrlCmrDto configUrlCmrDto = null;
+                try {
+                    configUrlCmrDto	= configUrlCmrService.findByCmrCode(merchantid);
+                } catch (Exception e) {
+                    autorisationService.logMessage(file, "configUrlCmrService findByCmrCode Exception " + Util.formatException(e));
+                }
+
+                if(configUrlCmrDto != null) {
+                    autorisationService.logMessage(file, "modeUrl : " + true);
+                    modeUrl = true;
+                } else {
+                    autorisationService.logMessage(file, "modeUrl : " + false);
+                    modeUrl = false;
+                }
                 data = RSACrypto.encryptByPublicKeyWithMD5Sign(data_noncrypt, current_infoCommercant.getClePub(),
-                        plainTxtSignature, folder, file);
+                        plainTxtSignature, folder, file, modeUrl);
 
                 autorisationService.logMessage(file, "data encrypt : " + data);
 
@@ -2621,14 +2652,18 @@ public class AppMobileController {
             }
 
             if (coderep.equals("00")) {
-                autorisationService.logMessage(file,
-                        "coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
-                autorisationService.logMessage(file,"?data=" + data + "==&codecmr=" + merchantid);
                 if (dmd.getSuccessURL() != null) {
+                    String suffix = "==&codecmr=" + merchantid;
+                    if(modeUrl) {
+                        suffix = RSACrypto.encodeRFC3986(suffix);
+                    }
+                    autorisationService.logMessage(file,
+                            "coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
+                    autorisationService.logMessage(file,"?data=" + data + suffix);
                     if(dmd.getSuccessURL().contains("?")) {
-                        response.sendRedirect(dmd.getSuccessURL() + "&data=" + data + "==&codecmr=" + merchantid);
+                        response.sendRedirect(dmd.getSuccessURL() + "&data=" + data + suffix);
                     } else {
-                        response.sendRedirect(dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" + merchantid);
+                        response.sendRedirect(dmd.getSuccessURL() + "?data=" + data + suffix);
                     }
                     autorisationService.logMessage(file, "Fin recharger ()");
                     return  null;

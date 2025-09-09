@@ -54,14 +54,14 @@ public interface HistoAutoGateDao extends JpaRepository<HistoAutoGate,Long> {
 	@Query(value = "select SUM(HAT_MONTANT) as hatMontant from MXGATEWAY.HISTOAUTO_GATE where "
 			+ "HAT_NUMCMR = (?1) "
 			+ "AND HAT_CODEREP = '00' "
-			+ "AND HAT_DATDEM LIKE (?2)", nativeQuery = true)
+			+ "AND HAT_DATDEM = (?2)", nativeQuery = true)
 	Double getCommercantGlobalFlowPerDay(String numCmr, String dateDem);
 	
 	@Query(value = "select * from MXGATEWAY.HISTOAUTO_GATE where "
 			+ "HAT_NUMCMR = (?1) "
-			+ "AND (HAT_PORTEUR = (?2) or HAT_PORTEUR like (?3) )"
+			+ "AND HAT_PORTEUR = (?2) "
 			+ "AND HAT_CODEREP = '00' "
-			+ "AND HAT_DATDEM LIKE (?4)", nativeQuery = true)
-	List<HistoAutoGate> getPorteurMerchantFlowPerDay(String numCmr, String cardnumber, String cardnumber1, String dateDem);
+			+ "AND HAT_DATDEM = (?3)", nativeQuery = true)
+	List<HistoAutoGate> getPorteurMerchantFlowPerDay(String numCmr, String cardnumber, String dateDem);
 
 }

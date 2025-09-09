@@ -546,28 +546,42 @@
          // Payment Cancellation
          // ----------------------------
 
-         function cancelPayment() {
-            const iddemande = document.getElementById('iddemande')?.value;
-            if (!iddemande) {
-               console.error('No iddemande found in the hidden input field.');
-               return;
-            }
+		 function cancelPayment() {
+		     const iddemande = document.getElementById('iddemande')?.value;
+		     if (!iddemande) {
+		         console.error('No iddemande found in the hidden input field.');
+		         return;
+		     }
 
-            console.log('Cancelling payment with iddemande:', iddemande);
-            postData('/cancelPayment', { iddemande })
-                    .then((response) => {
-                       if (response.ok) {
-                          if (window.history.length > 1) {
-                             window.history.back();
-                          } else {
-                             window.location.href = '/error';
-                          }
-                       } else {
-                          console.error('Failed to cancel payment.');
-                       }
-                    })
-                    .catch((error) => console.error('Error:', error));
-         }
+		     console.log('Cancelling payment with iddemande:', iddemande);
+
+		     postData('/cancelPayment', { iddemande })
+		         .then((response) => {
+		             if (!response.ok) {
+		                 throw new Error('Failed to cancel payment.');
+		             }
+		             return response.json(); // parse JSON body
+		         })
+		         .then((data) => {
+		             console.log('Cancel response:', data);
+
+		             if (data.failurl) {
+		                 // Redirect to the fail URL returned by backend
+		                 window.location.href = data.failurl;
+		             } else if (data.message) {
+		                 alert(data.message); // fallback message
+						 if (window.history.length > 1) {
+	                              window.history.back();
+	                           } else {
+	                              window.location.href = '/error';
+	                           }
+		             }
+		         })
+		         .catch((error) => {
+		             console.error('Error:', error);
+		             window.location.href = '/error';
+		         });
+		 }
 
          // ----------------------------
          // Input Validation

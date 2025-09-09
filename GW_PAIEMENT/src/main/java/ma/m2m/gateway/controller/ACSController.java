@@ -160,6 +160,8 @@ public class ACSController {
 	private final ReccuringTransactionService recService;
 
 	private final EmetteurService emetteurService;
+
+	private final ConfigUrlCmrService configUrlCmrService;
 	
 	public static final String DF_YYYY_MM_DD_HH_MM_SS = "yyyy-MM-dd HH:mm:ss";
 	public static final String FORMAT_DEFAUT = "yyyy-MM-dd";
@@ -175,7 +177,7 @@ public class ACSController {
 			CardtokenService cardtokenService, CodeReponseService codeReponseService,
 			FactureLDService factureLDService, ArticleDGIService articleDGIService,
 			CFDGIService cfdgiService, ReccuringTransactionService recService,
-	        EmetteurService emetteurService) {
+	        EmetteurService emetteurService, ConfigUrlCmrService configUrlCmrService) {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		file = "R_ACS_" + randomWithSplittableRandom;
 		date = LocalDateTime.now(ZoneId.systemDefault());
@@ -193,6 +195,7 @@ public class ACSController {
 		this.cfdgiService = cfdgiService;
 		this.recService = recService;
 		this.emetteurService = emetteurService;
+		this.configUrlCmrService = configUrlCmrService;
 	}
 
 	@PostMapping("/napspayment/acs")
@@ -546,18 +549,38 @@ public class ACSController {
 											"data_noncrypt_token : " + data_noncrypt_token);
 									logger.info("data_noncrypt_token : " + data_noncrypt_token);
 
+									ConfigUrlCmrDto configUrlCmrDto = null;
+									try {
+										configUrlCmrDto	= configUrlCmrService.findByCmrCode(merchantid);
+									} catch (Exception e) {
+										autorisationService.logMessage(file, "configUrlCmrService findByCmrCode Exception " + Util.formatException(e));
+									}
+									boolean modeUrl = false;
+									if(configUrlCmrDto != null) {
+										autorisationService.logMessage(file, "modeUrl : " + true);
+										modeUrl = true;
+									} else {
+										autorisationService.logMessage(file, "modeUrl : " + false);
+										modeUrl = false;
+									}
+
 									data_token = RSACrypto.encryptByPublicKeyWithMD5Sign(
 											data_noncrypt_token, current_infoCommercant.getClePub(),
-											plainTxtSignature, folder, file);
+											plainTxtSignature, folder, file, modeUrl);
 
 									autorisationService.logMessage(file,
 											"data_token encrypt : " + data_token);
 									logger.info("data_token encrypt : " + data_token);
 									
 									autorisationService.logMessage(file, "redirect to SuccessURL : " + dmd.getSuccessURL());
-									
+
+									String suffix = "==&codecmr=" + merchantid;
+									if(modeUrl) {
+										suffix = RSACrypto.encodeRFC3986(suffix);
+									}
+
 									response.sendRedirect(dmd.getSuccessURL() + "?data=" + data_token
-											+ "==&codecmr=" + merchantid);
+											+ suffix);
 									autorisationService.logMessage(file, "Fin processRequest ()");
 									return null; // TODO: Terminer le traitement ici après avoir envoyé la réponse
 								} catch (Exception e) {
@@ -1488,6 +1511,7 @@ public class ACSController {
 							String merchnatidauth = "";
 							String dtdem = "";
 							String data = "";
+							boolean modeUrl = false;
 							try {
 								authnumber = hist.getHatNautemt();
 								coderep = hist.getHatCoderep();
@@ -1598,8 +1622,22 @@ public class ACSController {
 								autorisationService.logMessage(file, "plainTxtSignature : " + plainTxtSignature);
 								logger.info("plainTxtSignature : " + plainTxtSignature);
 
+								ConfigUrlCmrDto configUrlCmrDto = null;
+								try {
+									configUrlCmrDto	= configUrlCmrService.findByCmrCode(merchantid);
+								} catch (Exception e) {
+									autorisationService.logMessage(file, "configUrlCmrService findByCmrCode Exception " + Util.formatException(e));
+								}
+
+								if(configUrlCmrDto != null) {
+									autorisationService.logMessage(file, "modeUrl : " + true);
+									modeUrl = true;
+								} else {
+									autorisationService.logMessage(file, "modeUrl : " + false);
+									modeUrl = false;
+								}
 								data = RSACrypto.encryptByPublicKeyWithMD5Sign(data_noncrypt,
-										current_infoCommercant.getClePub(), plainTxtSignature, folder, file);
+										current_infoCommercant.getClePub(), plainTxtSignature, folder, file, modeUrl);
 
 								autorisationService.logMessage(file, "data encrypt : " + data);
 								logger.info("data encrypt : " + data);
@@ -1615,12 +1653,16 @@ public class ACSController {
 							if (coderep.equals("00")) {
 								if (dmd.getSuccessURL() != null) {
 									// TODO: envoie de la reponse normal
+									String suffix = "==&codecmr=" + merchantid;
+									if(modeUrl) {
+										suffix = RSACrypto.encodeRFC3986(suffix);
+									}
 									autorisationService.logMessage(file,
 											"coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
+									autorisationService.logMessage(file,"?data=" + data + suffix);
 									if(dmd.getSuccessURL().contains("?")) {
-										response.sendRedirect(dmd.getSuccessURL() + "&data=" + data + "==&codecmr=" + merchantid);
+										response.sendRedirect(dmd.getSuccessURL() + "&data=" + data + suffix);
 									} else {
-										autorisationService.logMessage(file,"?data=" + data + "==&codecmr=" + merchantid);
 										response.sendRedirect(
 												dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" + merchantid);
 									}

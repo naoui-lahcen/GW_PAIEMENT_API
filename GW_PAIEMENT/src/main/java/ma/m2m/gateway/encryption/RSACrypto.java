@@ -1,5 +1,6 @@
 package ma.m2m.gateway.encryption;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.security.KeyFactory;
 import java.security.interfaces.RSAPrivateKey;
@@ -66,7 +67,7 @@ public final class RSACrypto {
 		return encryptedData;
 	}
 
-	public static String encryptByPublicKeyWithMD5Sign(String data, String publicKeyStr, String plainTxtSignature, String folder, String file)
+	public static String encryptByPublicKeyWithMD5Sign(String data, String publicKeyStr, String plainTxtSignature, String folder, String file, boolean modeUrl)
 			throws Exception {
 		String encryptedData = "";
 		try {
@@ -78,10 +79,22 @@ public final class RSACrypto {
 			// Encrypt data
 			Cipher cipher = Cipher.getInstance(keyFactory.getAlgorithm());
 			cipher.init(Cipher.ENCRYPT_MODE, publicKey);
+			// Add signature
 			String signature = HashingHelper.hachInMD5(plainTxtSignature, folder, file);
 			data += "+signature=" + signature;
 
-			encryptedData = new String(Base64.encodeBase64(cipher.doFinal(data.getBytes())));
+			// Chiffrement en Base64
+			byte[] cipherBytes = cipher.doFinal(data.getBytes(StandardCharsets.UTF_8));
+			String base64Encoded = new String(org.apache.commons.codec.binary.Base64.encodeBase64(cipherBytes));
+
+			// 👉 Condition : si x existe → encodage RFC3986
+			if (modeUrl) {
+				encryptedData = encodeRFC3986(base64Encoded);
+			} else {
+				encryptedData = base64Encoded; // ton code inchangé
+			}
+			// old
+			//encryptedData = new String(Base64.encodeBase64(cipher.doFinal(data.getBytes())));
 		} catch (Exception e) {
 			traces.writeInFileTransaction(folder, file,"[ERROR-RSA-ENCRYPTION] RSA Public key Encryption with md5 signature has failed");
 			throw e;
@@ -91,6 +104,30 @@ public final class RSACrypto {
 
 	public static byte[] decodeKeyInBase64Format(String key) {
 		return Base64.decodeBase64(key.getBytes());
+	}
+
+	// =====================
+	// Encodage RFC 3986
+	// =====================
+	public static String encodeRFC3986(String value) {
+		StringBuilder result = new StringBuilder();
+		for (byte b : value.getBytes(StandardCharsets.UTF_8)) {
+			char c = (char) b;
+			if (isUnreserved(c)) {
+				result.append(c);
+			} else {
+				result.append('%');
+				result.append(String.format("%02X", b));
+			}
+		}
+		return result.toString();
+	}
+
+	private static boolean isUnreserved(char c) {
+		return (c >= 'A' && c <= 'Z') ||
+				(c >= 'a' && c <= 'z') ||
+				(c >= '0' && c <= '9') ||
+				c == '-' || c == '_' || c == '.' || c == '~';
 	}
 
 	public static String decryptByPrivateKey(byte[] data, String privateKeyStr, String folder, String file) throws Exception {

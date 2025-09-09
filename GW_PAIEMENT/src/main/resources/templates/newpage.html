@@ -147,7 +147,7 @@
                    display: flex;
                    align-items: center;
                    cursor: pointer;
-				   margin-bottom: 36px;
+				   margin-bottom: 10px;
                }
 
                .custom-checkbox-label .terms-link {
@@ -319,7 +319,7 @@
         }
 
        .form-group {
-            margin-bottom: 16px;
+            margin-bottom: 20px;
        }
        .form-group label {
            display: block;
@@ -701,7 +701,7 @@
                 .numcarte input {
                     width: 100%;
                     padding-right: 40px;
-                    height: 40px;
+                    height: 48px;
                 }
                 .numcarte img {
                     position: absolute;
@@ -1397,7 +1397,7 @@
                         <span th:text="${error}"></span>
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group" >
                         <label class="labInput">Nom sur la carte</label>
                         <input class="form-control" style="border-radius: 8px 8px 8px 8px;"
                                placeholder="Entrez le nom du porteur de la carte"
@@ -1543,9 +1543,9 @@
 
 
                     <!-- Input caché si des cartes existent -->
-                    <div th:if="${demandeDto.cartes == null or #lists.size(demandeDto.cartes) == 0}" class="form-group numcarte">
+                    <div th:if="${demandeDto.cartes == null or #lists.size(demandeDto.cartes) == 0}" class="form-group numcarte" style="margin-bottom: 0px;">
                         <input id="num" oninput="checkCardType('num', 'card-logo')" placeholder="1234 1234 1234 1234" required="required"
-                               th:field="*{demPan}" type="text">
+                               th:field="*{demPan}" type="text" style="border-radius: 8px 8px 0px 0px;">
                         <img alt="Image" id="card-logo" th:src="@{/images/visa_mc.svg}">
                     </div>
                     <!-- Input caché si des cartes existent -->
@@ -1554,7 +1554,7 @@
                                th:field="*{demPan}" type="text" style="border-radius: 8px 8px 0px 0px;">
                         <img alt="Image" id="card-logo1" th:src="@{/images/visa_mc.svg}">
                     </div>
-                    <div class="form-group d-flex gap-2">
+                    <div class="form-group d-flex gap-2" style="margin-bottom: 24px;">
                         <div  style="width: 100%">
                             <input class="form-control" style="border-radius: 0px 0px 0px 8px; margin-right: 0; border-top: 0px;border-right: 0px;" id="dateExp" placeholder="MM / AA" th:field="*{expery}" type="text">
                         </div>
@@ -1620,10 +1620,10 @@
 
                     <!-- Sauvegarder la carte -->
                     <div id="saveCardDiv"
-                         class="form-group custom-checkbox-wrapper"
+                         class="form-group custom-checkbox-wrapper" 
                          th:attr="style=${demandeDto.idClient != null} ? 'display:none;' : 'display:none;'">
                         <input type="checkbox" id="svCarte" th:field="*{flagSaveCarte}" />
-                        <label for="svCarte" class="d-flex align-items-center" style="cursor:pointer;">
+                        <label for="svCarte" class="d-flex align-items-center" style="cursor:pointer;margin-bottom: 0px;">
                             <span class="custom-checkbox-style"></span>
                             <span class="custom-checkbox-label-text ml-2">Enregistrer cette carte pour mes prochains paiements</span>
                         </label>
@@ -1636,7 +1636,7 @@
                     <input type="hidden" th:field="*{tokencommande}" class="form-control">
                     <input type="hidden" th:field="*{failURL}" class="form-control">
 
-                    <div class="form-group text-center">
+                    <div class="form-group text-center" style="margin-top: 32px;">
                         <button class="subscribe-btn">
                             <img alt="flch" class="flch" th:src="@{/images/flechpayer.svg}">
                             <span class="payer">Payer</span>
@@ -1794,6 +1794,7 @@
              console.log('entrer else');
              dateExp.value = '';
              nvnum.value='';
+			 toggleDropdown();
         }
 
         // Close dropdown

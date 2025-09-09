@@ -177,6 +177,8 @@ public class GWPaiementController {
 
 	private final APIParamsService apiParamsService;
 
+	private final ConfigUrlCmrService configUrlCmrService;
+
 	private LocalDateTime date;
 	private String folder;
 	private String file;
@@ -197,7 +199,7 @@ public class GWPaiementController {
 			CardtokenService cardtokenService, CodeReponseService codeReponseService,
 			FactureLDService factureLDService, ArticleDGIService articleDGIService,
 			CFDGIService cfdgiService,ReccuringTransactionService recService,
-			APIParamsService apiParamsService) {
+			APIParamsService apiParamsService, ConfigUrlCmrService configUrlCmrService) {
 		date = LocalDateTime.now(ZoneId.systemDefault());
 		folder = date.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
 		this.demandePaiementService = demandePaiementService;
@@ -212,6 +214,7 @@ public class GWPaiementController {
 		this.cfdgiService = cfdgiService;
 		this.recService = recService;
 		this.apiParamsService = apiParamsService;
+		this.configUrlCmrService = configUrlCmrService;
 	}
 
 	//@RequestMapping(path = "/")
@@ -1977,6 +1980,7 @@ public class GWPaiementController {
 			autorisationService.logMessage(file, "Preparing autorization api response");
 
 			String authnumber, coderep, motif, merchnatidauth, dtdem = "", data = "";
+			boolean modeUrl = false;
 
 			try {
 				authnumber = hist.getHatNautemt();
@@ -2040,8 +2044,22 @@ public class GWPaiementController {
 				autorisationService.logMessage(file, "plainTxtSignature : " + plainTxtSignature);
 				logger.info("plainTxtSignature : " + plainTxtSignature);
 
+				ConfigUrlCmrDto configUrlCmrDto = null;
+				try {
+					configUrlCmrDto	= configUrlCmrService.findByCmrCode(merchantid);
+				} catch (Exception e) {
+					autorisationService.logMessage(file, "configUrlCmrService findByCmrCode Exception " + Util.formatException(e));
+				}
+
+				if(configUrlCmrDto != null) {
+					autorisationService.logMessage(file, "modeUrl : " + true);
+					modeUrl = true;
+				} else {
+					autorisationService.logMessage(file, "modeUrl : " + false);
+					modeUrl = false;
+				}
 				data = RSACrypto.encryptByPublicKeyWithMD5Sign(data_noncrypt, current_infoCommercant.getClePub(),
-						plainTxtSignature, folder, file);
+						plainTxtSignature, folder, file, modeUrl);
 
 				autorisationService.logMessage(file, "data encrypt : " + data);
 				logger.info("data encrypt : " + data);
@@ -2053,14 +2071,18 @@ public class GWPaiementController {
 						"Erreur lors du traitement de sortie, transaction abouti redirection to SuccessUrl");
 			}
 			if (coderep.equals("00")) {
-				autorisationService.logMessage(file,
-						"coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
-				autorisationService.logMessage(file,"?data=" + data + "==&codecmr=" + merchantid);
 				if (dmd.getSuccessURL() != null) {
+					String suffix = "==&codecmr=" + merchantid;
+					if(modeUrl) {
+						suffix = RSACrypto.encodeRFC3986(suffix);
+					}
+					autorisationService.logMessage(file,
+							"coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
+					autorisationService.logMessage(file,"?data=" + data + suffix);
 					if(dmd.getSuccessURL().contains("?")) {
-						response.sendRedirect(dmd.getSuccessURL() + "&data=" + data + "==&codecmr=" + merchantid);
+						response.sendRedirect(dmd.getSuccessURL() + "&data=" + data + suffix);
 					} else {
-						response.sendRedirect(dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" + merchantid);
+						response.sendRedirect(dmd.getSuccessURL() + "?data=" + data + suffix);
 					}
 					autorisationService.logMessage(file, "Fin payer ()");
 					return  null;
@@ -2265,7 +2287,12 @@ public class GWPaiementController {
 					demandePaiement = demandePaiementService.save(demandePaiement);
 					autorisationService.logMessage(file, "cancelPayment : Modification etat_demande to P_ABDNEE_CLC_ANNULER idDemande/Commande : " + idDemande +"/" + demandePaiement.getCommande());
 				}
-				return ResponseEntity.ok(Collections.singletonMap("message", "Paiement annulé avec succès"));
+				 	String failUrl = demandePaiement.getFailURL();
+		            if (failUrl != null && !failUrl.equals("")) {
+						return ResponseEntity.ok(Collections.singletonMap("failurl", failUrl));
+		            } else {
+						return ResponseEntity.ok(Collections.singletonMap("message", "Paiement annulé avec succès"));
+		            }
 			}
 		} catch (Exception e) {
 			autorisationService.logMessage(file, "cancelPayment : Erreur lors du traitement de l'annulation idDemande : " + idDemande);
@@ -3744,6 +3771,7 @@ public class GWPaiementController {
 			autorisationService.logMessage(file, "Preparing autorization api response");
 
 			String authnumber = "", coderep = "", motif, merchnatidauth, dtdem = "",frais = "", montantSansFrais = "", data = "";
+			boolean modeUrl = false;
 
 			try {
 				authnumber = hist.getHatNautemt();
@@ -3806,8 +3834,22 @@ public class GWPaiementController {
 				autorisationService.logMessage(file, "plainTxtSignature : " + plainTxtSignature);
 				logger.info("plainTxtSignature : " + plainTxtSignature);
 
+				ConfigUrlCmrDto configUrlCmrDto = null;
+				try {
+					configUrlCmrDto	= configUrlCmrService.findByCmrCode(merchantid);
+				} catch (Exception e) {
+					autorisationService.logMessage(file, "configUrlCmrService findByCmrCode Exception " + Util.formatException(e));
+				}
+
+				if(configUrlCmrDto != null) {
+					autorisationService.logMessage(file, "modeUrl : " + true);
+					modeUrl = true;
+				} else {
+					autorisationService.logMessage(file, "modeUrl : " + false);
+					modeUrl = false;
+				}
 				data = RSACrypto.encryptByPublicKeyWithMD5Sign(data_noncrypt, current_infoCommercant.getClePub(),
-						plainTxtSignature, folder, file);
+						plainTxtSignature, folder, file, modeUrl);
 
 				autorisationService.logMessage(file, "data encrypt : " + data);
 				logger.info("data encrypt : " + data);
@@ -3820,14 +3862,18 @@ public class GWPaiementController {
 			}
 
 			if (coderep.equals("00")) {
-				autorisationService.logMessage(file,
-						"coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
-				autorisationService.logMessage(file,"?data=" + data + "==&codecmr=" + merchantid);
 				if (dmd.getSuccessURL() != null) {
+					String suffix = "==&codecmr=" + merchantid;
+					if(modeUrl) {
+						suffix = RSACrypto.encodeRFC3986(suffix);
+					}
+					autorisationService.logMessage(file,
+							"coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
+					autorisationService.logMessage(file,"?data=" + data + suffix);
 					if(dmd.getSuccessURL().contains("?")) {
-						response.sendRedirect(dmd.getSuccessURL() + "&data=" + data + "==&codecmr=" + merchantid);
+						response.sendRedirect(dmd.getSuccessURL() + "&data=" + data + suffix);
 					} else {
-						response.sendRedirect(dmd.getSuccessURL() + "?data=" + data + "==&codecmr=" + merchantid);
+						response.sendRedirect(dmd.getSuccessURL() + "?data=" + data + suffix);
 					}
 					autorisationService.logMessage(file, "Fin processpayment ()");
 					return  null;

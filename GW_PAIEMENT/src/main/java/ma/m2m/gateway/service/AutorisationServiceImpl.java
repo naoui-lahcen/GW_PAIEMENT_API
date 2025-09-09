@@ -510,6 +510,7 @@ public class AutorisationServiceImpl implements AutorisationService {
 						&& controlRiskCmr.getNumberOfTransactionCardPerDay() > 0)) {
 					porteurFlowPerDay = histoAutoGateService.getPorteurMerchantFlowPerDay(demandeDto.getComid(),
 							demandeDto.getDemPan());
+					System.out.println("porteurFlowPerDay size : " + porteurFlowPerDay.size());
 				}
 			}
 			msg = riskAnalysis.executeRiskControls(demandeDto.getComid(), demandeDto.getMontant(),
