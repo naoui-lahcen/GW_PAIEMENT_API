@@ -35,5 +35,6 @@ public class ThreeDSecureRequest {
 	private String mcc;
 	private String merchantCountryCode;
 	private String nomCommercant;
+	private String cardholderName;
 
 }

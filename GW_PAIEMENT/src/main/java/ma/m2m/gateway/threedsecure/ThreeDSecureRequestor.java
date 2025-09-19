@@ -118,6 +118,7 @@ public class ThreeDSecureRequestor {
 			authInitReqPCIDSS.setAcquirerMerchantID(authInitRequest.getAcquirerMerchantID());
 			authInitReqPCIDSS.setCardExpiryDate(authInitRequest.getCardExpiryDate());
 			authInitReqPCIDSS.setPurchaseDate(authInitRequest.getPurchaseDate());
+			authInitReqPCIDSS.setCardholderName(authInitRequest.getCardholderName());
 			
 			final String jsonBodyPCIDSS = gson.toJson(authInitReqPCIDSS);
 			Util.writeInFileTransaction(logFolder, logFile, "*********** jsonBodyPCIDSS ***********" + jsonBodyPCIDSS.toString());

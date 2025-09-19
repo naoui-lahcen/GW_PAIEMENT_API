@@ -133,6 +133,12 @@ public class GWPaiementController {
 
 	@Value("${key.DGI_PROD}")
 	private String dgiProd;
+	
+	@Value("${key.CAN_PREPROD}")
+	private String canPreprod;
+
+	@Value("${key.CAN_PROD}")
+	private String canProd;
 
 	@Value("${key.LIEN_ENVOIE_EMAIL_DGI}")
 	private String lienEnvoieEmailDgi;
@@ -142,6 +148,9 @@ public class GWPaiementController {
 	
 	@Value("${key.TIMEOUT}")
 	private int timeout;
+
+	@Value("${key.ECI}")
+	private String eciParam;
 	
 	//@Autowired
 	private final DemandePaiementService demandePaiementService;
@@ -787,11 +796,16 @@ public class GWPaiementController {
 				page = "napspaymentdgi";
 			}
 			
+			if (demandeDto.getComid().equals(canPreprod) || demandeDto.getComid().equals(canProd)) {
+				
+				page = "napspaymentcan";
+			}
+			
 		}
 
 		autorisationService.logMessage(file, "*********** End affichage page ************** ");
 
-		return page;
+		return "napspayment";
 	}
 
 	@RequestMapping(value = "/napspayment/authorization/lydec/token/{token}", method = RequestMethod.GET)
@@ -1379,6 +1393,10 @@ public class GWPaiementController {
 
 		/** dans la preprod les tests sans 3DSS on commente l'appel 3DSS et on mj reponseMPI="Y" */
 		autorisationService.logMessage(file, "environement : " + environement);
+		/*if(cardnumber.startsWith("4") && merchantid.equals("2230513")) {
+			//autorisationService.logMessage(file, "annulation authentification pour pathe des cartes VISA");
+			//threeDsecureResponse.setReponseMPI("Y");
+		}else*/
 		if(environement.equals("PREPROD")) {
 			threeDsecureResponse.setReponseMPI("Y");
 		} else {
@@ -1500,6 +1518,11 @@ public class GWPaiementController {
 			} else {
 				autorisationService.logMessage(file, "champ_cavv = null");
 				champ_cavv = null;
+			}
+			if(champ_cavv == null) {
+				autorisationService.logMessage(file, "envoie cavv avec 28 chr(espace) et eci avec " + eciParam);
+				champ_cavv = "                            "+eciParam;
+				autorisationService.logMessage(file, "champ_cavv [" + champ_cavv +"]");
 			}
 
 			boolean cvv_present = checkCvvPresence(cvv);

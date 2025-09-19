@@ -63,5 +63,6 @@ public class AuthInitRequest {
 	private String purchaseCurrency;
 	private String merchantName;
 	private String purchaseDate;
+	private String cardholderName;
 	
 }

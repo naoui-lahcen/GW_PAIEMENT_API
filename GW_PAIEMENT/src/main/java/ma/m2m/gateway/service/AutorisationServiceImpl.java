@@ -257,6 +257,13 @@ public class AutorisationServiceImpl implements AutorisationService {
 		authInitRequest.setAcquirerMerchantID(demandeDto.getComid());
 		authInitRequest.setCardExpiryDate(demandeDto.getExpery());
 		authInitRequest.setPurchaseDate(dtf.format(now));
+		String cardHolderName = "Name";
+		if(demandeDto.getNom() != null && demandeDto.getPrenom() != null) {
+			cardHolderName = demandeDto.getNom() + demandeDto.getPrenom();
+		} else if(demandeDto.getPrenom() != null && demandeDto.getNom() == null) {
+			cardHolderName = demandeDto.getPrenom();
+		}
+		authInitRequest.setCardholderName(cardHolderName);
 
 		threeDSecureRequestor.threeDSecureRequest(authInitRequest);
 
@@ -335,6 +342,13 @@ public class AutorisationServiceImpl implements AutorisationService {
 		authInitRequest.setAcquirerMerchantID(demandeDto.getComid());
 		authInitRequest.setCardExpiryDate(demandeDto.getExpery());
 		authInitRequest.setPurchaseDate(dtf.format(now));
+		String cardHolderName = "Name";
+		if(demandeDto.getNom() != null && demandeDto.getPrenom() != null) {
+			cardHolderName = demandeDto.getNom() + demandeDto.getPrenom();
+		} else if(demandeDto.getPrenom() != null && demandeDto.getNom() == null) {
+			cardHolderName = demandeDto.getPrenom();
+		}
+		authInitRequest.setCardholderName(cardHolderName);
 
 		threeDSecureRequestor.threeDSecureRequest(authInitRequest);
 
@@ -413,6 +427,13 @@ public class AutorisationServiceImpl implements AutorisationService {
 		authInitRequest.setAcquirerMerchantID(demandeDto.getComid());
 		authInitRequest.setCardExpiryDate(demandeDto.getExpery());
 		authInitRequest.setPurchaseDate(dtf.format(now));
+		String cardHolderName = "Name";
+		if(demandeDto.getNom() != null && demandeDto.getPrenom() != null) {
+			cardHolderName = demandeDto.getNom() + demandeDto.getPrenom();
+		} else if(demandeDto.getPrenom() != null && demandeDto.getNom() == null) {
+			cardHolderName = demandeDto.getPrenom();
+		}
+		authInitRequest.setCardholderName(cardHolderName);
 
 		threeDSecureRequestor.threeDSecureRequest(authInitRequest);
 
