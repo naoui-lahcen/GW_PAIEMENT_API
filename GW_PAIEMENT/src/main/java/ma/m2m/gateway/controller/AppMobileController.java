@@ -2115,7 +2115,11 @@ public class AppMobileController {
             response.sendRedirect(failURL);
             return null;
         }
-
+        if(eci.equals("06") || eci.equals("05") || eci.equals("02") || eci.equals("01")) {
+            if(reponseMPI.equals("A")) {
+                reponseMPI = "Y";
+            }
+        }
         if (reponseMPI.equals("Y")) {
             // TODO: ********************* Frictionless responseMPI equal Y *********************
             autorisationService.logMessage(file,

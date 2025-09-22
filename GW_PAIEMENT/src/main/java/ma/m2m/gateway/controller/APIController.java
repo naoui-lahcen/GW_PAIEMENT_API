@@ -591,7 +591,11 @@ public class APIController {
 			autorisationService.logMessage(file, "Response 3DS is null");
 			return Util.getMsgError(folder, file, linkRequestDto, "Response 3DS is null", "96");
 		}
-
+		if(eci.equals("06") || eci.equals("05") || eci.equals("02") || eci.equals("01")) {
+			if(reponseMPI.equals("A")) {
+				reponseMPI = "Y";
+			}
+		}
 		if (reponseMPI.equals("Y")) {
 			// TODO: ********************* Frictionless responseMPI equal Y *********************
 			autorisationService.logMessage(file,
@@ -4242,7 +4246,11 @@ public class APIController {
 				autorisationService.logMessage(file, "Response 3DS is null");
 				return Util.getMsgError(folder, file, linkRequestDto, "Response 3DS is null", "96");
 			}
-
+			if(eci.equals("06") || eci.equals("05") || eci.equals("02") || eci.equals("01")) {
+				if(reponseMPI.equals("A")) {
+					reponseMPI = "Y";
+				}
+			}
 			if (reponseMPI.equals("Y")) {
 				autorisationService.logMessage(file,
 						"********************* Cas frictionless responseMPI equal Y *********************");

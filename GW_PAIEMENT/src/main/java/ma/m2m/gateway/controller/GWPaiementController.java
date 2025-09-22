@@ -1470,7 +1470,11 @@ public class GWPaiementController {
 			response.sendRedirect(failURL);
 			return null;
 		}
-
+		if(eci.equals("06") || eci.equals("05") || eci.equals("02") || eci.equals("01")) {
+			if(reponseMPI.equals("A")) {
+				reponseMPI = "Y";
+			}
+		}
 		if (reponseMPI.equals("Y")) {
 			// TODO: ********************* Frictionless responseMPI equal Y *********************
 			autorisationService.logMessage(file,
@@ -3045,7 +3049,11 @@ public class GWPaiementController {
 			response.sendRedirect(failURL);
 			return null;
 		}
-
+		if(eci.equals("06") || eci.equals("05") || eci.equals("02") || eci.equals("01")) {
+			if(reponseMPI.equals("A")) {
+				reponseMPI = "Y";
+			}
+		}
 		if (reponseMPI.equals("Y")) {
 			// TODO: ********************* Frictionless responseMPI equal Y *********************
 			autorisationService.logMessage(file,
@@ -3097,6 +3105,11 @@ public class GWPaiementController {
 			} else {
 				autorisationService.logMessage(file, "champ_cavv = null");
 				champ_cavv = null;
+			}
+			if(champ_cavv == null) {
+				autorisationService.logMessage(file, "envoie cavv avec 28 chr(espace) et eci avec " + eciParam);
+				champ_cavv = "                            "+eciParam;
+				autorisationService.logMessage(file, "champ_cavv [" + champ_cavv +"]");
 			}
 
 			boolean cvv_present = checkCvvPresence(cvv);

@@ -263,6 +263,9 @@ public class AutorisationServiceImpl implements AutorisationService {
 		} else if(demandeDto.getPrenom() != null && demandeDto.getNom() == null) {
 			cardHolderName = demandeDto.getPrenom();
 		}
+		if(cardHolderName.isEmpty()) {
+			cardHolderName = "Name";
+		}
 		authInitRequest.setCardholderName(cardHolderName);
 
 		threeDSecureRequestor.threeDSecureRequest(authInitRequest);
@@ -348,6 +351,9 @@ public class AutorisationServiceImpl implements AutorisationService {
 		} else if(demandeDto.getPrenom() != null && demandeDto.getNom() == null) {
 			cardHolderName = demandeDto.getPrenom();
 		}
+		if(cardHolderName.isEmpty()) {
+			cardHolderName = "Name";
+		}
 		authInitRequest.setCardholderName(cardHolderName);
 
 		threeDSecureRequestor.threeDSecureRequest(authInitRequest);
@@ -432,6 +438,9 @@ public class AutorisationServiceImpl implements AutorisationService {
 			cardHolderName = demandeDto.getNom() + demandeDto.getPrenom();
 		} else if(demandeDto.getPrenom() != null && demandeDto.getNom() == null) {
 			cardHolderName = demandeDto.getPrenom();
+		}
+		if(cardHolderName.isEmpty()) {
+			cardHolderName = "Name";
 		}
 		authInitRequest.setCardholderName(cardHolderName);
 
