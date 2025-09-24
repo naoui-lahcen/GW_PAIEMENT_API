@@ -147,6 +147,8 @@ public class APIController {
 	private final EmetteurService emetteurService;
 
 	private final APIParamsService apiParamsService;
+
+	private final AnnlTransactionService annlTransactionService;
 	
 	public static final String DF_YYYY_MM_DD_HH_MM_SS = "yyyy-MM-dd HH:mm:ss";
 	public static final String FORMAT_DEFAUT = "yyyy-MM-dd";
@@ -159,7 +161,8 @@ public class APIController {
 			GalerieService galerieService, TelecollecteService telecollecteService, 
 			TransactionService transactionService, CardtokenService cardtokenService, 
 			CodeReponseService codeReponseService, ReccuringTransactionService recService,
-						 EmetteurService emetteurService, APIParamsService apiParamsService) {
+						 EmetteurService emetteurService, APIParamsService apiParamsService,
+						 AnnlTransactionService annlTransactionService) {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		dateF = LocalDateTime.now(ZoneId.systemDefault());
 		folder = dateF.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
@@ -176,6 +179,7 @@ public class APIController {
 		this.recService = recService;
 		this.emetteurService = emetteurService;
 		this.apiParamsService = apiParamsService;
+		this.annlTransactionService = annlTransactionService;
 	}
 
 	@PostMapping(value = "/napspayment/authorization", consumes = "application/json", produces = "application/json")
@@ -1005,6 +1009,31 @@ public class APIController {
 				}
 			}
 			autorisationService.logMessage(file, "Switch TLV Respnose Processed");
+
+			if(switch_ko == 1 || tag20_resp.equals("96")) {
+				try {
+					// Envoie annulation pour la pile
+					String currentDTime = dateFormat.format(new Date());
+					AnnlTransactionDto annDto = new AnnlTransactionDto();
+
+					annDto.setNumCarte(cardnumber);
+					annDto.setNumRrn(rrn);
+					annDto.setIdCMR(linkRequestDto.getMerchantid());
+					annDto.setMontant(montanttrame);
+					annDto.setNumTrs(numTrsStr);
+					annDto.setNumAuto("");
+					annDto.setEtatAnnl("N");
+					annDto.setDateTrs(dateFormat.parse(currentDTime));
+					annDto.setDateTrtm(null);
+					annDto.setIdTerm("");
+					autorisationService.logMessage(file, "saving annTrs ... " + annDto.toString());
+
+					annlTransactionService.save(annDto);
+					autorisationService.logMessage(file, "saving annTrs OK ");
+				} catch(Exception e) {
+					autorisationService.logMessage(file, "Error saving annTrs !!! " + Util.formatException(e));
+				}
+			}
 
 			String tag20_resp_verified = "";
 			String tag19_res_verified = "";
@@ -4480,6 +4509,31 @@ public class APIController {
 				}
 				autorisationService.logMessage(file, "Switch TLV Respnose Processed");
 
+				if(switch_ko == 1 || tag20_resp.equals("20")) {
+					try {
+						// Envoie annulation pour la pile
+						String currentDTime = dateFormat.format(new Date());
+						AnnlTransactionDto annDto = new AnnlTransactionDto();
+
+						annDto.setNumCarte(cardnumber);
+						annDto.setNumRrn(rrn);
+						annDto.setIdCMR(linkRequestDto.getMerchantid());
+						annDto.setMontant(montanttrame);
+						annDto.setNumTrs(numTrsStr);
+						annDto.setNumAuto("");
+						annDto.setEtatAnnl("N");
+						annDto.setDateTrs(dateFormat.parse(currentDTime));
+						annDto.setDateTrtm(null);
+						annDto.setIdTerm("");
+						autorisationService.logMessage(file, "saving annTrs ... " + annDto.toString());
+
+						annlTransactionService.save(annDto);
+						autorisationService.logMessage(file, "saving annTrs OK ");
+					} catch(Exception e) {
+						autorisationService.logMessage(file, "Error saving annTrs !!! " + Util.formatException(e));
+					}
+				}
+
 				String tag20_resp_verified = "";
 				String tag19_res_verified = "";
 				String tag66_resp_verified = "";
@@ -5839,6 +5893,31 @@ public class APIController {
 							}
 						}
 						autorisationService.logMessage(file, "Switch TLV Respnose Processed");
+
+						if(switch_ko == 1 || tag20_resp.equals("96")) {
+							try {
+								// Envoie annulation pour la pile
+								String currentDTime = dateFormat.format(new Date());
+								AnnlTransactionDto annDto = new AnnlTransactionDto();
+
+								annDto.setNumCarte(cardnumber);
+								annDto.setNumRrn(rrn);
+								annDto.setIdCMR(linkRequestDto.getMerchantid());
+								annDto.setMontant(montanttrame);
+								annDto.setNumTrs(numTrsStr);
+								annDto.setNumAuto("");
+								annDto.setEtatAnnl("N");
+								annDto.setDateTrs(dateFormat.parse(currentDTime));
+								annDto.setDateTrtm(null);
+								annDto.setIdTerm("");
+								autorisationService.logMessage(file, "saving annTrs ... " + annDto.toString());
+
+								annlTransactionService.save(annDto);
+								autorisationService.logMessage(file, "saving annTrs OK ");
+							} catch(Exception e) {
+								autorisationService.logMessage(file, "Error saving annTrs !!! " + Util.formatException(e));
+							}
+						}
 
 						String tag20_resp_verified = "";
 						String tag19_res_verified = "";

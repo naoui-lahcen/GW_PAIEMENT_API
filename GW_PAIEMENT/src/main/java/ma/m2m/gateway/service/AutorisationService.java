@@ -1,5 +1,6 @@
 package ma.m2m.gateway.service;
 
+import ma.m2m.gateway.dto.AnnlTransactionDto;
 import org.springframework.ui.Model;
 
 import ma.m2m.gateway.dto.DemandePaiementDto;
@@ -51,4 +52,6 @@ public interface AutorisationService {
 			DemandePaiementDto demandeDtoMsg, Model model);
 
 	String getFailUrl(String xid);
+
+	AnnlTransactionDto envoieAnnulation(AnnlTransactionDto annlTransactionDto);
 }

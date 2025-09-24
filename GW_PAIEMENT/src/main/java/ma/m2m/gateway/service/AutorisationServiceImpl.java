@@ -24,6 +24,9 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import javax.servlet.http.HttpSession;
 
+import ma.m2m.gateway.dto.*;
+import ma.m2m.gateway.mappers.AnnlTransactionMapper;
+import ma.m2m.gateway.model.AnnlTransaction;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
@@ -41,15 +44,6 @@ import org.springframework.stereotype.Service;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import ma.m2m.gateway.dto.CardtokenDto;
-import ma.m2m.gateway.dto.Cartes;
-import ma.m2m.gateway.dto.CommercantDto;
-import ma.m2m.gateway.dto.ControlRiskCmrDto;
-import ma.m2m.gateway.dto.DemandePaiementDto;
-import ma.m2m.gateway.dto.EmetteurDto;
-import ma.m2m.gateway.dto.GalerieDto;
-import ma.m2m.gateway.dto.HistoAutoGateDto;
-import ma.m2m.gateway.dto.InfoCommercantDto;
 import ma.m2m.gateway.model.Commercant;
 import ma.m2m.gateway.model.Galerie;
 import ma.m2m.gateway.repository.CommercantDao;
@@ -120,6 +114,8 @@ public class AutorisationServiceImpl implements AutorisationService {
 	//@Autowired
 	private final DemandePaiementService demandePaiementService;
 
+	private final AnnlTransactionService annlTransactionService;
+
 	private String typeCarte;
 
 	private Commercant commercant = new Commercant();
@@ -133,7 +129,8 @@ public class AutorisationServiceImpl implements AutorisationService {
 								   InfoCommercantService infoCommercantService, GalerieDao galerieDao,
 								   EmetteurService emetteurService, ControlRiskCmrService controlRiskCmrService,
 								   CardtokenService cardtokenService, CommercantService commercantService,
-								   GalerieService galerieService, DemandePaiementService demandePaiementService) {
+								   GalerieService galerieService, DemandePaiementService demandePaiementService,
+								   AnnlTransactionService annlTransactionService) {
 		this.gson = new GsonBuilder().serializeNulls().create();
 		this.histoAutoGateService = histoAutoGateService;
 		this.commercantDao = commercantDao;
@@ -145,6 +142,7 @@ public class AutorisationServiceImpl implements AutorisationService {
 		this.commercantService = commercantService;
 		this.galerieService = galerieService;
 		this.demandePaiementService = demandePaiementService;
+		this.annlTransactionService = annlTransactionService;
 	}
 
 	@Override
@@ -988,6 +986,11 @@ public class AutorisationServiceImpl implements AutorisationService {
 		}
 
 		return failUrl;
+	}
+
+	@Override
+	public AnnlTransactionDto envoieAnnulation(AnnlTransactionDto annlTransactionDto) {
+		return annlTransactionService.save(annlTransactionDto);
 	}
 
 }

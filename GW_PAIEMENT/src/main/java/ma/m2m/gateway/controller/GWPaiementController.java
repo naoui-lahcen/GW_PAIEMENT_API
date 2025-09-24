@@ -188,6 +188,8 @@ public class GWPaiementController {
 
 	private final ConfigUrlCmrService configUrlCmrService;
 
+	private final AnnlTransactionService annlTransactionService;
+
 	private LocalDateTime date;
 	private String folder;
 	private String file;
@@ -208,7 +210,8 @@ public class GWPaiementController {
 			CardtokenService cardtokenService, CodeReponseService codeReponseService,
 			FactureLDService factureLDService, ArticleDGIService articleDGIService,
 			CFDGIService cfdgiService,ReccuringTransactionService recService,
-			APIParamsService apiParamsService, ConfigUrlCmrService configUrlCmrService) {
+			APIParamsService apiParamsService, ConfigUrlCmrService configUrlCmrService,
+								AnnlTransactionService annlTransactionService) {
 		date = LocalDateTime.now(ZoneId.systemDefault());
 		folder = date.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
 		this.demandePaiementService = demandePaiementService;
@@ -224,6 +227,7 @@ public class GWPaiementController {
 		this.recService = recService;
 		this.apiParamsService = apiParamsService;
 		this.configUrlCmrService = configUrlCmrService;
+		this.annlTransactionService = annlTransactionService;
 	}
 
 	//@RequestMapping(path = "/")
@@ -1629,6 +1633,7 @@ public class GWPaiementController {
 
 			} catch (Exception e) {
 				switch_ko = 1;
+				autorisationService.logMessage(file, "Échec de connexion au switch");
 				// return autorisationService.handleSwitchError(e, file, orderid, merchantid, resp_tlv, dmd, model, "result");
 				dmd.setDemCvv("");
 				dmd.setEtatDemande("SW_KO");
@@ -1714,6 +1719,31 @@ public class GWPaiementController {
 				}
 			}
 			autorisationService.logMessage(file, "Switch TLV Respnose Processed");
+
+			if(switch_ko == 1 || tag20_resp.equals("96")) {
+				try {
+					// Envoie annulation pour la pile
+					String currentDTime = dateFormat.format(new Date());
+					AnnlTransactionDto annDto = new AnnlTransactionDto();
+
+					annDto.setNumCarte(cardnumber);
+					annDto.setNumRrn(rrn);
+					annDto.setIdCMR(merchantid);
+					annDto.setMontant(montanttrame);
+					annDto.setNumTrs(numTrsStr);
+					annDto.setNumAuto("");
+					annDto.setEtatAnnl("N");
+					annDto.setDateTrs(dateFormat.parse(currentDTime));
+					annDto.setDateTrtm(null);
+					annDto.setIdTerm("");
+					autorisationService.logMessage(file, "saving annTrs ... " + annDto.toString());
+
+					annlTransactionService.save(annDto);
+					autorisationService.logMessage(file, "saving annTrs OK ");
+				} catch(Exception e) {
+					autorisationService.logMessage(file, "Error saving annTrs !!! " + Util.formatException(e));
+				}
+			}
 
 			String tag20_resp_verified = "";
 			String tag19_res_verified = "";
@@ -2101,6 +2131,7 @@ public class GWPaiementController {
 				if (dmd.getSuccessURL() != null) {
 					String suffix = "==&codecmr=" + merchantid;
 					if(modeUrl) {
+						suffix = "&codecmr=" + merchantid;
 						suffix = RSACrypto.encodeRFC3986(suffix);
 					}
 					autorisationService.logMessage(file,
@@ -3219,6 +3250,7 @@ public class GWPaiementController {
 
 			} catch (Exception e) {
 				switch_ko = 1;
+				autorisationService.logMessage(file, "Échec de connexion au switch");
 				// return autorisationService.handleSwitchError(e, file, orderid, merchantid, resp_tlv, dmd, model, "result");
 				dmd.setDemCvv("");
 				dmd.setEtatDemande("SW_KO");
@@ -3304,6 +3336,31 @@ public class GWPaiementController {
 				}
 			}
 			autorisationService.logMessage(file, "Switch TLV Respnose Processed");
+
+			if(switch_ko == 1 || tag20_resp.equals("96")) {
+				try {
+					// Envoie annulation pour la pile
+					String currentDTime = dateFormat.format(new Date());
+					AnnlTransactionDto annDto = new AnnlTransactionDto();
+
+					annDto.setNumCarte(cardnumber);
+					annDto.setNumRrn(rrn);
+					annDto.setIdCMR(merchantid);
+					annDto.setMontant(montanttrame);
+					annDto.setNumTrs(numTrsStr);
+					annDto.setNumAuto("");
+					annDto.setEtatAnnl("N");
+					annDto.setDateTrs(dateFormat.parse(currentDTime));
+					annDto.setDateTrtm(null);
+					annDto.setIdTerm("");
+					autorisationService.logMessage(file, "saving annTrs ... " + annDto.toString());
+
+					annlTransactionService.save(annDto);
+					autorisationService.logMessage(file, "saving annTrs OK ");
+				} catch(Exception e) {
+					autorisationService.logMessage(file, "Error saving annTrs !!! " + Util.formatException(e));
+				}
+			}
 
 			String tag20_resp_verified = "";
 			String tag19_res_verified = "";
@@ -3901,6 +3958,7 @@ public class GWPaiementController {
 				if (dmd.getSuccessURL() != null) {
 					String suffix = "==&codecmr=" + merchantid;
 					if(modeUrl) {
+						suffix = "&codecmr=" + merchantid;
 						suffix = RSACrypto.encodeRFC3986(suffix);
 					}
 					autorisationService.logMessage(file,
