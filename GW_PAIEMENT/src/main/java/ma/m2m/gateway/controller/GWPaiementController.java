@@ -809,7 +809,7 @@ public class GWPaiementController {
 
 		autorisationService.logMessage(file, "*********** End affichage page ************** ");
 
-		return "napspayment";
+		return page;
 	}
 
 	@RequestMapping(value = "/napspayment/authorization/lydec/token/{token}", method = RequestMethod.GET)
@@ -1055,7 +1055,23 @@ public class GWPaiementController {
 		boolean flagNvCarte, flagSaveCarte;
 
 		String page = "chalenge";
-	    
+		
+		if (demandeDto.getComid().equals(canPreprod) || demandeDto.getComid().equals(canProd)) {
+			if (demandeDto.getDemPan() != null && !demandeDto.getDemPan().equals("")) {
+				cardnumber = demandeDto.getDemPan();
+						if(!cardnumber.startsWith("4")) {
+							demandeDto.setDemCvv("");
+                            demandePaiementService.save(demandeDto);
+                            demandeDtoMsg.setMsgRefus("Le paiement a été refusé : cette carte n’est pas acceptée.");
+                            demandeDtoMsg.setIddemande(demandeDto.getIddemande());
+                            demandeDtoMsg.setCommande(demandeDto.getCommande());
+                            demandeDtoMsg.setComid(demandeDto.getComid());
+                            model.addAttribute("demandeDto", demandeDtoMsg);
+
+                            return "result";
+						}
+					}
+		}
 		try {
 			autorisationService.logMessage(file, "" + demandeDto.toString());
 			// TODO: Transaction info
@@ -1092,6 +1108,7 @@ public class GWPaiementController {
 				demandeDto.setDemPan(cardnumber);
 				expirydate = demandeDto.getAnnee().substring(2, 4).concat(demandeDto.getMois().substring(0, 2));
 			}
+			
 			// TODO: if transaction cof
 			if (demandeDto.getInfoCarte() != null && !demandeDto.isFlagNvCarte()
 					&& (demandeDto.getDemPan() == null || demandeDto.getDemPan().equals(""))) {
@@ -1527,9 +1544,14 @@ public class GWPaiementController {
 				autorisationService.logMessage(file, "champ_cavv = null");
 				champ_cavv = null;
 			}
+			if(cardnumber.startsWith("4") && !eciParam.equals("08")) {
+				eci = "07";
+			} else if(cardnumber.startsWith("5") || cardnumber.startsWith("2")) {
+				eci = "00";
+			}
 			if(champ_cavv == null) {
-				autorisationService.logMessage(file, "envoie cavv avec 28 chr(espace) et eci avec " + eciParam);
-				champ_cavv = "                            "+eciParam;
+				autorisationService.logMessage(file, "envoie cavv avec 28 chr(espace) et eci avec " + eci);
+				champ_cavv = "                            ".concat(eci);
 				autorisationService.logMessage(file, "champ_cavv [" + champ_cavv +"]");
 			}
 
@@ -3137,9 +3159,14 @@ public class GWPaiementController {
 				autorisationService.logMessage(file, "champ_cavv = null");
 				champ_cavv = null;
 			}
+			if(cardnumber.startsWith("4") && !eciParam.equals("08")) {
+				eci = "07";
+			} else if(cardnumber.startsWith("5") || cardnumber.startsWith("2")) {
+				eci = "00";
+			}
 			if(champ_cavv == null) {
-				autorisationService.logMessage(file, "envoie cavv avec 28 chr(espace) et eci avec " + eciParam);
-				champ_cavv = "                            "+eciParam;
+				autorisationService.logMessage(file, "envoie cavv avec 28 chr(espace) et eci avec " + eci);
+				champ_cavv = "                            "+eci;
 				autorisationService.logMessage(file, "champ_cavv [" + champ_cavv +"]");
 			}
 
@@ -5372,5 +5399,6 @@ public class GWPaiementController {
 
 		return cartes;
 	}
+	
 
 }

@@ -649,9 +649,15 @@ public class APIController {
 				autorisationService.logMessage(file, "champ_cavv = null");
 				champ_cavv = null;
 			}
+
 			if(champ_cavv == null || auth3ds.equals("N")) {
-				autorisationService.logMessage(file, "auth3ds egal N => envoie cavv avec 28 chr(espace) et eci avec " + eciParam);
-				champ_cavv = "                            "+eciParam;
+				if(cardnumber.startsWith("4") && !eciParam.equals("08")) {
+					eci = "07";
+				} else if(cardnumber.startsWith("5") || cardnumber.startsWith("2")) {
+					eci = "00";
+				}
+				autorisationService.logMessage(file, "auth3ds egal N => envoie cavv avec 28 chr(espace) et eci avec " + eci);
+				champ_cavv = "                            "+eci;
 				autorisationService.logMessage(file, "champ_cavv [" + champ_cavv +"]");
 			}
 
@@ -3635,8 +3641,13 @@ public class APIController {
 			champ_cavv = null;
 		}
 		if(champ_cavv == null) {
-			autorisationService.logMessage(file, "envoie cavv avec 28 chr(espace) et eci avec " + eciParam);
-			champ_cavv = "                            07";
+			if(cardnumber.startsWith("4") && !eciParam.equals("08")) {
+				eci = "07";
+			} else if(cardnumber.startsWith("5") || cardnumber.startsWith("2")) {
+				eci = "00";
+			}
+			autorisationService.logMessage(file, "envoie cavv avec 28 chr(espace) et eci avec " + eci);
+			champ_cavv = "                            ".concat(eci);
 			autorisationService.logMessage(file, "champ_cavv [" + champ_cavv +"]");
 		}
 		try {
@@ -5709,20 +5720,16 @@ public class APIController {
 						String numTrsStr = Util.formatNumTrans(String.valueOf(numTransaction));
 
 						// TODO: ajout cavv (cavv+eci) xid dans la trame
-						autorisationService.logMessage(file, "envoie cavv avec 28 chr(espace) et eci avec " + eciParam);
-						String champ_cavv ="                            ".concat(eciParam);
+						String eci = "";
+						if(cardnumber.startsWith("4") && !eciParam.equals("08")) {
+							eci = "07";
+						} else if(cardnumber.startsWith("5") || cardnumber.startsWith("2")) {
+							eci = "00";
+						}
+						autorisationService.logMessage(file, "envoie cavv avec 28 chr(espace) et eci avec " + eci);
+						String champ_cavv ="                            ".concat(eci);
 						autorisationService.logMessage(file, "champ_cavv [" + champ_cavv +"]");
 
-						/*
-						 * xid = threeDSServerTransID; if (cavv == null || eci == null) { champ_cavv =
-						 * null; autorisationService.logMessage(file,
-						 * "cavv == null || eci == null"); } else if (cavv != null && eci != null) {
-						 * champ_cavv = cavv + eci; autorisationService.logMessage(file,
-						 * "cavv != null && eci != null"); autorisationService.logMessage(file,
-						 * "champ_cavv : [" + champ_cavv + "]"); } else {
-						 * autorisationService.logMessage(file, "champ_cavv = null"); champ_cavv =
-						 * null; }
-						 */
 						boolean cvv_present = checkCvvPresence(cvv);
 						cvv_present = true; // TODO: a revoir
 						String first_auth = "";

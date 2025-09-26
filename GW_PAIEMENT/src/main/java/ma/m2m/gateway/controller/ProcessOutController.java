@@ -1956,8 +1956,13 @@ public class ProcessOutController {
 				champ_cavv = null;
 			}
 			if(champ_cavv == null || auth3ds.equals("N")) {
-				autorisationService.logMessage(file, "auth3ds egal N => envoie cavv avec 28 chr(espace) et eci avec " + eciParam);
-				champ_cavv = "                            "+eciParam;
+				if(cardnumber.startsWith("4") && !eciParam.equals("08")) {
+					eci = "07";
+				} else if(cardnumber.startsWith("5") || cardnumber.startsWith("2")) {
+					eci = "00";
+				}
+				autorisationService.logMessage(file, "auth3ds egal N => envoie cavv avec 28 chr(espace) et eci avec " + eci);
+				champ_cavv = "                            "+eci;
 				autorisationService.logMessage(file, "champ_cavv [" + champ_cavv +"]");
 			}
 
