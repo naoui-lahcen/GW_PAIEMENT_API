@@ -29,6 +29,7 @@ import javax.servlet.http.HttpSession;
 import javax.xml.namespace.QName;
 
 import com.google.gson.Gson;
+import com.mysql.cj.exceptions.ExceptionFactory;
 import ma.m2m.gateway.dto.*;
 import ma.m2m.gateway.lydec.*;
 import ma.m2m.gateway.model.ReccuringTransaction;
@@ -235,14 +236,14 @@ public class GWPaiementController {
 	@ResponseBody
 	public String home() {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		String filee = "GW_" + randomWithSplittableRandom;
-		Util.creatFileTransaction(filee);
-		autorisationService.logMessage(filee, "*********** Start home() ************** ");
+		//String filee = "GW_" + randomWithSplittableRandom;
+		//Util.creatFileTransaction(filee);
+		//autorisationService.logMessage(filee, "*********** Start home() ************** ");
 		logger.info("*********** Start home() ************** ");
 
 		String msg = "Bienvenue dans la plateforme de paiement NAPS !!!";
 
-		autorisationService.logMessage(filee, "*********** End home () ************** ");
+		//autorisationService.logMessage(filee, "*********** End home () ************** ");
 		logger.info("*********** End home () ************** ");
         
 		return msg;
@@ -349,17 +350,17 @@ public class GWPaiementController {
 	@SuppressWarnings("all")
 	public String getRibByNumCompte(@PathVariable(value = "numCompte") String numCompte) {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
-		String file = "RIB_" + randomWithSplittableRandom;
+		//String file = "RIB_" + randomWithSplittableRandom;
 		// TODO: create file log
-		Util.creatFileTransaction(file);
+		//Util.creatFileTransaction(file);
 		autorisationService.logMessage(file, "*********** Start getRibByNumCompte ***********");
 		logger.info("*********** Start getRibByNumCompte ***********");
 		
 		String rib = constructRIB(numCompte);
-		autorisationService.logMessage(file, "rib : " + rib);
+		//autorisationService.logMessage(file, "rib : " + rib);
 		logger.info("rib : " + rib);
 		
-		autorisationService.logMessage(file, "*********** End getRibByNumCompte ***********");
+		//autorisationService.logMessage(file, "*********** End getRibByNumCompte ***********");
 		logger.info("*********** End getRibByNumCompte ***********");
 		 
 		return rib;
@@ -589,7 +590,9 @@ public class GWPaiementController {
 				page = "napspaymentdgi";
 			}
 
-		}
+
+
+        }
 
 		autorisationService.logMessage(file, "*********** End newpage () ************** ");
 
@@ -1757,7 +1760,7 @@ public class GWPaiementController {
 					annDto.setEtatAnnl("N");
 					annDto.setDateTrs(dateFormat.parse(currentDTime));
 					annDto.setDateTrtm(null);
-					annDto.setIdTerm("");
+					annDto.setIdTerm("0"+merchantid);
 					autorisationService.logMessage(file, "saving annTrs ... " + annDto.toString());
 
 					annlTransactionService.save(annDto);
@@ -2154,7 +2157,7 @@ public class GWPaiementController {
 					String suffix = "==&codecmr=" + merchantid;
 					if(modeUrl) {
 						suffix = "&codecmr=" + merchantid;
-						suffix = RSACrypto.encodeRFC3986(suffix);
+						//suffix = RSACrypto.encodeRFC3986(suffix);
 					}
 					autorisationService.logMessage(file,
 							"coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
@@ -2321,7 +2324,7 @@ public class GWPaiementController {
 	@PostMapping("/check")
 	@SuppressWarnings("all")
 	public ResponseEntity<Map<String, String>> checkChargementPage(@RequestBody Map<String, String> requestData) {
-		String file = "GW_Check_PAGE_" + randomWithSplittableRandom;
+		//String file = "GW_Check_PAGE_" + randomWithSplittableRandom;
 		//autorisationService.logMessage(file, "checkChargementPage : La page est visible, l'utilisateur interagit.");
 		String idDemandeStr = requestData.get("iddemande");
 		Integer idDemande = null;
@@ -2334,14 +2337,14 @@ public class GWPaiementController {
 				if(demandePaiement.getEtatDemande().equals("P_CHRG_OK")) {
 					demandePaiement.setEtatDemande("CL_TOUCH_SCROL_PAGE");
 					demandePaiement = demandePaiementService.save(demandePaiement);
-					autorisationService.logMessage(file, "checkChargementPage : mj etat_demande to CL_TOUCH_SCROL_PAGE idDemande : "
-							+ idDemande);
+					//autorisationService.logMessage(file, "checkChargementPage : mj etat_demande to CL_TOUCH_SCROL_PAGE idDemande : "
+					//		+ idDemande);
 					return ResponseEntity.ok(Collections.singletonMap("message", "check chargement page avec succès"));
 				}
 			}
 		} catch (Exception e) {
-			autorisationService.logMessage(file, "checkChargementPage : Erreur lors du traitement du mj etat_demande : " + idDemande);
-			autorisationService.logMessage(file, "checkChargementPage Exception : " + Util.formatException(e));
+			//autorisationService.logMessage(file, "checkChargementPage : Erreur lors du traitement du mj etat_demande : " + idDemande);
+			//autorisationService.logMessage(file, "checkChargementPage Exception : " + Util.formatException(e));
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 					.body(Collections.singletonMap("message", "Erreur lors du traitement du Mise a jour etat_demande"));
@@ -3379,7 +3382,7 @@ public class GWPaiementController {
 					annDto.setEtatAnnl("N");
 					annDto.setDateTrs(dateFormat.parse(currentDTime));
 					annDto.setDateTrtm(null);
-					annDto.setIdTerm("");
+					annDto.setIdTerm("0"+merchantid);
 					autorisationService.logMessage(file, "saving annTrs ... " + annDto.toString());
 
 					annlTransactionService.save(annDto);
@@ -3986,7 +3989,7 @@ public class GWPaiementController {
 					String suffix = "==&codecmr=" + merchantid;
 					if(modeUrl) {
 						suffix = "&codecmr=" + merchantid;
-						suffix = RSACrypto.encodeRFC3986(suffix);
+						//suffix = RSACrypto.encodeRFC3986(suffix);
 					}
 					autorisationService.logMessage(file,
 							"coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());

@@ -1031,7 +1031,7 @@ public class APIController {
 					annDto.setEtatAnnl("N");
 					annDto.setDateTrs(dateFormat.parse(currentDTime));
 					annDto.setDateTrtm(null);
-					annDto.setIdTerm("");
+					annDto.setIdTerm("0"+linkRequestDto.getMerchantid());
 					autorisationService.logMessage(file, "saving annTrs ... " + annDto.toString());
 
 					annlTransactionService.save(annDto);
@@ -1802,17 +1802,18 @@ public class APIController {
 		randomWithSplittableRandom = splittableRandom.nextInt(111111111, 999999999);
 		String file = "API_TOKEN24_" + randomWithSplittableRandom;
 		// TODO: create file log
-		Util.creatFileTransaction(file);
-		autorisationService.logMessage(file, "*********** Start generateToken() ************** ");
+		//Util.creatFileTransaction(file);
+		//autorisationService.logMessage(file, "*********** Start generateToken() ************** ");
 		logger.info("*********** Start generateToken() ************** ");
 
 		autorisationService.logMessage(file, "token24 api call start ...");
-		autorisationService.logMessage(file, "token24 : [" + token24 + "]");
+		//autorisationService.logMessage(file, "token24 : [" + token24 + "]");
 
 		JSONObject jsonOrequest = null;
 		try {
 			jsonOrequest = new JSONObject(token24);
 		} catch (JSONException jserr) {
+			Util.creatFileTransaction(file);
 			autorisationService.logMessage(file, "token24 500 malformed json expression " + token24 + jserr);
 			JSONObject jso = new JSONObject();
 			jso.put("statuscode", "17");
@@ -1830,6 +1831,7 @@ public class APIController {
 			institution_id = (String) jsonOrequest.get("institution_id");
 
 		} catch (Exception jerr) {
+			Util.creatFileTransaction(file);
 			autorisationService.logMessage(file, "token24 500 malformed json expression " + token24 + Util.formatException(jerr));
 			JSONObject jso = new JSONObject();
 			jso.put("statuscode", "17");
@@ -1845,7 +1847,7 @@ public class APIController {
 		String token = "";
 
 		if (mac_value.equals("")) {
-			autorisationService.logMessage(file, "the token generation failed, mac_value is empty");
+			//autorisationService.logMessage(file, "the token generation failed, mac_value is empty");
 
 			jsoVerified.put("error_msg", "the token generation failed, mac_value is empty");
 			jsoVerified.put("error_code", "17");
@@ -1853,14 +1855,15 @@ public class APIController {
 			jsoVerified.put("cx_user", cx_user);
 			jsoVerified.put("mac_value", "");
 			jsoVerified.put("institution_id", institution_id);
-			autorisationService.logMessage(file, "jsoVerified : " + jsoVerified.toString());
+			//autorisationService.logMessage(file, "jsoVerified : " + jsoVerified.toString());
 			logger.info("jsoVerified : " + jsoVerified.toString());
 
-			autorisationService.logMessage(file, "*********** End generateToken() ************** ");
+			//autorisationService.logMessage(file, "*********** End generateToken() ************** ");
 
 			return jsoVerified.toString();
 		}
 		if (cx_user.equals("")) {
+			Util.creatFileTransaction(file);
 			autorisationService.logMessage(file, "the token generation failed, cx_user is empty");
 
 			jsoVerified.put("error_msg", "the token generation failed, cx_user is empty");
@@ -1877,6 +1880,7 @@ public class APIController {
 			return jsoVerified.toString();
 		}
 		if (cx_password.equals("")) {
+			Util.creatFileTransaction(file);
 			autorisationService.logMessage(file, "the token generation failed, cx_password is empty");
 
 			jsoVerified.put("error_msg", "the token generation failed, cx_password is empty");
@@ -1893,6 +1897,7 @@ public class APIController {
 			return jsoVerified.toString();
 		}
 		if (institution_id.equals("")) {
+			Util.creatFileTransaction(file);
 			autorisationService.logMessage(file, "the token generation failed, institution_id is empty");
 
 			jsoVerified.put("error_msg", "the token generation failed, institution_id is empty");
@@ -1917,6 +1922,7 @@ public class APIController {
 			jso = verifieToken(token, file);
 
 			if (jso != null && !jso.get("statuscode").equals("00")) {
+				Util.creatFileTransaction(file);
 				jsoVerified.put("error_msg", "the token generation failed");
 				jsoVerified.put("error_code", jso.get("statuscode"));
 				jsoVerified.put("securtoken_24", "");
@@ -1934,6 +1940,7 @@ public class APIController {
 			}
 
 		} catch (Exception ex) {
+			Util.creatFileTransaction(file);
 			autorisationService.logMessage(file, "the token generation failed");
 			error_msg = "the token generation failed";
 			error_code = "17";
@@ -1945,12 +1952,12 @@ public class APIController {
 		jsoVerified.put("cx_user", cx_user);
 		jsoVerified.put("mac_value", mac_value);
 
-		autorisationService.logMessage(file, "json res : [" + jsoVerified.toString() + "]");
+		//autorisationService.logMessage(file, "json res : [" + jsoVerified.toString() + "]");
 		logger.info("json res : [" + jsoVerified.toString() + "]");
 
 		// TODO: fin
 		logger.info("*********** End generateToken() ************** ");
-		autorisationService.logMessage(file, "*********** End generateToken() ************** ");
+		//autorisationService.logMessage(file, "*********** End generateToken() ************** ");
 
 		return jsoVerified.toString();
 	}
@@ -2160,10 +2167,10 @@ public class APIController {
 		if (trsRequestDto.getAuthnumber() != null && trsRequestDto.getAuthnumber().length() < 1) {
 			try {
 				// TODO: get histoauto check if exist
-				current_hist = histoAutoGateService.findLastByHatNumCommandeAndHatNumcmr(trsRequestDto.getOrderid(), trsRequestDto.getMerchantid());
+				current_hist = histoAutoGateService.findByHatNumCommandeAndHatNumcmrV1(trsRequestDto.getOrderid(), trsRequestDto.getMerchantid());
 			} catch (Exception err2) {
 				autorisationService.logMessage(file,
-						"status 500 Error during HistoAutoGate findLastByHatNumCommandeAndHatNumcmr orderid:[" + trsRequestDto.getOrderid()
+						"status 500 Error during HistoAutoGate findByHatNumCommandeAndHatNumcmrV1 orderid:[" + trsRequestDto.getOrderid()
 								+ "] and merchantid:[" + trsRequestDto.getMerchantid() + "]" + Util.formatException(err2));
 				return Util.getMsgErrorV2(folder, file, trsRequestDto, "status 500 Error during find HistoAutoGate", null);
 			}
@@ -3795,7 +3802,7 @@ public class APIController {
 
 			try {
 				autorisationService.logMessage(file, "Setting DemandePaiement status A ...");
-
+				current_dmd.setDemCvv("");
 				current_dmd.setEtatDemande("A");
 				demandePaiementService.save(current_dmd);
 			} catch (Exception e) {
@@ -4535,7 +4542,7 @@ public class APIController {
 						annDto.setEtatAnnl("N");
 						annDto.setDateTrs(dateFormat.parse(currentDTime));
 						annDto.setDateTrtm(null);
-						annDto.setIdTerm("");
+						annDto.setIdTerm("0"+linkRequestDto.getMerchantid());
 						autorisationService.logMessage(file, "saving annTrs ... " + annDto.toString());
 
 						annlTransactionService.save(annDto);
@@ -5357,6 +5364,8 @@ public class APIController {
 		Double totalMontantCapture = 0.00;
 		Double montantReste = 0.00;
 		Double totalMontantAnnul = 0.00;
+		boolean onLine = false;
+		boolean offLine = false;
 		try {
 			acqcode = current_merchant.getCmrCodbqe();
 			acq_type = "0000";
@@ -5413,14 +5422,10 @@ public class APIController {
 
 				Date current_date = null;
 				current_date = new Date();
-				autorisationService.logMessage(file, "Automatic capture start...");
-
-				autorisationService.logMessage(file, "Getting authnumber");
 
 				authnumber = current_hist.getHatNautemt();
 				autorisationService.logMessage(file, "authnumber : [" + authnumber + "]");
 
-				autorisationService.logMessage(file, "Getting authnumber");
 				TransactionDto trs_check = null;
 
 				try {
@@ -5437,10 +5442,24 @@ public class APIController {
 					autorisationService.logMessage(file, "trs_check != null do nothing for now ...");
 					motif = "Transaction already captured";
 				} else {
+					// Conversion temporaire en BigDecimal pour une comparaison précise
+					BigDecimal bdPreAuto = BigDecimal.valueOf(montantPreAuto);
+					BigDecimal bdCfr = BigDecimal.valueOf(montantCfr);
 
-					if (montantCfr <= montantPreAuto) {
-						autorisationService.logMessage(file, "if (montantCfr <= montantPreAuto)");
-						
+					// Calcul de 115% du montant pré-autorisé
+					BigDecimal limite = bdPreAuto.multiply(BigDecimal.valueOf(1.15));
+					autorisationService.logMessage(file,"limite : " + limite);
+
+					// Comparaison précise
+					if (bdCfr.compareTo(limite) > 0) {
+						onLine = true;
+						autorisationService.logMessage(file,"montantCfr > montantPreAuto * 115% ==> onLine = true");
+					} else {
+						offLine = true;
+						autorisationService.logMessage(file,"montantCfr <= montantPreAuto * 115% ==> offLine = true");
+					}
+
+					if (offLine) {
 						montantPreAuto = montantCfr;
 						
 						autorisationService.logMessage(file, "inserting into telec start ...");
@@ -5561,8 +5580,15 @@ public class APIController {
 								trs.setTrsNumfact(0.0);
 								transactionService.save(trs);
 
+								current_hist.setHatMontantCapture(totalMontantCapture);
+								current_hist.setHatEtat('T');
+								current_hist.setHatdatetlc(current_date);
+								current_hist.setOperateurtlc("mxplusapi");
+								current_hist = histoAutoGateService.save(current_hist);
+
 								// TODO: 2024-11-27 controle sur le montant à telecollecter
-								if (montantReste > 0.00) {
+
+								/*if (montantReste > 0.00) {
 									current_hist.setHatMontantCapture(totalMontantCapture);
 									// TODO: on garde etat = E initial
 									//current_hist.setHatEtat('T');
@@ -5575,7 +5601,7 @@ public class APIController {
 									current_hist.setHatdatetlc(current_date);
 									current_hist.setOperateurtlc("mxplusapi");
 									current_hist = histoAutoGateService.save(current_hist);
-								}
+								}*/
 
 								motif = motif + " and captured";
 
@@ -5595,12 +5621,10 @@ public class APIController {
 					}
 
 					// TODO: Check si le montant de la confirmation est supperieur au montant de la
-					// TODO: pre-auto
+					// TODO: pre-auto par 115%
 					// TODO: Si le cas on doit debiter le client par le complement
 
-					if (montantCfr > montantPreAuto) {
-
-						autorisationService.logMessage(file, "if(montantCfr > montantPreAuto)");
+					if (onLine) {
 						montantComplent = montantCfr - montantPreAuto;
 						autorisationService.logMessage(file,
 								"montantComplent => (montantCfr - montantPreAuto) : " + montantComplent);
@@ -5609,11 +5633,12 @@ public class APIController {
 						autorisationService.logMessage(file,"montantComplentBg : " + montantComplentBg);
 						montantComplentStr = montantComplentBg.toPlainString();
 						autorisationService.logMessage(file,"montantComplentStr : " + montantComplentStr);
-						// old
-						//montantComplentStr = String.valueOf(montantComplent);
 
 						Date trsdate = null;
-
+						autorisationService.logMessage(file,
+								"Commande trx origin : " + trsRequestDto.getOrderid());
+						autorisationService.logMessage(file,
+								"NumAuth trx origin : " + current_hist.getHatNautemt());
 
 						String orderidToDebite = Util.genCommande(trsRequestDto.getMerchantid());
 						autorisationService.logMessage(file,
@@ -5632,7 +5657,11 @@ public class APIController {
 						transactiontype = "0"; // TODO: 0 payment , P preauto
 						currency = "504";
 						cvv = check_dmd.getDemCvv() == null ? "" : check_dmd.getDemCvv();
-						recurring = "N";
+						if(check_dmd.getIsCof() != null) {
+							recurring = check_dmd.getIsCof().equals("N") ? "Y" : "Y";
+						} else {
+							recurring = "Y";
+						}
 						if (transactiontype.equals("P")) {
 							processing_code = "P";
 						}
@@ -5730,10 +5759,35 @@ public class APIController {
 						String champ_cavv ="                            ".concat(eci);
 						autorisationService.logMessage(file, "champ_cavv [" + champ_cavv +"]");
 
+						EmetteurDto natIssuer = emetteurService.getNATIusser(cardnumber);
+
+						int card_destination = 1;
+
+						if (natIssuer == null) {
+							card_destination = Util.card_switch(folder, file, cardnumber, false, null);
+							autorisationService.logMessage(file, "natIssuer is null card_destination : " + card_destination);
+						} else {
+							String switch_server_code = natIssuer.getEmtCodeserv();
+							if (switch_server_code == null) {
+								switch_server_code = "EMPTY";
+							}
+							card_destination = Util.card_switch(folder, file, cardnumber, true, switch_server_code.trim());
+							autorisationService.logMessage(file, "natIssuer is not null card_destination/switch_server_code : "
+									+ card_destination + " / " + switch_server_code);
+						}
+
+						boolean reccurent_cvv_check_obligatory = false;
+						if (card_destination == 0 || card_destination == 1) {
+							reccurent_cvv_check_obligatory = true;
+						}
+
 						boolean cvv_present = checkCvvPresence(cvv);
+						boolean is_reccuring = isReccuringCheck(recurring);
+						boolean is_first_trs = true;
 						cvv_present = true; // TODO: a revoir
 						String first_auth = "";
 						long lrec_serie = 0;
+						String rec_serie = "";
 
 						// TODO: controls
 						autorisationService.logMessage(file, "Switch processing start ...");
@@ -5741,7 +5795,9 @@ public class APIController {
 						String tlv = "";
 						autorisationService.logMessage(file, "Preparing Switch TLV Request start ...");
 
-						if (!cvv_present) {
+						autorisationService.logMessage(file, "cvv_present : " + cvv_present);
+						autorisationService.logMessage(file, "is_reccuring : " + is_reccuring);
+						if (!cvv_present  && !is_reccuring) {
 							autorisationService.logMessage(file,
 									"cpautorisation 500 cvv not set , reccuring flag set to N, cvv must be present in normal transaction");
 
@@ -5751,7 +5807,7 @@ public class APIController {
 						}
 
 						// TODO: not reccuring , normal
-						if (cvv_present) {
+						if (cvv_present  && !is_reccuring) {
 							autorisationService.logMessage(file,
 									"not reccuring , normal cvv_present && !is_reccuring");
 							try {
@@ -5777,6 +5833,117 @@ public class APIController {
 										"cpautorisation failed, the Switch is down.", "96");
 							}
 							autorisationService.logMessage(file, "Switch TLV Request :[" + Util.getTLVPCIDSS(tlv, folder, file) + "]");
+						}
+
+						// TODO: 07-10-2025 implemente reccuring payment for overCapture
+						if (is_reccuring) {
+							is_first_trs = isFirstTransaction(linkRequestDto.getMerchantid(), cardnumber);
+
+							// card uknown in system ==> first transaction
+							autorisationService.logMessage(file, "is_first_trs : " + is_first_trs);
+							autorisationService.logMessage(file, "reccurent_cvv_check_obligatory : " + reccurent_cvv_check_obligatory);
+
+							if (is_first_trs) {
+								if (!cvv_present) { // is the cvv present ?
+									if (reccurent_cvv_check_obligatory) { // is the cvv obligatory ? national switch yes
+										autorisationService.logMessage(file,"cpautorisation 500 cvv not set , reccuring flag set to Y and first transaction is detected orderid:[" + linkRequestDto.getOrderid() + "] and merchantid:[" + linkRequestDto.getMerchantid() + "]");
+										return Util.getMsgError(folder, file, linkRequestDto, "The current transaction was not successful, cvv not set reccuring flag set to Y and first transaction is detected, please try again.",
+												"17");
+									} else {
+										// cvv not obligatory in first transaction, international
+										autorisationService.logMessage(file, "cvv not obligatory in first transaction, international");
+										try {
+											tlv = new TLVEncoder().withField(Tags.tag0, mesg_type).withField(Tags.tag1, cardnumber)
+													.withField(Tags.tag3, processing_code).withField(Tags.tag22, transaction_condition)
+													.withField(Tags.tag49, acq_type).withField(Tags.tag14, montanttrame)
+													.withField(Tags.tag15, currency).withField(Tags.tag23, reason_code)
+													.withField(Tags.tag18, numTrsStr).withField(Tags.tag42, expirydate)
+													.withField(Tags.tag16, date).withField(Tags.tag17, heure)
+													.withField(Tags.tag10, merc_codeactivite).withField(Tags.tag8, "0" + linkRequestDto.getMerchantid())
+													.withField(Tags.tag9, linkRequestDto.getMerchantid()).withField(Tags.tag66, rrn)
+													.withField(Tags.tag11, merchant_name).withField(Tags.tag12, merchant_city)
+													.withField(Tags.tag90, acqcode).withField(Tags.tag167, champ_cavv)
+													.withField(Tags.tag168, xid).withField(Tags.tag601, "R111111111").encode();
+										} catch (Exception err4) {
+											dmdSaved.setDemCvv("");
+											demandePaiementService.save(dmdSaved);
+											autorisationService.logMessage(file,
+													"cpautorisation 500 Error during switch tlv buildup for given orderid:[" + linkRequestDto.getOrderid()
+															+ "] and merchantid:[" + linkRequestDto.getMerchantid() + "]" + Util.formatException(err4));
+
+											return Util.getMsgError(folder, file, linkRequestDto, "The current transaction was not successful, your account will not be debited, please try again.",
+													"96");
+										}
+										autorisationService.logMessage(file, "Switch TLV Request :[" + Util.getTLVPCIDSS(tlv, folder, file) + "]");
+									}
+								} else { // first transaction with cvv present, a normal transaction
+									autorisationService.logMessage(file, "first transaction with cvv present, a normal transaction");
+									try {
+										tlv = new TLVEncoder().withField(Tags.tag0, mesg_type).withField(Tags.tag1, cardnumber)
+												.withField(Tags.tag3, processing_code).withField(Tags.tag22, transaction_condition)
+												.withField(Tags.tag49, acq_type).withField(Tags.tag14, montanttrame)
+												.withField(Tags.tag15, currency).withField(Tags.tag23, reason_code)
+												.withField(Tags.tag18, numTrsStr).withField(Tags.tag42, expirydate)
+												.withField(Tags.tag16, date).withField(Tags.tag17, heure)
+												.withField(Tags.tag10, merc_codeactivite).withField(Tags.tag8, "0" + linkRequestDto.getMerchantid())
+												.withField(Tags.tag9, linkRequestDto.getMerchantid()).withField(Tags.tag66, rrn).withField(Tags.tag67, cvv)
+												.withField(Tags.tag11, merchant_name).withField(Tags.tag12, merchant_city)
+												.withField(Tags.tag90, acqcode).withField(Tags.tag167, champ_cavv)
+												.withField(Tags.tag168, xid)/*.withField(Tags.tag601, "R111111111")*/.encode();
+									} catch (Exception err4) {
+										dmdSaved.setDemCvv("");
+										demandePaiementService.save(dmdSaved);
+										autorisationService.logMessage(file,
+												"cpautorisation 500 Error during switch tlv buildup for given orderid:[" + linkRequestDto.getOrderid()
+														+ "] and merchantid:[" + linkRequestDto.getMerchantid() + "]" + Util.formatException(err4));
+
+										return Util.getMsgError(folder, file, linkRequestDto, "The current transaction was not successful, your account will not be debited, please try again.",
+												"96");
+									}
+									autorisationService.logMessage(file, "Switch TLV Request :[" + Util.getTLVPCIDSS(tlv, folder, file) + "]");
+								}
+
+							} else { // reccuring
+								autorisationService.logMessage(file, "trs already existe");
+								try {
+									first_auth = getFirstTransactionAuth(linkRequestDto.getMerchantid(), cardnumber);
+									lrec_serie = getTransactionSerie(linkRequestDto.getMerchantid(), cardnumber);
+
+								} catch (Exception e) {
+									dmdSaved.setDemCvv("");
+									demandePaiementService.save(dmdSaved);
+									autorisationService.logMessage(file,"cpautorisation 500 DB Error duing reccurent transations serie check orderid:[" + linkRequestDto.getOrderid() + "] and merchantid:[" + linkRequestDto.getMerchantid() + "]" + Util.formatException(e));
+									return Util.getMsgError(folder, file, linkRequestDto, "The current transaction was not successful, your account will not be debited, please try again.",
+											"96");
+								}
+
+								lrec_serie = lrec_serie + 1;
+								rec_serie = String.format("%03d", lrec_serie);
+								autorisationService.logMessage(file, "lrec_serie + 1 : " + lrec_serie);
+								autorisationService.logMessage(file, "rec_serie : " + rec_serie);
+
+								try {
+									tlv = new TLVEncoder().withField(Tags.tag0, mesg_type).withField(Tags.tag1, cardnumber)
+											.withField(Tags.tag3, processing_code).withField(Tags.tag22, transaction_condition)
+											.withField(Tags.tag49, acq_type).withField(Tags.tag14, montanttrame)
+											.withField(Tags.tag15, currency).withField(Tags.tag23, reason_code)
+											.withField(Tags.tag18, numTrsStr).withField(Tags.tag42, expirydate)
+											.withField(Tags.tag16, date).withField(Tags.tag17, heure)
+											.withField(Tags.tag10, merc_codeactivite).withField(Tags.tag8, "0" + linkRequestDto.getMerchantid())
+											.withField(Tags.tag9, linkRequestDto.getMerchantid()).withField(Tags.tag66, rrn).withField(Tags.tag67, cvv)
+											.withField(Tags.tag11, merchant_name).withField(Tags.tag12, merchant_city)
+											.withField(Tags.tag90, acqcode).withField(Tags.tag167, champ_cavv)
+											.withField(Tags.tag168, xid).withField(Tags.tag601, "R" + rec_serie + first_auth)
+											.encode();
+								} catch (Exception err4) {
+									dmdSaved.setDemCvv("");
+									demandePaiementService.save(dmdSaved);
+									autorisationService.logMessage(file,"cpautorisation 500 Error during switch tlv buildup for given orderid orderid:[" + linkRequestDto.getOrderid() + "] and merchantid:[" + linkRequestDto.getMerchantid() + "]" + Util.formatException(err4));
+									return Util.getMsgError(folder, file, linkRequestDto, "The current transaction was not successful, your account will not be debited, please try again.",
+											"96");
+								}
+								autorisationService.logMessage(file, "Switch TLV Request :[" + Util.getTLVPCIDSS(tlv, folder, file) + "]");
+							}
 						}
 
 						autorisationService.logMessage(file, "Preparing Switch TLV Request end.");
@@ -5916,7 +6083,7 @@ public class APIController {
 								annDto.setEtatAnnl("N");
 								annDto.setDateTrs(dateFormat.parse(currentDTime));
 								annDto.setDateTrtm(null);
-								annDto.setIdTerm("");
+								annDto.setIdTerm("0"+linkRequestDto.getMerchantid());
 								autorisationService.logMessage(file, "saving annTrs ... " + annDto.toString());
 
 								annlTransactionService.save(annDto);
@@ -5943,6 +6110,105 @@ public class APIController {
 
 						HistoAutoGateDto histComlement = null;
 						Integer Ihist_id = null;
+						try {
+							histComlement = new HistoAutoGateDto();
+							Date curren_date_hist = new Date();
+
+							s_status = "";
+							try {
+								CodeReponseDto codeReponseDto = codeReponseService
+										.findByRpcCode(tag20_resp_verified);
+								autorisationService.logMessage(file, "" + codeReponseDto);
+								if (codeReponseDto != null) {
+									s_status = codeReponseDto.getRpcLibelle();
+								}
+							} catch (Exception ee) {
+								autorisationService.logMessage(file,
+										"cpautorisation 500 Error codeReponseDto null" + Util.formatException(ee));
+							}
+
+							autorisationService.logMessage(file,
+									"get status Switch status : [" + s_status + "]");
+
+							autorisationService.logMessage(file, "formatting pan...");
+
+							pan_auto = Util.formatagePan(cardnumber);
+
+							autorisationService.logMessage(file, "HistoAutoGate data filling start ...");
+
+							autorisationService.logMessage(file, "websiteid : " + websiteid);
+
+							Date current_date_1 = getDateWithoutTime(curren_date_hist);
+							histComlement.setHatDatdem(current_date_1);
+
+							histComlement.setHatHerdem(new SimpleDateFormat("HH:mm").format(curren_date_hist));
+							histComlement.setHatMontant(montantComplent);
+							histComlement.setHatNumcmr(trsRequestDto.getMerchantid());
+							histComlement.setHatCoderep(tag20_resp_verified);
+							tag20_resp = tag20_resp_verified;
+							histComlement.setHatDevise(currency);
+							histComlement.setHatBqcmr(acqcode);
+							histComlement.setHatPorteur(pan_auto);
+							histComlement.setHatMtfref1(s_status);
+							histComlement.setHatNomdeandeur(websiteid);
+							histComlement.setHatNautemt(tag19_res_verified); // TODO: f2
+							tag19_resp = tag19_res_verified;
+							if (tag22_resp != null)
+								histComlement.setHatProcode(tag22_resp.charAt(0));
+							else
+								histComlement.setHatProcode('6');
+							histComlement.setHatExpdate(expirydate);
+							histComlement.setHatRepondeur(tag21_resp);
+							histComlement.setHatTypmsg("3");
+							histComlement.setHatRrn(tag66_resp_verified); // TODO: f1
+							tag66_resp_verified = tag66_resp;
+							histComlement.setHatEtat('E');
+							if (websiteid.equals("")) {
+								histComlement.setHatCodtpe("1");
+							} else {
+								histComlement.setHatCodtpe(websiteid);
+							}
+							histComlement.setHatMcc(merc_codeactivite);
+							histComlement.setHatNumCommande(orderidToDebite);
+							histComlement.setHatNumdem(new Long(numTransaction));
+
+							if (checkCvvPresence(cvv)) {
+								histComlement.setIsCvvVerified("Y");
+							} else {
+								histComlement.setIsCvvVerified("N");
+							}
+
+							histComlement.setIs3ds("N");
+							histComlement.setIsAddcard("N");
+							histComlement.setIsWhitelist("N");
+							histComlement.setIsWithsave("N");
+							histComlement.setIsTokenized("N");
+
+							if (recurring.equalsIgnoreCase("Y"))
+								histComlement.setIsCof("Y");
+							if (recurring.equalsIgnoreCase("N"))
+								histComlement.setIsCof("N");
+
+							autorisationService.logMessage(file, "HistoAutoGate data filling end ...");
+
+							autorisationService.logMessage(file, "HistoAutoGate Saving ...");
+
+							histComlement = histoAutoGateService.save(histComlement);
+
+							autorisationService.logMessage(file,
+									"hatNomdeandeur : " + histComlement.getHatNomdeandeur());
+
+							autorisationService.logMessage(file, "HistoAutoGate OK.");
+
+						} catch (Exception e) {
+							autorisationService.logMessage(file,
+									"cpautorisation 500 Error during  insert in histoautogate for given orderid:["
+											+ orderidToDebite + "]" + Util.formatException(e));
+							codrep = "96";
+							motif = "cpautorisation failed";
+						}
+						autorisationService.logMessage(file, "HistoAutoGate OK.");
+
 						if (tag20_resp == null) {
 							tag20_resp = "";
 						}
@@ -6108,105 +6374,6 @@ public class APIController {
 								motif = "cpautorisation failed";
 							}
 
-							try {
-								histComlement = new HistoAutoGateDto();
-								Date curren_date_hist = new Date();
-
-								s_status = "";
-								try {
-									CodeReponseDto codeReponseDto = codeReponseService
-											.findByRpcCode(tag20_resp_verified);
-									autorisationService.logMessage(file, "" + codeReponseDto);
-									if (codeReponseDto != null) {
-										s_status = codeReponseDto.getRpcLibelle();
-									}
-								} catch (Exception ee) {
-									autorisationService.logMessage(file,
-											"cpautorisation 500 Error codeReponseDto null" + Util.formatException(ee));
-								}
-
-								autorisationService.logMessage(file,
-										"get status Switch status : [" + s_status + "]");
-
-								autorisationService.logMessage(file, "formatting pan...");
-
-								pan_auto = Util.formatagePan(cardnumber);
-
-								autorisationService.logMessage(file, "HistoAutoGate data filling start ...");
-
-								autorisationService.logMessage(file, "websiteid : " + websiteid);
-
-								Date current_date_1 = getDateWithoutTime(curren_date_hist);
-								histComlement.setHatDatdem(current_date_1);
-
-								histComlement.setHatHerdem(new SimpleDateFormat("HH:mm").format(curren_date_hist));
-								histComlement.setHatMontant(montantComplent);
-								histComlement.setHatNumcmr(trsRequestDto.getMerchantid());
-								histComlement.setHatCoderep(tag20_resp_verified);
-								tag20_resp = tag20_resp_verified;
-								histComlement.setHatDevise(currency);
-								histComlement.setHatBqcmr(acqcode);
-								histComlement.setHatPorteur(pan_auto);
-								histComlement.setHatMtfref1(s_status);
-								histComlement.setHatNomdeandeur(websiteid);
-								histComlement.setHatNautemt(tag19_res_verified); // TODO: f2
-								tag19_resp = tag19_res_verified;
-								if (tag22_resp != null)
-									histComlement.setHatProcode(tag22_resp.charAt(0));
-								else
-									histComlement.setHatProcode('6');
-								histComlement.setHatExpdate(expirydate);
-								histComlement.setHatRepondeur(tag21_resp);
-								histComlement.setHatTypmsg("3");
-								histComlement.setHatRrn(tag66_resp_verified); // TODO: f1
-								tag66_resp_verified = tag66_resp;
-								histComlement.setHatEtat('E');
-								if (websiteid.equals("")) {
-									histComlement.setHatCodtpe("1");
-								} else {
-									histComlement.setHatCodtpe(websiteid);
-								}
-								histComlement.setHatMcc(merc_codeactivite);
-								histComlement.setHatNumCommande(orderidToDebite);
-								histComlement.setHatNumdem(new Long(numTransaction));
-
-								if (checkCvvPresence(cvv)) {
-									histComlement.setIsCvvVerified("Y");
-								} else {
-									histComlement.setIsCvvVerified("N");
-								}
-
-								histComlement.setIs3ds("N");
-								histComlement.setIsAddcard("N");
-								histComlement.setIsWhitelist("N");
-								histComlement.setIsWithsave("N");
-								histComlement.setIsTokenized("N");
-
-								if (recurring.equalsIgnoreCase("Y"))
-									histComlement.setIsCof("Y");
-								if (recurring.equalsIgnoreCase("N"))
-									histComlement.setIsCof("N");
-
-								autorisationService.logMessage(file, "HistoAutoGate data filling end ...");
-
-								autorisationService.logMessage(file, "HistoAutoGate Saving ...");
-
-								histComlement = histoAutoGateService.save(histComlement);
-
-								autorisationService.logMessage(file,
-										"hatNomdeandeur : " + histComlement.getHatNomdeandeur());
-
-								autorisationService.logMessage(file, "HistoAutoGate OK.");
-
-							} catch (Exception e) {
-								autorisationService.logMessage(file,
-										"cpautorisation 500 Error during  insert in histoautogate for given orderid:["
-												+ orderidToDebite + "]" + Util.formatException(e));
-								codrep = "96";
-								motif = "cpautorisation failed";
-							}
-
-
 							current_date = new Date();
 							autorisationService.logMessage(file, "Automatic capture start...");
 
@@ -6369,6 +6536,51 @@ public class APIController {
 							}
 
 						} else {
+							try {
+								autorisationService.logMessage(file,
+										"transaction declinded ==> update Demandepaiement status to SW_REJET ...");
+
+								dmd.setEtatDemande("SW_REJET");
+								dmdSaved.setDemCvv("");
+								demandePaiementService.save(dmdSaved);
+							} catch (Exception e) {
+								dmd.setDemCvv("");
+								demandePaiementService.save(dmd);
+								autorisationService.logMessage(file,
+										"cpautorisation 500 Error during  DemandePaiement update SW_REJET for given orderid:["
+												+ linkRequestDto.getOrderid() + "]" + Util.formatException(e));
+
+								return Util.getMsgError(folder, file, linkRequestDto,
+										"cpautorisation 500 Error during  DemandePaiement update SW_REJET", tag20_resp);
+							}
+							autorisationService.logMessage(file, "update Demandepaiement status to SW_REJET OK.");
+							// TODO: 2024-02-27
+							try {
+								if (histComlement.getId() == null) {
+									// TODO: get histoauto check if exist
+									HistoAutoGateDto histToAnnulle = histoAutoGateService
+											.findByHatNumCommandeAndHatNumcmrV1(orderidToDebite, linkRequestDto.getMerchantid());
+									if (histToAnnulle != null) {
+										autorisationService.logMessage(file,
+												"transaction declinded ==> update HistoAutoGateDto etat to A ...");
+										histToAnnulle.setHatEtat('A');
+										histToAnnulle = histoAutoGateService.save(histToAnnulle);
+									} else {
+										histComlement.setHatEtat('A');
+										histComlement = histoAutoGateService.save(histComlement);
+									}
+								} else {
+									histComlement.setHatEtat('A');
+									histComlement = histoAutoGateService.save(histComlement);
+								}
+							} catch (Exception err2) {
+								autorisationService.logMessage(file,
+										"cpautorisation 500 Error during HistoAutoGate findByHatNumCommandeAndHatNumcmrV1 orderid:["
+												+ orderidToDebite + "] and merchantid:[" + linkRequestDto.getMerchantid() + "]" + Util.formatException(err2));
+							}
+							autorisationService.logMessage(file, "update HistoAutoGateDto etat to A OK.");
+							// TODO: 2024-02-27
+
 							codrep = tag20_resp;
 							autorisationService.logMessage(file, "transaction declined !!! ");
 							autorisationService.logMessage(file, "SWITCH RESONSE CODE :[" + codrep + "]");

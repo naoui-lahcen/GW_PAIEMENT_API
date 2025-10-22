@@ -727,7 +727,14 @@ public class AutorisationServiceImpl implements AutorisationService {
 		String folder;
 		dateF = LocalDateTime.now(ZoneId.systemDefault());
 		folder = dateF.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
-		Util.writeInFileTransaction(folder, file, message);
+		// Créneau horaire, ex: d9-10
+		int currentHour = dateF.getHour();
+		int nextHour = (currentHour + 1) % 24;
+		String hourFolder = "T" + currentHour + "-" + nextHour;
+
+		// Chemin complet : D:/GW_LOGS/<date>/<créneau>/
+		String path = "D:/GW_LOGS/" + folder + "/" + hourFolder;
+		Util.writeInFileTransaction(path, file, message);
 		logger.info(message);
 	}
 
@@ -878,7 +885,7 @@ public class AutorisationServiceImpl implements AutorisationService {
 			case 2:
 				logMessage(file, "Card number is not valid (Luhn check failed). Order ID:["
 						+ orderid + "] and Merchant ID:[" + merchantid + "]");
-				demandeDtoMsg.setMsgRefus("Le numéro de la carte est invalide, merci de réessayer.");
+				demandeDtoMsg.setMsgRefus("Le numéro de carte est incorrect. Veuillez réessayer.");
 				demandeDto.setEtatDemande("CARTE ERRONEE");
 				break;
 
@@ -886,7 +893,7 @@ public class AutorisationServiceImpl implements AutorisationService {
 				logMessage(file, "Carte de Paiement n’est pas supportée. Order ID:["
 						+ orderid + "] and Merchant ID:[" + merchantid + "]");
 				//demandeDtoMsg.setMsgRefus("Carte de Paiement n’est pas supportée. Veuillez utiliser une carte Visa ou MasterCard.");
-				demandeDtoMsg.setMsgRefus("Ce type de carte n’est pas supporté. Veuillez utiliser une carte…. ");
+				demandeDtoMsg.setMsgRefus("Ce type de carte n’est pas supporté. Veuillez utiliser une autre carte.");
 				demandeDto.setEtatDemande("CARD_NOT_SUPPORTED");
 				break;
 

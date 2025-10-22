@@ -1,10 +1,13 @@
 <!DOCTYPE html>
-<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<html style="" lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>GATEWAY NAPS</title>
-	<link href='https://fonts.googleapis.com/css?family=DM Sans' rel='stylesheet'>
+    <link href='https://fonts.googleapis.com/css?family=DM Sans' rel='stylesheet'>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
     <!-- CSS -->
     <link crossorigin="anonymous"
           href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
@@ -20,1290 +23,1392 @@
             integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
             crossorigin="anonymous" defer></script>
     <style>
+            :root {
+                    --main-color: #FFC72C;
+                    --secondary-color: #FFC72C;
+                    --button-border-color: #efaf00;
+                    --buton-text-color: #000000;
+                    }
 
-        .dropdown-item.selected {
-            background-color: #f9f9f9;
-            border-radius: 8px;
-        }
+            .zoom-75 {
+              zoom: 0.75;
+                }
 
-        .dropdown-item .checkmark {
-            display: inline-block;
-            background-image: url('/images/check-orange.svg');
-            background-size: contain;
-            background-repeat: no-repeat;
-            visibility: hidden;
-        }
+            .zoom-110 {
+                  zoom: 1.05;
+                }
 
-        .dropdown-item.selected .checkmark {
-            visibility: visible;
-			padding:8px 10px;
-			width: 16px;
-			height: 16px;
-        }
-		
-		.dropdown-item.selected  {
-				padding:8px 10px;
-		       }
+            .zoom-120 {
+                  zoom: 1.15;
+                }
 
-
-        .custom-checkbox-wrapper input[type="checkbox"] {
-                display: none;
+            .dropdown-item.selected {
+                background-color: #f9f9f9;
+                border-radius: 0.500rem;
             }
 
-            /* Flex layout */
-            .custom-checkbox-wrapper {
+            .dropdown-item .checkmark {
+                display: inline-block;
+                background-image: url('/images/check-orange.svg');
+                background-size: contain;
+                background-repeat: no-repeat;
+                visibility: hidden;
+            }
+
+            .dropdown-item.selected .checkmark {
+                visibility: visible;
+                padding:0.500rem 0.625rem;
+                width: 1.000rem;
+                height: 1.000rem;
+            }
+
+            .dropdown-item.selected  {
+                    padding:0.500rem 0.625rem;
+                   }
+
+
+            .custom-checkbox-wrapper input[type="checkbox"] {
+                    display: none;
+                }
+
+                /* Flex layout */
+                .custom-checkbox-wrapper {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.625rem;
+                }
+
+                /* Custom square box */
+                .custom-checkbox-style {
+                    width: 1.250rem;
+                    height: 1.250rem;
+                    border: 0.125rem solid #ccc;
+                    border-radius: 0.375rem;
+                    background-color: #fff;
+                    display: inline-block;
+                    position: relative;
+                    transition: all 0.2s ease;
+                }
+
+                /* Checkmark */
+                .custom-checkbox-style::after {
+                    content: "";
+                    position: absolute;
+                    display: none;
+                    left: 0.312rem;
+                    top: 0.062rem;
+                    width: 0.375rem;
+                    height: 0.750rem;
+                    border: solid #fd7e14;
+                    border-width: 0 0.125rem 0.125rem 0;
+                    transform: rotate(45deg);
+                    margin-right: 0.500rem;
+                    width: 1.000rem;
+                }
+
+
+                /* Checked state styles */
+                .custom-checkbox-wrapper input[type="checkbox"]:checked + label .custom-checkbox-style {
+                    background-color: #fff5f0;
+                    border-color: #fd7e14;
+                }
+
+                .custom-checkbox-wrapper input[type="checkbox"]:checked + label .custom-checkbox-style::after {
+                    display: block;
+                }
+
+                /* Label text styling */
+                .custom-checkbox-label-text {
+                    font-size: 0.875rem;
+                }
+
+                .custom-checkbox-container {
+                       display: flex;
+                       align-items: center;
+                   }
+
+                   .custom-checkbox-container input[type="checkbox"] {
+                       display: none;
+                   }
+
+                   .custom-checkbox {
+                       width: 1.250rem;
+                       height: 1.250rem;
+                       border: 0.125rem solid #D0D5DD;
+                       border-radius: 0.375rem;
+                       background-color: #fff;
+                       display: inline-block;
+                       position: relative;
+                       margin-right: 0.625rem;
+                       cursor: pointer;
+                   }
+
+                    .custom-checkbox-svcrd {
+                        content: "";
+                        left: 0.312rem;
+                        top: 0.062rem;
+                        width: 1.000rem;
+                        margin-right: 0.625rem;
+                        height: 1.000rem;
+                        display: block;
+                   }
+
+                   .custom-checkbox::after {
+                       content: "";
+                       position: absolute;
+                       display: none;
+                       left: 0.312rem;
+                       top: 0.062rem;
+                       width: 0.375rem;
+                       height: 0.750rem;
+                       border: solid #fd7e14;
+                       border-width: 0 0.125rem 0.125rem 0;
+                       transform: rotate(45deg);
+                   }
+
+                   input[type="checkbox"]:checked + label .custom-checkbox {
+                       border-color: #fd7e14;
+                       background-color: #fff5f0;
+                   }
+
+                   input[type="checkbox"]:checked + label .custom-checkbox::after {
+                       display: block;
+                   }
+
+                   .custom-checkbox-label {
+                       display: flex;
+                       align-items: center;
+                       cursor: pointer;
+                       margin-bottom: 0.625rem;
+                   }
+
+                   .custom-checkbox-label .terms-link {
+                       text-decoration: underline;
+                       cursor: pointer;
+                       margin-left: 0.312rem;
+                   }
+
+                   /* ✅ MODAL STYLE */
+                  .modal-overlay {
+                       display: none;
+                       position: fixed;
+                       top: 0; left: 0;
+                       width: 100%; height: 100%;
+                       background-color: rgba(0, 0, 0, 0.5);
+                       z-index: 9999;
+                       overflow: hidden;
+                   }
+
+                   .modal-content {
+                       background-color: white;
+                       width: 36.062rem;
+                       height: 47.875rem; /* restrict height */
+                       margin: 5vh auto;
+                       padding: 1.500rem;
+                       border-radius: 1.000rem;
+                       position: relative;
+                   }
+
+                   .sub-modal-content {
+                    overflow-y: auto;
+                    font-family: Inter,sans-serif;
+                    color:#535862;
+                    font-weight: 400;
+                    font-size: 0.875rem;
+                    gap: 0.125rem;
+
+                    }
+                   .sub-modal-content::-webkit-scrollbar {
+                       width: 0.375rem;
+                       height: 27.688rem;
+                   }
+                   .sub-modal-content::-webkit-scrollbar-thumb {
+                       background-color: #D9D9D9;
+                       border-radius: 1.875rem;
+                   }
+
+                   .modal-content h3 {
+                        font-family: Roboto,sans-serif;
+                        font-weight: 600;
+                        font-style: Medium;
+                        font-size: 1.500rem;
+                        line-height: 2.000rem;
+                       color: #FF5F00;
+                       margin-bottom: 0.938rem;
+                   }
+
+                   .modle-text-content{
+                    width: 32.062rem;
+                    height: 40.875rem;
+                    line-height: 1.250rem;
+                   }
+
+                   @media (max-width: 288px) {
+
+                    .sub-modal-content {
+                                overflow-y: auto;
+                                overflow-x: hidden;
+
+                                }
+
+
+                    .modal-content {
+                                   width: 20.250rem;
+                                   height: 37.000rem; /* restrict height */
+                                   padding: 1.000rem;
+                                   border-radius: 1.000rem;
+                                   }
+                   .modal-content h3 {
+                                       font-size: 1.250rem;
+                                       line-height: 100%;
+                                  }
+
+                    .modle-text-content{
+                                      width: 17.125rem;
+                                      height: 30.875rem;
+                                     }
+
+                   }
+
+                   .modal-close {
+                       position: absolute;
+                       top: 0.625rem; right: 0.938rem;
+                       font-size: 1.250rem;
+                       cursor: pointer;
+                   }
+            div:where(.swal2-container) button:where(.swal2-styled):where(.swal2-cancel) {
+                border-radius: 0.500rem !important;
+                background-color: #ffffff !important;
+                box-shadow: var(--swal2-cancel-button-box-shadow);
+                color: #000000 !important;
+                border: 0.062rem solid #D5D7DA !important;
+            }
+            .custom-dropdown {
+                position: relative;
+                margin-bottom: 0.000rem;
+                user-select: none;
+                font-family: Inter, sans-serif;
+            }
+
+
+             .selected-card {
+               height:3.000rem;
+               border: 0.062rem solid #ccc;
+               padding: 0.500rem 0.750rem;
+               cursor: pointer;
+               display: flex;
+               align-items: center;
+               justify-content: space-between;
+               background-color: white;
+        }
+
+
+            .dropdown-list .dropdown-item:hover {
+                background-color: #f0f0f0;
+
+            }
+
+
+
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+                font-family: Inter, sans-serif;
+            }
+
+            body {
+                background-color: #f8f9fc;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                width: 100vw;
+                overflow-x: hidden;
+            }
+
+            /* Conteneur principal (PLEIN ÉCRAN) */
+            .container {
+                display: flex;
+                width: 100vw;
+                height: 100vh;
+                background: white;
+                border-radius: 0;
+                overflow: hidden;
+            }
+
+            input::placeholder {
+                font-family: 'Arial', sans-serif;
+                color: var(--Gray-500, #667085);
+                font-size: 0.875rem;
+                font-style: normal;
+                font-weight: 300;
+                line-height: 1.500rem;
+            }
+            input:focus {
+                border: 0.125rem solid #add2fa !important;
+                box-shadow: 0 0 0.312rem rgba(0, 123, 255, 0.5);
+                outline: none;
+            }
+
+           .form-group {
+                margin-bottom: 1.250rem;
+           }
+           .form-group label {
+               display: block;
+               margin-bottom: 0.312rem;
+           }
+           .form-group input, select {
+               width: 100%;
+               padding: 0.500rem;
+               border: 0.062rem solid #ccc;
+               border-radius: 0.312rem;
+           }
+
+            /* SECTION GAUCHE - Détails transaction */
+            .left-panel {
+                background: linear-gradient(181deg, var(--main-color) 0.57%, var(--main-color) 98.77%, #570001 134.01%), #000;
+                color: white;
+                padding: 3.125rem;
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+                flex: 1;
+                width: 100%;
+                /*width: 36.750rem;*/
+                /*height: 61.375rem;*/
+                height: auto;
+                flex-shrink: 0;
+            }
+
+            .total {
+                font-size: 1.375rem;
+                margin-top: 1.250rem;
+            }
+
+            .total span {
+                font-size: 2.250rem;
+                font-weight: bold;
+            }
+            .detsimg {
+                margin-bottom: 1.562rem;
+            }
+            .icondetails {
+                width: 7.500rem;
+            }
+            .details p {
+                margin: 0.938rem 0;
+                font-size: 1.000rem;
+            }
+
+            .details a {
+                color: white;
+                text-decoration: underline;
+            }
+
+            /* SECTION DROITE - Formulaire paiement */
+            .payment-panel {
+                justify-content: flex-start !important;
+                padding: 3.125rem;
+    <!--            padding-right: 1.875rem;-->
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                background-color: #F9FAFB;
+                border-radius: 0;
+                flex: 2;
+                display: inline-flex;
+    <!--            padding: 8.312rem 12.312rem 3.188rem 12.312rem;-->
+                flex-direction: column;
+                justify-content: flex-end;
+                align-items: center;
+    <!--            gap: 15.688rem;-->
+            }
+
+            .payment-header {
                 display: flex;
                 align-items: center;
-                gap: 10px;
+                margin-bottom: 7.750rem;
+                margin-bottom: 6.250rem;
+            }
+            .formm {
+                width: 33.125rem;
+                margin-top: 6.250rem;
             }
 
-            /* Custom square box */
-            .custom-checkbox-style {
-                width: 20px;
-                height: 20px;
-                border: 2px solid #ccc;
-                border-radius: 6px;
-                background-color: #fff;
-                display: inline-block;
-                position: relative;
-                transition: all 0.2s ease;
+            .icon-container {
+                width: 3.125rem;
+                height: 3.125rem;
+                border-radius: 0.938rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-right: 0.938rem;
+                border-style: solid;
+                border: 0.062rem solid #EAECF0;
+                background-color: #FFFFFF;
             }
 
-            /* Checkmark */
-            .custom-checkbox-style::after {
-                content: "";
-                position: absolute;
-                display: none;
-                left: 5px;
-                top: 1px;
-                width: 6px;
-                height: 12px;
-                border: solid #fd7e14;
-                border-width: 0 2px 2px 0;
-                transform: rotate(45deg); 
-				margin-right: 8px; 
-				width: 16px;
+            .icon-container i {
+                font-size: 1.500rem;
+                color: #2d3748;
             }
 
-            /* Checked state styles */
-            .custom-checkbox-wrapper input[type="checkbox"]:checked + label .custom-checkbox-style {
-                background-color: #fff5f0;
-                border-color: #fd7e14;
+            .text-container h3 {
+                font-size: 1.125rem;
+                font-weight: bold;
+                color: #2d3748;
             }
 
-            .custom-checkbox-wrapper input[type="checkbox"]:checked + label .custom-checkbox-style::after {
+            .text-container p {
+                line-height: 0.2;
+                line-height: 0.9;
+                margin: 0.125rem 0 0;
+                font-size: 0.875rem;
+                font-size: 0.938rem;
+                color: #718096;
+            }
+
+            .payment-form label {
                 display: block;
+                font-size: 1.000rem;
+                font-weight: bold;
+                margin-top: 0.938rem;
             }
 
-            /* Label text styling */
-            .custom-checkbox-label-text {
-                font-size: 14px;
+            .payment-form input {
+                width: 100%;
+                padding: 0.750rem;
+                margin-top: 0.312rem;
+                border: 0.062rem solid #ccc;
+                border-radius: 0.312rem;
+                font-size: 1.000rem;
             }
 
-            .custom-checkbox-container {
-                   display: flex;
-                   align-items: center;
-               }
+            .card-input {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                background: white;
+                border: 0.062rem solid #ccc;
+                padding: 0.750rem;
+                border-radius: 0.312rem;
+            }
 
-               .custom-checkbox-container input[type="checkbox"] {
-                   display: none;
-               }
+            .card-input img {
+                height: 1.562rem;
+            }
 
-               .custom-checkbox {
-                   width: 20px;
-                   height: 20px;
-                   border: 2px solid #D0D5DD;
-                   border-radius: 6px;
-                   background-color: #fff;
-                   display: inline-block;
-                   position: relative;
-                   margin-right: 10px;
-                   cursor: pointer;
-               }
+            .card-details {
+                display: flex;
+                gap: 0.938rem;
+                margin-top: 0.625rem;
+            }
 
-               .custom-checkbox::after {
-                   content: "";
-                   position: absolute;
-                   display: none;
-                   left: 5px;
-                   top: 1px;
-                   width: 6px;
-                   height: 12px;
-                   border: solid #fd7e14;
-                   border-width: 0 2px 2px 0;
-                   transform: rotate(45deg);
-               }
+            .card-details input {
+                flex: 1;
+            }
 
-               input[type="checkbox"]:checked + label .custom-checkbox {
-                   border-color: #fd7e14;
-                   background-color: #fff5f0;
-               }
+            .terms {
+                display: flex;
+                align-items: center;
+                margin-top: 0.938rem;
+                font-size: 0.875rem;
+            }
 
-               input[type="checkbox"]:checked + label .custom-checkbox::after {
-                   display: block;
-               }
+            .terms input {
+                margin-right: 0.625rem;
+            }
 
-               .custom-checkbox-label {
-                   display: flex;
-                   align-items: center;
-                   cursor: pointer;
-				   margin-bottom: 10px;
-               }
+            .terms a {
+                color: #ff6b00;
+                text-decoration: none;
+            }
 
-               .custom-checkbox-label .terms-link {
-                   text-decoration: underline;
-                   cursor: pointer;
-                   margin-left: 5px;
-               }
+            .pay-button {
+                width: 100%;
+                padding: 0.938rem;
+                background: #ff6b00;
+                color: white;
+                border: none;
+                border-radius: 0.312rem;
+                font-size: 1.125rem;
+                cursor: pointer;
+                margin-top: 1.250rem;
+            }
 
-               /* ✅ MODAL STYLE */
-              .modal-overlay {
-                   display: none;
-                   position: fixed;
-                   top: 0; left: 0;
-                   width: 100%; height: 100%;
-                   background-color: rgba(0, 0, 0, 0.5);
-                   z-index: 9999;
-                   overflow: hidden;
-               }
+            .pay-button:hover {
+                background: #e65a00;
+            }
 
-               .modal-content {
-                   background-color: white;
-                   width: 577px;
-                   height: 766px; /* restrict height */
-                   margin: 5vh auto;
-                   padding: 24px;
-                   border-radius: 16px;
-                   position: relative;
-               }
-			   
-			   .sub-modal-content {
-				overflow-y: auto;
-				font-family: Inter,sans-serif;
-				color:#535862;
-				font-weight: 400;
-				font-size: 14px;
-				gap: 2px;
-	
-				}
-               .sub-modal-content::-webkit-scrollbar {
-                   width: 6px;
-				   height: 443px;
-               }
-               .sub-modal-content::-webkit-scrollbar-thumb {
-                   background-color: #D9D9D9;
-                   border-radius: 30px;
-               }
+            .secure-info {
+                text-align: center;
+                font-size: 0.875rem;
+                color: #718096;
+                margin-top: 0.938rem;
+            }
+            .sec {
+                font-family: sans-serif, Arial;
+                font-weight: 400;
+                line-height: 1.250rem;
+                color: #677489;
+            }
 
-               .modal-content h3 {
-					font-family: Roboto,sans-serif;	
-					font-weight: 600;
-					font-style: Medium;
-					font-size: 24px;
-					line-height: 32px;
-                   color: #FF5F00;
-                   margin-bottom: 15px;
-               }
-			   
-			   .modle-text-content{
-				width: 513px;
-				height: 654px;
-				line-height: 20px;
-			   }
-			   
-			   @media (max-width: 768px) {
-				
-				.sub-modal-content {
-							overflow-y: auto;
-							overflow-x: hidden;
+            footer {
+                text-align: center;
+                font-size: 0.875rem;
+                margin-top: 1.250rem;
+                color: #718096;
+            }
 
-							}
-							
-							
-				.modal-content {
-			                   width: 324px;
-			                   height: 592px; /* restrict height */
-			                   padding: 16px;
-			                   border-radius: 16px;
-				               }
-			   .modal-content h3 {
-			   					font-size: 20px;
-			   					line-height: 100%;
-			                  }
-							  
-				.modle-text-content{
-				  				width: 274px;
-				  				height: 494px;
-				  			   }
-		
-			   }
-
-               .modal-close {
-                   position: absolute;
-                   top: 10px; right: 15px;
-                   font-size: 20px;
-                   cursor: pointer;
-               }
-        div:where(.swal2-container) button:where(.swal2-styled):where(.swal2-cancel) {
-            border-radius: 8px !important;
-            background-color: #ffffff !important;
-            box-shadow: var(--swal2-cancel-button-box-shadow);
-            color: #000000 !important;
-            border: 1px solid #D5D7DA !important;
-        }
-        .custom-dropdown {
-            position: relative;
-			margin-bottom: 0px;
-            user-select: none;
-            font-family: Inter, sans-serif;
-        }
+            footer a {
+                color: #ff6b00;
+                text-decoration: none;
+            }
 
 
-         .selected-card {
-           height:48px;
-	       border: 1px solid #ccc;
-	       padding: 8px 12px;
-	       cursor: pointer;
-	       display: flex;
-	       align-items: center;
-	       justify-content: space-between;
-	       background-color: white;
-    }
+                 body {
+                       background-color: #F9FAFB;
+                    }
+                   .container {
+                       display: flex;
+                       width: 100%;
+                       height: 100%;
+                       max-width: none;
+                   }
 
+                   .toggle-btn {
+                       background: #FF5F00;
+                       color: white;
+                       font-size: 1.500rem;
+                       border: none;
+                       border-radius: 50%;
+                       width: 2.500rem;
+                       height: 2.500rem;
+                       position: fixed;
+                       top: 1.250rem;
+                       right: 1.250rem;
+                       cursor: pointer;
+                       z-index: 5;
+                   }
+                  .toggle-btn {
+                     display: none;
+                  }
+                    .left-panel .details {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: flex-start;
+                        text-align: left;
+                        width: inherit;
+                        margin-top: 5.312rem;
+                        margin-left: 10%;
+                        margin-right: 10%;
+                    }
+                    .left-panel .sidbar {
+                        margin-left: 10%;
+                        margin-right: 10%;
+                    }
+                    .left-panel .details p {
+                        font-size: 1.250rem;
+                        line-height: 2;
+                        margin-bottom: 1.250rem;
+                    }
+                    .form-group input[type="checkbox"] {
+                        width: 1.125rem;
+                        height: 1.125rem;
+                    }
+                    .text-infos {
+                        display: flex;
+                        align-items: center;
+                        gap: 0.625rem;
+                    }
+                    .text-content {
+                        display: flex;
+                        flex-direction: column;
+                    }
+                    .details-message {
+                        display: none;
+                    }
+                    .labInput {
+                        font-family: Inter, sans-serif;
+                        font-weight: 500;
+                        font-size: 0.875rem;
+                        line-height: 1.250rem;
+                        letter-spacing: 0%;
+                        color: #344054;
 
-        .dropdown-list .dropdown-item:hover {
-            background-color: #f0f0f0;
-
-        }
-
-
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Inter, sans-serif;
-        }
-
-        body {
-            background-color: #f8f9fc;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            width: 100vw;
-        }
-
-        /* Conteneur principal (PLEIN ÉCRAN) */
-        .container {
-            display: flex;
-            width: 100vw;
-            height: 100vh;
-            background: white;
-            border-radius: 0;
-            overflow: hidden;
-        }
-
-        input::placeholder {
-            font-family: 'Arial', sans-serif;
-            color: var(--Gray-500, #667085);
-            font-size: 14px;
-            font-style: normal;
-            font-weight: 300;
-            line-height: 24px;
-        }
-        input:focus {
-            border: 2px solid #add2fa !important;
-            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
-            outline: none;
-        }
-
-       .form-group {
-            margin-bottom: 20px;
-       }
-       .form-group label {
-           display: block;
-           margin-bottom: 5px;
-       }
-       .form-group input, select {
-           width: 100%;
-           padding: 8px;
-           border: 1px solid #ccc;
-           border-radius: 5px;
-       }
-
-        /* SECTION GAUCHE - Détails transaction */
-        .left-panel {
-            background: linear-gradient(181deg, #FF5E00 0.57%, rgba(255, 69, 0, 0.70) 98.77%, #570001 134.01%), #000;
-            color: white;
-            padding: 50px;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            flex: 1;
-            width: 100%;
-            /*width: 588px;*/
-            /*height: 982px;*/
-            height: 1020px;
-            flex-shrink: 0;
-        }
-
-        .total {
-            font-size: 22px;
-            margin-top: 20px;
-        }
-
-        .total span {
-            font-size: 36px;
-            font-weight: bold;
-        }
-        .detsimg {
-            margin-bottom: 25px;
-        }
-        .icondetails {
-            width: 120px;
-        }
-        .details p {
-            margin: 15px 0;
-            font-size: 16px;
-        }
-
-        .details a {
-            color: white;
-            text-decoration: underline;
-        }
-
-        /* SECTION DROITE - Formulaire paiement */
-        .payment-panel {
-            padding: 50px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            background-color: #F9FAFB;
-            border-radius: 0;
-            flex: 2;
-            display: inline-flex;
-            padding: 133px 197px 51px 197px;
-            flex-direction: column;
-            justify-content: flex-end;
-            align-items: center;
-            gap: 251px;
-        }
-
-        .payment-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 124px;
-            margin-bottom: 100px;
-        }
-        .formm {
-            width: 530px;
-            margin-top: -35px;
-            margin-top: -110px;
-        }
-
-        .icon-container {
-            width: 50px;
-            height: 50px;
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 15px;
-            border-style: solid;
-            border: 1px solid #EAECF0;
-            background-color: #FFFFFF;
-        }
-
-        .icon-container i {
-            font-size: 24px;
-            color: #2d3748;
-        }
-
-        .text-container h3 {
-            font-size: 18px;
-            font-weight: bold;
-            color: #2d3748;
-        }
-
-        .text-container p {
-            line-height: 0.2;
-            line-height: 0.9;
-            margin: 2px 0 0;
-            font-size: 14px;
-            font-size: 15px;
-            color: #718096;
-        }
-
-        .payment-form label {
-            display: block;
-            font-size: 16px;
-            font-weight: bold;
-            margin-top: 15px;
-        }
-
-        .payment-form input {
-            width: 100%;
-            padding: 12px;
-            margin-top: 5px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-
-        .card-input {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: white;
-            border: 1px solid #ccc;
-            padding: 12px;
-            border-radius: 5px;
-        }
-
-        .card-input img {
-            height: 25px;
-        }
-
-        .card-details {
-            display: flex;
-            gap: 15px;
-            margin-top: 10px;
-        }
-
-        .card-details input {
-            flex: 1;
-        }
-
-        .terms {
-            display: flex;
-            align-items: center;
-            margin-top: 15px;
-            font-size: 14px;
-        }
-
-        .terms input {
-            margin-right: 10px;
-        }
-
-        .terms a {
-            color: #ff6b00;
-            text-decoration: none;
-        }
-
-        .pay-button {
-            width: 100%;
-            padding: 15px;
-            background: #ff6b00;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 18px;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-
-        .pay-button:hover {
-            background: #e65a00;
-        }
-
-        .secure-info {
-            text-align: center;
-            font-size: 14px;
-            color: #718096;
-            margin-top: 15px;
-        }
-        .sec {
-            font-family: sans-serif, Arial;
-            font-weight: 400;
-            line-height: 20px;
-            color: #677489;
-        }
-
-        footer {
-            text-align: center;
-            font-size: 14px;
-            margin-top: 20px;
-            color: #718096;
-        }
-
-        footer a {
-            color: #ff6b00;
-            text-decoration: none;
-        }
-
-             body {
-                   width: 100vw;
-                   background-color: #F9FAFB;
-                }
-               .container {
-                   display: flex;
-                   width: 100%;
-                   height: 100%;
-                   max-width: none;
-               }
-
-               .toggle-btn {
-                   background: #FF5F00;
-                   color: white;
-                   font-size: 24px;
-                   border: none;
-                   border-radius: 50%;
-                   width: 40px;
-                   height: 40px;
-                   position: fixed;
-                   top: 20px;
-                   right: 20px;
-                   cursor: pointer;
-                   z-index: 5;
-               }
-              .toggle-btn {
-                 display: none;
-              }
-                .left-panel .details {
-                    display: flex;
-                    flex-direction: column;
-                    align-items: flex-start;
-                    text-align: left;
-                    width: inherit;
-                    margin-top: 85px;
-                    margin-left: 10%;
-                    margin-right: 10%;
-                }
-                .left-panel .sidbar {
-                    margin-left: 10%;
-                    margin-right: 10%;
-                }
-                .left-panel .details p {
-                    font-size: 20px;
-                    line-height: 2;
-                    margin-bottom: 20px;
-                }
-                .form-group input[type="checkbox"] {
-                    width: 18px;
-                    height: 18px;
-                }
-                .text-infos {
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                }
-                .text-content {
-                    display: flex;
-                    flex-direction: column;
-                }
-                .details-message {
-                    display: none;
-                }
-                .labInput {
-                    font-family: Inter, sans-serif;
-                    font-weight: 500;
-                    font-size: 14px;
-                    line-height: 20px;
-                    letter-spacing: 0%;
-                    color: #344054;
-
-                }
-                #error-message {
-                    font-family: sans-serif, Arial;
-                    display: flex;
-                    width: 530px;
-                    padding: 16px;
-                    align-items: center;
-                    gap: 12px;
-                    border-radius: 12px;
-                    border: 1px solid var(--Error-300, #FDA29B);
-                    background: var(--Error-25, #FFFBFA);
-                    color: #D92D20;
-                    margin-top: -82px;
-                    margin-bottom: 30px;
-                    font-size: 14px;
-                    font-style: normal;
-                    font-weight: 600;
-                    line-height: 20px;
-                }
-                .lock-label {
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    justify-content: center;
-                    font-family: sans-serif, Arial;
-                    font-weight: 400;
-                    line-height: 20px;
-                    color: #677489;
-                }
-                .sec {
-                    margin-left: 4px;
-                    font-family: sans-serif, Arial;
-                    color: #677489;
-                    font-size: 14px;
-                    font-style: normal;
-                    font-weight: 400;
-                    line-height: 20px;
-                }
-                .footer-content {
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    font-family: sans-serif, Arial;
-                    font-weight: 400;
-                    line-height: 18px;
-                    color: #677489;
-                    margin-top: auto;
-                    width: 100%;
-                    position: absolute;
-                    bottom: 0;
-                    left: 0;
-                    padding: 10px 0;
-                }
-                .separator {
-                    margin: 0 5px;
-                    color: #adb5bd;
-                }
-                .textFooter {
-                    font-family: Arial, sans-serif;
-                    color: #6C6C84;
-                    font-size: 12px;
-                    font-style: normal;
-                    font-weight: 400;
-                }
-                .logoMbl {
-                    display: none;
-                }
-                .logo .navg {
-                  /*margin-left: 37px;
-                  margin-top: 25px;*/
-                }
-                .logo .mbl {
-                  display: none;
-                }
-                .flex-container {
-                    margin-top: 50px;
-               }
-                .text-infos .frame {
-                    border-radius: 10px;
-                    padding: 5px;
-                    border-style: solid;
-                    background-color: #FFFFFF;
-                    border: 1px solid #EAECF0;
-                    width: 48px;
-                    height: 48px;
-               }
-                .numcarte {
-                    position: relative;
-                    display: flex;
-                    align-items: center;
-                }
-                .numcarte1 {
-                    position: relative;
-                    display: flex !important;
-                    align-items: center;
-                }
-                .numcarte input {
-                    width: 100%;
-                    padding-right: 40px;
-                    height: 48px;
-                }
-                .numcarte img {
-                    position: absolute;
-                    right: 10px;
-                    width: 30px;
-                    height: auto;
-                    display: block;
-                }
-                #card-logo {
-                    position: absolute;
-                    right: 10px;
-                    width: auto;
-                    height: auto;
-                    display: block;
-                }
-                #card-logo1 {
-                    position: absolute;
-                    right: 10px;
-                    width: auto;
-                    height: auto;
-                    display: block;
-                }
-
-                #card-logo2 {
-                    position: absolute;
-                    right: 40px;
-                    width: auto;
-                    height: auto;
-                    display: block;
-                }
-                .cvc {
-                    position: relative;
-                    display: flex;
-                    align-items: center;
-                }
-                .cvc img {
-                    position: absolute;
-                    right: 10px;
-                    width: 30px;
-                    height: auto;
-                }
-                .textFooter img {
-                    width: 45px;
-                    height: 18px;
-                }
-                .col-md-5 {
-                    padding-right: 0;
-                    padding-left: 0;
-                }
-                   .total-box {
-                        color: white;
-                        border-radius: 10px;
+                    }
+                    #error-message {
+                        font-family: sans-serif, Arial;
+                        display: flex;
+                        width: 33.125rem;
+                        padding: 1.000rem;
+                        align-items: center;
+                        gap: 0.750rem;
+                        border-radius: 0.750rem;
+                        border: 0.062rem solid var(--Error-300, #FDA29B);
+                        background: var(--Error-25, #FFFBFA);
+                        color: #D92D20;
+                        margin-top: -5.125rem;
+                        margin-bottom: 1.875rem;
+                        font-size: 0.875rem;
+                        font-style: normal;
+                        font-weight: 600;
+                        line-height: 1.250rem;
+                    }
+                    .lock-label {
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        justify-content: center;
+                        font-family: sans-serif, Arial;
+                        font-weight: 400;
+                        line-height: 1.250rem;
+                        color: #677489;
+                    }
+                    .sec {
+                        margin-left: 0.250rem;
+                        font-family: sans-serif, Arial;
+                        color: #677489;
+                        font-size: 0.875rem;
+                        font-style: normal;
+                        font-weight: 400;
+                        line-height: 1.250rem;
+                    }
+                    .footer-content {
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        font-family: sans-serif, Arial;
+                        font-weight: 400;
+                        line-height: 1.125rem;
+                        color: #677489;
+                        margin-top: auto;
+                        width: 100%;
+                        position: absolute;
+                        bottom: 0;
+                        left: 0;
+                        padding: 0.625rem 0;
+                    }
+                    .separator {
+                        margin: 0 0.312rem;
+                        color: #adb5bd;
+                    }
+                    .textFooter {
                         font-family: Arial, sans-serif;
-                        width: fit-content;
-                    }
-
-                    .total-box .label {
-                        font-size: 14px;
-                        opacity: 0.8;
-                    }
-					.amount {
-	                        font-size: 40px;
-							line-height: 50px;
-							letter-spacing: 0%;
-	                        font-weight: 700;
-	                        font-family: 'DM Sans',sans-serif;
-							letter-spacing: -0.48px;
-	                    }
-                    .total-box .currency {
-                        font-size: 14px;
-                        font-size: 20px;
-                        margin-left: 5px;
-                        color: #FFF;
-                        font-family: "DM Sans";
+                        color: #6C6C84;
+                        font-size: 0.750rem;
                         font-style: normal;
                         font-weight: 400;
                     }
-
-                    .details {
-                        font-family: Arial, sans-serif;
+                    .logoMbl {
+                        display: none;
                     }
+                    .logo .navg {
+                      width:5.250rem;
+                      height:2.000rem;
 
-                .details h2 {
-                    margin-bottom: 30px;
-                    font-family: Arial, sans-serif;
-                    font-weight: 600;
-                    font-size: 18px;
-                }
-
-                .transaction-item {
-                    display: flex;
-                    align-items: center;
-                    margin-bottom: 20px;
-                }
-
-                .transaction-item i {
-                    font-size: 18px;
-                    margin-right: 10px;
-                    opacity: 0.8;
-                }
-
-                .transaction-item label {
-                    font-family: Arial, sans-serif;
-                    font-weight: 500;
-                    font-size: 16px;
-                    line-height: 24px;
-                    letter-spacing: 0%;
-                    text-align: center;
-                    margin: 0;
-                }
-                .transaction-item .value {
-                    margin: 0 30px;
-                    border-radius: 5px;
-                    color: #FFF;
-                    font-family: Arial, sans-serif;
-                    font-size: 16px;
-                    font-style: normal;
-                    font-weight: 500;
-                    line-height: 24px;
-                }
-                .subscribe-btn {
-                       width: 100%;
-                       padding: 10px;
-                       background: #FF5F00;
-                       cursor: pointer;
-                       font-weight: 500;
-                       font-size: 18px;
-                       line-height: 28px;
-                       font-family: sans-serif, Arial;
-                       font-style: normal;
-                       color: #FFFFFF;
-                       border-radius: 8px;
-                       border: 1px solid #FF5F00;
-                       box-shadow: 0px 1px 2px 0px rgba(16, 24, 40, 0.05);
+                    }
+                    .logo .mbl {
+                      display: none;
+                    }
+                    .flex-container {
+                        margin-top: 3.125rem;
                    }
-                   .montant {
-					
-                        font-family: sans-serif, Inter;
-                        font-weight: 700;
-                        font-size: 18px;
-                        line-height: 28px;
+                    .text-infos .frame {
+                        border-radius: 0.625rem;
+                        padding: 0.312rem;
+                        border-style: solid;
+                        background-color: #FFFFFF;
+                        border: 0.062rem solid #EAECF0;
+                        width: 3.000rem;
+                        height: 3.000rem;
                    }
-                   .curr {
-                        font-family: sans-serif, Inter;
-                        font-weight: 700;
-                        font-size: 18px;
-                        line-height: 28px;
-                   }
-
-                   /* RESPONSIVE */
-                   @media (max-width: 768px) {
-                       .container {
-                            flex-direction: column;
-                       }
-                       .subscribe-btn {
-							opacity: 50%;
-                            width: 95%;
-                            font-weight: 600;
-                            font-size: 16px;
-                        }
-						
-						.subscribe-btn:hover{
-							opacity: 100%;
-						}
-                        .toggle-btn:focus {
-                            outline: none;
-                        }
-                       .logo {
-                            display: none;
-                       }
-                       .logoMbl {
-                            display: block;
-                            margin-top: 15px;
-                            position: fixed;
-                            margin-left: 15px;
-                        }
-                    .left-panel {
-                        width: 100%;
-                        text-align: center;
+                    .numcarte {
+                        position: relative;
+                        display: flex;
                         align-items: center;
-                        padding: 17px 20px;
-                        width: 100%;
-                        position: fixed !important;
-                        top: 49px !important;
-                        height: auto;
-                        z-index: 10;
-                        background: linear-gradient(181deg, #FF5E00 0.99%, rgba(255, 69, 0, 0.70) 186.23%, #570001 375.93%), #000;
-                        width: 100%;
-                        height: auto;
-                        flex-shrink: 0;
                     }
-                    .payment-header {
+                    .numcarte1 {
+                        position: relative;
+                        display: flex !important;
+                        align-items: center;
+                    }
+                    .numcarte input {
+                        width: 100%;
+                        padding-right: 2.500rem;
+                        height: 3.000rem;
+                    }
+                    .numcarte img {
+                        position: absolute;
+                        right: 0.625rem;
+                        width: 1.875rem;
+                        height: auto;
                         display: block;
-                        margin-bottom: 20px;
                     }
-                    .icon-container {
-                        width: 48px;
-                        height: 48px;
+                    #card-logo {
+                        position: absolute;
+                        right: 0.625rem;
+                        width: auto;
+                        height: auto;
+                        display: block;
                     }
-                    .text-container {
-                        margin-top: 10px;
-                        width: 350px;
+                    #card-logo1 {
+                        position: absolute;
+                        right: 0.625rem;
+                        width: auto;
+                        height: auto;
+                        display: block;
                     }
 
-                    .text-container p {
-                        line-height: normal;
+                    #card-logo2 {
+                        position: absolute;
+                        right: 2.500rem;
+                        width: auto;
+                        height: auto;
+                        display: block;
                     }
-                       .toggle-btn {
-                           display: block;
-                           top: 58px;
-                           margin-right: -12px;
-                           z-index: 11;
-                           background: none;
-                       }
-                       .logo {
-                            background-color: #F9FAFB;
-                            margin-top: 25px;
-                       }
-                       .logo .mbl {
-                            display: block;
-                            height: 24px;
-                            margin-left: 30px;
-                            position: relative;
-                            top: -10px;
-                            margin-left: 36px;
-                       }
-                       .logo .navg {
-                          display: none;
+                    .cvc {
+                        position: relative;
+                        display: flex;
+                        align-items: center;
+                    }
+                    .cvc img {
+                        position: absolute;
+                        right: 0.625rem;
+                        width: 1.875rem;
+                        height: auto;
+                    }
+                    .textFooter img {
+                        width: 2.812rem;
+                        height: 1.125rem;
+                    }
+                    .col-md-5 {
+                        padding-right: 0;
+                        padding-left: 0;
+                    }
+                       .total-box {
+                            color: white;
+                            border-radius: 0.625rem;
+                            font-family: Arial, sans-serif;
+                            width: fit-content;
                         }
-                        .text-infos {
-                            display: block;
-                            margin: 0px;
+
+                        .total-box .label {
+                            font-size: 0.875rem;
+                            opacity: 0.8;
                         }
-                        #error-message {
-                            display: flex;
-                            width: 100%;
-                            padding: 16px;
-                            align-items: center;
-                            gap: 12px;
-                            border-radius: 12px;
-                            border: 1px solid var(--Error-300, #FDA29B);
-                            background: var(--Error-25, #FFFBFA);
-                            color: #D92D20;
-                            margin-top: 0px;
-                            font-size: 14px;
+                        .amount {
+
+                                font-family: "Inter", sans-serif;
+                                font-optical-sizing: auto;
+                                font-weight: 700;
+                                font-style: normal;
+                                font-size: 2.500rem;
+                                line-height: 3.125rem;
+                                letter-spacing: 0.125rem;
+                            }
+
+                       .dhs {
+                                font-style: normal;
+                                letter-spacing: 0.5%;
+                                line-height: 165%;
+                                font-size: 1.000rem;
+                            }
+                        .total-box .currency {
+                            font-size: 0.875rem;
+                            font-size: 1.250rem;
+                            margin-left: 0.312rem;
+                            color: #FFF;
+                            font-family: "DM Sans";
                             font-style: normal;
-                            font-weight: 600;
-                            line-height: 20px;
+                            font-weight: 400;
                         }
-                       .payment-panel {
-                         top: 49px;
-                         top: 55px;
-                         top: 115px;
-                         position: relative;
-                         width: 100%;
-                         padding: 15px;
-                         padding: revert-layer;
-                         gap: 0px;
-                       }
-                       .flex-container {
-                            display: flex;
-                            justify-content: space-between;
-                            width: 100%;
-                            height: 20px;
-                            margin-top: 0px;
-                       }
-                       .left-panel .details {
-                            text-align: left;
-                            /*padding: 10px;*/
-                            display: none;
-                            /*margin-top: 0;*/
-                            margin-top: 20px;
-                         }
-                         .detsimg {
-                            display: none;
-                         }
-                         .left-panel .details p {
-                            font-size: 14px;
-                            line-height: 1.4;
-                            margin-bottom: 10px;
-                        }
-                        .left-panel h2 {
-                           font-size: 16px;
-                         }
-                         .details-message {
-                            font-size: 14px;
-                            display: block;
-                            margin-right: 30px;
-                            white-space: nowrap;
-                            color: #FFFFFF;
+
+                        .details {
                             font-family: Arial, sans-serif;
                         }
-                        .transaction-item label {
-                            font-size: 14px;
-                        }
-                        .transaction-item .value {
-                            border-radius: 6px;
-                            background: rgba(255, 255, 255, 0.04);
-                            font-size: 14px;
-                            margin-right: auto;
-                            min-width: 171px;
-                        }
-                        .details h2 {
-                            margin-bottom: 20px;
-                        }
-                        .dhs {
+
+                    .details h2 {
+                        margin-bottom: 1.875rem;
+                        font-family: Arial, sans-serif;
+                        font-weight: 600;
+                        font-size: 1.125rem;
+                    }
+
+                    .transaction-item {
+                        display: flex;
+                        align-items: center;
+                        margin-bottom: 1.250rem;
+                    }
+
+                    .transaction-item i {
+                        font-size: 1.125rem;
+                        margin-right: 0.625rem;
+                        opacity: 0.8;
+                    }
+
+                    .transaction-item label {
+                        font-family: Arial, sans-serif;
+                        font-weight: 500;
+                        font-size: 1.000rem;
+                        line-height: 1.500rem;
+                        letter-spacing: 0%;
+                        text-align: center;
+                        margin: 0;
+                    }
+                    .transaction-item .value {
+                        margin: 0 1.875rem;
+                        border-radius: 0.312rem;
+                        color: #FFF;
+                        font-family: Arial, sans-serif;
+                        font-size: 1.000rem;
+                        font-style: normal;
+                        font-weight: 500;
+                        line-height: 1.500rem;
+                    }
+                    .subscribe-btn {
+                           width: 100%;
+                           padding: 0.625rem;
+                           background: var(--main-color);
+                           cursor: pointer;
+                           font-weight: 500;
+                           font-size: 1.125rem;
+                           line-height: 1.750rem;
+                           font-family: sans-serif, Arial;
+                           font-style: normal;
+                           color: var(--buton-text-color);
+                           border-radius: 0.500rem;
+                           border: 0.062rem solid var(--button-border-color);
+                           opacity:0.5;
+                           box-shadow: 0.000rem 0.062rem 0.125rem 0.000rem rgba(16, 24, 40, 0.05);
+                       }
+
+                       .loading-icon {
+                              width: 1.250rem;       /* optional: control size */
+                              height: 1.250rem;
+                              animation: spin 1s linear infinite;
+                            }
+
+                       @keyframes spin {
+                              from { transform: rotate(0deg); }
+                              to   { transform: rotate(360deg); }
+                            }
+
+
+                    .subscribe-btn:disabled {
+                            opacity: 0.5;
+                            cursor: not-allowed;
+                            }
+                       .montant {
+                            font-family: "Inter", sans-serif;
+                            font-optical-sizing: auto;
+                            font-weight: 700;
                             font-style: normal;
-                            line-height: 24px;
-							vertical-align: middle;
-                        }
-                        .total-box {
-                            margin-left: 0;
-                            margin-top: -5px;
-                        }
-                        .total-box .label {
-                            display: none;
-                        }
-						.amount {
-		                        font-size: 20px;
-								line-height: 46.8px;
-		                        font-weight: 700;
-								font-family: 'DM Sans',sans-serif;
-								letter-spacing: -0.48px;
-		                    }
-                        .montant {
-                            font-style: normal;
-                            line-height: 24px;
-							font-weight: 600;
-							font-size: 16px;
-                        }
-                        
+                            letter-spacing: 0.000rem;
+                            font-size: 1.125rem;
+                            line-height: 1.750rem;
+                       }
                        .curr {
-                            font-weight: 600;
-                            font-size: 16px;
+                            font-family: sans-serif, Inter;
+                            font-weight: 700;
+                            font-size: 1.125rem;
+                            line-height: 1.750rem;
                        }
 
-                        .total-box .currency {
-                            font-size: 12px;
-                            font-size: 14px;
-                            margin-left: 5px;
-                        }
-                         .payment-panel h2, h3, h4, h5 {
-                            font-size: 16px;
-                        }
-                        .form-group.d-flex {
-                            white-space: nowrap;
-                            overflow: hidden;
-                            text-overflow: ellipsis;
-                            font-size: 14px;
-                        }
-                         .transaction-item {
-                            margin-bottom: 13px;
-                        }
-                        .form-group .enter {
-                            font-size: 14px;
-                        }
-                         .form-group.lock-label {
-                            white-space: normal;
-                            overflow: hidden;
-                            text-overflow: ellipsis;
-                        }
-                        .sec {
-                            font-size: 12px;
-                        }
-                        .footer {
-                            text-align: center;
-                            top: 495px;
+                       /* RESPONSIVE */
+                       @media (max-width: 768px) {
+                           .container {
+                                flex-direction: column;
+                           }
+                           .loading-icon {
+                                  width: 1.125rem;       /* optional: control size */
+                                  height: 1.125rem;
+                                  animation: spin 1s linear infinite;
+                                }
+                           .subscribe-btn {
+                                opacity: 50%;
+                                font-weight: 600;
+                                font-size: 1.000rem;
+                            }
+
+
+                            .toggle-btn:focus {
+                                outline: none;
+                            }
+                           .logo {
+                                display: none;
+                           }
+                           .logoMbl {
+                            display: block;
+                            width: 100%;
+                            padding-top: 0.812rem;
                             position: fixed;
-                        }
-                        .footer-content {
-                            flex-direction: column;
+                            padding-left: 0.938rem;
+                            z-index: 10;
+                            background: #ffffff;
+                            padding-bottom: 1rem;
+                            }
+                        .left-panel {
+                            width: 100%;
+                            text-align: center;
                             align-items: center;
-                            margin-top: 25px;
+                            padding: 1.062rem 1.250rem;
                             width: 100%;
-                            position: relative;
-                            padding: 0;
-                        }
-                         .policy-links {
-                            align-self: flex-start;
-                            text-align: left;
+                            position: fixed !important;
+                            top: 3.062rem !important;
+                            height: auto;
+                            z-index: 10;
+                            background: linear-gradient(181deg, var(--main-color) 0.99%, var(--main-color) 186.23%, #570001 375.93%), #000;
                             width: 100%;
-                            font-size: 14px;
-                            margin: 8px;
-                            margin-top: 15px;
+                            height: auto;
+                            flex-shrink: 0;
                         }
-                        .textFooter {
-                            font-size: 12px;
+                        .payment-header {
+                            display: block;
+                            margin-bottom: 1.250rem;
                         }
-                        .formm {
-                            width: auto;
-                            width: 95%;
-                            margin-top: 0px;
+                        .icon-container {
+                            width: 3.000rem;
+                            height: 3.000rem;
                         }
-                        .row.h-100 {
-                            height: auto !important;
-                        }
-                         .custom-checkbox-label {
-                             font-size: 13px;
+                        .text-container {
+                            margin-top: 0.625rem;
+                            width: 21.875rem;
                         }
 
-                       .custom-checkbox-label .terms-link {
-                           margin-left: 3px;
-                       }
-                        .custom-checkbox {
-                           margin-right: 5px;
+                        .text-container p {
+                            line-height: normal;
                         }
+                           .toggle-btn {
+                               display: block;
+                               top: 3.625rem;
+                               margin-right: -0.750rem;
+                               z-index: 11;
+                               background: none;
+                           }
+                           .logo {
+                                background-color: #F9FAFB;
+                                margin-top: 1.562rem;
+                           }
+                           .logo .mbl {
+                                display: block;
+                                height: 1.500rem;
+                                margin-left: 1.875rem;
+                                position: relative;
+                                top: -0.625rem;
+                                margin-left: 2.250rem;
+                           }
+                           .logo .navg {
+                              display: none;
+                            }
+                            .text-infos {
+                                display: block;
+                                margin: 0.000rem;
+                            }
+                            #error-message {
+                                display: flex;
+                                width: 100%;
+                                padding: 1.000rem;
+                                align-items: center;
+                                gap: 0.750rem;
+                                border-radius: 0.750rem;
+                                border: 0.062rem solid var(--Error-300, #FDA29B);
+                                background: var(--Error-25, #FFFBFA);
+                                color: #D92D20;
+                                margin-top: 0.000rem;
+                                font-size: 0.875rem;
+                                font-style: normal;
+                                font-weight: 600;
+                                line-height: 1.250rem;
+                            }
+                           .payment-panel {
+                             top: 3.062rem;
+                             top: 3.438rem;
+                             top: 7.188rem;
+                             position: relative;
+                             width: 100%;
+                             padding: 0.938rem;
+                             padding: revert-layer;
+                             gap: 0.000rem;
+                           }
+                           .flex-container {
+                                display: flex;
+                                justify-content: space-between;
+                                width: 100%;
+                                height: 1.250rem;
+                                margin-top: 0.000rem;
+                           }
+                           .left-panel .details {
+                                text-align: left;
+                                /*padding: 0.625rem;*/
+                                display: none;
+                                /*margin-top: 0;*/
+                                margin-top: 1.250rem;
+                             }
+                             .detsimg {
+                                display: none;
+                             }
+                             .left-panel .details p {
+                                font-size: 0.875rem;
+                                line-height: 1.4;
+                                margin-bottom: 0.625rem;
+                            }
+                            .left-panel h2 {
+                               font-size: 1.000rem;
+                             }
+                             .details-message {
+                                    font-size: 0.875rem;
+                                    display: block;
+                                    margin-right: 1.375rem;
+                                    white-space: nowrap;
+                                    color: #FFFFFF;
+                                    font-family: 'Inter';
+                                    font-weight: 400;
+                                    font-style: normal;
+                                    line-height: 1.500rem;
+                            }
+                            .transaction-item label {
+                                font-size: 0.875rem;
+                            }
+                            .transaction-item .value {
+                                border-radius: 0.375rem;
+                                font-size: 0.875rem;
+                                margin-right: auto;
+                                min-width: 10.688rem;
+                            }
+                            .details h2 {
+                                margin-bottom: 1.250rem;
+                            }
 
+                            .total-box {
+                                margin-left: 0;
+                                margin-top: -0.750rem;
+                            }
+                            .total-box .label {
+                                display: none;
+                            }
+                            .amount {
+                                    font-family: "Inter", sans-serif;
+                                    font-optical-sizing: auto;
+                                    font-weight: 700;
+                                    font-style: normal;
+                                    font-size: 1.250rem;
+                                    line-height: 3.125rem;
+                                    letter-spacing: 0.125rem;
+                                }
+
+                              .dhs {
+                                font-style: normal;
+                                font-family: inter;
+                                font-weight:400;
+                                letter-spacing: 0;
+                                line-height: 1.125rem;
+                                font-size: 0.875rem;
+                            }
+
+                            .montant {
+                                font-family: "Inter", sans-serif;
+                                font-optical-sizing: auto;
+                                font-style: normal;
+                                line-height: 1.500rem;
+                                font-weight: 600;
+                                font-size: 1.000rem;
+                            }
+
+                           .curr {
+                                font-weight: 600;
+                                font-size: 1.000rem;
+                           }
+
+                            .total-box .currency {
+                                font-size: 0.750rem;
+                                font-size: 0.875rem;
+                                margin-left: 0.312rem;
+                            }
+                             .payment-panel h2, h3, h4, h5 {
+                                font-size: 1.000rem;
+                            }
+                            .form-group.d-flex {
+                                white-space: nowrap;
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                                font-size: 0.875rem;
+                            }
+                             .transaction-item {
+                                margin-bottom: 0.812rem;
+                            }
+                            .form-group .enter {
+                                font-size: 0.875rem;
+                            }
+                             .form-group.lock-label {
+                                white-space: normal;
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                            }
+                            .sec {
+                                font-size: 0.750rem;
+                            }
+                            .footer {
+                                text-align: center;
+                                top: 30.938rem;
+                                position: fixed;
+                            }
+                            .footer-content {
+                                flex-direction: column;
+                                align-items: center;
+                                margin-top: 1.562rem;
+                                width: 100%;
+                                position: relative;
+                                padding: 0;
+                            }
+                             .policy-links {
+                                align-self: flex-start;
+                                text-align: left;
+                                width: 100%;
+                                font-size: 0.875rem;
+                                margin: 0.500rem;
+                                margin-top: 0.938rem;
+                            }
+                            .textFooter {
+                                font-size: 0.750rem;
+                            }
+                            .formm {
+                                width: auto;
+                                width: 95%;
+                                margin-top: 0.000rem;
+                            }
+                            .row.h-100 {
+                                height: auto !important;
+                            }
+                             .custom-checkbox-label {
+                                 font-size: 0.812rem;
+                            }
+
+                           .custom-checkbox-label .terms-link {
+                               margin-left: 0.188rem;
+                           }
+                            .custom-checkbox {
+                               margin-right: 0.312rem;
+                            }
+                            .zoom-75,
+                          .zoom-110,
+                          .zoom-120 {
+                            zoom: 1; /* reset to normal on mobile */
+                          }
+                          }
+
+                    .custom-left-panel {
+                      flex: 0 0 40%;
+                      max-width: 40%;
+                    }
+
+                    .payment-panel {
+                      flex: 0 0 60%;
+                    }
+
+                    @media (max-width: 768px) {
+                      .custom-left-panel,
+                      .payment-panel {
+                        flex: 0 0 100%;
+                        max-width: 100%;
+                        margin: auto;
                       }
 
-                .custom-left-panel {
-                  flex: 0 0 40%;
-                  max-width: 40%;
+                      .zoom-75,
+                      .zoom-110,
+                      .zoom-120 {
+                        zoom: 1; /* reset to normal on mobile */
+                      }
+                    }
+
+                    .expired-card {
+                      color: red;
+                    }
+
+                    .card-number {
+                        font-family: Font family/font-family-body;
+                        font-weight: 500;
+                        font-size: Font size/text-md;
+                        line-height: Line height/text-md;
+                        letter-spacing: 0%;
+                    }
+
+                    input:focus,
+                    input.form-control:focus {
+                        border-color: var(--button-border-color) !important;
+                        box-shadow: none;
+                        outline: none !important;
+                    }
+
+                    .form-control{
+                        height: 3.000rem;
+                    }
+                    #selectedText{
+                        font-weight: 478;
+                        font-size: 24;
+                        width: 29.875rem;
+                        height: 1.500rem;
+                        gap: 0.500rem;
+                        font-family: Inter;
+                        font-weight: 400;
+                        font-size: 1.000rem;
+                        line-height: 1.500rem;
+                        color: #101828;
+                    }
+
+
+                    .swal-toast {
+                      display: flex !important;
+                      font-family: Inter, sans-serif;
+                      font-weight: 600;
+                      line-height: 1.250rem;
+                      letter-spacing: 0%;
+                      align-items: center;
+                      gap: 0.750rem;
+                      font-size: 0.875rem;
+                      border-radius: 0.750rem;
+                      box-shadow: 0 0.125rem 0.625rem rgba(0, 0, 0, 0.08);
+                      white-space: nowrap;
+                      max-width: none;
+                      overflow: hidden;        /* hides any extra content that overflows */
+                      max-width: 100%;         /* ensures it doesn't exceed parent container */
+                      width: unset;      /* just fits the content without stretching */
+                      box-sizing: border-box;
+                    }
+                    div:where(.swal2-container) img:where(.swal2-image){
+                        margin: 0em !important;
+                    }
+                    div:where(.swal2-container) h2:where(.swal2-title) {
+                        font-size: 0.875rem !important;
+                    }
+                    body.swal2-toast-shown .swal2-container {
+                        width: 25.938rem !important;
+                    }
+
+                    .rotate-180 {
+                      transform: rotate(-180deg);
+                      transition: transform 0.3s ease;
+                    }
+
+                    .rotate-0 {
+                      transform: rotate(0deg);
+                      transition: transform 0.3s ease;
+                    }
+
+                    .swal-close-btn-right {
+                      position: absolute !important;
+                      right: 0.500rem !important;
+                      left: auto !important;
+                      top: 50% !important;
+                      transform: translateY(-50%) !important;
+                      color: #A4A7AE;
+                      font-size: 1.000rem;
+                    }
+
+                    .dropdown-item {
+                        padding: .25rem .5rem !important;
+                    }
+
+                    .delete-popup {
+                      background: white;
+                      border-radius: 0.750rem;
+                      padding: 1.000rem;
+                      width: 90%;            /* responsive width */
+                      max-width: 25.000rem;
+                      min-width: 20.250rem;
+                      max-height: 18.625rem;
+                      min-height: 14.375rem;      /* desktop max */
+                      height: auto;          /* let content define height */
+                      position: relative;
+                      box-sizing: border-box;
+                    }
+
+                    .close-btn {
+                      color: #A4A7AE;
+                      position: absolute;
+                      top: 0.625rem;
+                      right: 0.625rem;
+                      border: none;
+                      background: none;
+                      font-size: 1.125rem;
+                      cursor: pointer;
+                    }
+
+                    .btn-cancel,
+                    .btn-delete {
+                      font-family: Inter, sans-serif;
+                      height: 2.750rem !important;   /* force the height */
+                      max-height: 2.750rem;          /* ensures it won't shrink */
+                      line-height: 2.750rem;         /* centers text vertically */
+                      flex: 1;                /* flexible size */
+                      font-weight: 600;
+                      border-radius: 0.500rem;
+                      min-width: 7.500rem;       /* prevents shrinking too much */
+                    }
+
+                    /* Cancel button */
+                    .btn-cancel {
+                      border: 0.062rem solid #ccc;
+                      background: white;
+                      color: #414651;
+                    }
+
+                    /* Delete button */
+                    .btn-delete {
+                      background: #D92D20;
+                      color: white;
+                      border: none;
+                    }
+
+                    .popup-actions {
+                      margin-top: 1.500rem;
+                      display: flex;          /* use flexbox */
+                      gap: 0.750rem;
+                      align-items: center;          /* space between buttons */
+                      justify-content: center;
+                      flex-wrap: wrap;        /* wrap on small screens */
+                    }
+
+                    /* 📱 Mobile optimization */
+                    @media (max-width: 480px) {
+                      .btn-cancel,
+                      .btn-delete {
+                        width: 18.250rem;          /* full width buttons */
+                        height: 2.750rem;
+                        flex: 1;                /* flexible size */
+                        font-weight: 600;
+                      }
+                      .popup-actions {
+                        flex-direction: column;
+                        padding-top: 0.125rem;
+                      }
+
+                      .delete-popup {
+                      /* responsive width */
+                        max-width:20.250rem;
+
+                        .zoom-75,
+                          .zoom-110,
+                          .zoom-120 {
+                            zoom: 1; /* reset to normal on mobile */
+                          }
+                    }
+
+                    @media (max-width : 358){
+                        .generalConditionLabel{
+                            display: block;
+                            margin-top: 0.312rem;
+                        }
+                    }
+            .error-border {
+                  border: 0.062rem solid #FDA29B;
                 }
 
-                .payment-panel {
-                  flex: 0 0 60%;
-                  max-width: 60%;
-                }
 
-                @media (max-width: 767.98px) {
-                  .custom-left-panel,
-                  .payment-panel {
-                    flex: 0 0 100%;
-                    max-width: 100%;
-                    margin: auto;
-                  }
-                }
 
-                .expired-card {
-                  color: red;
-                }
 
-                .card-number {
-                    font-family: Font family/font-family-body;
-                    font-weight: 500;
-                    font-size: Font size/text-md;
-                    line-height: Line height/text-md;
-                    letter-spacing: 0%;
-                }
 
-                input:focus,
-                input.form-control:focus {
-                    border-color: #FDA29B !important;
-                    box-shadow: none;
-                    outline: none !important;
-                }
-				
-				.form-control{
-					height: 48px;
-				}
-                #selectedText{
-                    font-weight: 478;
-                    font-size: 24;
-                    width: 478px;
-                    height: 24px;
-                    gap: 8px;
-                    font-family: Inter;
-                    font-weight: 400;
-                    font-size: 16px;
-                    line-height: 24px;
-                    color: #101828;
-                }
-				
 
-                .swal-toast {
-                  display: flex !important;
-				  font-family: Inter, sans-serif;
-				  font-weight: 600;
-				  line-height: 20px;	
-				  letter-spacing: 0%;
-                  align-items: center;
-                  gap: 12px;
-                  font-size: 14px;
-                  border-radius: 12px;
-                  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-                  white-space: nowrap;
-                  max-width: none;
-                  overflow: hidden;        /* hides any extra content that overflows */
-                  max-width: 100%;         /* ensures it doesn't exceed parent container */
-                  width: unset;      /* just fits the content without stretching */
-                  box-sizing: border-box;
-                }
-				div:where(.swal2-container) img:where(.swal2-image){
-					margin: 0em !important;
-				}
-				div:where(.swal2-container) h2:where(.swal2-title) {
-				    font-size: 14px !important;
-				}
-                body.swal2-toast-shown .swal2-container {
-                    width: 415px !important;
-                }
-
-                .rotate-180 {
-                  transform: rotate(-180deg);
-                  transition: transform 0.3s ease;
-                }
-
-                .rotate-0 {
-                  transform: rotate(0deg);
-                  transition: transform 0.3s ease;
-                }
-				
-				.swal-close-btn-right {
-				  position: absolute !important;
-				  right: 8px !important;
-				  left: auto !important;
-				  top: 50% !important;
-				  transform: translateY(-50%) !important;
-				  color: #A4A7AE;
-				  font-size: 16px;
-				}
-
-				.dropdown-item {
-				    padding: .25rem .5rem !important;
-				}
-				
-				.delete-popup {
-				  background: white; 
-				  border-radius: 12px; 
-				  padding: 16px; 
-				  width: 90%;            /* responsive width */
-				  max-width: 400px;
-				  min-width: 324px;
-				  max-height: 298px;
-				  min-height: 230px;      /* desktop max */
-				  height: auto;          /* let content define height */
-				  position: relative;
-				  box-sizing: border-box;
-				}
-
-				.close-btn {
-				  color: #A4A7AE;
-				  position: absolute;
-				  top: 10px;
-				  right: 10px;
-				  border: none;
-				  background: none;
-				  font-size: 18px;
-				  cursor: pointer;
-				}
-
-				.btn-cancel,
-				.btn-delete {
-				  font-family: Inter, sans-serif;
-				  height: 44px !important;   /* force the height */
-				  max-height: 44px;          /* ensures it won't shrink */
-				  line-height: 44px;         /* centers text vertically */
-				  flex: 1;                /* flexible size */
-				  font-weight: 600;
-				  border-radius: 8px;
-				  min-width: 120px;       /* prevents shrinking too much */
-				}
-
-				/* Cancel button */
-				.btn-cancel {
-				  border: 1px solid #ccc;
-				  background: white;
-				  color: #414651;
-				}
-
-				/* Delete button */
-				.btn-delete {
-				  background: #D92D20;
-				  color: white;
-				  border: none;
-				}
-
-				.popup-actions {
-				  margin-top: 24px;
-				  display: flex;          /* use flexbox */
-				  gap: 12px;
-				  align-items: center;          /* space between buttons */
-				  justify-content: center;
-				  flex-wrap: wrap;        /* wrap on small screens */
-				}
-
-				/* 📱 Mobile optimization */
-				@media (max-width: 480px) {
-				  .btn-cancel,
-				  .btn-delete {
-				    width: 292px;          /* full width buttons */
-					height: 44px;
-					flex: 1;                /* flexible size */
-					font-weight: 600;
-				  }
-				  .popup-actions {
-				    flex-direction: column;
-					padding-top: 2px;
-				  }
-				  
-				  .delete-popup {
-		          /* responsive width */
-					max-width:324px;
-				}
-				
-				@media (max-width : 358){
-					.generalConditionLabel{
-						display: block;
-						margin-top: 5px;
-					}
-				}
-						
     </style>
 </head>
 <body>
@@ -1311,22 +1416,36 @@
 <div class="container-fluid h-100">
     <!-- SECTION GAUCHE -->
     <div class="row h-100">
-        <img alt="Image" class="logoMbl" th:src="@{/images/logo_naps_mb.svg}">
-        <div class="row d-flex flex-row custom-left-panel">
-            <div class="left-panel d-flex flex-column">
+        <div class="logoMbl" >
+            <button type="button" style="border: none;background: none;" onclick="cancelPayment()">
+                <img alt="Image"   style="width:1.250rem;height:1.250rem;" th:src="@{/images/leftArowMB.svg}">
+            </button>
+            <img alt="Image" style="width:3.938rem;height:1.500rem;"  th:src="@{/images/logoNapsNPMB.svg}">
+
+        </div>
+
+        <div class="row d-flex flex-row custom-left-panel zoom-target">
+            <div class="left-panel d-flex flex-column"
+             th:style="${commercantTheme != null} ?
+                'background: linear-gradient(181deg, ' + ${commercantTheme.bkColor} + ' 0.57%, ' + ${commercantTheme.bkColorSecondary} + ' 98.77%, #570001 134.01%), #000;' :
+                'background: linear-gradient(181deg, #FF5E00 0.57%, #ff4500b3 98.77%, #570001 134.01%), #000;'">
+
                 <div class="sidbar content-wrapper d-flex flex-column w-100">
                     <div class="logo">
-                        <img alt="Image" class="navg" th:src="@{/images/logo_naps_nav.svg}">
+                        <button type="button" style=" outline: none; box-shadow: none; border: none;background: none;" onclick="cancelPayment()">
+                            <img alt="Image"   style="width:1.688rem;height:1.625rem;" th:src="@{/images/leftArow.svg}">
+                        </button>
+                        <img alt="Image"  class="navg" th:src="@{/images/logoNapsNP.svg}">
                     </div>
                     <div class="flex-container">
                         <div class="total-box">
                             <div class="label">Total</div>
-                            <div>
+                            <div style="margin-top: -0.125rem;">
                                 <span class="amount" th:text="${demandeDto.montantStr}"></span>
                                 <span class="dhs">DH</span>
                             </div>
                         </div>
-                        <p class="details-message"><img alt="Image" class="affich_dets" th:src="@{/images/affich_dets.svg}"></p>
+                        <p class="details-message"><span>Afficher les détails</span></p>
                     </div>
                 </div>
 
@@ -1377,8 +1496,8 @@
 
 
         <!-- SECTION DROITE -->
-        <div class="col-md-8 col-12 payment-panel d-flex flex-column justify-content-center align-items-center">
-            <div class="formm">
+        <div class="col-md-8 col-12 payment-panel d-flex flex-column  align-items-center zoom-target">
+            <div  class="formm">
                 <div class="payment-header">
                     <div class="icon-container">
                         <img alt="frame" class="frame" th:src="@{/images/frame.svg}">
@@ -1389,7 +1508,7 @@
                     </div>
                 </div>
 
-                <form method="post" th:action="@{/processpayment}" th:object="${demandeDto}">
+                <form id="paymentForm" method="post" th:action="@{/processpayment}" th:object="${demandeDto}">
 
                     <!-- Affichage du message d'erreur -->
                     <div th:if="${error}" id="error-message">
@@ -1399,68 +1518,37 @@
 
                     <div class="form-group" >
                         <label class="labInput">Nom sur la carte</label>
-                        <input class="form-control" style="border-radius: 8px 8px 8px 8px;"
+                        <input class="form-control" style="border-radius: 0.500rem 0.500rem 0.500rem 0.500rem;"
                                placeholder="Entrez le nom du porteur de la carte"
                                required="required"
                                type="text"
+                               id="nomSurCarte"
                                maxlength="40">
                     </div>
-
-                    <!-- Affichage de la liste déroulante si des cartes existent -->
-                    <!--                    <div id="cardSelectDiv" th:if="${demandeDto.cartes != null and #lists.size(demandeDto.cartes) > 0}" class="form-group">-->
-                    <!--							<label class="labInput">Informations de votre carte</label>-->
-
-                    <!--                        <select id="selectCard" th:field="*{demPan}" onchange="updateCardDetails()" class="form-control">-->
-                    <!--                            <option value="">Sélectionnez une carte</option>-->
-                    <!--                            <option th:each="carte : ${demandeDto.cartes}"-->
-                    <!--                                    th:value="${carte.carte}"-->
-                    <!--                                    th:data-year="${carte.year}"-->
-                    <!--                                    th:data-month="${carte.moisValue}">-->
-                    <!--                                    <span th:text="${carte.pcidsscarte}"></span>-->
-                    <!--                                    <span th:text="${carte.moisValue + '/' + #strings.substring(carte.year, 2, 4)}"></span>-->
-                    <!--                            </option>-->
-                    <!--                            <option value="newCard">Utiliser une nouvelle carte</option>-->
-                    <!--                        </select>-->
-                    <!--                    </div>-->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                    <label style="color: #344054;font-size: 14px; font-weight: 500; line-height: 24px; font-family: Inter,sans-serif;" class="labInput">Informations de votre carte</label>
-                    <div id="cardSelectDiv" th:if="${demandeDto.cartes != null and #lists.size(demandeDto.cartes) > 0}" style="margin-bottom: 0px;" class="form-group custom-dropdown">
+                    <label style="color: #344054;font-size: 0.875rem; font-weight: 500; line-height: 1.500rem; font-family: Inter,sans-serif;" class="labInput">Informations de votre carte</label>
+                    <div id="cardSelectDiv" th:if="${demandeDto.cartes != null and #lists.size(demandeDto.cartes) > 0}" style="margin-bottom: 0.000rem;" class="form-group custom-dropdown">
                         <!-- Selected card display -->
-                        <div  id="selectedCard" class="selected-card" onclick="toggleDropdown()" style="border-radius: 8px 8px 0px 0px;">
-                            <span style="color: #101828;font-size: 16px; font-weight: 400; line-height: 24px; font-family: Inter,sans-serif;" id="selectedText">Sélectionnez une carte</span>
+                        <div  id="selectedCard" class="selected-card" onclick="toggleDropdown()" style="border-radius: 0.500rem 0.500rem 0.000rem 0.000rem;">
+                            <span style="color: #101828;font-size: 1.000rem; font-weight: 400; line-height: 1.500rem; font-family: Inter,sans-serif;" id="selectedText">Sélectionnez une carte</span>
                             <img  id="card-logo2" >
                             <img alt="Image" id="selectCardArrow" th:src="@{/images/arrow.svg}" class="rotate-180">
                         </div>
 
                         <!-- Dropdown list -->
                         <!-- Dropdown list -->
-                        <div id="dropdownList" class="dropdown-list" style="display:none; max-height:300px; overflow-y:auto; border:1px solid #ccc; background:#fff; position:absolute; width:100%; z-index:1000;">
+                        <div id="dropdownList" class="dropdown-list" style="    display:none; max-height:18.750rem; overflow-y:auto; border:0.062rem solid #ccc; background:#fff; position:absolute; width:100%; z-index:1000;">
                             <div class="dropdown-item" data-value="" data-brand="" onclick="selectCardDefault(this)">
 	                   <span style="
 	                               height: 36;
 	                               border-radius: radius-sm;
-	                               padding-top: 8px;
-	                               padding-right: 10px;
-	                               padding-bottom: 8px;
-	                               padding-left: 0px;
+	                               padding-top: 0.500rem;
+	                               padding-right: 0.625rem;
+	                               padding-bottom: 0.500rem;
+	                               padding-left: 0.000rem;
                                    font-family: Inter, sans-serif;
                                    color: #414651;
-                                   font-size: 14px;
-								   line-height: 20px;
+                                   font-size: 0.875rem;
+								   line-height: 1.250rem;
                                    font-weight: 600;">
 	                               Vos cartes enregistrées
 	                       </span>
@@ -1475,33 +1563,31 @@
                                  onclick="selectCard(this)"
                                  style="cursor:pointer; display: flex; align-items: center; position:relative;">
 
-								 <!-- ✅ Checkmark container -->
-								<span class="checkmark"></span>
+                                <!-- ✅ Checkmark container -->
+                                <span class="checkmark"></span>
                                 <!-- Card brand icon -->
                                 <img th:src="@{/images/{filename}(filename=${carte.scheme + '.svg'})}"
                                      alt="card logo"
-                                     style="width: 24px; height: auto; margin-right: 10px;" />
+                                     style="width: 2.125rem; height: 1.500rem; margin-right: 0.625rem;" />
 
                                 <!-- Card number -->
                                 <span class="card-number" style="font-size: 1.1rem; font-family: 'Courier New', monospace;">
-				        <span th:text="${#strings.substring(carte.pcidsscarte, 0, 4) + ' '
-				                      + #strings.substring(carte.pcidsscarte, 4, 6) + '** **** '
-				                      + #strings.substring(carte.pcidsscarte, carte.pcidsscarte.length() - 4)}"></span>
+				        <span th:text="${'**** **** **** ' + #strings.substring(carte.pcidsscarte, carte.pcidsscarte.length() - 4)}"></span>
 				    </span>
 
                                 <!-- Expiration -->
-                                <span style="margin-left: 10px; color: #667085; font-size: 0.95rem;"
+                                <span style="margin-left: 0.625rem; color: #667085; font-size: 0.95rem;"
                                       th:text="${carte.moisValue + '/' + #strings.substring(carte.year, 2,4)}">
 				    </span>
 
                                 <!-- Trash icon -->
                                 <img src="/images/trashIcon.svg" alt="Supprimer"
                                      onclick="event.stopPropagation(); removeCard(this)"
-                                     style="margin-left: auto; margin-right: 10px; width: 24px; height: 24px; cursor: pointer;" />
+                                     style="margin-left: auto; margin-right: 0.625rem; width: 1.500rem; height: 1.500rem; cursor: pointer;" />
                             </div>
 
-                            <div class="dropdown-item" data-value="" data-brand="" data-new="true" onclick="selectCard(this)" style="cursor:pointer; padding:8px 10px;font-weight: 600; color: #414651; font-size: 14px; font-family: Inter, sans-serif; line-height: 20px; letter-spacing: 0%;">
-                                <img src="/images/nvcarte.svg" alt="New Card" style="width: 24px; height: auto; margin-right: 10px;" />
+                            <div class="dropdown-item" data-value="" data-brand="" data-new="true" onclick="selectCard(this)" style="cursor:pointer; padding:0.500rem 0.625rem;font-weight: 600; color: #414651; font-size: 0.875rem; font-family: Inter, sans-serif; line-height: 1.750rem; letter-spacing: 0%;">
+                                <img src="/images/nvcarte.svg" alt="New Card" style="width: 2.125rem; height: 1.500rem; margin-right: 0.625rem;" />
                                 Utiliser une nouvelle carte
                             </div>
                         </div>
@@ -1509,125 +1595,95 @@
                     </div>
                     <input type="hidden" th:field="*{demPan}" id="hiddenInput" />
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                     <!-- Input caché si des cartes existent -->
-                    <div th:if="${demandeDto.cartes == null or #lists.size(demandeDto.cartes) == 0}" class="form-group numcarte" style="margin-bottom: 0px;">
+                    <div th:if="${demandeDto.cartes == null or #lists.size(demandeDto.cartes) == 0}" class="form-group numcarte" style="margin-bottom: 0.000rem;">
                         <input id="num" oninput="checkCardType('num', 'card-logo')" placeholder="1234 1234 1234 1234" required="required"
-                               th:field="*{demPan}" type="text" style="border-radius: 8px 8px 0px 0px;">
+                               th:field="*{demPan}" type="text" style="border-radius: 0.500rem 0.500rem 0.000rem 0.000rem;"
+                               th:style="${error} ? 'border: 0.062rem solid #FDA29B; border-radius: 0.500rem 0.500rem 0.000rem 0.000rem;' : 'border-radius: 0.500rem 0.500rem 0.000rem 0.000rem;'"
+                        >
                         <img alt="Image" id="card-logo" th:src="@{/images/visa_mc.svg}">
                     </div>
                     <!-- Input caché si des cartes existent -->
-                    <div id="newCardDiv" class="form-group numcarte1 " style="display: none !important; margin-bottom: 0px;" >
+                    <div id="newCardDiv" class="form-group numcarte1 " style="display: none !important; margin-bottom: 0.000rem;" >
                         <input  class="form-control" id="nvnum" oninput="checkCardType('nvnum', 'card-logo1')" placeholder="1234 1234 1234 1234"
-                               th:field="*{demPan}" type="text" style="border-radius: 8px 8px 0px 0px;">
+                                th:field="*{demPan}" type="text" style="border-radius: 0.500rem 0.500rem 0.000rem 0.000rem; border-color: ${error} ? '#FDA29B' : '';">
                         <img alt="Image" id="card-logo1" th:src="@{/images/visa_mc.svg}">
                     </div>
-                    <div class="form-group d-flex gap-2" style="margin-bottom: 24px;">
+                    <div class="form-group d-flex gap-2" style="margin-bottom: 0.250rem;">
                         <div  style="width: 100%">
-                            <input class="form-control" style="border-radius: 0px 0px 0px 8px; margin-right: 0; border-top: 0px;border-right: 0px;" id="dateExp" placeholder="MM / AA" th:field="*{expery}" type="text">
+                            <input class="form-control" style="border-radius: 0.000rem 0.000rem 0.000rem 0.500rem; margin-right: 0; border-top: 0.000rem;border-right: 0.000rem;" id="dateExp" placeholder="MM / AA" th:field="*{expery}" type="text">
                         </div>
                         <div class="cvc" style="width: 100%">
-                            <input class="form-control" style="border-radius: 0 0 8px 0;border-top: 0px;" id="cvv" placeholder="CVC" required="required" th:field="*{demCvv}" type="number">
+                            <input class="form-control" style="border-radius: 0 0 0.500rem 0;border-top: 0.000rem;" id="cvv" placeholder="CVC" required="required" th:field="*{demCvv}" type="number">
                             <img alt="Image" id="cvc-logo" th:src="@{/images/cvc.svg}">
                         </div>
                     </div>
-                    <div class="custom-checkbox-container">
-						<input type="checkbox" id="terms" required />
-						<label class="custom-checkbox-label" for="terms">
-						    <span class="custom-checkbox"></span>
-						    <div class="generalConditionLabel">
-						        J'ai lu et j'accepte les
-						        <a style="color: #344054;" href="javascript:void(0)" 
-						           class="terms-link"
-						           onclick="event.preventDefault(); openModal();">
-						            conditions d'utilisation.
-						        </a>
-						    </div>
-						</label>
+                    <div th:if="${error}" id="card-error-message">
+                        <span style="color: #F04438;     font-family: sans-serif, Arial; font-size: 0.875rem;font-style: normal;line-height: 1.250rem;" >Veuillez ressaisir votre numéro de carte.</span>
+                    </div>
+
+                    <div id="saveCardDiv" class="custom-checkbox-container" style="margin-top: 1.250rem;margin-bottom: 1.250rem; display:none;">
+                        <input type="checkbox" id="svCarte" th:field="*{flagSaveCarte}" onclick="handleSaveCarteClick(this)" />
+                        <label for="svCarte" class="custom-checkbox-label" style="cursor:pointer;margin-bottom: 0.000rem;">
+                            <span id="checkBoxSvCard" style="background-image: url('/images/checkboxOff.svg');" class="custom-checkbox-svcrd"></span>
+                            <span style="font-size:0.875rem;" class="generalConditionLabel">Enregistrer cette carte pour mes prochains paiements.</span>
+                        </label>
+                    </div>
+
+                    <div class="custom-checkbox-container" style="margin-top: 1.250rem;">
+                        <input type="checkbox" id="terms" name="terms" required onclick="handleAcceptConditionClick(this)" />
+                        <label class="custom-checkbox-label" for="terms">
+                            <span id="checkBoxCondition" style="background-image: url('/images/checkboxOff.svg');" class="custom-checkbox-svcrd"></span>
+                            <div style="font-size:0.875rem;" class="generalConditionLabel">
+                                J'ai lu et j'accepte les<a style="color: #344054;" href="javascript:void(0)"
+                                                           class="terms-link"
+                                                           onclick="event.preventDefault(); openModal();">conditions d'utilisation.
+                            </a>
+                            </div>
+                        </label>
 
                     </div>
 
                     <div class="modal-overlay" id="termsModal">
-						
-							
-							<div class="modal-content">
-		                        <h3 >Conditions générales d'utilisation</h3>
-								<button onclick="closeModal()" class="close-btn"><img alt="Image" class="powered" th:src="@{/images/close.svg}"></button>
-								<div class="sub-modal-content">
-									<div class="modle-text-content">
-										<p>
-			                                Conformément à la loi 09-08 sur la protection des personnes physiques à l'égard du traitement des données à caractère personnel, il est porté à votre connaissance qu'en utilisant le service de paiement en ligne pour payer un service ou un produit commercialisé par un site marchand affilié à NAPS :
-			                            </p>
-										<ul style=" padding-left: 20px; margin: 0;">
-										   <li style="margin-bottom: 10px;">
-										     Les destinataires des données concernant un payeur telles que le nom et prénom, courriel, adresse et numéro de téléphone, à l'exception des données bancaires confidentielles, et qui sont soit transmises par le site Marchand à NAPS ou saisies par le payeur sur l'écran de paiement mis à sa disposition par NAPS pour le compte de l'e-commerçant et sous son ordre, pourront être utilisées par les collaborateurs de NAPS responsables du traitement, dont la finalité est le suivi de l'opération de paiement initiée par le payeur sur le site Marchand.
-										   </li>
-										   <li style="margin-bottom: 10px;">
-										     Les destinataires des données bancaires qui sont saisies par le payeur sur l'écran de paiement mis à sa disposition par NAPS pour le compte de l'e-commerçant et sous son ordre, pourront être utilisées par les systèmes d'information et monétiques de NAPS, ainsi que le système monétique de la banque marocaine ou internationale émettrice de la carte bancaire utilisée lors du paiement en ligne. Toutes ces entités sont responsables, chacune suivant ses attributions, du traitement dont la finalité est le traitement de l'opération de paiement initiée par le payeur sur le site marchand.
-										   </li>
-										   <li style="margin-bottom: 10px;">
-										     Les données recueillies par NAPS ne peuvent être utilisées à des fins de prospection par ce dernier et sont la propriété de l'e-commerçant qui a délégué la gestion du paiement de son site marchand à NAPS.
-										   </li>
-										   <li style="margin-bottom: 10px;">
-										     Vous disposez d'un droit d'accès en consultation à vos données personnelles traitées par NAPS et qui figurent dans votre reçu de paiement, à l'exception des données bancaires, en contactant NAPS par courrier à l'adresse suivante : NAPS - 16, rue Ibn Khalikane, Palmiers, Casablanca.
-										   </li>
-										   <li>
-										     Vous pouvez aussi accéder à ces données depuis le reçu de paiement ou de transaction mis à votre disposition par courriel et en ligne par NAPS ou l'e-commerçant.
-										   </li>
-										 </ul>		
-									</div>
-									
-								</div>
-	                           
-	                        </div> 
-							
-						
-                        
-                    </div>
 
+
+                        <div class="modal-content">
+                            <h3 >Conditions générales d'utilisation</h3>
+                            <button onclick="closeModal()" class="close-btn"><img alt="Image" class="powered" th:src="@{/images/close.svg}"></button>
+                            <div class="sub-modal-content">
+                                <div class="modle-text-content">
+                                    <p>
+                                        Conformément à la loi 09-08 sur la protection des personnes physiques à l'égard du traitement des données à caractère personnel, il est porté à votre connaissance qu'en utilisant le service de paiement en ligne pour payer un service ou un produit commercialisé par un site marchand affilié à NAPS :
+                                    </p>
+                                    <ul style=" padding-left: 1.250rem; margin: 0;">
+                                        <li style="margin-bottom: 0.625rem;">
+                                            Les destinataires des données concernant un payeur telles que le nom et prénom, courriel, adresse et numéro de téléphone, à l'exception des données bancaires confidentielles, et qui sont soit transmises par le site Marchand à NAPS ou saisies par le payeur sur l'écran de paiement mis à sa disposition par NAPS pour le compte de l'e-commerçant et sous son ordre, pourront être utilisées par les collaborateurs de NAPS responsables du traitement, dont la finalité est le suivi de l'opération de paiement initiée par le payeur sur le site Marchand.
+                                        </li>
+                                        <li style="margin-bottom: 0.625rem;">
+                                            Les destinataires des données bancaires qui sont saisies par le payeur sur l'écran de paiement mis à sa disposition par NAPS pour le compte de l'e-commerçant et sous son ordre, pourront être utilisées par les systèmes d'information et monétiques de NAPS, ainsi que le système monétique de la banque marocaine ou internationale émettrice de la carte bancaire utilisée lors du paiement en ligne. Toutes ces entités sont responsables, chacune suivant ses attributions, du traitement dont la finalité est le traitement de l'opération de paiement initiée par le payeur sur le site marchand.
+                                        </li>
+                                        <li style="margin-bottom: 0.625rem;">
+                                            Les données recueillies par NAPS ne peuvent être utilisées à des fins de prospection par ce dernier et sont la propriété de l'e-commerçant qui a délégué la gestion du paiement de son site marchand à NAPS.
+                                        </li>
+                                        <li style="margin-bottom: 0.625rem;">
+                                            Vous disposez d'un droit d'accès en consultation à vos données personnelles traitées par NAPS et qui figurent dans votre reçu de paiement, à l'exception des données bancaires, en contactant NAPS par courrier à l'adresse suivante : NAPS - 16, rue Ibn Khalikane, Palmiers, Casablanca.
+                                        </li>
+                                        <li>
+                                            Vous pouvez aussi accéder à ces données depuis le reçu de paiement ou de transaction mis à votre disposition par courriel et en ligne par NAPS ou l'e-commerçant.
+                                        </li>
+                                    </ul>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+
+                    </div>
 
                     <!-- Sauvegarder la carte -->
-                    <div id="saveCardDiv"
-                         class="form-group custom-checkbox-wrapper" 
-                         th:attr="style=${demandeDto.idClient != null} ? 'display:none;' : 'display:none;'">
-                        <input type="checkbox" id="svCarte" th:field="*{flagSaveCarte}" />
-                        <label for="svCarte" class="d-flex align-items-center" style="cursor:pointer;margin-bottom: 0px;">
-                            <span class="custom-checkbox-style"></span>
-                            <span class="custom-checkbox-label-text ml-2">Enregistrer cette carte pour mes prochains paiements</span>
-                        </label>
-                    </div>
+
                     <input type="hidden" th:field="*{commande}" class="form-control">
                     <input type="hidden" th:field="*{comid}" class="form-control">
                     <input type="hidden" th:field="*{galid}" class="form-control">
@@ -1636,14 +1692,19 @@
                     <input type="hidden" th:field="*{tokencommande}" class="form-control">
                     <input type="hidden" th:field="*{failURL}" class="form-control">
 
-                    <div class="form-group text-center" style="margin-top: 32px;">
-                        <button class="subscribe-btn">
+                    <div class="form-group text-center" style="margin-top: 1.125rem;" >
+                        <button id="payerBtn" class="subscribe-btn" disabled>
                             <img alt="flch" class="flch" th:src="@{/images/flechpayer.svg}">
                             <span class="payer">Payer</span>
                             <span class= "montant" th:text="${demandeDto.montantStr}"></span>
                             <span class="curr">DH</span>
                         </button>
+                        <button id="paymentEnCours" class="subscribe-btn" disabled style="display:none;opacity: 50%;">
+                            <img alt="Loading" class="loading-icon" th:src="@{/images/loading.svg}">
+                            <span class="loading">Paiement en cours..</span>
+                        </button>
                     </div>
+
                     <div class="form-group d-flex align-items-center lock-label">
                         <img alt="lock" class="lock" th:src="@{/images/lock.svg}">
                         <label class="mb-0 sec" for="terms">Toutes vos données personnelles sont chiffrées et
@@ -1694,8 +1755,8 @@
         <div style="color: #fd7e14;">
             <img alt="Image" class="powered" th:src="@{/images/removeCard.svg}">
         </div>
-        <h3 style="font-family: Inter,sans-serif;font-weight: 600;margin-top: 20px;font-size: 16px;">Supprimer cette carte bancaire?</h3>
-        <p style="font-size: 14px; color : #535862;">Êtes-vous sûr(e) de vouloir supprimer cette carte ?</p>
+        <h3 style="font-family: Inter,sans-serif;font-weight: 600;margin-top: 1.250rem;font-size: 1.000rem;">Supprimer cette carte bancaire?</h3>
+        <p style="font-size: 0.875rem; color : #535862;">Êtes-vous sûr(e) de vouloir supprimer cette carte ?</p>
 
         <div class="popup-actions" >
             <button onclick="closeModalDeleteCard()" class="btn-cancel" >Annuler</button>
@@ -1743,8 +1804,7 @@
         const selectedText = document.getElementById('selectedText');
         const selectedCardIcon = document.getElementById('card-logo2');
 		let cardNumber = value;
-		let maskedCard = cardNumber.replace(/^(\d{6})\d+(?=\d{4})/, "$1**** ****");
-		maskedCard = maskedCard.replace(/(.{4})(?=.)/g, "$1 ").trim();
+		let maskedCard = cardNumber.replace(/^(\d{0})\d+(?=\d{4})/, "$1**** **** **** ");
 		selectedText.textContent = maskedCard;
         console.log(brand);
         if (brand) {
@@ -1906,7 +1966,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (window.innerWidth <= 768) {
             if (panelState === 0) {
                 // 1er clic : Ouvrir complètement
-                panel.style.top = "0px";
+                panel.style.top = "0.000rem";
                 details.style.display = "block";
                 panelState = 1;
                 // Afficher la flèche haut et cacher la flèche bas
@@ -1914,7 +1974,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 flechUp.classList.remove("d-none");
             } else {
                 // 2ème clic : Revenir à l’état initial (partiellement visible)
-                panel.style.top = "0px"; // Ajusté pour voir le h2
+                panel.style.top = "0.000rem"; // Ajusté pour voir le h2
                 details.style.display = "none";
                 panelState = 0;
                 // Afficher la flèche bas et cacher la flèche haut
@@ -1925,12 +1985,18 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     window.addEventListener('DOMContentLoaded', function () {
             const errorMessage = document.getElementById('error-message');
+            const cardErrorMessage = document.getElementById('card-error-message');
+            const num = document.getElementById('num');
             if (errorMessage) {
                 console.log('errorMessage true');
                 const fields = document.querySelectorAll('input, select');
                 fields.forEach(field => {
+                    field.addEventListener('input', () => cardErrorMessage.style.display = 'none');
+                    field.addEventListener('change', () => cardErrorMessage.style.display = 'none');
                     field.addEventListener('input', () => errorMessage.style.display = 'none');
                     field.addEventListener('change', () => errorMessage.style.display = 'none');
+                     field.addEventListener('input', () => num.style.border = '0.062rem solid #ccc');
+                    field.addEventListener('change', () => num.style.border = ' 0.062rem solid #ccc');
                 });
             } else {
                 console.log('errorMessage false');
@@ -2072,23 +2138,23 @@ function checkCardType(idCarte, logo) {
           // Vérifie si la page est visible (avec l'événement `touchstart` pour mobile et `scroll` pour mobile/desktop)
           function handleUserInteraction() {
               // Si un utilisateur touche ou fait défiler, on appelle la fonction check
-              check();
+              //check();
           }
 
           // Écouter l'événement `touchstart` (sur mobile et tablette)
           document.addEventListener('touchstart', handleUserInteraction, { once: true });
 
          // Écouter l'événement de clic sur tous les champs input (mobile/desktop)
-          inputs.forEach(input => {
-              input.addEventListener('click', handleUserInteraction);
-          });
+<!--          inputs.forEach(input => {-->
+<!--              input.addEventListener('click', handleUserInteraction);-->
+<!--          });-->
            // Écouter l'événement de clic sur tous les éléments <select>
-          selects.forEach(select => {
-              select.addEventListener('click', handleUserInteraction);
-          });
+<!--          selects.forEach(select => {-->
+<!--              select.addEventListener('click', handleUserInteraction);-->
+<!--          });-->
 
           // Écouter l'événement `scroll` (sur desktop et mobile)
-          window.addEventListener('scroll', handleUserInteraction, { once: true });
+         // window.addEventListener('scroll', handleUserInteraction, { once: true });
       };
 
 
@@ -2120,7 +2186,7 @@ function checkCardType(idCarte, logo) {
              toast: true,
              position: 'top',
 			 showCloseButton: true,
-			 closeButtonHtml: '<img src="/images/close.svg" style="width:35px;height:35px;">', // custom icon
+			 closeButtonHtml: '<img src="/images/close.svg" style="width:2.188rem;height:2.188rem;">', // custom icon
              customClass: {
                popup: 'swal-toast',
 			   closeButton: 'swal-close-btn-right'
@@ -2176,5 +2242,133 @@ function checkCardType(idCarte, logo) {
           });
 </script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const termsCheckbox = document.getElementById("terms");
+        const payerBtn = document.getElementById("payerBtn");
+
+        termsCheckbox.addEventListener("change", function() {
+            payerBtn.disabled = !termsCheckbox.checked;
+            if(termsCheckbox.checked){
+                payerBtn.style.opacity="100%";
+                payerBtn.style.outline="none";
+            }else{
+                payerBtn.style.opacity="50%";
+             }
+
+        });
+    });
+    // Fetch API Wrapper for POST requests
+     async function postData(url = '', data = {}) {
+        try {
+           const response = await fetch(url, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(data)
+           });
+           return response;
+        } catch (error) {
+           console.error('Error during fetch:', error);
+           throw error;
+        }
+     }
+
+    function cancelPayment() {
+		     const iddemande = document.getElementById('iddemande')?.value;
+		     if (!iddemande) {
+		         console.error('No iddemande found in the hidden input field.');
+		         return;
+		     }
+
+		     console.log('Cancelling payment with iddemande:', iddemande);
+
+		     postData('/cancelPayment', { iddemande })
+		         .then((response) => {
+		             if (!response.ok) {
+		                 throw new Error('Failed to cancel payment.');
+		             }
+		             return response.json(); // parse JSON body
+		         })
+		         .then((data) => {
+		             console.log('Cancel response:', data);
+
+		             if (data.failurl) {
+		                 // Redirect to the fail URL returned by backend
+		                 window.location.href = data.failurl;
+		             } else if (data.message) {
+		                 alert(data.message); // fallback message
+						 if (window.history.length > 1) {
+	                              window.history.back();
+	                           } else {
+	                              window.location.href = '/error';
+	                           }
+		             }
+		         })
+		         .catch((error) => {
+		             console.error('Error:', error);
+		             window.location.href = '/error';
+		         });
+		 }
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const form = document.getElementById("paymentForm");
+        const payerBtn = document.getElementById("payerBtn");
+        const loadingBtn = document.getElementById("paymentEnCours");
+
+        payerBtn.addEventListener("click", function(e) {
+        if (form.checkValidity()) {
+            payerBtn.style.display = "none";      // hide payer
+            loadingBtn.style.display = "inline-block"; // show loading
+             form.submit();
+        }else{
+        }
+
+
+
+
+        });
+    });
+
+    function handleSaveCarteClick(checkbox) {
+          const checkBoxSvCard = document.getElementById("checkBoxSvCard");
+          if (checkbox.checked) {
+<!--            console.log("Save card: true");-->
+            checkBoxSvCard.style.backgroundImage = "url('/images/checkboxOn.svg')";
+          } else {
+            checkBoxSvCard.style.backgroundImage = "url('/images/checkboxOff.svg')";
+<!--            console.log("Save card: false");-->
+          }
+    };
+
+    function handleAcceptConditionClick(checkbox) {
+          const checkBoxCondition = document.getElementById("checkBoxCondition");
+          if (checkbox.checked) {
+            checkBoxCondition.style.backgroundImage = "url('/images/checkboxOn.svg')";
+          } else {
+            checkBoxCondition.style.backgroundImage = "url('/images/checkboxOff.svg')";
+          }
+    };
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const width = window.screen.width;
+      let zoomClass = "zoom-100";
+      console.log("width = "+width);
+      if (width <= 1550) {
+        zoomClass = "zoom-75"; // Entry-level (HD)
+      } else if (width <= 2100) {
+        zoomClass = "zoom-110"; // Standard business (FHD)
+      } else {
+        zoomClass = "zoom-120"; // High-end (QHD or 4K)
+      }
+
+      document.querySelectorAll(".zoom-target").forEach(el => {
+        el.classList.add(zoomClass);
+      });
+    });
+</script>
+
+
 </body>
 </html>

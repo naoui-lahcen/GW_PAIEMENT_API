@@ -82,9 +82,11 @@ public final class RSACrypto {
 			// Add signature
 			String signature = HashingHelper.hachInMD5(plainTxtSignature, folder, file);
 			// old
-			//data += "+signature=" + signature;
-			data += "&signature=" + signature;
-
+			if (modeUrl) {
+				data += "+signature=" + signature;
+			} else {
+				data += "&signature=" + signature;
+			}
 			// Chiffrement en Base64
 			byte[] cipherBytes = cipher.doFinal(data.getBytes(StandardCharsets.UTF_8));
 			String base64Encoded = new String(org.apache.commons.codec.binary.Base64.encodeBase64(cipherBytes));

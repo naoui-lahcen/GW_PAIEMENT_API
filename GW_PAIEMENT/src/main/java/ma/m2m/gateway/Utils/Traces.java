@@ -30,14 +30,26 @@ public class Traces {
 
 		LocalDateTime date = LocalDateTime.now(ZoneId.systemDefault());
 		String folder = date.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
-		String path = "D:/GW_LOGS/" + folder;
+		// Créneau horaire, ex: T9-10
+		int currentHour = date.getHour();
+		int nextHour = (currentHour + 1) % 24;
+		String hourFolder = "T" + currentHour + "-" + nextHour;
+
+		// Chemin complet : D:/GW_LOGS/<date>/<créneau>/
+		String path = "D:/GW_LOGS/" + folder ;
+		String path2 = "D:/GW_LOGS/" + folder + "/" + hourFolder;
 
 		File myObj = new File(path);
 		if (myObj.mkdir()) {
 			logger.info("======> New folder: {}" , myObj.getName());
 		}
 
-		File myfile = new File(path + "/" + input + ".trc");
+		File myObj2 = new File(path2);
+		if (myObj2.mkdir()) {
+			logger.info("======> New folder: {}" , myObj2.getName());
+		}
+
+		File myfile = new File(path2 + "/" + input + ".trc");
 		try {
 			if (myfile.createNewFile()) {
 				logger.info("======> New file: {}" , myfile.getName());
@@ -52,7 +64,7 @@ public class Traces {
 		LocalDateTime date = LocalDateTime.now(ZoneId.systemDefault());
 		String dateTr = date.format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS"));
 		String formattedFolder = date.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
-		try(FileWriter myWriter = new FileWriter("D:/GW_LOGS/" + formattedFolder + "/" + file + ".trc", true)) {
+		try(FileWriter myWriter = new FileWriter(formattedFolder + "/" + file + ".trc", true)) {
 			myWriter.write(dateTr + "   " + input + System.getProperty("line.separator"));
 		} catch (IOException e) {
 			logger.error("======> An error occurred.", e);

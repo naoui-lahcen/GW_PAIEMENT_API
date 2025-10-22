@@ -136,18 +136,30 @@ public class Util {
 	}
 
 	public static void creatFileTransaction(String input) {
+		LocalDateTime dateF;
+		String folder;
+		dateF = LocalDateTime.now(ZoneId.systemDefault());
+		folder = dateF.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
+		// Créneau horaire, ex: T9-10
+		int currentHour = dateF.getHour();
+		int nextHour = (currentHour + 1) % 24;
+		String hourFolder = "T" + currentHour + "-" + nextHour;
 
-		LocalDateTime date = LocalDateTime.now(ZoneId.systemDefault());
-		String folder = date.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
-
-		String path = "D:/GW_LOGS/" + folder;
+		// Chemin complet : D:/GW_LOGS/<date>/<créneau>/
+		String path = "D:/GW_LOGS/" + folder ;
+		String path2 = "D:/GW_LOGS/" + folder + "/" + hourFolder;
 
 		File myObj = new File(path);
 		if (myObj.mkdir()) {
 			logger.info("======> New folder: {}" , myObj.getName());
 		}
 
-		File myfile = new File(path + "/" + input + ".trc");
+		File myObj2 = new File(path2);
+		if (myObj2.mkdir()) {
+			logger.info("======> New folder: {}" , myObj2.getName());
+		}
+
+		File myfile = new File(path2 + "/" + input + ".trc");
 		try {
 			if (myfile.createNewFile()) {
 				logger.info("======> New file: {}" , myfile.getName());
@@ -161,8 +173,8 @@ public class Util {
 	public static void writeInFileTransaction(String folder, String file, String input) {
 		LocalDateTime date = LocalDateTime.now(ZoneId.systemDefault());
 		String dateTr = date.format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS"));
-		String formattedFolder = date.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
-		try(FileWriter myWriter = new FileWriter("D:/GW_LOGS/" + formattedFolder + "/" + file + ".trc", true)) {
+		//String formattedFolder = date.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
+		try(FileWriter myWriter = new FileWriter(folder + "/" + file + ".trc", true)) {
 			myWriter.write(dateTr + "   " + input + System.getProperty("line.separator"));
 		} catch (IOException e) {
 			logger.error("======> An error occurred.", e);

@@ -581,7 +581,7 @@ public class ACSController {
 									String suffix = "==&codecmr=" + merchantid;
 									if(modeUrl) {
 										suffix = "&codecmr=" + merchantid;
-										suffix = RSACrypto.encodeRFC3986(suffix);
+										//suffix = RSACrypto.encodeRFC3986(suffix);
 									}
 
 									response.sendRedirect(dmd.getSuccessURL() + "?data=" + data_token
@@ -1011,7 +1011,7 @@ public class ACSController {
 									annDto.setEtatAnnl("N");
 									annDto.setDateTrs(dateFormat.parse(currentDTime));
 									annDto.setDateTrtm(null);
-									annDto.setIdTerm("");
+									annDto.setIdTerm("0"+merchantid);
 									autorisationService.logMessage(file, "saving annTrs ... " + annDto.toString());
 
 									annlTransactionService.save(annDto);
@@ -1687,7 +1687,7 @@ public class ACSController {
 									String suffix = "==&codecmr=" + merchantid;
 									if(modeUrl) {
 										suffix = "&codecmr=" + merchantid;
-										suffix = RSACrypto.encodeRFC3986(suffix);
+										//suffix = RSACrypto.encodeRFC3986(suffix);
 									}
 									autorisationService.logMessage(file,
 											"coderep 00 => Redirect to SuccessURL : " + dmd.getSuccessURL());
